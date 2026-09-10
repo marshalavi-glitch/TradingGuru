@@ -28,16 +28,40 @@ class TVWebSocketStreamer {
   private status: 'connecting' | 'connected' | 'disconnected' = 'disconnected';
 
   constructor() {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    
-    let wsHost = window.location.host;
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    this.url = this.computeBackendUrl();
+  }
+
+  public computeBackendUrl(): string {
+    const savedUrl = typeof window !== 'undefined' ? localStorage.getItem('TRADING_GURU_BACKEND_URL') : null;
+    if (savedUrl && savedUrl.trim()) {
+      let clean = savedUrl.trim().replace(/^wss?:\/\//, '').replace(/^https?:\/\//, '').replace(/\/$/, '');
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      return `${protocol}//${clean}`;
+    }
+
+    if (typeof window !== 'undefined' && (window.location.hostname.includes('huggingface.co') || window.location.hostname.includes('hf.space'))) {
+      return 'wss://profundum.loca.lt';
+    }
+
+    const protocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    let wsHost = typeof window !== 'undefined' ? window.location.host : 'localhost:3002';
+    if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
       if (window.location.port !== '3001' && window.location.port !== '3002') {
-        wsHost = `${window.location.hostname}:3001`;
+        wsHost = `${window.location.hostname}:3002`;
       }
     }
-    
-    this.url = `${protocol}//${wsHost}`;
+    return `${protocol}//${wsHost}`;
+  }
+
+  public setBackendUrl(newUrl: string) {
+    if (newUrl && newUrl.trim()) {
+      localStorage.setItem('TRADING_GURU_BACKEND_URL', newUrl.trim());
+    } else {
+      localStorage.removeItem('TRADING_GURU_BACKEND_URL');
+    }
+    this.url = this.computeBackendUrl();
+    this.disconnect();
+    this.connect();
   }
 
   public setStatusListener(callback: OnStatusCallback) {
