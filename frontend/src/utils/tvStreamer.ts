@@ -1,3 +1,5 @@
+import { resolveBackendUrl, getBackendHttpUrlSync } from './config';
+
 export interface TVDataMessage {
   symbol: string;
   timeframe: string;
@@ -76,7 +78,12 @@ class TVWebSocketStreamer {
     }
   }
 
-  public connect() {
+  public async connect() {
+    const httpUrl = await resolveBackendUrl();
+    let clean = httpUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
+    const protocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    this.url = `${protocol}//${clean}`;
+
     if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
       return;
     }
@@ -196,4 +203,10 @@ class TVWebSocketStreamer {
 }
 
 export const tvStreamer = new TVWebSocketStreamer();
+
+export function getBackendHttpUrl(): string {
+  const wsUrl = tvStreamer.computeBackendUrl();
+  return wsUrl.replace(/^wss:\/\//, 'https://').replace(/^ws:\/\//, 'http://');
+}
+
 export default tvStreamer;

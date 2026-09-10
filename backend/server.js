@@ -57,7 +57,7 @@ process.on('unhandledRejection', (reason, promise) => {
 
 const app = express();
 app.use(express.json()); // Enable JSON body parsing for constraints logger
-app.use(cors());
+app.use(cors({ origin: '*', credentials: true }));
 app.use(compression());
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
@@ -194,7 +194,7 @@ app.get('/health', (req, res) => {
 });
 
 const server = createServer(app);
-const wss = new WebSocketServer({ server });
+const wss = new WebSocketServer({ server, verifyClient: () => true });
 
 wss.on('error', (err) => {
   console.error('[Node Backend] WebSocket Server error:', err);
