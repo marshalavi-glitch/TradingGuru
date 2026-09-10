@@ -59,6 +59,7 @@ const app = express();
 app.use(express.json()); // Enable JSON body parsing for constraints logger
 app.use(cors());
 app.use(compression());
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
 // Route for Live Confluence Analyzer Alerts
 app.get('/api/scanner/confluence', async (req, res) => {
@@ -1899,8 +1900,8 @@ function startPostMarketScheduler() {
   }, 30000); // Check every 30 seconds
 }
 
-const PORT = process.env.PORT || 3002;
-server.listen(PORT, () => {
+const PORT = process.env.PORT || 7860;
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`Backend WebSocket server listening on port ${PORT}`);
   startPostMarketScheduler();
 });
