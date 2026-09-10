@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { RefreshCw, Clock, Terminal, Activity, ShieldCheck, Zap, TrendingUp, TrendingDown, Target } from 'lucide-react';
+import { getBackendHttpUrl } from '../utils/tvStreamer';
 
 interface AssetForensic {
   spot: number;
@@ -34,7 +35,7 @@ export function FifteenMinForensicContainer() {
     let isMounted = true;
     const fetchReports = async () => {
       try {
-        const backendUrl = window.location.port === '5175' ? 'http://localhost:3002' : window.location.origin;
+        const backendUrl = getBackendHttpUrl();
         const res = await fetch(`${backendUrl}/api/scanner/opening-bias?_t=${Date.now()}`, {
           cache: 'no-store',
           headers: { 'Pragma': 'no-cache', 'Cache-Control': 'no-cache' }

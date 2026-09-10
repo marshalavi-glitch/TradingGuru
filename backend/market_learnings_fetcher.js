@@ -751,16 +751,16 @@ async function runLearningsAnalysis() {
       const isResistance = ['level1', 'level2', 'level3', 'level4', 'level5'].includes(lvlKey);
 
       const lvlNameMap = {
-        level1: 'R6 (VAH Exhaustion)',
-        level2: 'R5 (VAH Extreme)',
-        level3: 'R4 (VAH Breakout Trigger)',
-        level4: 'R3 (VAH Reversion)',
-        level5: 'R2 (VAH Reversion)',
-        level6: 'S2 (VAL Reversion)',
-        level7: 'S3 (VAL Reversion)',
-        level8: 'S4 (VAL Breakdown Trigger)',
-        level9: 'S5 (VAL Extreme)',
-        level10: 'S6 (VAL Capitulation)'
+        level1: 'Target (R6)',
+        level2: 'Target (R5)',
+        level3: 'Breakout (R4)',
+        level4: 'Sell reversal (R3)',
+        level5: 'Resistance (R2)',
+        level6: 'Support (S2)',
+        level7: 'Buy Reversal (S3)',
+        level8: 'Break Down (S4)',
+        level9: 'Target (S5)',
+        level10: 'Target (S6)'
       };
 
       const lvlName = lvlNameMap[lvlKey] || lvlKey;

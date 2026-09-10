@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Loader2, RefreshCw, AlertCircle, Info, Clock, Calendar } from 'lucide-react';
+import { getBackendHttpUrl } from '../utils/tvStreamer';
 
 interface DojiStock {
   symbol: string;
@@ -53,7 +54,7 @@ export function DojiContainer({ onSymbolSelect, onSwitchToChart, noVolumeFilter 
     try {
       setLoading(true);
       setError(null);
-      const backendUrl = window.location.port === '5175' ? 'http://localhost:3002' : window.location.origin;
+      const backendUrl = getBackendHttpUrl();
       const response = await fetch(`${backendUrl}/api/doji-signals?slot=${slot}&scan=${force ? 'true' : 'false'}`);
       if (!response.ok) {
         throw new Error('Failed to fetch Doji signals');

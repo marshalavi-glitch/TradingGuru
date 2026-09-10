@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Loader2, AlertCircle, TrendingUp, TrendingDown, Clock, Search, Sparkles } from 'lucide-react';
+import { getBackendHttpUrl } from '../utils/tvStreamer';
 
 interface VolumeBreakout {
   symbol: string;
@@ -46,7 +47,7 @@ export const VolumeContainer: React.FC<VolumeContainerProps> = ({
 
     const fetchVolumeBreakouts = async () => {
       try {
-        const backendUrl = window.location.port === '5175' ? 'http://localhost:3002' : window.location.origin;
+        const backendUrl = getBackendHttpUrl();
         const res = await fetch(`${backendUrl}/api/volume-breakouts`);
         if (res.ok) {
           const payload = await res.json();

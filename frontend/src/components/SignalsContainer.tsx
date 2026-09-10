@@ -22,16 +22,16 @@ interface SignalsContainerProps {
 }
 
 const LEVEL_LABELS: Record<string, { label: string; desc: string; isBullish: boolean }> = {
-  level1: { label: 'L1 (R6)', desc: 'Extreme Breakout V-Shape VAH', isBullish: true },
-  level2: { label: 'L2 (R5)', desc: 'Strong Breakout Momentum', isBullish: true },
-  level3: { label: 'L3 (R4)', desc: 'Breakout Threshold Line', isBullish: true },
-  level4: { label: 'L4 (R3)', desc: 'Fading Resistance Boundary', isBullish: false },
-  level5: { label: 'L5 (R2)', desc: 'Minor Resistance Level', isBullish: false },
-  level6: { label: 'L6 (S2)', desc: 'Minor Support Level', isBullish: false },
-  level7: { label: 'L7 (S3)', desc: 'Fading Support Boundary', isBullish: false },
-  level8: { label: 'L8 (S4)', desc: 'Breakdown Threshold Line', isBullish: false },
-  level9: { label: 'L9 (S5)', desc: 'Strong Breakdown Momentum', isBullish: false },
-  level10: { label: 'L10 (S6)', desc: 'Extreme Breakdown V-Shape VAL', isBullish: false }
+  level1: { label: 'Target (R6)', desc: 'Resistance Target Level (R6)', isBullish: true },
+  level2: { label: 'Target (R5)', desc: 'Resistance Target Level (R5)', isBullish: true },
+  level3: { label: 'Breakout', desc: 'Breakout Threshold Line (R4)', isBullish: true },
+  level4: { label: 'Sell reversal', desc: 'Sell Reversal Level (R3)', isBullish: false },
+  level5: { label: 'Resistance (R2)', desc: 'Resistance Level (R2)', isBullish: false },
+  level6: { label: 'Support (S2)', desc: 'Support Level (S2)', isBullish: false },
+  level7: { label: 'Buy Reversal', desc: 'Buy Reversal Level (S3)', isBullish: true },
+  level8: { label: 'Break Down', desc: 'Breakdown Threshold Line (S4)', isBullish: false },
+  level9: { label: 'Target (S5)', desc: 'Support Target Level (S5)', isBullish: false },
+  level10: { label: 'Target (S6)', desc: 'Support Target Level (S6)', isBullish: false }
 };
 
 function getAtmStrike(symbol: string, price: number): number {

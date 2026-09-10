@@ -1,4 +1,4 @@
-import { resolveBackendUrl, getBackendHttpUrlSync } from './config';
+import { resolveBackendUrl, getBackendHttpUrlSync, clearBackendUrlCache } from './config';
 
 export interface TVDataMessage {
   symbol: string;
@@ -36,23 +36,27 @@ class TVWebSocketStreamer {
   public computeBackendUrl(): string {
     const savedUrl = typeof window !== 'undefined' ? localStorage.getItem('TRADING_GURU_BACKEND_URL') : null;
     if (savedUrl && savedUrl.trim()) {
-      let clean = savedUrl.trim().replace(/^wss?:\/\//, '').replace(/^https?:\/\//, '').replace(/\/$/, '');
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      return `${protocol}//${clean}`;
-    }
-
-    if (typeof window !== 'undefined' && (window.location.hostname.includes('huggingface.co') || window.location.hostname.includes('hf.space'))) {
-      return 'wss://profundum.loca.lt';
-    }
-
-    const protocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    let wsHost = typeof window !== 'undefined' ? window.location.host : 'localhost:3002';
-    if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-      if (window.location.port !== '3001' && window.location.port !== '3002') {
-        wsHost = `${window.location.hostname}:3002`;
+      try {
+        const parsed = new URL(savedUrl.trim().startsWith('http') || savedUrl.trim().startsWith('ws') ? savedUrl.trim() : `https://${savedUrl.trim()}`);
+        const wsProto = (parsed.protocol === 'https:' || parsed.protocol === 'wss:') ? 'wss:' : 'ws:';
+        return `${wsProto}//${parsed.host}`;
+      } catch (e) {
+        let clean = savedUrl.trim().replace(/^wss?:\/\//, '').replace(/^https?:\/\//, '').replace(/\/$/, '');
+        const protocol = (typeof window !== 'undefined' && window.location.protocol === 'https:') ? 'wss:' : 'ws:';
+        return `${protocol}//${clean}`;
       }
     }
-    return `${protocol}//${wsHost}`;
+
+    const httpUrl = getBackendHttpUrlSync();
+    try {
+      const parsed = new URL(httpUrl);
+      const wsProto = (parsed.protocol === 'https:' || parsed.protocol === 'wss:') ? 'wss:' : 'ws:';
+      return `${wsProto}//${parsed.host}`;
+    } catch (e) {
+      let clean = httpUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
+      const protocol = (typeof window !== 'undefined' && window.location.protocol === 'https:') ? 'wss:' : 'ws:';
+      return `${protocol}//${clean}`;
+    }
   }
 
   public setBackendUrl(newUrl: string) {
@@ -61,9 +65,10 @@ class TVWebSocketStreamer {
     } else {
       localStorage.removeItem('TRADING_GURU_BACKEND_URL');
     }
+    clearBackendUrlCache();
     this.url = this.computeBackendUrl();
     this.disconnect();
-    this.connect();
+    this.connect(true);
   }
 
   public setStatusListener(callback: OnStatusCallback) {
@@ -78,11 +83,20 @@ class TVWebSocketStreamer {
     }
   }
 
-  public async connect() {
-    const httpUrl = await resolveBackendUrl();
-    let clean = httpUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
-    const protocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    this.url = `${protocol}//${clean}`;
+  public async connect(forceFreshUrl = false) {
+    if (forceFreshUrl) {
+      clearBackendUrlCache();
+    }
+    const httpUrl = await resolveBackendUrl(forceFreshUrl);
+    try {
+      const parsed = new URL(httpUrl);
+      const wsProto = (parsed.protocol === 'https:' || parsed.protocol === 'wss:') ? 'wss:' : 'ws:';
+      this.url = `${wsProto}//${parsed.host}`;
+    } catch (e) {
+      let clean = httpUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
+      const protocol = (typeof window !== 'undefined' && window.location.protocol === 'https:') ? 'wss:' : 'ws:';
+      this.url = `${protocol}//${clean}`;
+    }
 
     if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
       return;
@@ -127,12 +141,14 @@ class TVWebSocketStreamer {
         console.log('WebSocket connection closed');
         this.setStatus('disconnected');
         this.ws = null;
+        clearBackendUrlCache();
         this.triggerReconnect();
       };
 
       this.ws.onerror = (err) => {
         console.error('WebSocket connection error:', err);
         this.setStatus('disconnected');
+        clearBackendUrlCache();
         if (this.onErrorCallback) {
           this.onErrorCallback('WebSocket server connection error');
         }
@@ -140,6 +156,7 @@ class TVWebSocketStreamer {
     } catch (err) {
       console.error('Failed to create WebSocket client:', err);
       this.setStatus('disconnected');
+      clearBackendUrlCache();
       this.triggerReconnect();
     }
   }
@@ -149,8 +166,8 @@ class TVWebSocketStreamer {
 
     this.reconnectTimeout = window.setTimeout(() => {
       this.reconnectTimeout = null;
-      console.log('Attempting to reconnect...');
-      this.connect();
+      console.log('Attempting to reconnect with fresh backend URL...');
+      this.connect(true);
     }, 3000);
   }
 

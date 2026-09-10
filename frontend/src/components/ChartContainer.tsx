@@ -50,7 +50,7 @@ interface ChartContainerProps {
 export const ChartContainer: React.FC<ChartContainerProps> = ({
   candles,
   symbol,
-  timeframe = '30',
+  timeframe = '5',
   matrixSeriesData,
   sessionPeriod,
   pocPrice,
@@ -215,24 +215,26 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
     });
     vwapSeriesRef.current = vwapSeries;
 
-    // Add Matrix Matrix Step Line Series
+    // Add Matrix Step Line Series with TradingView intraday level labels
     const colors = {
-      upper: '#ef4444', // Red
-      mid: '#fb923c',   // Orange
-      lower: '#10b981'  // Green
+      target: '#ef4444',    // Red
+      breakout: '#f97316',  // Orange
+      sellRev: '#f43f5e',   // Red/Pink
+      inner: '#3b82f6',     // Blue
+      buyRev: '#10b981'     // Green
     };
 
     const matrixConfigs = [
-      { color: colors.upper, title: 'L1' },
-      { color: colors.upper, title: 'L2' },
-      { color: colors.mid,   title: 'L3' },
-      { color: colors.upper, title: 'L4' },
-      { color: colors.mid,   title: 'L5' },
-      { color: colors.mid,   title: 'L6' },
-      { color: colors.lower, title: 'L7' },
-      { color: colors.mid,   title: 'L8' },
-      { color: colors.lower, title: 'L9' },
-      { color: colors.lower, title: 'L10' }
+      { color: colors.target,   title: 'Target' },
+      { color: colors.target,   title: 'Target' },
+      { color: colors.breakout, title: 'Breakout' },
+      { color: colors.sellRev,  title: 'Sell reversal' },
+      { color: colors.inner,    title: 'Resistance (R2)' },
+      { color: colors.inner,    title: 'Support (S2)' },
+      { color: colors.buyRev,   title: 'Buy Reversal' },
+      { color: colors.breakout, title: 'Break Down' },
+      { color: colors.target,   title: 'Target' },
+      { color: colors.target,   title: 'Target' }
     ];
 
     const matrixSeriesList = matrixConfigs.map((cfg) => {

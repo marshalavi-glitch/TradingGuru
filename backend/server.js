@@ -9,6 +9,9 @@ import { fileURLToPath } from 'url';
 import compression from 'compression';
 import { startScanner, scannerCache, findClosestValidOptionSymbol, fetchCandlesForSymbol } from './scanner.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const liveOptionCandlesCache = {};
 const liveOptionLtpCache = {};
 const liveOptionCandlesCacheTime = {};
@@ -166,9 +169,6 @@ app.post('/api/scanner/clear-historical-signals', (req, res) => {
   }
 });
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 // Load presets data into memory on boot
 let presetsData = [];
 try {
@@ -194,7 +194,26 @@ app.get('/health', (req, res) => {
 });
 
 const server = createServer(app);
-const wss = new WebSocketServer({ server, verifyClient: () => true });
+const wss = new WebSocketServer({ noServer: true });
+
+server.on('upgrade', (request, socket, head) => {
+  const url = request.url || '/';
+  const pathname = url.split('?')[0];
+  if (pathname === '/' || pathname === '/ws' || pathname.startsWith('/ws')) {
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      wss.emit('connection', ws, request);
+    });
+  } else {
+    socket.destroy();
+  }
+});
+
+// 25-second keep-alive heartbeat to prevent Cloudflare tunnel timeout
+setInterval(() => {
+  wss.clients.forEach(ws => {
+    try { ws.ping(); } catch (e) {}
+  });
+}, 25000);
 
 wss.on('error', (err) => {
   console.error('[Node Backend] WebSocket Server error:', err);
@@ -627,16 +646,16 @@ app.get('/api/scanner/confluences', (req, res) => {
 
     // Map level keys to user-friendly names
     const LEVEL_NAMES = {
-      level1: 'L1 (R6)',
-      level2: 'L2 (R5)',
-      level3: 'L3 (R4)',
-      level4: 'L4 (R3)',
-      level5: 'L5 (R2)',
-      level6: 'L6 (S2)',
-      level7: 'L7 (S3)',
-      level8: 'L8 (S4)',
-      level9: 'L9 (S5)',
-      level10: 'L10 (S6)'
+      level1: 'Target (R6)',
+      level2: 'Target (R5)',
+      level3: 'Breakout (R4)',
+      level4: 'Sell reversal (R3)',
+      level5: 'Resistance (R2)',
+      level6: 'Support (S2)',
+      level7: 'Buy Reversal (S3)',
+      level8: 'Break Down (S4)',
+      level9: 'Target (S5)',
+      level10: 'Target (S6)'
     };
 
     // Iterate through all symbols present in both caches
@@ -721,16 +740,16 @@ app.get('/api/scanner/early-picks', async (req, res) => {
     const monthlyCache = scannerCache.levelsCache['D'] || {};
 
     const LEVEL_NAMES = {
-      level1: 'L1 (R6)',
-      level2: 'L2 (R5)',
-      level3: 'L3 (R4)',
-      level4: 'L4 (R3)',
-      level5: 'L5 (R2)',
-      level6: 'L6 (S2)',
-      level7: 'L7 (S3)',
-      level8: 'L8 (S4)',
-      level9: 'L9 (S5)',
-      level10: 'L10 (S6)'
+      level1: 'Target (R6)',
+      level2: 'Target (R5)',
+      level3: 'Breakout (R4)',
+      level4: 'Sell reversal (R3)',
+      level5: 'Resistance (R2)',
+      level6: 'Support (S2)',
+      level7: 'Buy Reversal (S3)',
+      level8: 'Break Down (S4)',
+      level9: 'Target (S5)',
+      level10: 'Target (S6)'
     };
 
     const confluences = [];

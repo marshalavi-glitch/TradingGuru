@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { RefreshCw, Clock, TrendingUp, AlertTriangle, ShieldCheck, Zap } from 'lucide-react';
+import { getBackendHttpUrl } from '../utils/tvStreamer';
 
 interface SymbolSkewData {
   skewSpreadPct: number;
@@ -24,7 +25,7 @@ export function HourlyUpdatesContainer() {
     let isMounted = true;
     const fetchHourlyData = async () => {
       try {
-        const backendUrl = window.location.port === '5175' ? 'http://localhost:3002' : window.location.origin;
+        const backendUrl = getBackendHttpUrl();
         const res = await fetch(`${backendUrl}/api/scanner/opening-bias?_t=${Date.now()}`, {
           cache: 'no-store',
           headers: { 'Pragma': 'no-cache', 'Cache-Control': 'no-cache' }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { RefreshCw, Clock, Play, Layers } from 'lucide-react';
+import { getBackendHttpUrl } from '../utils/tvStreamer';
 
 interface ConfluenceResult {
   symbol: string;
@@ -37,7 +38,7 @@ export const ConfluencesContainer: React.FC<ConfluencesContainerProps> = ({
     
     const fetchConfluences = async () => {
       try {
-        const backendUrl = window.location.port === '5175' ? 'http://localhost:3002' : window.location.origin;
+        const backendUrl = getBackendHttpUrl();
         const res = await fetch(`${backendUrl}/api/scanner/confluences?threshold=${threshold}`);
         if (res.ok) {
           const data = await res.json();

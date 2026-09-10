@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Loader2, AlertCircle, TrendingUp, Search, X } from 'lucide-react';
+import { getBackendHttpUrl } from '../utils/tvStreamer';
 
 interface OptionsChainProps {
   currentSymbol: string;
@@ -33,7 +34,7 @@ interface SearchResult {
 }
 
 export function OptionsChain({ currentSymbol, onSymbolChange, onSwitchToChart }: OptionsChainProps) {
-  const backendUrl = window.location.port === '5175' ? 'http://localhost:3002' : window.location.origin;
+  const backendUrl = getBackendHttpUrl();
 
   const [expiry, setExpiry] = useState<string>('');
   const [data, setData] = useState<OptionChainResponse | null>(null);

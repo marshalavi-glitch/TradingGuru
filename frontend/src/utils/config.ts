@@ -1,9 +1,14 @@
 let cachedBackendUrl: string | null = null;
 let lastFetchTime = 0;
 
-export async function resolveBackendUrl(): Promise<string> {
+export function clearBackendUrlCache(): void {
+  cachedBackendUrl = null;
+  lastFetchTime = 0;
+}
+
+export async function resolveBackendUrl(forceRefresh = false): Promise<string> {
   const now = Date.now();
-  if (cachedBackendUrl && (now - lastFetchTime < 30000)) {
+  if (!forceRefresh && cachedBackendUrl && (now - lastFetchTime < 15000)) {
     return cachedBackendUrl;
   }
 

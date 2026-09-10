@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Loader2, RefreshCw, AlertTriangle, TrendingUp, TrendingDown, AlignLeft } from 'lucide-react';
+import { getBackendHttpUrl } from '../utils/tvStreamer';
 
 interface ZoneStats {
   count: number;
@@ -56,7 +57,7 @@ export function OpeningBiasContainer() {
 
   useEffect(() => {
     let isMounted = true;
-    const backendUrl = window.location.port === '5175' ? 'http://localhost:3002' : window.location.origin;
+    const backendUrl = getBackendHttpUrl();
     
     const fetchBias = () => {
       fetch(`${backendUrl}/api/scanner/opening-bias`)

@@ -21,7 +21,7 @@ import { FifteenMinForensicContainer } from './components/FifteenMinForensicCont
 
 function App() {
   const [symbol, setSymbol] = useState('NSE:NIFTY');
-  const [timeframe, setTimeframe] = useState('30'); // Default to 30-minute interval
+  const [timeframe, setTimeframe] = useState('5'); // Default to 5-minute interval
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
   const [candles, setCandles] = useState<Candle[]>([]);
   const [matrixHistory, setMatrixHistory] = useState<Record<string, any> | null>(null);
@@ -93,6 +93,9 @@ function App() {
         level1: [], level2: [], level3: [], level4: [], level5: [],
         level6: [], level7: [], level8: [], level9: [], level10: []
       };
+
+      const groups: Record<string, Candle[]> = {};
+      const groupKeys: string[] = [];
       
       candles.forEach(c => {
         const date = new Date(c.time * 1000);
@@ -102,21 +105,35 @@ function App() {
         } else {
           key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
         }
-        
-        const levels = matrixHistory[key];
-        if (levels) {
-          seriesData.level1.push({ time: c.time as any, value: levels.level1 });
-          seriesData.level2.push({ time: c.time as any, value: levels.level2 });
-          seriesData.level3.push({ time: c.time as any, value: levels.level3 });
-          seriesData.level4.push({ time: c.time as any, value: levels.level4 });
-          seriesData.level5.push({ time: c.time as any, value: levels.level5 });
-          seriesData.level6.push({ time: c.time as any, value: levels.level6 });
-          seriesData.level7.push({ time: c.time as any, value: levels.level7 });
-          seriesData.level8.push({ time: c.time as any, value: levels.level8 });
-          seriesData.level9.push({ time: c.time as any, value: levels.level9 });
-          seriesData.level10.push({ time: c.time as any, value: levels.level10 });
+        if (!groups[key]) {
+          groups[key] = [];
+          groupKeys.push(key);
         }
+        groups[key].push(c);
       });
+
+      groupKeys.sort();
+
+      // Only plot levels for the LATEST intraday session
+      if (groupKeys.length > 0) {
+        const latestKey = groupKeys[groupKeys.length - 1];
+        const latestCandles = groups[latestKey];
+        const levels = matrixHistory[latestKey];
+        if (levels && latestCandles) {
+          latestCandles.forEach(c => {
+            seriesData.level1.push({ time: c.time as any, value: levels.level1 });
+            seriesData.level2.push({ time: c.time as any, value: levels.level2 });
+            seriesData.level3.push({ time: c.time as any, value: levels.level3 });
+            seriesData.level4.push({ time: c.time as any, value: levels.level4 });
+            seriesData.level5.push({ time: c.time as any, value: levels.level5 });
+            seriesData.level6.push({ time: c.time as any, value: levels.level6 });
+            seriesData.level7.push({ time: c.time as any, value: levels.level7 });
+            seriesData.level8.push({ time: c.time as any, value: levels.level8 });
+            seriesData.level9.push({ time: c.time as any, value: levels.level9 });
+            seriesData.level10.push({ time: c.time as any, value: levels.level10 });
+          });
+        }
+      }
       return seriesData;
     }
     return calculateMatrixSeriesData(candles, timeframe);
