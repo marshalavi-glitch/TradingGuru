@@ -1,0 +1,490 @@
+{
+  "date": "9/10/2026",
+  "results": [
+    {
+      "symbol": "AXISBANK1!",
+      "time": "15:25:00",
+      "currentVolume": 265625,
+      "prevMaxVolume": 216875,
+      "ratio": 1.2,
+      "close": 1246.5,
+      "direction": "DOWN",
+      "type": "futures"
+    },
+    {
+      "symbol": "SBIN1!",
+      "time": "15:25:00",
+      "currentVolume": 253500,
+      "prevMaxVolume": 220500,
+      "ratio": 1.1,
+      "close": 1009.7,
+      "direction": "UP",
+      "type": "futures"
+    },
+    {
+      "symbol": "RELIANCE",
+      "time": "15:10:00",
+      "currentVolume": 391664,
+      "prevMaxVolume": 387432,
+      "ratio": 1,
+      "close": 1268.7,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "BHARTIARTL",
+      "time": "15:10:00",
+      "currentVolume": 208138,
+      "prevMaxVolume": 179134,
+      "ratio": 1.2,
+      "close": 1833.5,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "BANKNIFTY",
+      "time": "15:10:00",
+      "currentVolume": 8617032,
+      "prevMaxVolume": 7173717,
+      "ratio": 1.2,
+      "close": 56255.85,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "NIFTY",
+      "time": "15:10:00",
+      "currentVolume": 13664588,
+      "prevMaxVolume": 10790822,
+      "ratio": 1.3,
+      "close": 23389.4,
+      "direction": "DOWN",
+      "type": "index"
+    },
+    {
+      "symbol": "AXISBANK1!",
+      "time": "15:10:00",
+      "currentVolume": 216875,
+      "prevMaxVolume": 215000,
+      "ratio": 1,
+      "close": 1248.2,
+      "direction": "DOWN",
+      "type": "futures"
+    },
+    {
+      "symbol": "ICICIBANK",
+      "time": "15:05:00",
+      "currentVolume": 1345279,
+      "prevMaxVolume": 950780,
+      "ratio": 1.4,
+      "close": 1374.9,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "ICICIBANK1!",
+      "time": "15:05:00",
+      "currentVolume": 668500,
+      "prevMaxVolume": 358400,
+      "ratio": 1.9,
+      "close": 1382.1,
+      "direction": "DOWN",
+      "type": "futures"
+    },
+    {
+      "symbol": "ICICIBANK",
+      "time": "15:00:00",
+      "currentVolume": 950780,
+      "prevMaxVolume": 624949,
+      "ratio": 1.5,
+      "close": 1376,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "NIFTY260915P23350",
+      "time": "15:00:00",
+      "currentVolume": 3751735,
+      "prevMaxVolume": 2999100,
+      "ratio": 1.3,
+      "close": 72.1,
+      "direction": "UP",
+      "type": "option",
+      "optionType": "PE",
+      "strike": 23350
+    },
+    {
+      "symbol": "NIFTY260915C23400",
+      "time": "15:00:00",
+      "currentVolume": 3824925,
+      "prevMaxVolume": 3547375,
+      "ratio": 1.1,
+      "close": 118.7,
+      "direction": "DOWN",
+      "type": "option",
+      "optionType": "CE",
+      "strike": 23400
+    },
+    {
+      "symbol": "NIFTY260915P23400",
+      "time": "15:00:00",
+      "currentVolume": 8982610,
+      "prevMaxVolume": 8025485,
+      "ratio": 1.1,
+      "close": 92.2,
+      "direction": "UP",
+      "type": "option",
+      "optionType": "PE",
+      "strike": 23400
+    },
+    {
+      "symbol": "ICICIBANK1!",
+      "time": "15:00:00",
+      "currentVolume": 358400,
+      "prevMaxVolume": 352100,
+      "ratio": 1,
+      "close": 1383.1,
+      "direction": "DOWN",
+      "type": "futures"
+    },
+    {
+      "symbol": "AXISBANK",
+      "time": "14:30:00",
+      "currentVolume": 218122,
+      "prevMaxVolume": 195368,
+      "ratio": 1.1,
+      "close": 1243.1,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "AXISBANK",
+      "time": "14:15:00",
+      "currentVolume": 195368,
+      "prevMaxVolume": 171223,
+      "ratio": 1.1,
+      "close": 1246.1,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "AXISBANK",
+      "time": "13:40:00",
+      "currentVolume": 171223,
+      "prevMaxVolume": 154373,
+      "ratio": 1.1,
+      "close": 1247.1,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "AXISBANK",
+      "time": "13:35:00",
+      "currentVolume": 154373,
+      "prevMaxVolume": 128374,
+      "ratio": 1.2,
+      "close": 1247.2,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "AXISBANK",
+      "time": "13:30:00",
+      "currentVolume": 128374,
+      "prevMaxVolume": 90424,
+      "ratio": 1.4,
+      "close": 1249.4,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "BHARTIARTL1!",
+      "time": "13:10:00",
+      "currentVolume": 327750,
+      "prevMaxVolume": 69350,
+      "ratio": 4.7,
+      "close": 1842.7,
+      "direction": "UP",
+      "type": "futures"
+    },
+    {
+      "symbol": "BHARTIARTL1!",
+      "time": "12:45:00",
+      "currentVolume": 69350,
+      "prevMaxVolume": 56050,
+      "ratio": 1.2,
+      "close": 1839,
+      "direction": "UP",
+      "type": "futures"
+    },
+    {
+      "symbol": "LT1!",
+      "time": "12:40:00",
+      "currentVolume": 53200,
+      "prevMaxVolume": 32375,
+      "ratio": 1.6,
+      "close": 3977,
+      "direction": "UP",
+      "type": "futures"
+    },
+    {
+      "symbol": "AXISBANK",
+      "time": "12:35:00",
+      "currentVolume": 90424,
+      "prevMaxVolume": 87738,
+      "ratio": 1,
+      "close": 1250.7,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "RELIANCE",
+      "time": "12:10:00",
+      "currentVolume": 387432,
+      "prevMaxVolume": 378568,
+      "ratio": 1,
+      "close": 1275.8,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "ICICIBANK",
+      "time": "12:00:00",
+      "currentVolume": 624949,
+      "prevMaxVolume": 286124,
+      "ratio": 2.2,
+      "close": 1389.6,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "ICICIBANK",
+      "time": "11:55:00",
+      "currentVolume": 286124,
+      "prevMaxVolume": 189315,
+      "ratio": 1.5,
+      "close": 1388.8,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "LT",
+      "time": "11:45:00",
+      "currentVolume": 78745,
+      "prevMaxVolume": 74658,
+      "ratio": 1.1,
+      "close": 3913,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "SBIN",
+      "time": "11:35:00",
+      "currentVolume": 669652,
+      "prevMaxVolume": 310305,
+      "ratio": 2.2,
+      "close": 1005.4,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "LT",
+      "time": "10:40:00",
+      "currentVolume": 74658,
+      "prevMaxVolume": 45827,
+      "ratio": 1.6,
+      "close": 3924.7,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "LT1!",
+      "time": "10:40:00",
+      "currentVolume": 32375,
+      "prevMaxVolume": 22050,
+      "ratio": 1.5,
+      "close": 3945.5,
+      "direction": "UP",
+      "type": "futures"
+    },
+    {
+      "symbol": "NIFTY260915C23400",
+      "time": "10:15:00",
+      "currentVolume": 3547375,
+      "prevMaxVolume": 3214315,
+      "ratio": 1.1,
+      "close": 157.8,
+      "direction": "UP",
+      "type": "option",
+      "optionType": "CE",
+      "strike": 23400
+    },
+    {
+      "symbol": "NIFTY260915C23300",
+      "time": "10:15:00",
+      "currentVolume": 643825,
+      "prevMaxVolume": 634335,
+      "ratio": 1,
+      "close": 227.4,
+      "direction": "UP",
+      "type": "option",
+      "optionType": "CE",
+      "strike": 23300
+    },
+    {
+      "symbol": "ITC",
+      "time": "10:05:00",
+      "currentVolume": 6387575,
+      "prevMaxVolume": 315782,
+      "ratio": 20.2,
+      "close": 262,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "ITC1!",
+      "time": "10:05:00",
+      "currentVolume": 357075,
+      "prevMaxVolume": 241500,
+      "ratio": 1.5,
+      "close": 263.15,
+      "direction": "DOWN",
+      "type": "futures"
+    },
+    {
+      "symbol": "BAJFINANCE",
+      "time": "10:00:00",
+      "currentVolume": 252108,
+      "prevMaxVolume": 118445,
+      "ratio": 2.1,
+      "close": 1046,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "RELIANCE",
+      "time": "09:30:00",
+      "currentVolume": 378568,
+      "prevMaxVolume": 245122,
+      "ratio": 1.5,
+      "close": 1275.2,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "RELIANCE1!",
+      "time": "09:30:00",
+      "currentVolume": 910000,
+      "prevMaxVolume": 315500,
+      "ratio": 2.9,
+      "close": 1280,
+      "direction": "DOWN",
+      "type": "futures"
+    },
+    {
+      "symbol": "ITC1!",
+      "time": "09:30:00",
+      "currentVolume": 241500,
+      "prevMaxVolume": 212175,
+      "ratio": 1.1,
+      "close": 264.1,
+      "direction": "UP",
+      "type": "futures"
+    },
+    {
+      "symbol": "TCS1!",
+      "time": "09:25:00",
+      "currentVolume": 133200,
+      "prevMaxVolume": 105975,
+      "ratio": 1.3,
+      "close": 2214,
+      "direction": "DOWN",
+      "type": "futures"
+    },
+    {
+      "symbol": "RELIANCE",
+      "time": "09:20:00",
+      "currentVolume": 245122,
+      "prevMaxVolume": 207006,
+      "ratio": 1.2,
+      "close": 1280.8,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "TCS",
+      "time": "09:20:00",
+      "currentVolume": 134895,
+      "prevMaxVolume": 134261,
+      "ratio": 1,
+      "close": 2215,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "NIFTY260915P23550",
+      "time": "09:20:00",
+      "currentVolume": 2802215,
+      "prevMaxVolume": 2799290,
+      "ratio": 1,
+      "close": 154.1,
+      "direction": "UP",
+      "type": "option",
+      "optionType": "PE",
+      "strike": 23550
+    },
+    {
+      "symbol": "NIFTY260915P23650",
+      "time": "09:20:00",
+      "currentVolume": 570245,
+      "prevMaxVolume": 561535,
+      "ratio": 1,
+      "close": 220.6,
+      "direction": "UP",
+      "type": "option",
+      "optionType": "PE",
+      "strike": 23650
+    },
+    {
+      "symbol": "AXISBANK1!",
+      "time": "09:20:00",
+      "currentVolume": 215000,
+      "prevMaxVolume": 167500,
+      "ratio": 1.3,
+      "close": 1255.4,
+      "direction": "UP",
+      "type": "futures"
+    },
+    {
+      "symbol": "TCS1!",
+      "time": "09:20:00",
+      "currentVolume": 105975,
+      "prevMaxVolume": 74250,
+      "ratio": 1.4,
+      "close": 2218,
+      "direction": "DOWN",
+      "type": "futures"
+    },
+    {
+      "symbol": "RELIANCE1!",
+      "time": "09:20:00",
+      "currentVolume": 315500,
+      "prevMaxVolume": 210500,
+      "ratio": 1.5,
+      "close": 1286.2,
+      "direction": "DOWN",
+      "type": "futures"
+    },
+    {
+      "symbol": "ITC1!",
+      "time": "09:20:00",
+      "currentVolume": 212175,
+      "prevMaxVolume": 188025,
+      "ratio": 1.1,
+      "close": 263.6,
+      "direction": "UP",
+      "type": "futures"
+    }
+  ],
+  "lastScanTime": "2026-09-10T11:36:44.401Z"
+}

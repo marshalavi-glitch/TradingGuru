@@ -1,0 +1,75 @@
+================================================================================
+NIFTY SPOT OPENING ZONES 2-YEAR HISTORICAL BACKTEST REPORT
+================================================================================
+
+* Period Covered   : Last 550 trading days (~2 Years)
+* Asset            : NSE:NIFTY Spot
+* Goal             : Analyze Nifty's daily range, trend direction, and average
+                     points move based on where it opens relative to Yesterday's
+                     Daily Matrix Levels (R6 to S6).
+
+--------------------------------------------------------------------------------
+1. SUMMARY PERFORMANCE MATRIX
+--------------------------------------------------------------------------------
+
+Opening Zone                                  | Occs | Green % | Avg Range | Avg Move | Characteristics
+----------------------------------------------|------|---------|-----------|----------|-----------------------------------------
+Open Above R6 (Extreme Gap Up)                | 25   | 24.0%   | 226.7 pts | -47.5 pts| Extreme Gap Up - Reversal / Exhaustion
+Open Between R5 and R6                        | 10   | 60.0%   | 246.4 pts | 52.4 pts | Strong Bullish Continuation bias
+Open Between R4 and R5                        | 30   | 50.0%   | 203.6 pts | 19.7 pts | Neutral / Balanced Rotational Day
+Open Between R3 and R4                        | 87   | 42.5%   | 210.6 pts | -26.8 pts| Strong Bearish Continuation bias
+Open Between R2 and R3                        | 51   | 41.2%   | 220.7 pts | -20.2 pts| Strong Bearish Continuation bias
+Open Between S2 and R2 (Value Area Midpoint)  | 206  | 48.1%   | 239.6 pts | 4.3 pts  | Inside Value - Rotational Range Days
+Open Between S3 and S2                        | 29   | 48.3%   | 232.4 pts | 23.4 pts | Neutral / Balanced Rotational Day
+Open Between S4 and S3                        | 61   | 41.0%   | 264.0 pts | -50.2 pts| Strong Bearish Continuation bias
+Open Between S5 and S4                        | 16   | 62.5%   | 264.1 pts | -1.0 pts | Strong Bullish Continuation bias
+Open Between S6 and S5                        | 10   | 50.0%   | 280.4 pts | 31.0 pts | Neutral / Balanced Rotational Day
+Open Below S6 (Extreme Gap Down)              | 24   | 62.5%   | 283.1 pts | 24.3 pts | Extreme Gap Down - Reversal / Panic
+
+* Occs = Occurrences (number of trading days)
+* Green % = Probability of closing higher than the open (Close > Open)
+* Avg Range = Average High - Low of the day
+* Avg Move = Average Close - Open points move (trend direction & magnitude)
+
+--------------------------------------------------------------------------------
+2. KEY STRUCTURAL PATTERNS AND TRADING RULES
+--------------------------------------------------------------------------------
+
+A. OPEN INSIDE VALUE (Between S2 and R2)
+   - Frequency: Occurred 206 times (37% of all days).
+   - Win Rate : Closed green 48.1% of the time (perfectly balanced 50/50).
+   - Behavior : This is the most common day type. The market consolidates inside
+                yesterday's range. Average open-to-close trend is flat (+4.3 pts).
+   - Rule     : Avoid chasing breakouts before 11:30 AM. Sell call options at
+                VAH resistance (R3/R4) and sell put options at VAL support (S3/S4).
+
+B. EXTREME GAP UPS (Open Above R6)
+   - Frequency: Occurred 25 times in 2 years.
+   - Win Rate : Closed RED 76.0% of the time!
+   - Average  : -47.5 Nifty points move from Open to Close.
+   - Behavior : This is a classic "Exhaustion Gap". Morning gap-chasers are trapped
+                and institutions immediately book profit on their long swing positions.
+   - Rule     : Fade this gap immediately. Buy Put Options (PE) on a 5-minute
+                bearish candle rejection at the open, targeting Yesterday's VAH.
+
+C. THE S4 STANDARD GAP DOWN DRIVE (Open Between S3 and S4)
+   - Frequency: Occurred 61 times.
+   - Win Rate : Closed RED 59.0% of the time.
+   - Average  : -50.2 Nifty points move from Open to Close.
+   - Behavior : Indicates "Gap Acceptance" by institutional sellers. They sell the
+                opening bounce, creating a sustained bearish drive.
+   - Rule     : This is a trending day. Do NOT buy support touches. Look to buy
+                Put Options (PE) on pullbacks to the S3 level to ride the move down.
+
+D. THE S6 PANIC CLIMAX REVERSAL (Open Below S6)
+   - Frequency: Occurred 24 times.
+   - Win Rate : Closed GREEN 62.5% of the time.
+   - Average  : +24.3 Nifty points move from Open to Close.
+   - Behavior : Panic selling reaches a climax, creating extreme value. Shorts quickly
+                cover their positions and institutions step in to buy the discount.
+   - Rule     : Buy Call Options (CE) on the first 5-minute green reversal candle
+                close, placing the stop loss strictly below the daily open.
+
+================================================================================
+Report compiled on July 30, 2026.
+================================================================================

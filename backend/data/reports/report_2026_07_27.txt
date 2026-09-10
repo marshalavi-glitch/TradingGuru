@@ -1,0 +1,274 @@
+=========================================
+MARKET ANALYSIS REPORT - 27/7/2026
+=========================================
+
+1. INDEX CLOSES:
+-----------------------------------------
+NIFTY 50  : 23995.95 (0.96%)
+BANK NIFTY: 57087.20 (0.69%)
+
+1B. INDEX LEVEL INTERACTIONS (NIFTY & BANK NIFTY):
+-----------------------------------------
+NIFTY Level Interactions:
+  - Resistance Touch at Monthly R6 (VAH Exhaustion) (23986.23) at 09:15 am | Candle = Neutral Candle | Session High = 24011.60 | Close = 23995.95 | Result = Broke above
+  - Breakout of Monthly R4 (VAH Breakout Trigger) (23886.97) | Close = 23995.95 | Excess = 0.46%
+BANK NIFTY Level Interactions:
+  - Resistance Touch at Monthly R5 (VAH Extreme) (57397.30) at 09:20 am | Candle = Standard Doji | Session High = 57330.05 | Close = 57087.20 | Result = Rejected
+
+2. TOP GAINERS:
+-----------------------------------------
+LAURUSLABS  : ₹1713.40    (+7.01%)
+CONCOR      : ₹510.50     (+6.90%)
+ETERNAL     : ₹295.85     (+5.66%)
+IDFCFIRSTB  : ₹84.88      (+5.06%)
+INDIGO      : ₹5230.00    (+4.91%)
+AUBANK      : ₹1052.20    (+4.80%)
+LODHA       : ₹1198.70    (+4.77%)
+NH          : ₹2054.00    (+4.72%)
+SBICARD     : ₹645.00     (+4.24%)
+OFSS        : ₹11089.00   (+4.10%)
+
+3. TOP LOSERS:
+-----------------------------------------
+AEGISLOG    : ₹1291.30    (-4.32%)
+ONGC        : ₹238.56     (-4.10%)
+PWL         : ₹123.09     (-3.87%)
+EXIDEIND    : ₹427.00     (-3.61%)
+SUPREMEIND  : ₹3338.20    (-3.49%)
+BANKINDIA   : ₹137.87     (-3.33%)
+NTPCGREEN   : ₹93.69      (-2.73%)
+TATACOMM    : ₹1735.20    (-2.26%)
+PIRAMALFIN  : ₹2044.80    (-1.95%)
+INDUSTOWER  : ₹387.40     (-1.82%)
+
+4. SUPPORT BOUNCES (Within Proximity):
+-----------------------------------------
+VMM         : Level = S3 (VAL Reversion)        | Value = 107.35     | Low = 107.20     | Close = 110.31     | Bounce = +2.90% | Candle = Hammer (Bullish Rejection)
+DIVISLAB    : Level = S3 (VAL Reversion)        | Value = 7220.18    | Low = 7220.50    | Close = 7414.00    | Bounce = +2.68% | Candle = Neutral Candle
+GLAXO       : Level = S3 (VAL Reversion)        | Value = 2494.83    | Low = 2494.10    | Close = 2551.20    | Bounce = +2.29% | Candle = Neutral Candle
+AIAENG      : Level = S4 (VAL Breakdown Trigger) | Value = 4524.43    | Low = 4531.00    | Close = 4634.50    | Bounce = +2.28% | Candle = Neutral Candle
+SUNPHARMA   : Level = S3 (VAL Reversion)        | Value = 1934.22    | Low = 1933.00    | Close = 1973.70    | Bounce = +2.11% | Candle = SSL Sweep Reversal (Low swept 1934.8, close 1973.7)
+JKCEMENT    : Level = S3 (VAL Reversion)        | Value = 5623.43    | Low = 5631.00    | Close = 5730.00    | Bounce = +1.76% | Candle = Double Bottom Breakout
+BAJAJHLDNG  : Level = S3 (VAL Reversion)        | Value = 10625.38   | Low = 10631.00   | Close = 10810.00   | Bounce = +1.68% | Candle = Neutral Candle
+WIPRO       : Level = S3 (VAL Reversion)        | Value = 175.72     | Low = 175.61     | Close = 178.53     | Bounce = +1.66% | Candle = Neutral Candle
+IPCALAB     : Level = S3 (VAL Reversion)        | Value = 1751.18    | Low = 1749.60    | Close = 1777.60    | Bounce = +1.60% | Candle = Bullish Engulfing (Momentum Shift) | BSL Sweep Reversal (High swept 1788.9, close 1777.6)
+KRT.RR      : Level = S4 (VAL Breakdown Trigger) | Value = 116.18     | Low = 116.25     | Close = 118.04     | Bounce = +1.54% | Candle = Double Bottom Breakout
+SOLARINDS   : Level = S4 (VAL Breakdown Trigger) | Value = 18336.70   | Low = 18350.00   | Close = 18628.00   | Bounce = +1.51% | Candle = Standard Doji
+ADANIENSOL  : Level = S4 (VAL Breakdown Trigger) | Value = 1677.39    | Low = 1678.10    | Close = 1703.30    | Bounce = +1.50% | Candle = BSL Sweep Reversal (High swept 1713.9, close 1703.3)
+ASTRAL      : Level = S3 (VAL Reversion)        | Value = 1447.64    | Low = 1448.10    | Close = 1465.80    | Bounce = +1.22% | Candle = BSL Sweep Reversal (High swept 1476.8, close 1465.8) | Double Bottom Breakout | Cup & Handle Breakout (13% Handle retracement)
+APOLLOHOSP  : Level = S5 (VAL Extreme)          | Value = 8738.42    | Low = 8744.00    | Close = 8843.50    | Bounce = +1.14% | Candle = SSL Sweep Reversal (Low swept 8792.5, close 8843.5)
+COCHINSHIP  : Level = S3 (VAL Reversion)        | Value = 1385.75    | Low = 1387.10    | Close = 1402.30    | Bounce = +1.10% | Candle = Neutral Candle
+ADANIPORTS  : Level = S4 (VAL Breakdown Trigger) | Value = 1751.96    | Low = 1752.10    | Close = 1770.40    | Bounce = +1.04% | Candle = Tweezer Top (Double Rejection) | SSL Sweep Reversal (Low swept 1755.2, close 1770.4)
+ICICIAMC    : Level = S3 (VAL Reversion)        | Value = 3114.74    | Low = 3113.10    | Close = 3143.90    | Bounce = +0.99% | Candle = Neutral Candle
+SHREECEM    : Level = S3 (VAL Reversion)        | Value = 26581.88   | Low = 26620.00   | Close = 26860.00   | Bounce = +0.90% | Candle = BSL Sweep Reversal (High swept 27000.0, close 26860.0) | Double Bottom Breakout
+BANKBARODA  : Level = S4 (VAL Breakdown Trigger) | Value = 242.13     | Low = 241.90     | Close = 244.00     | Bounce = +0.87% | Candle = BSL Sweep Reversal (High swept 247.1, close 244.0) | Double Top Breakdown
+SUNDARMFIN  : Level = S4 (VAL Breakdown Trigger) | Value = 4381.80    | Low = 4380.00    | Close = 4416.80    | Bounce = +0.84% | Candle = Bearish Engulfing (Momentum Shift) | BSL Sweep Reversal (High swept 4463.0, close 4416.8)
+JSWSTEEL    : Level = S3 (VAL Reversion)        | Value = 1236.15    | Low = 1234.30    | Close = 1244.60    | Bounce = +0.83% | Candle = BSL Sweep Reversal (High swept 1245.0, close 1244.6)
+BHARTIARTL  : Level = S3 (VAL Reversion)        | Value = 1890.78    | Low = 1890.00    | Close = 1905.30    | Bounce = +0.81% | Candle = Bullish Engulfing (Momentum Shift)
+POWERGRID   : Level = S4 (VAL Breakdown Trigger) | Value = 286.19     | Low = 286.55     | Close = 288.85     | Bounce = +0.80% | Candle = Bullish Spinning Top (Indecision) | BSL Sweep Reversal (High swept 290.1, close 288.9) | Double Bottom Breakout
+MARICO      : Level = S3 (VAL Reversion)        | Value = 851.06     | Low = 852.00     | Close = 858.65     | Bounce = +0.78% | Candle = Neutral Candle
+BRITANNIA   : Level = S3 (VAL Reversion)        | Value = 5342.79    | Low = 5343.00    | Close = 5384.50    | Bounce = +0.78% | Candle = Bearish Spinning Top (Indecision)
+NESTLEIND   : Level = S3 (VAL Reversion)        | Value = 1433.38    | Low = 1435.30    | Close = 1446.10    | Bounce = +0.75% | Candle = Bearish Spinning Top (Indecision)
+KPRMILL     : Level = S3 (VAL Reversion)        | Value = 1047.45    | Low = 1048.20    | Close = 1056.00    | Bounce = +0.74% | Candle = BSL Sweep Reversal (High swept 1066.1, close 1056.0)
+BHEL        : Level = S3 (VAL Reversion)        | Value = 412.94     | Low = 412.90     | Close = 415.95     | Bounce = +0.74% | Candle = BSL Sweep Reversal (High swept 418.0, close 415.9)
+NTPCGREEN   : Level = S6 (VAL Capitulation)     | Value = 92.93      | Low = 93.05      | Close = 93.69      | Bounce = +0.69% | Candle = Neutral Candle
+TVSMOTOR    : Level = S3 (VAL Reversion)        | Value = 3849.13    | Low = 3850.00    | Close = 3876.40    | Bounce = +0.69% | Candle = BSL Sweep Reversal (High swept 3899.9, close 3876.4)
+DIXON       : Level = S3 (VAL Reversion)        | Value = 13760.20   | Low = 13741.00   | Close = 13810.00   | Bounce = +0.50% | Candle = BSL Sweep Reversal (High swept 13898.0, close 13810.0)
+AXISBANK    : Level = S3 (VAL Reversion)        | Value = 1220.89    | Low = 1221.60    | Close = 1227.50    | Bounce = +0.48% | Candle = BSL Sweep Reversal (High swept 1233.9, close 1227.5)
+COALINDIA   : Level = S3 (VAL Reversion)        | Value = 426.26     | Low = 425.75     | Close = 427.50     | Bounce = +0.41% | Candle = BSL Sweep Reversal (High swept 428.9, close 427.5)
+COALINDIA   : Level = S4 (VAL Breakdown Trigger) | Value = 425.12     | Low = 425.75     | Close = 427.50     | Bounce = +0.41% | Candle = BSL Sweep Reversal (High swept 428.9, close 427.5)
+JSWENERGY   : Level = S4 (VAL Breakdown Trigger) | Value = 547.03     | Low = 547.45     | Close = 549.70     | Bounce = +0.41% | Candle = BSL Sweep Reversal (High swept 554.5, close 549.7)
+IDBI        : Level = S3 (VAL Reversion)        | Value = 84.15      | Low = 84.16      | Close = 84.48      | Bounce = +0.38% | Candle = Dark Cloud Cover (Bearish Reversal) | BSL Sweep Reversal (High swept 85.5, close 84.5)
+ZYDUSLIFE   : Level = S3 (VAL Reversion)        | Value = 1103.04    | Low = 1104.40    | Close = 1108.20    | Bounce = +0.34% | Candle = BSL Sweep Reversal (High swept 1119.6, close 1108.2)
+HINDZINC    : Level = S3 (VAL Reversion)        | Value = 528.66     | Low = 528.00     | Close = 529.65     | Bounce = +0.31% | Candle = Dark Cloud Cover (Bearish Reversal) | BSL Sweep Reversal (High swept 534.4, close 529.6)
+IDEA        : Level = S3 (VAL Reversion)        | Value = 13.01      | Low = 13.02      | Close = 13.06      | Bounce = +0.31% | Candle = Bearish Engulfing (Momentum Shift) | BSL Sweep Reversal (High swept 13.2, close 13.1)
+NATIONALUM  : Level = S6 (VAL Capitulation)     | Value = 338.58     | Low = 338.35     | Close = 339.35     | Bounce = +0.30% | Candle = Bearish Engulfing (Momentum Shift) | BSL Sweep Reversal (High swept 344.9, close 339.4)
+BOSCHLTD    : Level = S5 (VAL Extreme)          | Value = 41145.16   | Low = 41130.00   | Close = 41250.00   | Bounce = +0.29% | Candle = Neutral Candle
+HINDCOPPER  : Level = S3 (VAL Reversion)        | Value = 481.00     | Low = 481.00     | Close = 482.40     | Bounce = +0.29% | Candle = BSL Sweep Reversal (High swept 486.0, close 482.4)
+HDBFS       : Level = S4 (VAL Breakdown Trigger) | Value = 685.01     | Low = 684.95     | Close = 686.30     | Bounce = +0.20% | Candle = Bearish Engulfing (Momentum Shift) | BSL Sweep Reversal (High swept 693.8, close 686.3)
+IRCTC       : Level = S3 (VAL Reversion)        | Value = 493.14     | Low = 493.10     | Close = 494.00     | Bounce = +0.18% | Candle = BSL Sweep Reversal (High swept 495.8, close 494.0) | Double Top Breakdown
+SRF         : Level = S4 (VAL Breakdown Trigger) | Value = 2630.49    | Low = 2631.70    | Close = 2636.50    | Bounce = +0.18% | Candle = Bearish Marubozu (Strong Bearish Momentum) | SSL Sweep Reversal (Low swept 2635.8, close 2636.5)
+ABBOTINDIA  : Level = S4 (VAL Breakdown Trigger) | Value = 27785.00   | Low = 27750.00   | Close = 27800.00   | Bounce = +0.18% | Candle = Bearish Engulfing (Momentum Shift) | BSL Sweep Reversal (High swept 28050.0, close 27800.0) | Double Bottom Breakout
+
+5. LEVEL BREAKDOWNS (Closed Below S4):
+-----------------------------------------
+ONGC        : S4 Value = 245.85     | Close = 238.56     | Excess = -2.97%
+BANKINDIA   : S4 Value = 140.76     | Close = 137.87     | Excess = -2.05%
+EXIDEIND    : S4 Value = 435.80     | Close = 427.00     | Excess = -2.02%
+AEGISLOG    : S4 Value = 1315.72    | Close = 1291.30    | Excess = -1.86%
+SUPREMEIND  : S4 Value = 3393.51    | Close = 3338.20    | Excess = -1.63%
+NTPCGREEN   : S4 Value = 94.48      | Close = 93.69      | Excess = -0.84%
+TATACOMM    : S4 Value = 1748.79    | Close = 1735.20    | Excess = -0.78%
+PWL         : S4 Value = 123.77     | Close = 123.09     | Excess = -0.55%
+NATIONALUM  : S4 Value = 341.01     | Close = 339.35     | Excess = -0.49%
+INDUSTOWER  : S4 Value = 388.58     | Close = 387.40     | Excess = -0.30%
+BOSCHLTD    : S4 Value = 41370.00   | Close = 41250.00   | Excess = -0.29%
+PIRAMALFIN  : S4 Value = 2048.61    | Close = 2044.80    | Excess = -0.19%
+GROWW       : S4 Value = 199.55     | Close = 199.38     | Excess = -0.08%
+THERMAX     : S4 Value = 4454.88    | Close = 4454.50    | Excess = -0.01%
+
+5B. DETECTED PRICE ACTION & CANDLESTICK PATTERNS:
+-----------------------------------------
+RELIANCE    : BSL Sweep Reversal (High swept 1283.4, close 1280.0)
+CNXFINANCE  : Double Top Breakdown
+NIFTY       : Double Top Breakdown
+BANKNIFTY   : Bearish Spinning Top (Indecision) | Double Top Breakdown
+TCS         : Bullish Spinning Top (Indecision)
+SBIN        : Long-Legged Doji (Indecision)
+BHARTIARTL  : Bullish Engulfing (Momentum Shift)
+HDFCBANK    : Tweezer Top (Double Rejection)
+ICICIBANK   : Double Bottom Breakout
+LICI        : Morning Star (Bullish Reversal) | Double Top Breakdown
+BAJFINANCE  : Bullish Marubozu (Strong Bullish Momentum)
+SUNPHARMA   : SSL Sweep Reversal (Low swept 1934.8, close 1973.7)
+ADANIENT    : BSL Sweep Reversal (High swept 3041.9, close 3036.6) | Double Top Breakdown
+ADANIPOWER  : BSL Sweep Reversal (High swept 215.1, close 214.0)
+ADANIPORTS  : Tweezer Top (Double Rejection) | SSL Sweep Reversal (Low swept 1755.2, close 1770.4)
+ITC         : Double Bottom Breakout | Cup & Handle Breakout (27% Handle retracement)
+AXISBANK    : BSL Sweep Reversal (High swept 1233.9, close 1227.5)
+KOTAKBANK   : BSL Sweep Reversal (High swept 386.5, close 384.6)
+M&M         : Double Bottom Breakout
+ULTRACEMCO  : Bearish Spinning Top (Indecision) | BSL Sweep Reversal (High swept 11899.0, close 11881.0)
+JSWSTEEL    : BSL Sweep Reversal (High swept 1245.0, close 1244.6)
+ONGC        : Bearish Marubozu (Strong Bearish Momentum) | Double Top Breakdown
+ETERNAL     : Bullish Marubozu (Strong Bullish Momentum)
+HAL         : Double Bottom Breakout
+BAJAJ_AUTO  : SSL Sweep Reversal (Low swept 11100.0, close 11183.5) | Cup & Handle Breakout (25% Handle retracement)
+POWERGRID   : Bullish Spinning Top (Indecision) | BSL Sweep Reversal (High swept 290.1, close 288.9) | Double Bottom Breakout
+DMART       : Standard Doji | Tweezer Top (Double Rejection) | Cup & Handle Breakout (13% Handle retracement)
+NESTLEIND   : Bearish Spinning Top (Indecision)
+COALINDIA   : BSL Sweep Reversal (High swept 428.9, close 427.5)
+ADANIGREEN  : BSL Sweep Reversal (High swept 1405.0, close 1399.7)
+HINDZINC    : Dark Cloud Cover (Bearish Reversal) | BSL Sweep Reversal (High swept 534.4, close 529.6)
+ADANIENSOL  : BSL Sweep Reversal (High swept 1713.9, close 1703.3)
+HINDALCO    : BSL Sweep Reversal (High swept 950.9, close 945.3)
+TVSMOTOR    : BSL Sweep Reversal (High swept 3899.9, close 3876.4)
+VAML        : Long-Legged Doji (Indecision) | BSL Sweep Reversal (High swept 439.9, close 437.1)
+SOLARINDS   : Standard Doji
+TORNTPHARM  : BSL Sweep Reversal (High swept 5049.9, close 5019.5)
+PIDILITIND  : Double Bottom Breakout
+TMCV        : Bearish Spinning Top (Indecision)
+TECHM       : Standard Doji | BSL Sweep Reversal (High swept 1579.8, close 1575.0) | Double Bottom Breakout
+CUMMINSIND  : Hanging Man (Bearish Rejection)
+MOTHERSON   : Cup & Handle Breakout (20% Handle retracement)
+TRENT       : Cup & Handle Breakout (22% Handle retracement)
+IDEA        : Bearish Engulfing (Momentum Shift) | BSL Sweep Reversal (High swept 13.2, close 13.1)
+BSE         : SSL Sweep Reversal (Low swept 3526.0, close 3536.8)
+BHEL        : BSL Sweep Reversal (High swept 418.0, close 415.9)
+POWERINDIA  : SSL Sweep Reversal (Low swept 30980.0, close 31550.0)
+BPCL        : Bullish Spinning Top (Indecision)
+PFC         : Double Bottom Breakout | Cup & Handle Breakout (30% Handle retracement)
+SIEMENS     : Long-Legged Doji (Indecision)
+UNIONBANK   : BSL Sweep Reversal (High swept 171.5, close 170.1)
+BRITANNIA   : Bearish Spinning Top (Indecision)
+BANKBARODA  : BSL Sweep Reversal (High swept 247.1, close 244.0) | Double Top Breakdown
+APOLLOHOSP  : SSL Sweep Reversal (Low swept 8792.5, close 8843.5)
+TMPV        : Double Top Breakdown
+HDFCLIFE    : BSL Sweep Reversal (High swept 556.8, close 552.9)
+GMRAIRPORT  : Bullish Spinning Top (Indecision)
+LODHA       : Double Bottom Breakout
+ENRIN       : Standard Doji | SSL Sweep Reversal (Low swept 3225.0, close 3264.6)
+TATAPOWER   : Bullish Spinning Top (Indecision)
+IRFC        : Standard Doji
+ZYDUSLIFE   : BSL Sweep Reversal (High swept 1119.6, close 1108.2)
+GVT&D       : Three Black Crows (Bearish Initiation) | BSL Sweep Reversal (High swept 4334.0, close 4202.3)
+TATACONSUM  : BSL Sweep Reversal (High swept 1117.1, close 1107.4)
+LGEINDIA    : BSL Sweep Reversal (High swept 1537.7, close 1526.8)
+BHARATFORG  : Double Bottom Breakout
+INDUSTOWER  : Bearish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 385.1, close 387.4)
+MANKIND     : BSL Sweep Reversal (High swept 2554.8, close 2551.6)
+JINDALSTEL  : Double Bottom Breakout | Cup & Handle Breakout (20% Handle retracement)
+OFSS        : Double Top Breakdown
+UNITDSPR    : Double Bottom Breakout
+JSWENERGY   : BSL Sweep Reversal (High swept 554.5, close 549.7)
+SHREECEM    : BSL Sweep Reversal (High swept 27000.0, close 26860.0) | Double Bottom Breakout
+VEDL        : BSL Sweep Reversal (High swept 266.1, close 264.6)
+IDBI        : Dark Cloud Cover (Bearish Reversal) | BSL Sweep Reversal (High swept 85.5, close 84.5)
+MEESHO      : BSL Sweep Reversal (High swept 188.3, close 182.1) | Double Top Breakdown
+DIXON       : BSL Sweep Reversal (High swept 13898.0, close 13810.0)
+PAYTM       : Long-Legged Doji (Indecision) | BSL Sweep Reversal (High swept 1296.7, close 1289.4) | Double Top Breakdown
+SRF         : Bearish Marubozu (Strong Bearish Momentum) | SSL Sweep Reversal (Low swept 2635.8, close 2636.5)
+FEDERALBNK  : Double Bottom Breakout
+ICICIGI     : Double Top Breakdown
+NHPC        : BSL Sweep Reversal (High swept 80.0, close 79.7)
+ATGL        : Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 664.0, close 660.5)
+LTF         : Bullish Marubozu (Strong Bullish Momentum)
+SWIGGY      : BSL Sweep Reversal (High swept 259.3, close 258.0)
+HAVELLS     : BSL Sweep Reversal (High swept 1239.5, close 1237.4) | Double Bottom Breakout
+NAM_INDIA   : Double Top Breakdown
+NMDC        : BSL Sweep Reversal (High swept 83.7, close 83.5)
+YESBANK     : BSL Sweep Reversal (High swept 23.0, close 22.9)
+FORTIS      : Dark Cloud Cover (Bearish Reversal) | BSL Sweep Reversal (High swept 951.0, close 942.3) | Double Top Breakdown
+SUZLON      : Morning Star (Bullish Reversal)
+OBEROIRLTY  : Double Top Breakdown
+JSWINFRA    : BSL Sweep Reversal (High swept 325.2, close 321.8) | Double Top Breakdown
+IDFCFIRSTB  : Volume Climax Bearish Rejection (9.3x Vol)
+TORNTPOWER  : BSL Sweep Reversal (High swept 1442.3, close 1440.0)
+ALKEM       : BSL Sweep Reversal (High swept 5644.5, close 5613.0)
+SAIL        : BSL Sweep Reversal (High swept 162.8, close 162.6)
+BANKINDIA   : Bearish Engulfing (Momentum Shift) | BSL Sweep Reversal (High swept 143.2, close 137.9) | Double Top Breakdown
+GICRE       : BSL Sweep Reversal (High swept 359.9, close 359.2)
+MAHABANK    : BSL Sweep Reversal (High swept 81.5, close 80.6)
+GLENMARK    : Double Top Breakdown
+NATIONALUM  : Bearish Engulfing (Momentum Shift) | BSL Sweep Reversal (High swept 344.9, close 339.4)
+SBICARD     : Double Bottom Breakout
+HDBFS       : Bearish Engulfing (Momentum Shift) | BSL Sweep Reversal (High swept 693.8, close 686.3)
+JSL         : SSL Sweep Reversal (Low swept 712.6, close 724.0)
+LINDEINDIA  : Double Top Breakdown
+ABBOTINDIA  : Bearish Engulfing (Momentum Shift) | BSL Sweep Reversal (High swept 28050.0, close 27800.0) | Double Bottom Breakout
+MOTILALOFS  : Double Top Breakdown
+FACT        : Long-Legged Doji (Indecision)
+APARINDS    : Hanging Man (Bearish Rejection)
+COLPAL      : Double Bottom Breakout
+KRT.RR      : Double Bottom Breakout
+VMM         : Hammer (Bullish Rejection)
+UPL         : Double Bottom Breakout
+MFSL        : BSL Sweep Reversal (High swept 1520.8, close 1511.1) | Double Top Breakdown
+ATHERENERG  : Long-Legged Doji (Indecision) | BSL Sweep Reversal (High swept 1224.7, close 1214.9)
+AIIL        : Double Bottom Breakout
+SUNDARMFIN  : Bearish Engulfing (Momentum Shift) | BSL Sweep Reversal (High swept 4463.0, close 4416.8)
+APLAPOLLO   : Double Bottom Breakout
+RVNL        : BSL Sweep Reversal (High swept 226.0, close 223.9)
+HINDCOPPER  : BSL Sweep Reversal (High swept 486.0, close 482.4)
+IPCALAB     : Bullish Engulfing (Momentum Shift) | BSL Sweep Reversal (High swept 1788.9, close 1777.6)
+KEI         : BSL Sweep Reversal (High swept 4900.0, close 4873.0)
+MPHASIS     : Long-Legged Doji (Indecision) | BSL Sweep Reversal (High swept 2340.0, close 2332.7)
+M&MFIN      : Bullish Spinning Top (Indecision) | BSL Sweep Reversal (High swept 368.0, close 363.0) | Double Bottom Breakout
+FLUOROCHEM  : BSL Sweep Reversal (High swept 4600.1, close 4563.5) | Double Bottom Breakout
+PAGEIND     : Bearish Engulfing (Momentum Shift) | BSL Sweep Reversal (High swept 40480.0, close 39970.0)
+VOLTAS      : BSL Sweep Reversal (High swept 1333.2, close 1319.3) | Double Bottom Breakout
+GODREJIND   : Standard Doji | BSL Sweep Reversal (High swept 1345.0, close 1332.9)
+CPPLUS      : BSL Sweep Reversal (High swept 3598.0, close 3557.8)
+AJANTPHARM  : Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 3455.8, close 3386.1)
+EMBASSY.RR  : BSL Sweep Reversal (High swept 444.0, close 437.9)
+SUPREMEIND  : Bearish Engulfing (Momentum Shift) | BSL Sweep Reversal (High swept 3499.0, close 3338.2)
+JKCEMENT    : Double Bottom Breakout
+POONAWALLA  : Bullish Engulfing (Momentum Shift) | BSL Sweep Reversal (High swept 466.3, close 465.1)
+WELCORP     : Evening Star (Bearish Reversal) | BSL Sweep Reversal (High swept 1622.4, close 1599.8)
+IRCTC       : BSL Sweep Reversal (High swept 495.8, close 494.0) | Double Top Breakdown
+NH          : Double Bottom Breakout
+PETRONET    : BSL Sweep Reversal (High swept 275.1, close 272.9)
+3MINDIA     : BSL Sweep Reversal (High swept 35790.0, close 35195.0)
+BALKRISIND  : BSL Sweep Reversal (High swept 2030.0, close 2025.2) | Double Top Breakdown
+PIIND       : Double Bottom Breakout | Cup & Handle Breakout (14% Handle retracement)
+CONCOR      : Bullish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 474.4, close 510.5)
+ENDURANCE   : Bullish Engulfing (Momentum Shift)
+HSCL        : Hanging Man (Bearish Rejection) | BSL Sweep Reversal (High swept 792.6, close 790.5)
+KPRMILL     : BSL Sweep Reversal (High swept 1066.1, close 1056.0)
+DELHIVERY   : Morning Star (Bullish Reversal) | Double Top Breakdown
+ASTRAL      : BSL Sweep Reversal (High swept 1476.8, close 1465.8) | Double Bottom Breakout | Cup & Handle Breakout (13% Handle retracement)
+PATANJALI   : Double Top Breakdown
+EXIDEIND    : Bearish Engulfing (Momentum Shift)
+
+6. ATM OPTIONS PREMIUMS:
+-----------------------------------------
+NIFTY_ATM_24000_EXP_260728         : CE = ₹84.55 | PE = ₹42.35
+NIFTY_ATM_24000_EXP_260804         : CE = ₹194.00 | PE = ₹131.70
+BANKNIFTY_ATM_57100_EXP_260728     : CE = ₹218.00 | PE = ₹153.80
+
+=========================================
+7. INTRADAY 5-MIN OPTION PREMIUM BACKTEST & LEARNINGS:
+-----------------------------------------
+No option trades triggered today.
+
+=========================================

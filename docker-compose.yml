@@ -1,0 +1,12 @@
+﻿version: '3.8'
+
+services:
+  trading-guru:
+    build: .
+    container_name: trading-guru
+    ports:
+      - "3002:3002"
+    restart: always
+    environment:
+      - PORT=3002
+      - NODE_ENV=production

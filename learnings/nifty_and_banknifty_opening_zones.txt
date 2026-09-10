@@ -1,0 +1,83 @@
+================================================================================
+NIFTY & BANK NIFTY SPOT OPENING ZONES 2-YEAR HISTORICAL BACKTEST REPORT
+================================================================================
+
+* Period Covered   : Last 550 trading days (~2 Years)
+* Assets           : NSE:NIFTY & NSE:BANKNIFTY Spot
+* Goal             : Analyze daily ranges, trend direction, and average points
+                     move based on where the index opens relative to Yesterday's
+                     Daily Matrix Levels (R6 to S6).
+
+================================================================================
+1. NIFTY SPOT PERFORMANCE MATRIX
+================================================================================
+
+Opening Zone                                  | Occs | Green % | Avg Range | Avg Move | Characteristics
+----------------------------------------------|------|---------|-----------|----------|-----------------------------------------
+Open Above R6 (Extreme Gap Up)                | 25   | 24.0%   | 226.7 pts | -47.5 pts| Extreme Gap Up - Reversal / Exhaustion
+Open Between R5 and R6                        | 10   | 60.0%   | 246.4 pts | 52.4 pts | Strong Bullish Continuation bias
+Open Between R4 and R5                        | 30   | 50.0%   | 203.6 pts | 19.7 pts | Neutral / Balanced Rotational Day
+Open Between R3 and R4                        | 87   | 42.5%   | 210.6 pts | -26.8 pts| Strong Bearish Continuation bias
+Open Between R2 and R3                        | 51   | 41.2%   | 220.7 pts | -20.2 pts| Strong Bearish Continuation bias
+Open Between S2 and R2 (Value Area Midpoint)  | 206  | 48.1%   | 239.6 pts | 4.3 pts  | Inside Value - Rotational Range Days
+Open Between S3 and S2                        | 29   | 48.3%   | 232.4 pts | 23.4 pts | Neutral / Balanced Rotational Day
+Open Between S4 and S3                        | 61   | 41.0%   | 264.0 pts | -50.2 pts| Strong Bearish Continuation bias
+Open Between S5 and S4                        | 16   | 62.5%   | 264.1 pts | -1.0 pts | Strong Bullish Continuation bias
+Open Between S6 and S5                        | 10   | 50.0%   | 280.4 pts | 31.0 pts | Neutral / Balanced Rotational Day
+Open Below S6 (Extreme Gap Down)              | 24   | 62.5%   | 283.1 pts | 24.3 pts | Extreme Gap Down - Reversal / Panic
+
+================================================================================
+2. BANK NIFTY SPOT PERFORMANCE MATRIX
+================================================================================
+
+Opening Zone                                  | Occs | Green % | Avg Range | Avg Move | Characteristics
+----------------------------------------------|------|---------|-----------|----------|-----------------------------------------
+Open Above R6 (Extreme Gap Up)                | 17   | 47.1%   | 706.5 pts | 10.2 pts | Extreme Gap Up - Reversal / Exhaustion
+Open Between R5 and R6                        | 2    | 100.0%  | 758.6 pts | 480.0 pts| Strong Bullish Continuation bias
+Open Between R4 and R5                        | 31   | 61.3%   | 605.2 pts | 77.5 pts | Neutral / Balanced Rotational Day
+Open Between R3 and R4                        | 66   | 47.0%   | 583.7 pts | 1.0 pts  | Strong Bearish Continuation bias
+Open Between R2 and R3                        | 48   | 39.6%   | 631.6 pts | -128.6 pts| Strong Bearish Continuation bias
+Open Between S2 and R2 (Value Area Midpoint)  | 229  | 53.7%   | 626.7 pts | 42.3 pts | Inside Value - Rotational Range Days
+Open Between S3 and S2                        | 39   | 48.7%   | 620.8 pts | 12.0 pts | Neutral / Balanced Rotational Day
+Open Between S4 and S3                        | 57   | 49.1%   | 689.8 pts | -63.4 pts| Strong Bearish Continuation bias
+Open Between S5 and S4                        | 36   | 50.0%   | 681.0 pts | -113.6 pts| Support defense zone - Choppy
+Open Between S6 and S5                        | 10   | 70.0%   | 757.4 pts | 307.4 pts| Strong Bullish Reversal bias
+Open Below S6 (Extreme Gap Down)              | 14   | 57.1%   | 856.9 pts | 110.8 pts| Extreme Gap Down - Reversal / Panic
+
+* Occs = Occurrences (number of trading days)
+* Green % = Probability of closing higher than the open (Close > Open)
+* Avg Range = Average High - Low of the day
+* Avg Move = Average Close - Open points move (trend direction & magnitude)
+
+--------------------------------------------------------------------------------
+3. KEY STRUCTURAL PATTERNS AND TRADING RULES
+--------------------------------------------------------------------------------
+
+A. VALUE AREA MIDPOINT OPENS (Between S2 and R2)
+   - Frequency: Occurred 206 times in Nifty & 229 times in Bank Nifty.
+   - Behavior : This is the equilibrium zone. The average open-to-close move is 
+                very small (+4.3 pts Nifty, +42.3 pts Bank Nifty).
+   - Rule     : Do not chase morning breakouts. Play reversion strategies. Sell
+                Call Options at VAH (R3/R4) and Sell Put Options at VAL (S3/S4).
+
+B. NIFTY EXTREME GAP UPS (Open Above R6)
+   - Behavior : Closed RED 76% of the time, with an average decline of -47.5 pts
+                from the open. This represents a classic Exhaustion Gap.
+   - Rule     : Fade this gap immediately. Look for Put Option (PE) entries in the
+                first 15 minutes of trading.
+
+C. BANK NIFTY VALUE AREA TOP RESISTANCE (Open Between R2 and R3)
+   - Behavior : Closed RED 60.4% of the time, with an average drop of -128.6 pts.
+   - Rule     : When Bank Nifty opens just below R3, it struggles to accept higher
+                prices. Look to buy Put Options (PE) on bearish wicks at R3.
+
+D. THE PANIC CLIMAX REVERSALS (Open Below S6)
+   - Behavior : Closed GREEN 62.5% of the time in Nifty (+24.3 pts average move)
+                and 57.1% of the time in Bank Nifty (+110.8 pts average move).
+   - Rule     : Extremely high risk-reward. Do not sell gaps down. Look for the
+                first 5-minute green candle close to enter Call Options (CE) and
+                ride the short-covering squeeze higher.
+
+================================================================================
+Report compiled on July 30, 2026.
+================================================================================

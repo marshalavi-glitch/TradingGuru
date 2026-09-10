@@ -1,0 +1,287 @@
+=========================================
+MARKET ANALYSIS REPORT - 18/8/2026
+=========================================
+
+1. INDEX CLOSES:
+-----------------------------------------
+NIFTY 50  : 24154.90 (-0.55%)
+BANK NIFTY: 57262.40 (-0.41%)
+
+1B. INDEX LEVEL INTERACTIONS (NIFTY & BANK NIFTY):
+-----------------------------------------
+NIFTY Level Interactions:
+  - Support Touch at Monthly S5 (VAL Extreme) (24171.65) at 10:45 am | Candle = Three Black Crows (Bearish Initiation) | Session Low = 24154.90 | Close = 24154.90 | Result = Broke below
+  - Support Touch at Monthly S6 (VAL Capitulation) (24154.17) at 10:55 am | Candle = Tweezer Bottom (Double Rejection) | Session Low = 24154.90 | Close = 24154.90 | Result = Bounced
+  - Breakdown of Monthly S4 (VAL Breakdown Trigger) (24214.42) | Close = 24154.90 | Excess = 0.25%
+BANK NIFTY Level Interactions:
+  - Support Touch at Monthly S4 (VAL Breakdown Trigger) (57147.09) at 10:50 am | Candle = Neutral Candle | Session Low = 57217.60 | Close = 57262.40 | Result = Bounced
+
+2. TOP GAINERS:
+-----------------------------------------
+AXISBANK    : ₹1243.00    (+1.28%)
+BAJFINANCE  : ₹1094.30    (+0.46%)
+RELIANCE    : ₹1322.00    (+0.46%)
+ICICIBANK   : ₹1412.00    (+-0.23%)
+BANKNIFTY   : ₹57262.40   (+-0.41%)
+NIFTY       : ₹24154.90   (+-0.55%)
+LT          : ₹4064.30    (+-0.55%)
+SBIN        : ₹1053.00    (+-0.77%)
+HDFCBANK    : ₹723.00     (+-0.82%)
+ITC         : ₹270.00     (+-1.12%)
+
+3. TOP LOSERS:
+-----------------------------------------
+INFY        : ₹1115.00    (-2.18%)
+BHARTIARTL  : ₹1934.20    (-1.78%)
+TCS         : ₹2280.00    (-1.44%)
+ITC         : ₹270.00     (-1.12%)
+HDFCBANK    : ₹723.00     (-0.82%)
+SBIN        : ₹1053.00    (-0.77%)
+LT          : ₹4064.30    (-0.55%)
+NIFTY       : ₹24154.90   (-0.55%)
+BANKNIFTY   : ₹57262.40   (-0.41%)
+ICICIBANK   : ₹1412.00    (-0.23%)
+
+4. SUPPORT BOUNCES (Within Proximity):
+-----------------------------------------
+AXISBANK    : Level = S4 (VAL Breakdown Trigger) | Value = 1215.53    | Low = 1223.40    | Close = 1243.00    | Bounce = +1.60% | Candle = Neutral Candle
+RELIANCE    : Level = S2 (VAL Reversion)        | Value = 1311.84    | Low = 1311.20    | Close = 1322.00    | Bounce = +0.82% | Candle = Double Bottom Breakout
+RELIANCE    : Level = S3 (VAL Reversion)        | Value = 1309.76    | Low = 1311.20    | Close = 1322.00    | Bounce = +0.82% | Candle = Double Bottom Breakout
+RELIANCE    : Level = S4 (VAL Breakdown Trigger) | Value = 1303.51    | Low = 1311.20    | Close = 1322.00    | Bounce = +0.82% | Candle = Double Bottom Breakout
+BAJFINANCE  : Level = S2 (VAL Reversion)        | Value = 1085.34    | Low = 1087.60    | Close = 1094.30    | Bounce = +0.62% | Candle = Neutral Candle
+BHARTIARTL  : Level = S4 (VAL Breakdown Trigger) | Value = 1956.15    | Low = 1923.20    | Close = 1934.20    | Bounce = +0.57% | Candle = Neutral Candle
+BHARTIARTL  : Level = S5 (VAL Extreme)          | Value = 1948.48    | Low = 1923.20    | Close = 1934.20    | Bounce = +0.57% | Candle = Neutral Candle
+BHARTIARTL  : Level = S6 (VAL Capitulation)     | Value = 1945.40    | Low = 1923.20    | Close = 1934.20    | Bounce = +0.57% | Candle = Neutral Candle
+ICICIBANK   : Level = S2 (VAL Reversion)        | Value = 1412.26    | Low = 1406.30    | Close = 1412.00    | Bounce = +0.41% | Candle = Bullish Spinning Top (Indecision) | Tweezer Bottom (Double Rejection) | SSL Sweep Reversal (Low swept 1407.0, close 1412.0)
+ICICIBANK   : Level = S3 (VAL Reversion)        | Value = 1410.73    | Low = 1406.30    | Close = 1412.00    | Bounce = +0.41% | Candle = Bullish Spinning Top (Indecision) | Tweezer Bottom (Double Rejection) | SSL Sweep Reversal (Low swept 1407.0, close 1412.0)
+ICICIBANK   : Level = S4 (VAL Breakdown Trigger) | Value = 1406.17    | Low = 1406.30    | Close = 1412.00    | Bounce = +0.41% | Candle = Bullish Spinning Top (Indecision) | Tweezer Bottom (Double Rejection) | SSL Sweep Reversal (Low swept 1407.0, close 1412.0)
+ICICIBANK   : Level = S5 (VAL Extreme)          | Value = 1400.84    | Low = 1406.30    | Close = 1412.00    | Bounce = +0.41% | Candle = Bullish Spinning Top (Indecision) | Tweezer Bottom (Double Rejection) | SSL Sweep Reversal (Low swept 1407.0, close 1412.0)
+LT          : Level = S2 (VAL Reversion)        | Value = 4075.57    | Low = 4050.00    | Close = 4064.30    | Bounce = +0.35% | Candle = Bearish Spinning Top (Indecision) | Tweezer Top (Double Rejection) | Double Bottom Breakout
+LT          : Level = S3 (VAL Reversion)        | Value = 4070.01    | Low = 4050.00    | Close = 4064.30    | Bounce = +0.35% | Candle = Bearish Spinning Top (Indecision) | Tweezer Top (Double Rejection) | Double Bottom Breakout
+LT          : Level = S4 (VAL Breakdown Trigger) | Value = 4053.32    | Low = 4050.00    | Close = 4064.30    | Bounce = +0.35% | Candle = Bearish Spinning Top (Indecision) | Tweezer Top (Double Rejection) | Double Bottom Breakout
+LT          : Level = S5 (VAL Extreme)          | Value = 4033.82    | Low = 4050.00    | Close = 4064.30    | Bounce = +0.35% | Candle = Bearish Spinning Top (Indecision) | Tweezer Top (Double Rejection) | Double Bottom Breakout
+ITC         : Level = S2 (VAL Reversion)        | Value = 272.10     | Low = 269.15     | Close = 270.00     | Bounce = +0.32% | Candle = Neutral Candle
+ITC         : Level = S3 (VAL Reversion)        | Value = 271.62     | Low = 269.15     | Close = 270.00     | Bounce = +0.32% | Candle = Neutral Candle
+ITC         : Level = S4 (VAL Breakdown Trigger) | Value = 270.19     | Low = 269.15     | Close = 270.00     | Bounce = +0.32% | Candle = Neutral Candle
+ITC         : Level = S5 (VAL Extreme)          | Value = 268.52     | Low = 269.15     | Close = 270.00     | Bounce = +0.32% | Candle = Neutral Candle
+INFY        : Level = S2 (VAL Reversion)        | Value = 1133.15    | Low = 1112.50    | Close = 1115.00    | Bounce = +0.22% | Candle = Neutral Candle
+INFY        : Level = S3 (VAL Reversion)        | Value = 1129.78    | Low = 1112.50    | Close = 1115.00    | Bounce = +0.22% | Candle = Neutral Candle
+INFY        : Level = S4 (VAL Breakdown Trigger) | Value = 1119.66    | Low = 1112.50    | Close = 1115.00    | Bounce = +0.22% | Candle = Neutral Candle
+INFY        : Level = S5 (VAL Extreme)          | Value = 1107.84    | Low = 1112.50    | Close = 1115.00    | Bounce = +0.22% | Candle = Neutral Candle
+BANKNIFTY   : Level = S2 (VAL Reversion)        | Value = 57380.90   | Low = 57217.60   | Close = 57262.40   | Bounce = +0.08% | Candle = Neutral Candle
+BANKNIFTY   : Level = S3 (VAL Reversion)        | Value = 57322.45   | Low = 57217.60   | Close = 57262.40   | Bounce = +0.08% | Candle = Neutral Candle
+BANKNIFTY   : Level = S4 (VAL Breakdown Trigger) | Value = 57147.09   | Low = 57217.60   | Close = 57262.40   | Bounce = +0.08% | Candle = Neutral Candle
+NIFTY       : Level = S2 (VAL Reversion)        | Value = 24263.24   | Low = 24154.90   | Close = 24154.90   | Bounce = +0.00% | Candle = Neutral Candle
+NIFTY       : Level = S3 (VAL Reversion)        | Value = 24251.03   | Low = 24154.90   | Close = 24154.90   | Bounce = +0.00% | Candle = Neutral Candle
+NIFTY       : Level = S4 (VAL Breakdown Trigger) | Value = 24214.42   | Low = 24154.90   | Close = 24154.90   | Bounce = +0.00% | Candle = Neutral Candle
+NIFTY       : Level = S5 (VAL Extreme)          | Value = 24171.65   | Low = 24154.90   | Close = 24154.90   | Bounce = +0.00% | Candle = Neutral Candle
+NIFTY       : Level = S6 (VAL Capitulation)     | Value = 24154.17   | Low = 24154.90   | Close = 24154.90   | Bounce = +0.00% | Candle = Neutral Candle
+SBIN        : Level = S2 (VAL Reversion)        | Value = 1058.19    | Low = 1053.00    | Close = 1053.00    | Bounce = +0.00% | Candle = Neutral Candle
+SBIN        : Level = S3 (VAL Reversion)        | Value = 1056.69    | Low = 1053.00    | Close = 1053.00    | Bounce = +0.00% | Candle = Neutral Candle
+SBIN        : Level = S4 (VAL Breakdown Trigger) | Value = 1052.18    | Low = 1053.00    | Close = 1053.00    | Bounce = +0.00% | Candle = Neutral Candle
+HDFCBANK    : Level = S2 (VAL Reversion)        | Value = 727.61     | Low = 723.00     | Close = 723.00     | Bounce = +0.00% | Candle = Neutral Candle
+HDFCBANK    : Level = S3 (VAL Reversion)        | Value = 726.91     | Low = 723.00     | Close = 723.00     | Bounce = +0.00% | Candle = Neutral Candle
+HDFCBANK    : Level = S4 (VAL Breakdown Trigger) | Value = 724.82     | Low = 723.00     | Close = 723.00     | Bounce = +0.00% | Candle = Neutral Candle
+HDFCBANK    : Level = S5 (VAL Extreme)          | Value = 722.38     | Low = 723.00     | Close = 723.00     | Bounce = +0.00% | Candle = Neutral Candle
+HDFCBANK    : Level = S6 (VAL Capitulation)     | Value = 721.35     | Low = 723.00     | Close = 723.00     | Bounce = +0.00% | Candle = Neutral Candle
+TCS         : Level = S2 (VAL Reversion)        | Value = 2303.94    | Low = 2280.00    | Close = 2280.00    | Bounce = +0.00% | Candle = Double Top Breakdown
+TCS         : Level = S3 (VAL Reversion)        | Value = 2299.31    | Low = 2280.00    | Close = 2280.00    | Bounce = +0.00% | Candle = Double Top Breakdown
+TCS         : Level = S4 (VAL Breakdown Trigger) | Value = 2285.42    | Low = 2280.00    | Close = 2280.00    | Bounce = +0.00% | Candle = Double Top Breakdown
+
+4B. RESISTANCE REJECTIONS (Within Proximity):
+-----------------------------------------
+SBIN        : Level = R3 (VAH Reversion)        | Value = 1065.71    | High = 1067.70    | Close = 1053.00    | Rejection = -1.38% | Candle = Neutral Candle
+SBIN        : Level = R2 (VAH Reversion)        | Value = 1064.21    | High = 1067.70    | Close = 1053.00    | Rejection = -1.38% | Candle = Neutral Candle
+ITC         : Level = R3 (VAH Reversion)        | Value = 274.48     | High = 273.65     | Close = 270.00     | Rejection = -1.33% | Candle = Neutral Candle
+ITC         : Level = R2 (VAH Reversion)        | Value = 274.00     | High = 273.65     | Close = 270.00     | Rejection = -1.33% | Candle = Neutral Candle
+BHARTIARTL  : Level = R5 (VAH Extreme)          | Value = 1990.12    | High = 1959.70    | Close = 1934.20    | Rejection = -1.30% | Candle = Neutral Candle
+TCS         : Level = R5 (VAH Extreme)          | Value = 2357.20    | High = 2307.00    | Close = 2280.00    | Rejection = -1.17% | Candle = Double Top Breakdown
+HDFCBANK    : Level = R3 (VAH Reversion)        | Value = 731.09     | High = 729.00     | Close = 723.00     | Rejection = -0.82% | Candle = Neutral Candle
+HDFCBANK    : Level = R2 (VAH Reversion)        | Value = 730.39     | High = 729.00     | Close = 723.00     | Rejection = -0.82% | Candle = Neutral Candle
+AXISBANK    : Level = R3 (VAH Reversion)        | Value = 1233.18    | High = 1250.50    | Close = 1243.00    | Rejection = -0.60% | Candle = Neutral Candle
+AXISBANK    : Level = R2 (VAH Reversion)        | Value = 1231.22    | High = 1250.50    | Close = 1243.00    | Rejection = -0.60% | Candle = Neutral Candle
+AXISBANK    : Level = R4 (VAH Breakout Trigger) | Value = 1239.07    | High = 1250.50    | Close = 1243.00    | Rejection = -0.60% | Candle = Neutral Candle
+AXISBANK    : Level = R5 (VAH Extreme)          | Value = 1245.94    | High = 1250.50    | Close = 1243.00    | Rejection = -0.60% | Candle = Neutral Candle
+AXISBANK    : Level = R6 (VAH Exhaustion)       | Value = 1248.94    | High = 1250.50    | Close = 1243.00    | Rejection = -0.60% | Candle = Neutral Candle
+BANKNIFTY   : Level = R3 (VAH Reversion)        | Value = 57673.15   | High = 57584.70   | Close = 57262.40   | Rejection = -0.56% | Candle = Neutral Candle
+BANKNIFTY   : Level = R2 (VAH Reversion)        | Value = 57614.70   | High = 57584.70   | Close = 57262.40   | Rejection = -0.56% | Candle = Neutral Candle
+BAJFINANCE  : Level = R3 (VAH Reversion)        | Value = 1095.24    | High = 1100.00    | Close = 1094.30    | Rejection = -0.52% | Candle = Neutral Candle
+BAJFINANCE  : Level = R2 (VAH Reversion)        | Value = 1093.26    | High = 1100.00    | Close = 1094.30    | Rejection = -0.52% | Candle = Neutral Candle
+BAJFINANCE  : Level = R4 (VAH Breakout Trigger) | Value = 1101.18    | High = 1100.00    | Close = 1094.30    | Rejection = -0.52% | Candle = Neutral Candle
+LT          : Level = R3 (VAH Reversion)        | Value = 4103.39    | High = 4085.00    | Close = 4064.30    | Rejection = -0.51% | Candle = Bearish Spinning Top (Indecision) | Tweezer Top (Double Rejection) | Double Bottom Breakout
+LT          : Level = R2 (VAH Reversion)        | Value = 4097.83    | High = 4085.00    | Close = 4064.30    | Rejection = -0.51% | Candle = Bearish Spinning Top (Indecision) | Tweezer Top (Double Rejection) | Double Bottom Breakout
+RELIANCE    : Level = R2 (VAH Reversion)        | Value = 1320.16    | High = 1328.60    | Close = 1322.00    | Rejection = -0.50% | Candle = Double Bottom Breakout
+RELIANCE    : Level = R3 (VAH Reversion)        | Value = 1322.24    | High = 1328.60    | Close = 1322.00    | Rejection = -0.50% | Candle = Double Bottom Breakout
+RELIANCE    : Level = R4 (VAH Breakout Trigger) | Value = 1328.49    | High = 1328.60    | Close = 1322.00    | Rejection = -0.50% | Candle = Double Bottom Breakout
+NIFTY       : Level = R4 (VAH Breakout Trigger) | Value = 24360.88   | High = 24269.65   | Close = 24154.90   | Rejection = -0.47% | Candle = Neutral Candle
+NIFTY       : Level = R3 (VAH Reversion)        | Value = 24324.27   | High = 24269.65   | Close = 24154.90   | Rejection = -0.47% | Candle = Neutral Candle
+NIFTY       : Level = R2 (VAH Reversion)        | Value = 24312.06   | High = 24269.65   | Close = 24154.90   | Rejection = -0.47% | Candle = Neutral Candle
+ICICIBANK   : Level = R3 (VAH Reversion)        | Value = 1419.87    | High = 1416.60    | Close = 1412.00    | Rejection = -0.32% | Candle = Bullish Spinning Top (Indecision) | Tweezer Bottom (Double Rejection) | SSL Sweep Reversal (Low swept 1407.0, close 1412.0)
+ICICIBANK   : Level = R2 (VAH Reversion)        | Value = 1418.34    | High = 1416.60    | Close = 1412.00    | Rejection = -0.32% | Candle = Bullish Spinning Top (Indecision) | Tweezer Bottom (Double Rejection) | SSL Sweep Reversal (Low swept 1407.0, close 1412.0)
+
+5. LEVEL BREAKDOWNS (Closed Below S4):
+-----------------------------------------
+BHARTIARTL  : S4 Value = 1956.15    | Close = 1934.20    | Excess = -1.12%
+INFY        : S4 Value = 1119.66    | Close = 1115.00    | Excess = -0.42%
+HDFCBANK    : S4 Value = 724.82     | Close = 723.00     | Excess = -0.25%
+NIFTY       : S4 Value = 24214.42   | Close = 24154.90   | Excess = -0.25%
+TCS         : S4 Value = 2285.42    | Close = 2280.00    | Excess = -0.24%
+ITC         : S4 Value = 270.19     | Close = 270.00     | Excess = -0.07%
+
+5B. DETECTED PRICE ACTION & CANDLESTICK PATTERNS:
+-----------------------------------------
+RELIANCE    : Double Bottom Breakout
+ICICIBANK   : Bullish Spinning Top (Indecision) | Tweezer Bottom (Double Rejection) | SSL Sweep Reversal (Low swept 1407.0, close 1412.0)
+TCS         : Double Top Breakdown
+LT          : Bearish Spinning Top (Indecision) | Tweezer Top (Double Rejection) | Double Bottom Breakout
+
+6. ATM OPTIONS PREMIUMS:
+-----------------------------------------
+NIFTY_ATM_24150_EXP_260818         : CE = ₹4.85 | PE = ₹0.05
+NIFTY_ATM_24150_EXP_260825         : CE = ₹162.00 | PE = ₹108.20
+BANKNIFTY_ATM_57300_EXP_260825     : CE = ₹430.00 | PE = ₹347.05
+
+=========================================
+7. INTRADAY 5-MIN OPTION PREMIUM BACKTEST & LEARNINGS:
+-----------------------------------------
+AXISBANK    : Type = LONG         | Touch = S4 (VAL Breakdown Trigger) (1215.53) at 09:15 am | Spot Entry = 1231.20 | SL = 1213.10 | Option ROI = 70.0% | Status = Target/Close Exit
+RELIANCE    : Type = LONG         | Touch = S2 (VAL Reversion) (1311.84) at 09:15 am | Spot Entry = 1313.60 | SL = 1309.21 | Option ROI = 27.6% | Status = Target Hit at 09:25 am
+RELIANCE    : Type = LONG         | Touch = S3 (VAL Reversion) (1309.76) at 09:15 am | Spot Entry = 1313.60 | SL = 1307.14 | Option ROI = 40.6% | Status = Target Hit at 09:25 am
+RELIANCE    : Type = LONG         | Touch = S4 (VAL Breakdown Trigger) (1303.51) at 09:15 am | Spot Entry = 1313.60 | SL = 1300.91 | Option ROI = 24.2% | Status = Target/Close Exit
+BAJFINANCE  : Type = LONG         | Touch = S2 (VAL Reversion) (1085.34) at 10:00 am | Spot Entry = 1092.50 | SL = 1083.17 | Option ROI = -2.8% | Status = Target/Close Exit
+BHARTIARTL  : Type = LONG         | Touch = S4 (VAL Breakdown Trigger) (1956.15) at 09:15 am | Spot Entry = 1954.00 | SL = 1923.20 | Option ROI = -26.4% | Status = Target/Close Exit
+BHARTIARTL  : Type = LONG         | Touch = S5 (VAL Extreme) (1948.48) at 09:15 am | Spot Entry = 1954.00 | SL = 1923.20 | Option ROI = -26.4% | Status = Target/Close Exit
+BHARTIARTL  : Type = LONG         | Touch = S6 (VAL Capitulation) (1945.40) at 09:15 am | Spot Entry = 1954.00 | SL = 1923.20 | Option ROI = -26.4% | Status = Target/Close Exit
+ICICIBANK   : Type = LONG         | Touch = S2 (VAL Reversion) (1412.26) at 09:15 am | Spot Entry = 1411.50 | SL = 1408.50 | Option ROI = -9.8% | Status = SL Hit at 10:55 am
+  - [SL Learning]: Volume sweep: Volume spike of 270935.0x average on touch candle swept away the level's liquidity.
+ICICIBANK   : Type = LONG         | Touch = S3 (VAL Reversion) (1410.73) at 09:15 am | Spot Entry = 1411.50 | SL = 1407.91 | Option ROI = -11.8% | Status = SL Hit at 11:00 am
+  - [SL Learning]: Volume sweep: Volume spike of 270935.0x average on touch candle swept away the level's liquidity.
+ICICIBANK   : Type = LONG         | Touch = S4 (VAL Breakdown Trigger) (1406.17) at 09:15 am | Spot Entry = 1411.50 | SL = 1403.36 | Option ROI = 2.0% | Status = Target/Close Exit
+ICICIBANK   : Type = LONG         | Touch = S5 (VAL Extreme) (1400.84) at 11:25 am | Spot Entry = 1407.80 | SL = 1398.04 | Option ROI = 14.8% | Status = Target/Close Exit
+LT          : Type = LONG         | Touch = S2 (VAL Reversion) (4075.57) at 09:15 am | Spot Entry = 4063.00 | SL = 4051.00 | Option ROI = -17.6% | Status = SL Hit at 09:45 am
+  - [SL Learning]: Volume sweep: Volume spike of 45064.0x average on touch candle swept away the level's liquidity.
+LT          : Type = LONG         | Touch = S3 (VAL Reversion) (4070.01) at 09:15 am | Spot Entry = 4063.00 | SL = 4051.00 | Option ROI = -12.4% | Status = SL Hit at 09:45 am
+  - [SL Learning]: Volume sweep: Volume spike of 45064.0x average on touch candle swept away the level's liquidity.
+LT          : Type = LONG         | Touch = S4 (VAL Breakdown Trigger) (4053.32) at 09:15 am | Spot Entry = 4063.00 | SL = 4045.21 | Option ROI = 6.8% | Status = Target/Close Exit
+LT          : Type = LONG         | Touch = S5 (VAL Extreme) (4033.82) at 09:15 am | Spot Entry = 4063.00 | SL = 4025.75 | Option ROI = 6.8% | Status = Target/Close Exit
+ITC         : Type = LONG         | Touch = S2 (VAL Reversion) (272.10) at 09:15 am | Spot Entry = 273.35 | SL = 271.55 | Option ROI = -21.9% | Status = SL Hit at 11:35 am
+  - [SL Learning]: Volume sweep: Volume spike of 391629.0x average on touch candle swept away the level's liquidity.
+ITC         : Type = LONG         | Touch = S3 (VAL Reversion) (271.62) at 09:30 am | Spot Entry = 272.95 | SL = 271.08 | Option ROI = -22.9% | Status = SL Hit at 12:20 pm
+  - [SL Learning]: Volume sweep: Volume spike of 2.9x average on touch candle swept away the level's liquidity.
+ITC         : Type = LONG         | Touch = S4 (VAL Breakdown Trigger) (270.19) at 11:40 am | Spot Entry = 271.55 | SL = 269.65 | Option ROI = -23.3% | Status = SL Hit at 02:00 pm
+  - [SL Learning]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+ITC         : Type = LONG         | Touch = S5 (VAL Extreme) (268.52) at 01:55 pm | Spot Entry = 269.90 | SL = 267.98 | Option ROI = 6.4% | Status = Target/Close Exit
+INFY        : Type = LONG         | Touch = S2 (VAL Reversion) (1133.15) at 09:15 am | Spot Entry = 1121.00 | SL = 1118.00 | Option ROI = -6.1% | Status = SL Hit at 09:45 am
+  - [SL Learning]: Volume sweep: Volume spike of 390431.0x average on touch candle swept away the level's liquidity.
+INFY        : Type = LONG         | Touch = S3 (VAL Reversion) (1129.78) at 09:15 am | Spot Entry = 1121.00 | SL = 1118.00 | Option ROI = -6.2% | Status = SL Hit at 09:45 am
+  - [SL Learning]: Volume sweep: Volume spike of 390431.0x average on touch candle swept away the level's liquidity.
+INFY        : Type = LONG         | Touch = S4 (VAL Breakdown Trigger) (1119.66) at 09:20 am | Spot Entry = 1121.50 | SL = 1117.42 | Option ROI = -9.6% | Status = SL Hit at 09:45 am
+  - [SL Learning]: Volume sweep: Volume spike of 4.9x average on touch candle swept away the level's liquidity.
+INFY        : Type = LONG         | Touch = S5 (VAL Extreme) (1107.84) at 11:30 am | Spot Entry = 1114.50 | SL = 1105.62 | Option ROI = -0.8% | Status = Target/Close Exit
+BANKNIFTY   : Type = LONG         | Touch = S2 (VAL Reversion) (57380.90) at 09:15 am | Spot Entry = 57450.50 | SL = 57266.14 | Option ROI = -17.4% | Status = SL Hit at 10:45 am
+  - [SL Learning]: Volume sweep: Volume spike of 7269977.0x average on touch candle swept away the level's liquidity.
+BANKNIFTY   : Type = LONG         | Touch = S3 (VAL Reversion) (57322.45) at 09:15 am | Spot Entry = 57450.50 | SL = 57207.80 | Option ROI = -17.7% | Status = Target/Close Exit
+BANKNIFTY   : Type = LONG         | Touch = S4 (VAL Breakdown Trigger) (57147.09) at 09:15 am | Spot Entry = 57450.50 | SL = 57032.80 | Option ROI = -17.7% | Status = Target/Close Exit
+NIFTY       : Type = LONG         | Touch = S2 (VAL Reversion) (24263.24) at 09:15 am | Spot Entry = 24238.85 | SL = 24211.10 | Option ROI = -32.8% | Status = SL Hit at 10:15 am
+  - [SL Learning]: Volume sweep: Volume spike of 9514157.0x average on touch candle swept away the level's liquidity.
+NIFTY       : Type = LONG         | Touch = S3 (VAL Reversion) (24251.03) at 09:15 am | Spot Entry = 24238.85 | SL = 24202.53 | Option ROI = -42.9% | Status = SL Hit at 10:45 am
+  - [SL Learning]: Volume sweep: Volume spike of 9514157.0x average on touch candle swept away the level's liquidity.
+NIFTY       : Type = LONG         | Touch = S4 (VAL Breakdown Trigger) (24214.42) at 09:15 am | Spot Entry = 24238.85 | SL = 24165.99 | Option ROI = -86.0% | Status = SL Hit at 03:10 pm
+  - [SL Learning]: Volume sweep: Volume spike of 9514157.0x average on touch candle swept away the level's liquidity.
+NIFTY       : Type = LONG         | Touch = S5 (VAL Extreme) (24171.65) at 09:15 am | Spot Entry = 24238.85 | SL = 24123.31 | Option ROI = -99.1% | Status = Target/Close Exit
+NIFTY       : Type = LONG         | Touch = S6 (VAL Capitulation) (24154.17) at 09:15 am | Spot Entry = 24238.85 | SL = 24105.86 | Option ROI = -99.1% | Status = Target/Close Exit
+SBIN        : Type = LONG         | Touch = S2 (VAL Reversion) (1058.19) at 09:15 am | Spot Entry = 1064.30 | SL = 1056.08 | Option ROI = -24.4% | Status = SL Hit at 10:55 am
+  - [SL Learning]: Volume sweep: Volume spike of 218131.0x average on touch candle swept away the level's liquidity.
+SBIN        : Type = LONG         | Touch = S3 (VAL Reversion) (1056.69) at 09:15 am | Spot Entry = 1064.30 | SL = 1054.58 | Option ROI = -28.9% | Status = SL Hit at 01:55 pm
+  - [SL Learning]: Volume sweep: Volume spike of 218131.0x average on touch candle swept away the level's liquidity.
+SBIN        : Type = LONG         | Touch = S4 (VAL Breakdown Trigger) (1052.18) at 10:55 am | Spot Entry = 1056.50 | SL = 1050.08 | Option ROI = -6.1% | Status = Target/Close Exit
+HDFCBANK    : Type = LONG         | Touch = S2 (VAL Reversion) (727.61) at 09:15 am | Spot Entry = 726.50 | SL = 726.05 | Option ROI = -2.3% | Status = SL Hit at 09:30 am
+  - [SL Learning]: Volume sweep: Volume spike of 874616.0x average on touch candle swept away the level's liquidity.
+HDFCBANK    : Type = LONG         | Touch = S3 (VAL Reversion) (726.91) at 09:15 am | Spot Entry = 726.50 | SL = 725.46 | Option ROI = -5.7% | Status = SL Hit at 09:50 am
+  - [SL Learning]: Volume sweep: Volume spike of 874616.0x average on touch candle swept away the level's liquidity.
+HDFCBANK    : Type = LONG         | Touch = S4 (VAL Breakdown Trigger) (724.82) at 09:15 am | Spot Entry = 726.50 | SL = 723.37 | Option ROI = -17.0% | Status = SL Hit at 10:55 am
+  - [SL Learning]: Volume sweep: Volume spike of 874616.0x average on touch candle swept away the level's liquidity.
+HDFCBANK    : Type = LONG         | Touch = S5 (VAL Extreme) (722.38) at 09:45 am | Spot Entry = 726.00 | SL = 720.93 | Option ROI = -17.9% | Status = Target/Close Exit
+HDFCBANK    : Type = LONG         | Touch = S6 (VAL Capitulation) (721.35) at 10:45 am | Spot Entry = 724.15 | SL = 719.91 | Option ROI = -3.7% | Status = Target/Close Exit
+TCS         : Type = LONG         | Touch = S2 (VAL Reversion) (2303.94) at 09:15 am | Spot Entry = 2292.70 | SL = 2291.60 | Option ROI = 3.6% | Status = Target Hit at 09:20 am
+TCS         : Type = LONG         | Touch = S3 (VAL Reversion) (2299.31) at 09:15 am | Spot Entry = 2292.70 | SL = 2291.60 | Option ROI = 2.8% | Status = Target Hit at 09:20 am
+TCS         : Type = LONG         | Touch = S4 (VAL Breakdown Trigger) (2285.42) at 09:20 am | Spot Entry = 2294.50 | SL = 2280.85 | Option ROI = -16.4% | Status = Target/Close Exit
+SBIN        : Type = SHORT        | Touch = R3 (VAH Reversion) (1065.71) at 09:15 am | Spot Entry = 1064.30 | SL = 1067.84 | Option ROI = 34.4% | Status = Target Hit at 10:50 am
+SBIN        : Type = SHORT        | Touch = R2 (VAH Reversion) (1064.21) at 09:15 am | Spot Entry = 1064.30 | SL = 1067.70 | Option ROI = 33.0% | Status = Target Hit at 10:45 am
+ITC         : Type = SHORT        | Touch = R3 (VAH Reversion) (274.48) at 09:15 am | Spot Entry = 273.35 | SL = 275.03 | Option ROI = 40.9% | Status = Target Hit at 01:30 pm
+ITC         : Type = SHORT        | Touch = R2 (VAH Reversion) (274.00) at 09:15 am | Spot Entry = 273.35 | SL = 274.55 | Option ROI = 29.3% | Status = Target Hit at 12:25 pm
+BHARTIARTL  : Type = SHORT        | Touch = R5 (VAH Extreme) (1990.12) at 09:15 am | Spot Entry = 1954.00 | SL = 1994.10 | Option ROI = 38.6% | Status = Target/Close Exit
+TCS         : Type = SHORT        | Touch = R5 (VAH Extreme) (2357.20) at 09:15 am | Spot Entry = 2292.70 | SL = 2361.91 | Option ROI = 16.8% | Status = Target/Close Exit
+HDFCBANK    : Type = SHORT        | Touch = R3 (VAH Reversion) (731.09) at 09:15 am | Spot Entry = 726.50 | SL = 732.55 | Option ROI = 16.5% | Status = Target/Close Exit
+HDFCBANK    : Type = SHORT        | Touch = R2 (VAH Reversion) (730.39) at 09:15 am | Spot Entry = 726.50 | SL = 731.85 | Option ROI = 16.5% | Status = Target/Close Exit
+AXISBANK    : Type = SHORT        | Touch = R3 (VAH Reversion) (1233.18) at 09:15 am | Spot Entry = 1231.20 | SL = 1235.65 | Option ROI = -14.3% | Status = SL Hit at 09:35 am
+  - [SL Learning]: Volume sweep: Volume spike of 144860.0x average on touch candle swept away the level's liquidity.
+AXISBANK    : Type = SHORT        | Touch = R2 (VAH Reversion) (1231.22) at 09:15 am | Spot Entry = 1231.20 | SL = 1233.90 | Option ROI = -8.6% | Status = SL Hit at 09:30 am
+  - [SL Learning]: Volume sweep: Volume spike of 144860.0x average on touch candle swept away the level's liquidity.
+AXISBANK    : Type = SHORT        | Touch = R4 (VAH Breakout Trigger) (1239.07) at 09:30 am | Spot Entry = 1232.80 | SL = 1241.55 | Option ROI = -29.1% | Status = SL Hit at 02:00 pm
+  - [SL Learning]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+AXISBANK    : Type = SHORT        | Touch = R5 (VAH Extreme) (1245.94) at 12:05 pm | Spot Entry = 1239.40 | SL = 1248.44 | Option ROI = -41.6% | Status = SL Hit at 02:05 pm
+  - [SL Learning]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+AXISBANK    : Type = SHORT        | Touch = R6 (VAH Exhaustion) (1248.94) at 02:05 pm | Spot Entry = 1246.00 | SL = 1251.44 | Option ROI = -0.6% | Status = Target/Close Exit
+BANKNIFTY   : Type = SHORT        | Touch = R3 (VAH Reversion) (57673.15) at 09:15 am | Spot Entry = 57450.50 | SL = 57788.50 | Option ROI = 29.0% | Status = Target/Close Exit
+BANKNIFTY   : Type = SHORT        | Touch = R2 (VAH Reversion) (57614.70) at 09:15 am | Spot Entry = 57450.50 | SL = 57729.93 | Option ROI = 29.0% | Status = Target/Close Exit
+BAJFINANCE  : Type = SHORT        | Touch = R3 (VAH Reversion) (1095.24) at 09:15 am | Spot Entry = 1092.80 | SL = 1097.43 | Option ROI = -12.8% | Status = SL Hit at 10:25 am
+  - [SL Learning]: Volume sweep: Volume spike of 85324.0x average on touch candle swept away the level's liquidity.
+BAJFINANCE  : Type = SHORT        | Touch = R2 (VAH Reversion) (1093.26) at 09:15 am | Spot Entry = 1092.80 | SL = 1095.45 | Option ROI = -7.3% | Status = SL Hit at 10:25 am
+  - [SL Learning]: Volume sweep: Volume spike of 85324.0x average on touch candle swept away the level's liquidity.
+BAJFINANCE  : Type = SHORT        | Touch = R4 (VAH Breakout Trigger) (1101.18) at 10:35 am | Spot Entry = 1097.10 | SL = 1103.38 | Option ROI = 18.6% | Status = Target/Close Exit
+LT          : Type = SHORT        | Touch = R3 (VAH Reversion) (4103.39) at 11:50 am | Spot Entry = 4079.00 | SL = 4111.60 | Option ROI = 11.8% | Status = Target/Close Exit
+LT          : Type = SHORT        | Touch = R2 (VAH Reversion) (4097.83) at 11:50 am | Spot Entry = 4079.00 | SL = 4106.02 | Option ROI = 11.7% | Status = Target/Close Exit
+RELIANCE    : Type = SHORT        | Touch = R2 (VAH Reversion) (1320.16) at 09:15 am | Spot Entry = 1313.60 | SL = 1322.80 | Option ROI = -43.4% | Status = SL Hit at 09:25 am
+  - [SL Learning]: Volume sweep: Volume spike of 219883.0x average on touch candle swept away the level's liquidity.
+RELIANCE    : Type = SHORT        | Touch = R3 (VAH Reversion) (1322.24) at 09:25 am | Spot Entry = 1322.50 | SL = 1328.00 | Option ROI = -20.8% | Status = SL Hit at 09:40 am
+  - [SL Learning]: Volume sweep: Volume spike of 10.4x average on touch candle swept away the level's liquidity.
+RELIANCE    : Type = SHORT        | Touch = R4 (VAH Breakout Trigger) (1328.49) at 09:30 am | Spot Entry = 1323.40 | SL = 1331.14 | Option ROI = 8.8% | Status = Target/Close Exit
+NIFTY       : Type = SHORT        | Touch = R4 (VAH Breakout Trigger) (24360.88) at 09:15 am | Spot Entry = 24238.85 | SL = 24409.60 | Option ROI = 86.6% | Status = Target/Close Exit
+NIFTY       : Type = SHORT        | Touch = R3 (VAH Reversion) (24324.27) at 09:15 am | Spot Entry = 24238.85 | SL = 24372.91 | Option ROI = 86.6% | Status = Target/Close Exit
+NIFTY       : Type = SHORT        | Touch = R2 (VAH Reversion) (24312.06) at 09:15 am | Spot Entry = 24238.85 | SL = 24360.68 | Option ROI = 86.6% | Status = Target/Close Exit
+ICICIBANK   : Type = SHORT        | Touch = R3 (VAH Reversion) (1419.87) at 09:15 am | Spot Entry = 1411.50 | SL = 1422.70 | Option ROI = -2.3% | Status = Target/Close Exit
+ICICIBANK   : Type = SHORT        | Touch = R2 (VAH Reversion) (1418.34) at 09:15 am | Spot Entry = 1411.50 | SL = 1421.18 | Option ROI = -2.3% | Status = Target/Close Exit
+
+7B. INTRADAY BACKTEST STATISTICAL SUMMARY:
+-----------------------------------------
+* Total Trades Triggered   : 71
+* Profit Closures (>0% ROI): 28 (39.4%)
+* Neutral Closures (0% ROI): 0 (0.0%)
+* Loss Closures (<0% ROI)  : 16 (22.5%)
+* Stop Loss Hits (SL Hit)  : 27 (38.0%)
+* Win Rate (Strict Profit) : 39.4%
+* Survival Rate (No SL Hit): 62.0%
+
+7C. PERFORMANCE BREAKDOWN BY LEVEL:
+-----------------------------------------
+* Level R4  : Total = 4   | Profit = 3   (75.0%) | Avg ROI = 21.3%
+* Level R3  : Total = 10  | Profit = 6   (60.0%) | Avg ROI = 16.9%
+* Level R5  : Total = 3   | Profit = 2   (66.7%) | Avg ROI = 4.6%
+* Level Unknown: Total = 21  | Profit = 8   (38.1%) | Avg ROI = 1.9%
+* Level R6  : Total = 1   | Profit = 0   (0.0%) | Avg ROI = -0.6%
+* Level S4  : Total = 12  | Profit = 4   (33.3%) | Avg ROI = -8.3%
+* Level S3  : Total = 10  | Profit = 2   (20.0%) | Avg ROI = -10.5%
+* Level S5  : Total = 7   | Profit = 3   (42.9%) | Avg ROI = -16.6%
+* Level S6  : Total = 3   | Profit = 0   (0.0%) | Avg ROI = -43.1%
+
+7D. PERFORMANCE BREAKDOWN BY DIRECTION:
+-----------------------------------------
+* LONG      : Total = 43  | Profit = 11  (25.6%) | Avg ROI = -12.9%
+* SHORT     : Total = 28  | Profit = 17  (60.7%) | Avg ROI = 14.7%
+
+8. OPENING BIAS VALIDATION (Did the market follow the 2-Year Opening Bias?):
+-----------------------------------------
+* NIFTY: SUCCESS
+  - Zone: Open Between S4 and S3
+  - Prediction: Expected RED Close (Probability: 40.7%)
+  - Actual: Closed RED (Open: 24223.85 | Close: 24154.90 | Move: -68.95 pts)
+  - Analysis: The index behaved exactly as predicted by the 2-year backtest for Open Between S4 and S3.
+
+* BANKNIFTY: SUCCESS
+  - Zone: Open Between S3 and S2
+  - Prediction: Expected RED Close (Probability: 47.7%)
+  - Actual: Closed RED (Open: 57325.55 | Close: 57262.40 | Move: -63.15 pts)
+  - Analysis: The index behaved exactly as predicted by the 2-year backtest for Open Between S3 and S2.
+
+=========================================

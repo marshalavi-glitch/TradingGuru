@@ -1,0 +1,182 @@
+{
+  "NIFTY": {
+    "z1_above_r6": {
+      "name": "Open Above R6 (Extreme Gap Up)",
+      "recommendation": "Strong Bearish Trend bias (73.1% red close rate). Pullbacks to resistance wicks heavily favor Puts (PE).",
+      "count": 26,
+      "greenPct": 26.9,
+      "avgRange": 227.9,
+      "avgMove": -37.9
+    },
+    "z2_r5_r6": {
+      "name": "Open Between R5 and R6",
+      "recommendation": "Strong Bullish Continuation bias. Look to buy Calls (CE) on the first 5m pullback.",
+      "count": 10,
+      "greenPct": 60,
+      "avgRange": 246.4,
+      "avgMove": 52.4
+    },
+    "z3_r4_r5": {
+      "name": "Open Between R4 and R5",
+      "recommendation": "Gap Resistance zone. Rejections here favor Puts (PE).",
+      "count": 30,
+      "greenPct": 50,
+      "avgRange": 203.6,
+      "avgMove": 19.7
+    },
+    "z4_r3_r4": {
+      "name": "Open Between R3 and R4",
+      "recommendation": "Strong Bearish Trend bias (56.8% red close rate). Pullbacks to resistance wicks heavily favor Puts (PE).",
+      "count": 88,
+      "greenPct": 43.2,
+      "avgRange": 209.7,
+      "avgMove": -26.2
+    },
+    "z5_r2_r3": {
+      "name": "Open Between R2 and R3",
+      "recommendation": "Strong Bearish Trend bias (62.5% red close rate). Pullbacks to resistance wicks heavily favor Puts (PE).",
+      "count": 56,
+      "greenPct": 37.5,
+      "avgRange": 217,
+      "avgMove": -22.3
+    },
+    "z6_s2_r2": {
+      "name": "Open Between S2 and R2 (Value Area Midpoint)",
+      "recommendation": "Rotational Balanced Day (47.6% green close rate). Range consolidation likely. Fade extremes (Sell Calls at VAH, Puts at VAL).",
+      "count": 213,
+      "greenPct": 47.6,
+      "avgRange": 234.4,
+      "avgMove": 3.9
+    },
+    "z7_s3_s2": {
+      "name": "Open Between S3 and S2",
+      "recommendation": "Rotational Balanced Day (45.2% green close rate). Range consolidation likely. Fade extremes (Sell Calls at VAH, Puts at VAL).",
+      "count": 31,
+      "greenPct": 45.2,
+      "avgRange": 230.6,
+      "avgMove": 17.3
+    },
+    "z8_s4_s3": {
+      "name": "Open Between S4 and S3",
+      "recommendation": "Strong Bearish Trend bias (59.3% red close rate). Pullbacks to resistance wicks heavily favor Puts (PE).",
+      "count": 64,
+      "greenPct": 40.7,
+      "avgRange": 256.9,
+      "avgMove": -49.9
+    },
+    "z9_s5_s4": {
+      "name": "Open Between S5 and S4",
+      "recommendation": "Support defense zone. Rejection wicks favor Calls (CE).",
+      "count": 16,
+      "greenPct": 62.5,
+      "avgRange": 264.1,
+      "avgMove": -1
+    },
+    "z10_s6_s5": {
+      "name": "Open Between S6 and S5",
+      "recommendation": "Capitulation boundary support. Strong bounces favor Calls (CE).",
+      "count": 10,
+      "greenPct": 50,
+      "avgRange": 280.4,
+      "avgMove": 31
+    },
+    "z11_below_s6": {
+      "name": "Open Below S6 (Extreme Gap Down)",
+      "recommendation": "Strong Bullish Continuation bias (64% green close rate). Bounces off support wicks heavily favor Calls (CE).",
+      "count": 25,
+      "greenPct": 64,
+      "avgRange": 276.1,
+      "avgMove": 24.6
+    }
+  },
+  "BANKNIFTY": {
+    "z1_above_r6": {
+      "name": "Open Above R6 (Extreme Gap Up)",
+      "recommendation": "Rotational Balanced Day (50% green close rate). Range consolidation likely. Fade extremes (Sell Calls at VAH, Puts at VAL).",
+      "count": 18,
+      "greenPct": 50,
+      "avgRange": 710.7,
+      "avgMove": 47.3
+    },
+    "z2_r5_r6": {
+      "name": "Open Between R5 and R6",
+      "recommendation": "Strong Bullish Continuation bias. Look to buy Calls (CE) on the first 5m pullback.",
+      "count": 2,
+      "greenPct": 100,
+      "avgRange": 758.6,
+      "avgMove": 480
+    },
+    "z3_r4_r5": {
+      "name": "Open Between R4 and R5",
+      "recommendation": "Gap Resistance zone. Rejections here favor Puts (PE).",
+      "count": 31,
+      "greenPct": 61.3,
+      "avgRange": 605.2,
+      "avgMove": 77.5
+    },
+    "z4_r3_r4": {
+      "name": "Open Between R3 and R4",
+      "recommendation": "Bearish Gap Acceptance zone. Pullbacks to R3 favor Puts (PE).",
+      "count": 66,
+      "greenPct": 47,
+      "avgRange": 583.7,
+      "avgMove": 1
+    },
+    "z5_r2_r3": {
+      "name": "Open Between R2 and R3",
+      "recommendation": "Value Area top resistance. Pullbacks to R2 favor Puts (PE).",
+      "count": 48,
+      "greenPct": 39.6,
+      "avgRange": 631.6,
+      "avgMove": -128.6
+    },
+    "z6_s2_r2": {
+      "name": "Open Between S2 and R2 (Value Area Midpoint)",
+      "recommendation": "Rotational Balanced Day (51.9% green close rate). Range consolidation likely. Fade extremes (Sell Calls at VAH, Puts at VAL).",
+      "count": 242,
+      "greenPct": 51.9,
+      "avgRange": 610.5,
+      "avgMove": 37.5
+    },
+    "z7_s3_s2": {
+      "name": "Open Between S3 and S2",
+      "recommendation": "Rotational Balanced Day (47.7% green close rate). Range consolidation likely. Fade extremes (Sell Calls at VAH, Puts at VAL).",
+      "count": 44,
+      "greenPct": 47.7,
+      "avgRange": 608.3,
+      "avgMove": 6.4
+    },
+    "z8_s4_s3": {
+      "name": "Open Between S4 and S3",
+      "recommendation": "Rotational Balanced Day (48.3% green close rate). Range consolidation likely. Fade extremes (Sell Calls at VAH, Puts at VAL).",
+      "count": 58,
+      "greenPct": 48.3,
+      "avgRange": 683.2,
+      "avgMove": -64.6
+    },
+    "z9_s5_s4": {
+      "name": "Open Between S5 and S4",
+      "recommendation": "Support defense zone. Rejection wicks favor Calls (CE).",
+      "count": 36,
+      "greenPct": 50,
+      "avgRange": 681,
+      "avgMove": -113.6
+    },
+    "z10_s6_s5": {
+      "name": "Open Between S6 and S5",
+      "recommendation": "Capitulation boundary support. Strong bounces favor Calls (CE).",
+      "count": 10,
+      "greenPct": 70,
+      "avgRange": 757.4,
+      "avgMove": 307.4
+    },
+    "z11_below_s6": {
+      "name": "Open Below S6 (Extreme Gap Down)",
+      "recommendation": "Panic Climax. Strong short-covering likelihood. Fade gap down by buying Calls (CE) on first 5m green close.",
+      "count": 14,
+      "greenPct": 57.1,
+      "avgRange": 856.9,
+      "avgMove": 110.8
+    }
+  }
+}

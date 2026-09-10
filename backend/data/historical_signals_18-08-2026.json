@@ -1,0 +1,19 @@
+[
+  {
+    "id": "NIFTY-FO-PE-24250",
+    "symbol": "NIFTY",
+    "action": "BUY PE",
+    "strike": "24250 PE",
+    "currentOptionPrice": 43.1,
+    "entryRange": "₹41.8 - ₹44.4",
+    "spotPrice": 24249.15,
+    "spotSL": 24282.8,
+    "optionSL": 26.25,
+    "target1": 56.03,
+    "target2": 71.12,
+    "confidence": 88,
+    "skewSpreadPct": -6.9,
+    "mathTrigger": "Nifty Spot (24249.15) broke S8 Support with -6.9% Put Skew accumulation.",
+    "conceptUsed": "TPO Index Breakdown"
+  }
+]
