@@ -1,4 +1,4 @@
-﻿let cachedBackendUrl: string | null = null;
+let cachedBackendUrl: string | null = null;
 let lastFetchTime = 0;
 
 export async function resolveBackendUrl(): Promise<string> {
@@ -17,9 +17,10 @@ export async function resolveBackendUrl(): Promise<string> {
     return cachedBackendUrl;
   }
 
-  // 2. Fetch live_backend.json from space with no-store
+  // 2. Fetch live_backend.json from HF raw repository URL with no-store
   try {
-    const res = await fetch(`./live_backend.json?_t=${now}`, { cache: 'no-store' });
+    const rawHfUrl = 'https://huggingface.co/spaces/marshalavi/TradingGuru/raw/main/live_backend.json';
+    const res = await fetch(`${rawHfUrl}?_t=${now}`, { cache: 'no-store' });
     if (res.ok) {
       const json = await res.json();
       if (json && json.backendUrl) {
