@@ -18,6 +18,7 @@ import { DadaThoughtsContainer } from './components/DadaThoughtsContainer';
 import { HourlyUpdatesContainer } from './components/HourlyUpdatesContainer';
 import { BacktestResultsContainer } from './components/BacktestResultsContainer';
 import { FifteenMinForensicContainer } from './components/FifteenMinForensicContainer';
+import { Nr7BreakoutContainer } from './components/Nr7BreakoutContainer';
 
 function App() {
   const [symbol, setSymbol] = useState('NSE:NIFTY');
@@ -439,6 +440,27 @@ function App() {
         >
           ⚡ Early Picks
         </button>
+        <button
+          onClick={() => setActiveTab('nr7_breakout')}
+          style={{
+            background: activeTab === 'nr7_breakout' ? 'rgba(59, 130, 246, 0.18)' : 'transparent',
+            border: 'none',
+            borderBottom: activeTab === 'nr7_breakout' ? '2px solid #3b82f6' : '2px solid transparent',
+            color: activeTab === 'nr7_breakout' ? '#60a5fa' : 'var(--text-primary)',
+            padding: '8px 16px',
+            fontSize: '14px',
+            fontWeight: '700',
+            cursor: 'pointer',
+            borderTopLeftRadius: '6px',
+            borderTopRightRadius: '6px',
+            transition: 'all 0.15s',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+        >
+          ⚡ NR7 Breakout
+        </button>
       </div>
 
       {/* Main Workspace */}
@@ -500,6 +522,11 @@ function App() {
           <OpeningBiasContainer />
         ) : activeTab === 'early_picks' ? (
           <EarlyPicksContainer
+            onSymbolSelect={setSymbol}
+            onSwitchToChart={() => setActiveTab('chart')}
+          />
+        ) : activeTab === 'nr7_breakout' ? (
+          <Nr7BreakoutContainer
             onSymbolSelect={setSymbol}
             onSwitchToChart={() => setActiveTab('chart')}
           />

@@ -46,9 +46,12 @@ async function getLiveOptionPrice(optSym) {
 import { startDojiScanner, dojiCache, scanDojiForSlot } from './doji_scanner.js';
 import { startVolumeScanner, volumeCache, scanVolumeBreakouts } from './volume_scanner.js';
 import { scanWeekly200EMASymbols, getCachedWeekly200EMASymbols } from './weekly_200_ema_scanner.js';
+import { scanNr7Breakouts, nr7Cache, loadNr7CacheFromDisk } from './nr7_breakout_scanner.js';
 import fs from 'fs';
 import { exec } from 'child_process';
 import { analyzeConfluences, updateConstraintsFromError } from './confluenceAnalyzer.js';
+
+loadNr7CacheFromDisk();
 
 process.on('uncaughtException', (err) => {
   console.error('[Node Backend Error] Uncaught Exception:', err.stack || err);
@@ -1867,6 +1870,26 @@ app.get('/api/volume-breakouts', (req, res) => {
   }
   res.json(volumeCache);
 });
+
+// Endpoint to retrieve NR7 expansion breakouts
+app.get('/api/nr7-breakouts', (req, res) => {
+  if (req.query.scan === 'true' && !nr7Cache.isScanning) {
+    console.log('[NR7 Endpoint] Manual scan trigger requested...');
+    const topSymbols = (presetsData || []).map(p => p.value || p.symbol || p).filter(Boolean).slice(0, 150);
+    scanNr7Breakouts(tvBridge, topSymbols);
+  }
+  res.json(nr7Cache);
+});
+
+// Background periodic NR7 scan runner (runs every 60 seconds)
+setInterval(() => {
+  if (!nr7Cache.isScanning && presetsData && presetsData.length > 0) {
+    const topSymbols = presetsData.map(p => p.value || p.symbol || p).filter(Boolean).slice(0, 150);
+    if (topSymbols.length > 0) {
+      scanNr7Breakouts(tvBridge, topSymbols);
+    }
+  }
+}, 60000);
 
 // Endpoint to retrieve all 5000+ Indian stock presets dynamically
 app.get('/api/symbols/presets', (req, res) => {
