@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, X, Activity, RefreshCw, Landmark, TrendingUp, Layers } from 'lucide-react';
+import { tvStreamer } from '../utils/tvStreamer';
 
 interface DashboardHeaderProps {
   currentSymbol: string;
@@ -258,7 +259,27 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             <RefreshCw size={15} />
           </button>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--bg-input)', border: '1px solid var(--border-color)', padding: '6px 12px', borderRadius: '8px' }}>
+          <div
+            onClick={() => {
+              const current = tvStreamer.computeBackendUrl();
+              const input = window.prompt('Enter Live Backend Server / Tunnel URL (e.g. https://profundum.loca.lt or http://YOUR_SERVER_IP:3002):', current);
+              if (input !== null) {
+                tvStreamer.setBackendUrl(input);
+                onRefresh();
+              }
+            }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'var(--bg-input)',
+              border: '1px solid var(--border-color)',
+              padding: '6px 12px',
+              borderRadius: '8px',
+              cursor: 'pointer'
+            }}
+            title="Click to configure Backend Server / Tunnel URL"
+          >
             <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: getStatusColor(), boxShadow: `0 0 10px ${getStatusColor()}` }}></div>
             <span style={{ fontSize: '12px', textTransform: 'capitalize', fontWeight: 'bold', color: 'var(--text-primary)' }}>
               {connectionStatus === 'connected' ? 'Live' : connectionStatus}
