@@ -111,7 +111,7 @@ export const Nr7BreakoutContainer: React.FC<Nr7BreakoutContainerProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ fontSize: '20px', fontWeight: '800', color: 'white', letterSpacing: '-0.3px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Sparkles size={22} color="#3b82f6" />
-              NR7 Breakout Radar
+              20% Upper Circuit Potential
             </span>
             {data.isScanning && (
               <span style={{ fontSize: '10px', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', padding: '2px 8px', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -121,7 +121,7 @@ export const Nr7BreakoutContainer: React.FC<Nr7BreakoutContainerProps> = ({
             )}
           </div>
           <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>
-            Real-time radar monitoring active expansion breakouts across top Indian equities.
+            Real-time radar scanning stocks with high 20% upper circuit expansion potential.
           </p>
         </div>
 
@@ -171,13 +171,13 @@ export const Nr7BreakoutContainer: React.FC<Nr7BreakoutContainerProps> = ({
       {loading ? (
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 0' }}>
           <div style={{ width: '40px', height: '40px', borderRadius: '50%', border: '3px solid rgba(255,255,255,0.05)', borderTopColor: '#3b82f6', animation: 'spin 1s linear infinite', marginBottom: '16px' }} />
-          <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Scanning market for NR7 expansion candidates...</span>
+          <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Scanning market for 20% Upper Circuit Potential candidates...</span>
         </div>
       ) : filteredResults.length === 0 ? (
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 0', border: '1px dashed rgba(255,255,255,0.08)', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.01)' }}>
           <TrendingUp size={36} color="var(--text-muted)" style={{ marginBottom: '12px', opacity: 0.5 }} />
-          <span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-primary)' }}>No Active NR7 Breakout Candidates</span>
-          <span style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>Standing by for range expansion triggers across top Indian stocks.</span>
+          <span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-primary)' }}>No Active 20% Upper Circuit Potential Candidates</span>
+          <span style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>Standing by for high momentum expansion triggers across top Indian stocks.</span>
         </div>
       ) : (
         <div style={{ flex: 1, overflowX: 'auto', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>

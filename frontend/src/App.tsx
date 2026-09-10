@@ -459,7 +459,7 @@ function App() {
             gap: '6px'
           }}
         >
-          ⚡ NR7 Breakout
+          ⚡ 20% Upper Circuit Potential
         </button>
       </div>
 
