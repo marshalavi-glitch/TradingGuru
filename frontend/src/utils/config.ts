@@ -8,11 +8,14 @@ export function clearBackendUrlCache(): void {
 
 export async function resolveBackendUrl(forceRefresh = false): Promise<string> {
   const now = Date.now();
-  if (!forceRefresh && cachedBackendUrl && (now - lastFetchTime < 15000)) {
+
+  if (forceRefresh) {
+    cachedBackendUrl = null;
+  } else if (cachedBackendUrl && (now - lastFetchTime < 15000)) {
     return cachedBackendUrl;
   }
 
-  // 1. Check localStorage override
+  // 1. Check if user explicitly set a custom backend URL in localStorage
   const saved = typeof window !== 'undefined' ? localStorage.getItem('TRADING_GURU_BACKEND_URL') : null;
   if (saved && saved.trim()) {
     let clean = saved.trim().replace(/^wss?:\/\//, '').replace(/^https?:\/\//, '').replace(/\/$/, '');
@@ -22,7 +25,7 @@ export async function resolveBackendUrl(forceRefresh = false): Promise<string> {
     return cachedBackendUrl;
   }
 
-  // 2. Fetch live_backend.json from HF raw repository URL with no-store
+  // 2. Fetch live_backend.json directly from HF raw repository with cache: 'no-store'
   try {
     const rawHfUrl = 'https://huggingface.co/spaces/marshalavi/TradingGuru/raw/main/live_backend.json';
     const res = await fetch(`${rawHfUrl}?_t=${now}`, { cache: 'no-store' });
@@ -37,7 +40,7 @@ export async function resolveBackendUrl(forceRefresh = false): Promise<string> {
       }
     }
   } catch (e) {
-    // Ignore fetch failure, fall through
+    // Ignore fetch failure and fallback
   }
 
   // 3. Fallback to localhost:3002 or window.location.origin

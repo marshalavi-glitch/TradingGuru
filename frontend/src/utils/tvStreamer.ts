@@ -138,8 +138,8 @@ class TVWebSocketStreamer {
       };
 
       this.ws.onclose = () => {
-        console.log('WebSocket connection closed');
-        this.setStatus('disconnected');
+        console.log('WebSocket connection closed. Retrying connection...');
+        this.setStatus('connecting');
         this.ws = null;
         clearBackendUrlCache();
         this.triggerReconnect();
@@ -147,15 +147,13 @@ class TVWebSocketStreamer {
 
       this.ws.onerror = (err) => {
         console.error('WebSocket connection error:', err);
-        this.setStatus('disconnected');
+        this.setStatus('connecting');
         clearBackendUrlCache();
-        if (this.onErrorCallback) {
-          this.onErrorCallback('WebSocket server connection error');
-        }
+        this.triggerReconnect();
       };
     } catch (err) {
       console.error('Failed to create WebSocket client:', err);
-      this.setStatus('disconnected');
+      this.setStatus('connecting');
       clearBackendUrlCache();
       this.triggerReconnect();
     }
@@ -166,9 +164,10 @@ class TVWebSocketStreamer {
 
     this.reconnectTimeout = window.setTimeout(() => {
       this.reconnectTimeout = null;
-      console.log('Attempting to reconnect with fresh backend URL...');
+      console.log('Attempting instant reconnect with fresh backend URL...');
+      clearBackendUrlCache();
       this.connect(true);
-    }, 3000);
+    }, 1500);
   }
 
   private sendSubscription(symbol: string, timeframe: string) {
