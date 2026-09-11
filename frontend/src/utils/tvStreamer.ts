@@ -21,32 +21,20 @@ type OnStatusCallback = (status: 'connecting' | 'connected' | 'disconnected') =>
 
 class TVWebSocketStreamer {
   private ws: WebSocket | null = null;
-  private url: string;
+  private url: string = '';
   private currentSubscription: { symbol: string; timeframe: string } | null = null;
   private onDataCallback: OnDataCallback | null = null;
   private onErrorCallback: OnErrorCallback | null = null;
   private onStatusCallback: OnStatusCallback | null = null;
   private reconnectTimeout: number | null = null;
   private status: 'connecting' | 'connected' | 'disconnected' = 'disconnected';
+  private isConnecting: boolean = false;
 
   constructor() {
-    this.url = this.computeBackendUrl();
+    // URL will be resolved dynamically via resolveBackendUrl()
   }
 
   public computeBackendUrl(): string {
-    const savedUrl = typeof window !== 'undefined' ? localStorage.getItem('TRADING_GURU_BACKEND_URL') : null;
-    if (savedUrl && savedUrl.trim()) {
-      try {
-        const parsed = new URL(savedUrl.trim().startsWith('http') || savedUrl.trim().startsWith('ws') ? savedUrl.trim() : `https://${savedUrl.trim()}`);
-        const wsProto = (parsed.protocol === 'https:' || parsed.protocol === 'wss:') ? 'wss:' : 'ws:';
-        return `${wsProto}//${parsed.host}`;
-      } catch (e) {
-        let clean = savedUrl.trim().replace(/^wss?:\/\//, '').replace(/^https?:\/\//, '').replace(/\/$/, '');
-        const protocol = (typeof window !== 'undefined' && window.location.protocol === 'https:') ? 'wss:' : 'ws:';
-        return `${protocol}//${clean}`;
-      }
-    }
-
     const httpUrl = getBackendHttpUrlSync();
     try {
       const parsed = new URL(httpUrl);
@@ -66,7 +54,6 @@ class TVWebSocketStreamer {
       localStorage.removeItem('TRADING_GURU_BACKEND_URL');
     }
     clearBackendUrlCache();
-    this.url = this.computeBackendUrl();
     this.disconnect();
     this.connect(true);
   }
@@ -84,24 +71,46 @@ class TVWebSocketStreamer {
   }
 
   public async connect(forceFreshUrl = false) {
+    if (this.isConnecting) return;
+    this.isConnecting = true;
+
     if (forceFreshUrl) {
       clearBackendUrlCache();
     }
+
     const httpUrl = await resolveBackendUrl(forceFreshUrl);
+    let targetWsUrl = '';
     try {
       const parsed = new URL(httpUrl);
       const wsProto = (parsed.protocol === 'https:' || parsed.protocol === 'wss:') ? 'wss:' : 'ws:';
-      this.url = `${wsProto}//${parsed.host}`;
+      targetWsUrl = `${wsProto}//${parsed.host}`;
     } catch (e) {
       let clean = httpUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
       const protocol = (typeof window !== 'undefined' && window.location.protocol === 'https:') ? 'wss:' : 'ws:';
-      this.url = `${protocol}//${clean}`;
+      targetWsUrl = `${protocol}//${clean}`;
     }
 
-    if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
+    // If already connected to targetWsUrl, keep connection open
+    if (this.ws && this.ws.readyState === WebSocket.OPEN && this.url === targetWsUrl) {
+      this.isConnecting = false;
+      this.setStatus('connected');
       return;
     }
 
+    // Close existing socket if connecting/connected to a different or stale URL
+    if (this.ws && (this.url !== targetWsUrl || this.ws.readyState === WebSocket.CLOSED || this.ws.readyState === WebSocket.CLOSING)) {
+      try {
+        this.ws.close();
+      } catch (e) {}
+      this.ws = null;
+    }
+
+    if (this.ws && this.ws.readyState === WebSocket.CONNECTING && this.url === targetWsUrl) {
+      this.isConnecting = false;
+      return;
+    }
+
+    this.url = targetWsUrl;
     this.setStatus('connecting');
     console.log(`Connecting to backend WebSocket at ${this.url}...`);
 
@@ -109,10 +118,11 @@ class TVWebSocketStreamer {
       this.ws = new WebSocket(this.url);
 
       this.ws.onopen = () => {
-        console.log('WebSocket connection established');
+        console.log(`WebSocket connection established with ${this.url}`);
+        this.isConnecting = false;
         this.setStatus('connected');
         
-        // Resubscribe if we had an active subscription before disconnect
+        // Resubscribe if we had an active subscription
         if (this.currentSubscription) {
           this.sendSubscription(this.currentSubscription.symbol, this.currentSubscription.timeframe);
         }
@@ -138,7 +148,8 @@ class TVWebSocketStreamer {
       };
 
       this.ws.onclose = () => {
-        console.log('WebSocket connection closed. Retrying connection...');
+        console.log('WebSocket connection closed. Reconnecting...');
+        this.isConnecting = false;
         this.setStatus('connecting');
         this.ws = null;
         clearBackendUrlCache();
@@ -147,12 +158,14 @@ class TVWebSocketStreamer {
 
       this.ws.onerror = (err) => {
         console.error('WebSocket connection error:', err);
+        this.isConnecting = false;
         this.setStatus('connecting');
         clearBackendUrlCache();
         this.triggerReconnect();
       };
     } catch (err) {
       console.error('Failed to create WebSocket client:', err);
+      this.isConnecting = false;
       this.setStatus('connecting');
       clearBackendUrlCache();
       this.triggerReconnect();
@@ -221,8 +234,8 @@ class TVWebSocketStreamer {
 export const tvStreamer = new TVWebSocketStreamer();
 
 export function getBackendHttpUrl(): string {
-  const wsUrl = tvStreamer.computeBackendUrl();
-  return wsUrl.replace(/^wss:\/\//, 'https://').replace(/^ws:\/\//, 'http://');
+  const httpUrl = getBackendHttpUrlSync();
+  return httpUrl;
 }
 
 export default tvStreamer;
