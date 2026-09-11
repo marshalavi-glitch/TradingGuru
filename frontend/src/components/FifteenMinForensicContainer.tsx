@@ -194,7 +194,7 @@ export function FifteenMinForensicContainer() {
             <div style={{ display: 'grid', gridTemplateColumns: selectedAsset === 'both' ? 'repeat(auto-fit, minmax(520px, 1fr))' : '1fr', gap: '20px' }}>
               
               {/* NIFTY 50 ASCII TERMINAL BOX */}
-              {(selectedAsset === 'both' || selectedAsset === 'nifty') && (
+              {(selectedAsset === 'both' || selectedAsset === 'nifty') && rep.nifty && (
                 <div style={{
                   background: '#090d16',
                   border: '1px solid #1e3a8a',
@@ -212,36 +212,36 @@ export function FifteenMinForensicContainer() {
                     📍 1️⃣ LIVE NUMBERS:
                   </div>
                   <div style={{ paddingLeft: '12px', color: '#cbd5e1', marginBottom: '14px' }}>
-                    • Nifty Spot Price     : <strong style={{ color: '#60a5fa' }}>₹{rep.nifty.spot.toFixed(2)}</strong><br />
-                    • ATM Strike Examined  : <strong style={{ color: '#ffffff' }}>{rep.nifty.strike} Strike</strong> (Active Contract Series)<br />
-                    • {rep.nifty.strike} Call (CE) LTP  : <strong style={{ color: '#86efac' }}>₹{rep.nifty.ceLtp}</strong><br />
-                    • {rep.nifty.strike} Put (PE) LTP   : <strong style={{ color: '#fca5a5' }}>₹{rep.nifty.peLtp}</strong><br />
-                    • Total Straddle Price : <strong style={{ color: '#fde047' }}>₹{rep.nifty.totalStraddle}</strong> (Combined ATM Premium)<br />
-                    • Skew Spread %        : <strong style={{ color: Number(rep.nifty.skewSpreadPct) > 0 ? '#86efac' : '#f87171' }}>{Number(rep.nifty.skewSpreadPct) > 0 ? '+' : ''}{rep.nifty.skewSpreadPct}%</strong> ({Number(rep.nifty.skewSpreadPct) > 0 ? 'Positive Call Bloat' : 'Negative Put Bloat'})<br />
-                    • Gamma Ratio (Γ)      : <strong style={{ color: '#facc15' }}>{rep.nifty.gammaRatio}x</strong> ({Number(rep.nifty.gammaRatio) < 0.5 ? 'Put Volume ~2x Call Volume' : 'Balanced Volume Flow'})
+                    • Nifty Spot Price     : <strong style={{ color: '#60a5fa' }}>₹{rep.nifty.spot ? rep.nifty.spot.toFixed(2) : '0.00'}</strong><br />
+                    • ATM Strike Examined  : <strong style={{ color: '#ffffff' }}>{rep.nifty.strike || 'N/A'} Strike</strong> (Active Contract Series)<br />
+                    • {rep.nifty.strike || 'N/A'} Call (CE) LTP  : <strong style={{ color: '#86efac' }}>₹{rep.nifty.ceLtp || '0.0'}</strong><br />
+                    • {rep.nifty.strike || 'N/A'} Put (PE) LTP   : <strong style={{ color: '#fca5a5' }}>₹{rep.nifty.peLtp || '0.0'}</strong><br />
+                    • Total Straddle Price : <strong style={{ color: '#fde047' }}>₹{rep.nifty.totalStraddle || '0.0'}</strong> (Combined ATM Premium)<br />
+                    • Skew Spread %        : <strong style={{ color: Number(rep.nifty.skewSpreadPct || 0) > 0 ? '#86efac' : '#f87171' }}>{Number(rep.nifty.skewSpreadPct || 0) > 0 ? '+' : ''}{rep.nifty.skewSpreadPct || '0'}%</strong> ({Number(rep.nifty.skewSpreadPct || 0) > 0 ? 'Positive Call Bloat' : 'Negative Put Bloat'})<br />
+                    • Gamma Ratio (Γ)      : <strong style={{ color: '#facc15' }}>{rep.nifty.gammaRatio || '1.0'}x</strong> ({Number(rep.nifty.gammaRatio || 1.0) < 0.5 ? 'Put Volume ~2x Call Volume' : 'Balanced Volume Flow'})
                   </div>
 
                   <div style={{ borderTop: '1px dashed #1e3a8a', paddingTop: '10px', color: '#f87171', fontWeight: '800', marginBottom: '6px' }}>
                     🎯 2️⃣ THE FORENSIC VERDICT:
                   </div>
                   <div style={{ paddingLeft: '12px', color: '#86efac', fontWeight: '900', marginBottom: '4px' }}>
-                    👉 👉 👉 {rep.nifty.verdict} 👈 👈 👈
+                    👉 👉 👉 {rep.nifty.verdict || 'NEUTRAL'} 👈 👈 👈
                   </div>
                   <div style={{ paddingLeft: '12px', color: '#94a3b8', fontSize: '12px', marginBottom: '14px' }}>
-                    • {rep.nifty.smartMoneyAction}
+                    • {rep.nifty.smartMoneyAction || 'Analyzing market flow'}
                   </div>
 
                   <div style={{ borderTop: '1px dashed #1e3a8a', paddingTop: '10px', color: '#38bdf8', fontWeight: '800', marginBottom: '6px' }}>
                     💡 3️⃣ WHAT SMART MONEY IS DOING & WHAT TO EXPECT:
                   </div>
                   <div style={{ paddingLeft: '12px', color: '#bfdbfe', fontSize: '12px' }}>
-                    • {rep.nifty.whatToExpect}
+                    • {rep.nifty.whatToExpect || 'Awaiting fresh volume signals'}
                   </div>
                 </div>
               )}
 
               {/* BANK NIFTY ASCII TERMINAL BOX */}
-              {(selectedAsset === 'both' || selectedAsset === 'banknifty') && (
+              {(selectedAsset === 'both' || selectedAsset === 'banknifty') && rep.banknifty && (
                 <div style={{
                   background: '#0e0b16',
                   border: '1px solid #581c87',
@@ -259,30 +259,30 @@ export function FifteenMinForensicContainer() {
                     📍 1️⃣ LIVE NUMBERS:
                   </div>
                   <div style={{ paddingLeft: '12px', color: '#cbd5e1', marginBottom: '14px' }}>
-                    • Bank Nifty Spot      : <strong style={{ color: '#c084fc' }}>₹{rep.banknifty.spot.toFixed(2)}</strong><br />
-                    • ATM Strike Examined  : <strong style={{ color: '#ffffff' }}>{rep.banknifty.strike} Strike</strong><br />
-                    • {rep.banknifty.strike} Call (CE) LTP : <strong style={{ color: '#86efac' }}>₹{rep.banknifty.ceLtp}</strong><br />
-                    • {rep.banknifty.strike} Put (PE) LTP  : <strong style={{ color: '#fca5a5' }}>₹{rep.banknifty.peLtp}</strong><br />
-                    • Total Straddle Price : <strong style={{ color: '#fde047' }}>₹{rep.banknifty.totalStraddle}</strong><br />
-                    • Skew Spread %        : <strong style={{ color: Number(rep.banknifty.skewSpreadPct) > 0 ? '#86efac' : '#f87171' }}>{Number(rep.banknifty.skewSpreadPct) > 0 ? '+' : ''}{rep.banknifty.skewSpreadPct}%</strong> (Institutional Call Bloat)<br />
-                    • Gamma Ratio (Γ)      : <strong style={{ color: '#facc15' }}>{rep.banknifty.gammaRatio}x</strong> (Coiled Spring Equilibrium)
+                    • Bank Nifty Spot      : <strong style={{ color: '#c084fc' }}>₹{rep.banknifty.spot ? rep.banknifty.spot.toFixed(2) : '0.00'}</strong><br />
+                    • ATM Strike Examined  : <strong style={{ color: '#ffffff' }}>{rep.banknifty.strike || 'N/A'} Strike</strong><br />
+                    • {rep.banknifty.strike || 'N/A'} Call (CE) LTP : <strong style={{ color: '#86efac' }}>₹{rep.banknifty.ceLtp || '0.0'}</strong><br />
+                    • {rep.banknifty.strike || 'N/A'} Put (PE) LTP  : <strong style={{ color: '#fca5a5' }}>₹{rep.banknifty.peLtp || '0.0'}</strong><br />
+                    • Total Straddle Price : <strong style={{ color: '#fde047' }}>₹{rep.banknifty.totalStraddle || '0.0'}</strong><br />
+                    • Skew Spread %        : <strong style={{ color: Number(rep.banknifty.skewSpreadPct || 0) > 0 ? '#86efac' : '#f87171' }}>{Number(rep.banknifty.skewSpreadPct || 0) > 0 ? '+' : ''}{rep.banknifty.skewSpreadPct || '0'}%</strong> (Institutional Call Bloat)<br />
+                    • Gamma Ratio (Γ)      : <strong style={{ color: '#facc15' }}>{rep.banknifty.gammaRatio || '1.0'}x</strong> (Coiled Spring Equilibrium)
                   </div>
 
                   <div style={{ borderTop: '1px dashed #581c87', paddingTop: '10px', color: '#f87171', fontWeight: '800', marginBottom: '6px' }}>
                     🎯 2️⃣ THE FORENSIC VERDICT:
                   </div>
                   <div style={{ paddingLeft: '12px', color: '#c084fc', fontWeight: '900', marginBottom: '4px' }}>
-                    👉 👉 👉 {rep.banknifty.verdict} 👈 👈 👈
+                    👉 👉 👉 {rep.banknifty.verdict || 'NEUTRAL'} 👈 👈 👈
                   </div>
                   <div style={{ paddingLeft: '12px', color: '#94a3b8', fontSize: '12px', marginBottom: '14px' }}>
-                    • {rep.banknifty.smartMoneyAction}
+                    • {rep.banknifty.smartMoneyAction || 'Analyzing market flow'}
                   </div>
 
                   <div style={{ borderTop: '1px dashed #581c87', paddingTop: '10px', color: '#c084fc', fontWeight: '800', marginBottom: '6px' }}>
                     💡 3️⃣ WHAT SMART MONEY IS DOING & WHAT TO EXPECT:
                   </div>
                   <div style={{ paddingLeft: '12px', color: '#e9d5ff', fontSize: '12px' }}>
-                    • {rep.banknifty.whatToExpect}
+                    • {rep.banknifty.whatToExpect || 'Awaiting fresh volume signals'}
                   </div>
                 </div>
               )}

@@ -12,6 +12,16 @@ interface SymbolSkewData {
   expectedMoveDirection?: string;
 }
 
+interface HourlyTimelineSlot {
+  timeWindow: string;
+  niftySkew: string;
+  niftyStraddlePrice: string;
+  bankniftySkew: string;
+  marketAction: string;
+  isActive?: boolean;
+  isCompleted?: boolean;
+}
+
 export function HourlyUpdatesContainer() {
   const [timeline, setTimeline] = useState<HourlyTimelineSlot[]>([]);
   const [niftySpot, setNiftySpot] = useState<number>(0);

@@ -197,6 +197,16 @@ export function BacktestResultsContainer() {
             const bSkewData = json.banknifty?.straddleSkew;
             const nSkewData = json.nifty?.straddleSkew;
 
+            const getSavedSignals = (): LiveSignal[] => {
+              try {
+                const todayKey = 'today_live_math_signals_' + new Date().toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' }).replace(/\//g, '-');
+                const saved = localStorage.getItem(todayKey);
+                return saved ? JSON.parse(saved) : [];
+              } catch (e) {
+                return [];
+              }
+            };
+
             const signals: LiveSignal[] = [];
             const currentHistory = historicalSignalsRef.current.length > 0 ? historicalSignalsRef.current : getSavedSignals();
 

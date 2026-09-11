@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getBackendHttpUrl } from '../utils/tvStreamer';
 import { 
   Sparkles, 
   Flame, 
@@ -20,7 +21,7 @@ export const DadaThoughtsContainer: React.FC<DadaThoughtsProps> = ({ onSymbolSel
   const fetchLive200EmaStocks = async (force = false) => {
     setLoadingScanner(true);
     try {
-      const backendUrl = window.location.port === '5175' ? 'http://localhost:3002' : window.location.origin;
+      const backendUrl = getBackendHttpUrl();
       const res = await fetch(`${backendUrl}/api/scanner/weekly-200-ema?force=${force ? 'true' : 'false'}`);
       if (res.ok) {
         const data = await res.json();

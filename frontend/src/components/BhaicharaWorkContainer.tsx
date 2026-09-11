@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { getBackendHttpUrl } from '../utils/tvStreamer';
 import { 
   Award, 
   RefreshCw,
@@ -102,7 +103,7 @@ export const BhaicharaWorkContainer: React.FC<BhaicharaWorkProps> = ({
     let isMounted = true;
     const fetchBhaicharaData = async () => {
       try {
-        const backendUrl = window.location.port === '5175' ? 'http://localhost:3002' : window.location.origin;
+        const backendUrl = getBackendHttpUrl();
         
         const [biasRes, picksRes, confluenceRes] = await Promise.all([
           fetch(`${backendUrl}/api/scanner/opening-bias`).catch(() => null),

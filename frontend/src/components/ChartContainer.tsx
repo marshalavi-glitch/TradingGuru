@@ -306,14 +306,24 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
 
   // Update chart data
   useEffect(() => {
-    if (!candlestickSeriesRef.current || !volumeSeriesRef.current || candles.length === 0) return;
+    if (!candlestickSeriesRef.current || !volumeSeriesRef.current || !candles || candles.length === 0) return;
+
+    // Sanitize candles: filter out invalid numbers, deduplicate timestamps, and sort ascending
+    const validCandlesMap = new Map<number, Candle>();
+    candles.forEach((c) => {
+      if (c && typeof c.time === 'number' && !isNaN(c.time) && !isNaN(c.close) && !isNaN(c.open) && !isNaN(c.high) && !isNaN(c.low)) {
+        validCandlesMap.set(c.time, c);
+      }
+    });
+    const sortedCandles = Array.from(validCandlesMap.values()).sort((a, b) => a.time - b.time);
+    if (sortedCandles.length === 0) return;
 
     let chartData = [];
     if (candleStyle === 'heikin-ashi') {
       let prevHaOpen = null;
       let prevHaClose = null;
       
-      chartData = candles.map((c, idx) => {
+      chartData = sortedCandles.map((c, idx) => {
         const haClose = (c.open + c.high + c.low + c.close) / 4;
         let haOpen;
         if (idx === 0 || prevHaOpen === null) {
@@ -336,7 +346,7 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
         };
       });
     } else {
-      chartData = candles.map((c) => ({
+      chartData = sortedCandles.map((c) => ({
         time: c.time as Time,
         open: c.open,
         high: c.high,
@@ -345,7 +355,7 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
       }));
     }
 
-    const volumeData = candles.map((c, idx) => {
+    const volumeData = sortedCandles.map((c, idx) => {
       let isBullish = c.close >= c.open;
       if (candleStyle === 'heikin-ashi') {
         const ha = chartData[idx];

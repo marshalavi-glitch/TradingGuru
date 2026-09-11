@@ -82,11 +82,11 @@
     },
     "z11_below_s6": {
       "name": "Open Below S6 (Extreme Gap Down)",
-      "recommendation": "Strong Bullish Continuation bias (64% green close rate). Bounces off support wicks heavily favor Calls (CE).",
-      "count": 25,
-      "greenPct": 64,
-      "avgRange": 276.1,
-      "avgMove": 24.6
+      "recommendation": "Strong Bullish Continuation bias (65.4% green close rate). Bounces off support wicks heavily favor Calls (CE).",
+      "count": 26,
+      "greenPct": 65.4,
+      "avgRange": 273.8,
+      "avgMove": 28.6
     }
   },
   "BANKNIFTY": {
@@ -172,11 +172,11 @@
     },
     "z11_below_s6": {
       "name": "Open Below S6 (Extreme Gap Down)",
-      "recommendation": "Panic Climax. Strong short-covering likelihood. Fade gap down by buying Calls (CE) on first 5m green close.",
-      "count": 14,
-      "greenPct": 57.1,
-      "avgRange": 856.9,
-      "avgMove": 110.8
+      "recommendation": "Strong Bullish Continuation bias (60% green close rate). Bounces off support wicks heavily favor Calls (CE).",
+      "count": 15,
+      "greenPct": 60,
+      "avgRange": 862.9,
+      "avgMove": 145.8
     }
   }
 }

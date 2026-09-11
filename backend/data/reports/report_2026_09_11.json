@@ -1,0 +1,1279 @@
+{
+  "date": "11/9/2026",
+  "niftyClose": {
+    "close": 23398.1,
+    "open": 23270.3,
+    "high": 23448.1,
+    "low": 23231.4,
+    "changePct": -0.33946962662600727,
+    "levels": {
+      "r6": 23593.129931437423,
+      "r5": 23577.857319999996,
+      "r4": 23540.9675,
+      "r3": 23509.38375,
+      "r2": 23498.85583333333,
+      "s2": 23456.744166666667,
+      "s3": 23446.216249999998,
+      "s4": 23414.6325,
+      "s5": 23377.742680000003,
+      "s6": 23362.470068562576
+    }
+  },
+  "bankniftyClose": {
+    "close": 56606.55,
+    "open": 55970.15,
+    "high": 56645.85,
+    "low": 55699.45,
+    "changePct": 0.2383484189938648,
+    "levels": {
+      "r6": 56816.71582995224,
+      "r5": 56771.032960000004,
+      "r4": 56660.765,
+      "r3": 56566.3575,
+      "r2": 56534.88833333333,
+      "s2": 56409.011666666665,
+      "s3": 56377.542499999996,
+      "s4": 56283.134999999995,
+      "s5": 56172.86703999999,
+      "s6": 56127.18417004775
+    }
+  },
+  "topGainers": [
+    {
+      "symbol": "NSE:HDFCBANK",
+      "changePct": 2.0827327760161496,
+      "close": 708.25
+    },
+    {
+      "symbol": "NSE:BANKNIFTY",
+      "changePct": 0.2383484189938648,
+      "close": 56606.55
+    },
+    {
+      "symbol": "NSE:ITC",
+      "changePct": 0.21210952564597432,
+      "close": 259.85
+    },
+    {
+      "symbol": "NSE:INFY",
+      "changePct": 0.11577424023155287,
+      "close": 1037.7
+    },
+    {
+      "symbol": "NSE:AXISBANK",
+      "changePct": 0,
+      "close": 1246
+    },
+    {
+      "symbol": "NSE:TCS",
+      "changePct": -0.14972097454742195,
+      "close": 2200.8
+    },
+    {
+      "symbol": "NSE:NIFTY",
+      "changePct": -0.33946962662600727,
+      "close": 23398.1
+    },
+    {
+      "symbol": "NSE:ICICIBANK",
+      "changePct": -0.3755868544600972,
+      "close": 1379.3
+    },
+    {
+      "symbol": "NSE:BHARTIARTL",
+      "changePct": -0.4295812941816254,
+      "close": 1831.1
+    },
+    {
+      "symbol": "NSE:LT",
+      "changePct": -0.614412136536035,
+      "close": 3930.7
+    }
+  ],
+  "topLosers": [
+    {
+      "symbol": "NSE:SBIN",
+      "changePct": -1.3865504605328314,
+      "close": 995.7
+    },
+    {
+      "symbol": "NSE:RELIANCE",
+      "changePct": -1.2951334379905808,
+      "close": 1257.5
+    },
+    {
+      "symbol": "NSE:BAJFINANCE",
+      "changePct": -0.8624820316243411,
+      "close": 1034.5
+    },
+    {
+      "symbol": "NSE:LT",
+      "changePct": -0.614412136536035,
+      "close": 3930.7
+    },
+    {
+      "symbol": "NSE:BHARTIARTL",
+      "changePct": -0.4295812941816254,
+      "close": 1831.1
+    },
+    {
+      "symbol": "NSE:ICICIBANK",
+      "changePct": -0.3755868544600972,
+      "close": 1379.3
+    },
+    {
+      "symbol": "NSE:NIFTY",
+      "changePct": -0.33946962662600727,
+      "close": 23398.1
+    },
+    {
+      "symbol": "NSE:TCS",
+      "changePct": -0.14972097454742195,
+      "close": 2200.8
+    },
+    {
+      "symbol": "NSE:AXISBANK",
+      "changePct": 0,
+      "close": 1246
+    },
+    {
+      "symbol": "NSE:INFY",
+      "changePct": 0.11577424023155287,
+      "close": 1037.7
+    }
+  ],
+  "bouncesSupport": [
+    {
+      "symbol": "NSE:HDFCBANK",
+      "levelName": "Target (S5)",
+      "levelVal": 686.5690400000001,
+      "low": 681.9,
+      "close": 708.25,
+      "bounceStrengthPct": 3.8642029623111926,
+      "pattern": "SSL Sweep Reversal (Low swept 686.2, close 708.3)",
+      "touchTime": "01:51 pm",
+      "optionPremium": 13.1,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:BANKNIFTY",
+      "levelName": "Support (S2)",
+      "levelVal": 56409.011666666665,
+      "low": 55699.45,
+      "close": 56606.55,
+      "bounceStrengthPct": 1.6285618619214477,
+      "pattern": "SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown",
+      "touchTime": "01:51 pm",
+      "optionPremium": 542.15,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:BANKNIFTY",
+      "levelName": "Buy Reversal (S3)",
+      "levelVal": 56377.542499999996,
+      "low": 55699.45,
+      "close": 56606.55,
+      "bounceStrengthPct": 1.6285618619214477,
+      "pattern": "SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown",
+      "touchTime": "01:51 pm",
+      "optionPremium": 786.5,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:BANKNIFTY",
+      "levelName": "Break Down (S4)",
+      "levelVal": 56283.134999999995,
+      "low": 55699.45,
+      "close": 56606.55,
+      "bounceStrengthPct": 1.6285618619214477,
+      "pattern": "SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown",
+      "touchTime": "01:52 pm",
+      "optionPremium": 786.5,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:BANKNIFTY",
+      "levelName": "Target (S5)",
+      "levelVal": 56172.86703999999,
+      "low": 55699.45,
+      "close": 56606.55,
+      "bounceStrengthPct": 1.6285618619214477,
+      "pattern": "SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown",
+      "touchTime": "01:52 pm",
+      "optionPremium": 786.5,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:BANKNIFTY",
+      "levelName": "Target (S6)",
+      "levelVal": 56127.18417004775,
+      "low": 55699.45,
+      "close": 56606.55,
+      "bounceStrengthPct": 1.6285618619214477,
+      "pattern": "SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown",
+      "touchTime": "01:52 pm",
+      "optionPremium": 786.5,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:ITC",
+      "levelName": "S3 (VAL Reversion)",
+      "levelVal": 257.98,
+      "low": 257.7,
+      "close": 259.85,
+      "bounceStrengthPct": 0.8343034536282632,
+      "pattern": "SSL Sweep Reversal (Low swept 259.1, close 259.9)"
+    },
+    {
+      "symbol": "NSE:INFY",
+      "levelName": "Support (S2)",
+      "levelVal": 1032.9616666666666,
+      "low": 1029.7,
+      "close": 1037.7,
+      "bounceStrengthPct": 0.776925318053802,
+      "pattern": "BSL Sweep Reversal (High swept 1046.6, close 1037.7) | Double Top Breakdown",
+      "touchTime": "01:52 pm",
+      "optionPremium": 26.1,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:INFY",
+      "levelName": "Buy Reversal (S3)",
+      "levelVal": 1031.1925,
+      "low": 1029.7,
+      "close": 1037.7,
+      "bounceStrengthPct": 0.776925318053802,
+      "pattern": "BSL Sweep Reversal (High swept 1046.6, close 1037.7) | Double Top Breakdown",
+      "touchTime": "01:52 pm",
+      "optionPremium": 26.1,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:INFY",
+      "levelName": "S3 (VAL Reversion)",
+      "levelVal": 1031.1925,
+      "low": 1029.7,
+      "close": 1037.7,
+      "bounceStrengthPct": 0.776925318053802,
+      "pattern": "BSL Sweep Reversal (High swept 1046.6, close 1037.7) | Double Top Breakdown"
+    },
+    {
+      "symbol": "NSE:AXISBANK",
+      "levelName": "Support (S2)",
+      "levelVal": 1243.2866666666666,
+      "low": 1229.8,
+      "close": 1246,
+      "bounceStrengthPct": 1.3172873637989955,
+      "pattern": "SSL Sweep Reversal (Low swept 1240.4, close 1246.0) | Double Top Breakdown",
+      "touchTime": "01:52 pm",
+      "optionPremium": 15.75,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:AXISBANK",
+      "levelName": "Buy Reversal (S3)",
+      "levelVal": 1241.93,
+      "low": 1229.8,
+      "close": 1246,
+      "bounceStrengthPct": 1.3172873637989955,
+      "pattern": "SSL Sweep Reversal (Low swept 1240.4, close 1246.0) | Double Top Breakdown",
+      "touchTime": "01:52 pm",
+      "optionPremium": 22.75,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:AXISBANK",
+      "levelName": "S6 (VAL Capitulation)",
+      "levelVal": 1231.133182844244,
+      "low": 1229.8,
+      "close": 1246,
+      "bounceStrengthPct": 1.3172873637989955,
+      "pattern": "SSL Sweep Reversal (Low swept 1240.4, close 1246.0) | Double Top Breakdown"
+    },
+    {
+      "symbol": "NSE:TCS",
+      "levelName": "Support (S2)",
+      "levelVal": 2196.5099999999998,
+      "low": 2185.5,
+      "close": 2200.8,
+      "bounceStrengthPct": 0.7000686341798299,
+      "pattern": "Inverted Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 2190.6, close 2200.8) | Double Top Breakdown",
+      "touchTime": "01:52 pm",
+      "optionPremium": 55.7,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:TCS",
+      "levelName": "Buy Reversal (S3)",
+      "levelVal": 2192.7149999999997,
+      "low": 2185.5,
+      "close": 2200.8,
+      "bounceStrengthPct": 0.7000686341798299,
+      "pattern": "Inverted Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 2190.6, close 2200.8) | Double Top Breakdown",
+      "touchTime": "01:52 pm",
+      "optionPremium": 55.7,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:NIFTY",
+      "levelName": "Support (S2)",
+      "levelVal": 23456.744166666667,
+      "low": 23231.4,
+      "close": 23398.1,
+      "bounceStrengthPct": 0.7175632979501755,
+      "pattern": "SSL Sweep Reversal (Low swept 23380.1, close 23398.1)",
+      "touchTime": "01:51 pm",
+      "optionPremium": 96.3,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:NIFTY",
+      "levelName": "Buy Reversal (S3)",
+      "levelVal": 23446.216249999998,
+      "low": 23231.4,
+      "close": 23398.1,
+      "bounceStrengthPct": 0.7175632979501755,
+      "pattern": "SSL Sweep Reversal (Low swept 23380.1, close 23398.1)",
+      "touchTime": "01:51 pm",
+      "optionPremium": 106,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:NIFTY",
+      "levelName": "Break Down (S4)",
+      "levelVal": 23414.6325,
+      "low": 23231.4,
+      "close": 23398.1,
+      "bounceStrengthPct": 0.7175632979501755,
+      "pattern": "SSL Sweep Reversal (Low swept 23380.1, close 23398.1)",
+      "touchTime": "01:51 pm",
+      "optionPremium": 106,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:NIFTY",
+      "levelName": "Target (S5)",
+      "levelVal": 23377.742680000003,
+      "low": 23231.4,
+      "close": 23398.1,
+      "bounceStrengthPct": 0.7175632979501755,
+      "pattern": "SSL Sweep Reversal (Low swept 23380.1, close 23398.1)",
+      "touchTime": "01:51 pm",
+      "optionPremium": 106,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:NIFTY",
+      "levelName": "Target (S6)",
+      "levelVal": 23362.470068562576,
+      "low": 23231.4,
+      "close": 23398.1,
+      "bounceStrengthPct": 0.7175632979501755,
+      "pattern": "SSL Sweep Reversal (Low swept 23380.1, close 23398.1)",
+      "touchTime": "01:51 pm",
+      "optionPremium": 105.75,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:ICICIBANK",
+      "levelName": "Support (S2)",
+      "levelVal": 1380.9983333333334,
+      "low": 1367.6,
+      "close": 1379.3,
+      "bounceStrengthPct": 0.8555133079847942,
+      "pattern": "SSL Sweep Reversal (Low swept 1373.9, close 1379.3)",
+      "touchTime": "01:51 pm",
+      "optionPremium": 24.1,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:ICICIBANK",
+      "levelName": "Buy Reversal (S3)",
+      "levelVal": 1379.2475,
+      "low": 1367.6,
+      "close": 1379.3,
+      "bounceStrengthPct": 0.8555133079847942,
+      "pattern": "SSL Sweep Reversal (Low swept 1373.9, close 1379.3)",
+      "touchTime": "01:51 pm",
+      "optionPremium": 24.1,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:ICICIBANK",
+      "levelName": "Break Down (S4)",
+      "levelVal": 1373.9950000000001,
+      "low": 1367.6,
+      "close": 1379.3,
+      "bounceStrengthPct": 0.8555133079847942,
+      "pattern": "SSL Sweep Reversal (Low swept 1373.9, close 1379.3)",
+      "touchTime": "01:51 pm",
+      "optionPremium": 24.1,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:ICICIBANK",
+      "levelName": "S5 (VAL Extreme)",
+      "levelVal": 1367.8600800000004,
+      "low": 1367.6,
+      "close": 1379.3,
+      "bounceStrengthPct": 0.8555133079847942,
+      "pattern": "SSL Sweep Reversal (Low swept 1373.9, close 1379.3)"
+    },
+    {
+      "symbol": "NSE:BHARTIARTL",
+      "levelName": "Support (S2)",
+      "levelVal": 1832.5833333333333,
+      "low": 1830.5,
+      "close": 1831.1,
+      "bounceStrengthPct": 0.03277792952744655,
+      "pattern": "Gravestone Doji (Bearish Rejection) | Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 1849.0, close 1831.1)",
+      "touchTime": "01:52 pm",
+      "optionPremium": 23.2,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:BHARTIARTL",
+      "levelName": "Buy Reversal (S3)",
+      "levelVal": 1829.375,
+      "low": 1830.5,
+      "close": 1831.1,
+      "bounceStrengthPct": 0.03277792952744655,
+      "pattern": "Gravestone Doji (Bearish Rejection) | Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 1849.0, close 1831.1)",
+      "touchTime": "03:07 pm",
+      "optionPremium": 25,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:BHARTIARTL",
+      "levelName": "S3 (VAL Reversion)",
+      "levelVal": 1829.375,
+      "low": 1830.5,
+      "close": 1831.1,
+      "bounceStrengthPct": 0.03277792952744655,
+      "pattern": "Gravestone Doji (Bearish Rejection) | Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 1849.0, close 1831.1)"
+    },
+    {
+      "symbol": "NSE:LT",
+      "levelName": "Support (S2)",
+      "levelVal": 3944.825,
+      "low": 3880.7,
+      "close": 3930.7,
+      "bounceStrengthPct": 1.2884273455819826,
+      "pattern": "SSL Sweep Reversal (Low swept 3910.0, close 3930.7)",
+      "touchTime": "01:52 pm",
+      "optionPremium": 70.45,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:LT",
+      "levelName": "Buy Reversal (S3)",
+      "levelVal": 3939.7375,
+      "low": 3880.7,
+      "close": 3930.7,
+      "bounceStrengthPct": 1.2884273455819826,
+      "pattern": "SSL Sweep Reversal (Low swept 3910.0, close 3930.7)",
+      "touchTime": "01:52 pm",
+      "optionPremium": 70.45,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:LT",
+      "levelName": "Break Down (S4)",
+      "levelVal": 3924.475,
+      "low": 3880.7,
+      "close": 3930.7,
+      "bounceStrengthPct": 1.2884273455819826,
+      "pattern": "SSL Sweep Reversal (Low swept 3910.0, close 3930.7)",
+      "touchTime": "01:52 pm",
+      "optionPremium": 70.45,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:LT",
+      "levelName": "Target (S5)",
+      "levelVal": 3906.6483999999996,
+      "low": 3880.7,
+      "close": 3930.7,
+      "bounceStrengthPct": 1.2884273455819826,
+      "pattern": "SSL Sweep Reversal (Low swept 3910.0, close 3930.7)",
+      "touchTime": "01:52 pm",
+      "optionPremium": 70.45,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:LT",
+      "levelName": "Target (S6)",
+      "levelVal": 3898.8612531969306,
+      "low": 3880.7,
+      "close": 3930.7,
+      "bounceStrengthPct": 1.2884273455819826,
+      "pattern": "SSL Sweep Reversal (Low swept 3910.0, close 3930.7)",
+      "touchTime": "01:52 pm",
+      "optionPremium": 70.45,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:BAJFINANCE",
+      "levelName": "Support (S2)",
+      "levelVal": 1041.2633333333333,
+      "low": 1015.1,
+      "close": 1034.5,
+      "bounceStrengthPct": 1.911141759432566,
+      "pattern": "Hammer (Bullish Rejection)",
+      "touchTime": "01:52 pm",
+      "optionPremium": 22.85,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:BAJFINANCE",
+      "levelName": "Buy Reversal (S3)",
+      "levelVal": 1040.145,
+      "low": 1015.1,
+      "close": 1034.5,
+      "bounceStrengthPct": 1.911141759432566,
+      "pattern": "Hammer (Bullish Rejection)",
+      "touchTime": "01:52 pm",
+      "optionPremium": 22.85,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:BAJFINANCE",
+      "levelName": "Break Down (S4)",
+      "levelVal": 1036.79,
+      "low": 1015.1,
+      "close": 1034.5,
+      "bounceStrengthPct": 1.911141759432566,
+      "pattern": "Hammer (Bullish Rejection)",
+      "touchTime": "01:52 pm",
+      "optionPremium": 22.85,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:BAJFINANCE",
+      "levelName": "Target (S5)",
+      "levelVal": 1032.8713599999999,
+      "low": 1015.1,
+      "close": 1034.5,
+      "bounceStrengthPct": 1.911141759432566,
+      "pattern": "Hammer (Bullish Rejection)",
+      "touchTime": "01:52 pm",
+      "optionPremium": 22.85,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:BAJFINANCE",
+      "levelName": "Target (S6)",
+      "levelVal": 1031.2176073323685,
+      "low": 1015.1,
+      "close": 1034.5,
+      "bounceStrengthPct": 1.911141759432566,
+      "pattern": "Hammer (Bullish Rejection)",
+      "touchTime": "01:52 pm",
+      "optionPremium": 22.85,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:RELIANCE",
+      "levelName": "Support (S2)",
+      "levelVal": 1270.5166666666667,
+      "low": 1253,
+      "close": 1257.5,
+      "bounceStrengthPct": 0.3591380686352753,
+      "pattern": "Double Top Breakdown",
+      "touchTime": "01:51 pm",
+      "optionPremium": 20.55,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:RELIANCE",
+      "levelName": "Buy Reversal (S3)",
+      "levelVal": 1268.775,
+      "low": 1253,
+      "close": 1257.5,
+      "bounceStrengthPct": 0.3591380686352753,
+      "pattern": "Double Top Breakdown",
+      "touchTime": "01:51 pm",
+      "optionPremium": 20.55,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:RELIANCE",
+      "levelName": "Target (S5)",
+      "levelVal": 1257.4471999999998,
+      "low": 1253,
+      "close": 1257.5,
+      "bounceStrengthPct": 0.3591380686352753,
+      "pattern": "Double Top Breakdown",
+      "touchTime": "01:51 pm",
+      "optionPremium": 20.55,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:RELIANCE",
+      "levelName": "Target (S6)",
+      "levelVal": 1254.8844665561082,
+      "low": 1253,
+      "close": 1257.5,
+      "bounceStrengthPct": 0.3591380686352753,
+      "pattern": "Double Top Breakdown",
+      "touchTime": "01:51 pm",
+      "optionPremium": 20.55,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:RELIANCE",
+      "levelName": "Break Down (S4)",
+      "levelVal": 1263.55,
+      "low": 1253,
+      "close": 1257.5,
+      "bounceStrengthPct": 0.3591380686352753,
+      "pattern": "Double Top Breakdown",
+      "touchTime": "01:56 pm",
+      "optionPremium": 21.7,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:SBIN",
+      "levelName": "Target (S6)",
+      "levelVal": 998.7052647352648,
+      "low": 993,
+      "close": 995.7,
+      "bounceStrengthPct": 0.2719033232628445,
+      "pattern": "Neutral Candle",
+      "touchTime": "01:52 pm",
+      "optionPremium": 21.1,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:SBIN",
+      "levelName": "Target (S5)",
+      "levelVal": 1000.2039199999999,
+      "low": 993,
+      "close": 995.7,
+      "bounceStrengthPct": 0.2719033232628445,
+      "pattern": "Neutral Candle",
+      "touchTime": "02:02 pm",
+      "optionPremium": 16.85,
+      "isFno": true
+    }
+  ],
+  "rejectionsResistance": [
+    {
+      "symbol": "NSE:HDFCBANK",
+      "levelName": "Breakout (R4)",
+      "levelVal": 698.3649999999999,
+      "high": 709,
+      "close": 708.25,
+      "rejectStrengthPct": 0.10578279266572638,
+      "pattern": "SSL Sweep Reversal (Low swept 686.2, close 708.3)",
+      "touchTime": "01:51 pm",
+      "optionPremium": 12.75,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:HDFCBANK",
+      "levelName": "Sell reversal (R3)",
+      "levelVal": 696.0825,
+      "high": 709,
+      "close": 708.25,
+      "rejectStrengthPct": 0.10578279266572638,
+      "pattern": "SSL Sweep Reversal (Low swept 686.2, close 708.3)",
+      "touchTime": "01:51 pm",
+      "optionPremium": 12.75,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:HDFCBANK",
+      "levelName": "Resistance (R2)",
+      "levelVal": 695.3216666666666,
+      "high": 709,
+      "close": 708.25,
+      "rejectStrengthPct": 0.10578279266572638,
+      "pattern": "SSL Sweep Reversal (Low swept 686.2, close 708.3)",
+      "touchTime": "01:51 pm",
+      "optionPremium": 12.6,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:HDFCBANK",
+      "levelName": "Target (R5)",
+      "levelVal": 701.0309599999998,
+      "high": 709,
+      "close": 708.25,
+      "rejectStrengthPct": 0.10578279266572638,
+      "pattern": "SSL Sweep Reversal (Low swept 686.2, close 708.3)",
+      "touchTime": "01:56 pm",
+      "optionPremium": 11.95,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:HDFCBANK",
+      "levelName": "Target (R6)",
+      "levelVal": 702.1919265520256,
+      "high": 709,
+      "close": 708.25,
+      "rejectStrengthPct": 0.10578279266572638,
+      "pattern": "SSL Sweep Reversal (Low swept 686.2, close 708.3)",
+      "touchTime": "02:07 pm",
+      "optionPremium": 10.05,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:BANKNIFTY",
+      "levelName": "Breakout (R4)",
+      "levelVal": 56660.765,
+      "high": 56645.85,
+      "close": 56606.55,
+      "rejectStrengthPct": 0.06937842754587606,
+      "pattern": "SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown",
+      "touchTime": "01:51 pm",
+      "optionPremium": 542.15,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:BANKNIFTY",
+      "levelName": "Sell reversal (R3)",
+      "levelVal": 56566.3575,
+      "high": 56645.85,
+      "close": 56606.55,
+      "rejectStrengthPct": 0.06937842754587606,
+      "pattern": "SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown",
+      "touchTime": "01:51 pm",
+      "optionPremium": 542.15,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:BANKNIFTY",
+      "levelName": "Resistance (R2)",
+      "levelVal": 56534.88833333333,
+      "high": 56645.85,
+      "close": 56606.55,
+      "rejectStrengthPct": 0.06937842754587606,
+      "pattern": "SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown",
+      "touchTime": "01:51 pm",
+      "optionPremium": 542.15,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:BANKNIFTY",
+      "levelName": "Target (R6)",
+      "levelVal": 56816.71582995224,
+      "high": 56645.85,
+      "close": 56606.55,
+      "rejectStrengthPct": 0.06937842754587606,
+      "pattern": "SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown",
+      "touchTime": "02:06 pm",
+      "optionPremium": 523.9,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:BANKNIFTY",
+      "levelName": "Target (R5)",
+      "levelVal": 56771.032960000004,
+      "high": 56645.85,
+      "close": 56606.55,
+      "rejectStrengthPct": 0.06937842754587606,
+      "pattern": "SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown",
+      "touchTime": "02:07 pm",
+      "optionPremium": 523.9,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:BANKNIFTY",
+      "levelName": "R4 (VAH Breakout Trigger)",
+      "levelVal": 56660.765,
+      "high": 56645.85,
+      "close": 56606.55,
+      "rejectStrengthPct": 0.06937842754587606,
+      "pattern": "SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown"
+    },
+    {
+      "symbol": "NSE:ITC",
+      "levelName": "Target (R5)",
+      "levelVal": 263.48176,
+      "high": 261.65,
+      "close": 259.85,
+      "rejectStrengthPct": 0.6879419071278252,
+      "pattern": "SSL Sweep Reversal (Low swept 259.1, close 259.9)",
+      "touchTime": "01:52 pm",
+      "optionPremium": 3.15,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:ITC",
+      "levelName": "Breakout (R4)",
+      "levelVal": 261.94,
+      "high": 261.65,
+      "close": 259.85,
+      "rejectStrengthPct": 0.6879419071278252,
+      "pattern": "SSL Sweep Reversal (Low swept 259.1, close 259.9)",
+      "touchTime": "01:52 pm",
+      "optionPremium": 3.15,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:ITC",
+      "levelName": "Sell reversal (R3)",
+      "levelVal": 260.62,
+      "high": 261.65,
+      "close": 259.85,
+      "rejectStrengthPct": 0.6879419071278252,
+      "pattern": "SSL Sweep Reversal (Low swept 259.1, close 259.9)",
+      "touchTime": "01:52 pm",
+      "optionPremium": 3.15,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:ITC",
+      "levelName": "Resistance (R2)",
+      "levelVal": 260.18,
+      "high": 261.65,
+      "close": 259.85,
+      "rejectStrengthPct": 0.6879419071278252,
+      "pattern": "SSL Sweep Reversal (Low swept 259.1, close 259.9)",
+      "touchTime": "01:52 pm",
+      "optionPremium": 3.15,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:ITC",
+      "levelName": "R4 (VAH Breakout Trigger)",
+      "levelVal": 261.94,
+      "high": 261.65,
+      "close": 259.85,
+      "rejectStrengthPct": 0.6879419071278252,
+      "pattern": "SSL Sweep Reversal (Low swept 259.1, close 259.9)"
+    },
+    {
+      "symbol": "NSE:INFY",
+      "levelName": "Sell reversal (R3)",
+      "levelVal": 1041.8075,
+      "high": 1047.3,
+      "close": 1037.7,
+      "rejectStrengthPct": 0.9166427957605184,
+      "pattern": "BSL Sweep Reversal (High swept 1046.6, close 1037.7) | Double Top Breakdown",
+      "touchTime": "01:52 pm",
+      "optionPremium": 23.65,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:INFY",
+      "levelName": "Resistance (R2)",
+      "levelVal": 1040.0383333333334,
+      "high": 1047.3,
+      "close": 1037.7,
+      "rejectStrengthPct": 0.9166427957605184,
+      "pattern": "BSL Sweep Reversal (High swept 1046.6, close 1037.7) | Double Top Breakdown",
+      "touchTime": "01:52 pm",
+      "optionPremium": 23.65,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:INFY",
+      "levelName": "R4 (VAH Breakout Trigger)",
+      "levelVal": 1047.115,
+      "high": 1047.3,
+      "close": 1037.7,
+      "rejectStrengthPct": 0.9166427957605184,
+      "pattern": "BSL Sweep Reversal (High swept 1046.6, close 1037.7) | Double Top Breakdown"
+    },
+    {
+      "symbol": "NSE:AXISBANK",
+      "levelName": "Breakout (R4)",
+      "levelVal": 1254.1399999999999,
+      "high": 1252.8,
+      "close": 1246,
+      "rejectStrengthPct": 0.542784163473815,
+      "pattern": "SSL Sweep Reversal (Low swept 1240.4, close 1246.0) | Double Top Breakdown",
+      "touchTime": "01:52 pm",
+      "optionPremium": 15.75,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:AXISBANK",
+      "levelName": "Sell reversal (R3)",
+      "levelVal": 1250.07,
+      "high": 1252.8,
+      "close": 1246,
+      "rejectStrengthPct": 0.542784163473815,
+      "pattern": "SSL Sweep Reversal (Low swept 1240.4, close 1246.0) | Double Top Breakdown",
+      "touchTime": "01:52 pm",
+      "optionPremium": 15.75,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:AXISBANK",
+      "levelName": "Resistance (R2)",
+      "levelVal": 1248.7133333333334,
+      "high": 1252.8,
+      "close": 1246,
+      "rejectStrengthPct": 0.542784163473815,
+      "pattern": "SSL Sweep Reversal (Low swept 1240.4, close 1246.0) | Double Top Breakdown",
+      "touchTime": "01:52 pm",
+      "optionPremium": 15.75,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:AXISBANK",
+      "levelName": "R4 (VAH Breakout Trigger)",
+      "levelVal": 1254.1399999999999,
+      "high": 1252.8,
+      "close": 1246,
+      "rejectStrengthPct": 0.542784163473815,
+      "pattern": "SSL Sweep Reversal (Low swept 1240.4, close 1246.0) | Double Top Breakdown"
+    },
+    {
+      "symbol": "NSE:TCS",
+      "levelName": "Breakout (R4)",
+      "levelVal": 2226.87,
+      "high": 2232.6,
+      "close": 2200.8,
+      "rejectStrengthPct": 1.4243482934694853,
+      "pattern": "Inverted Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 2190.6, close 2200.8) | Double Top Breakdown",
+      "touchTime": "01:52 pm",
+      "optionPremium": 41.5,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:TCS",
+      "levelName": "Sell reversal (R3)",
+      "levelVal": 2215.485,
+      "high": 2232.6,
+      "close": 2200.8,
+      "rejectStrengthPct": 1.4243482934694853,
+      "pattern": "Inverted Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 2190.6, close 2200.8) | Double Top Breakdown",
+      "touchTime": "01:52 pm",
+      "optionPremium": 41.5,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:TCS",
+      "levelName": "Resistance (R2)",
+      "levelVal": 2211.69,
+      "high": 2232.6,
+      "close": 2200.8,
+      "rejectStrengthPct": 1.4243482934694853,
+      "pattern": "Inverted Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 2190.6, close 2200.8) | Double Top Breakdown",
+      "touchTime": "01:52 pm",
+      "optionPremium": 41.5,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:NIFTY",
+      "levelName": "Sell reversal (R3)",
+      "levelVal": 23509.38375,
+      "high": 23448.1,
+      "close": 23398.1,
+      "rejectStrengthPct": 0.21323689339434754,
+      "pattern": "SSL Sweep Reversal (Low swept 23380.1, close 23398.1)",
+      "touchTime": "02:06 pm",
+      "optionPremium": 88.55,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:NIFTY",
+      "levelName": "Resistance (R2)",
+      "levelVal": 23498.85583333333,
+      "high": 23448.1,
+      "close": 23398.1,
+      "rejectStrengthPct": 0.21323689339434754,
+      "pattern": "SSL Sweep Reversal (Low swept 23380.1, close 23398.1)",
+      "touchTime": "02:07 pm",
+      "optionPremium": 88.55,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:NIFTY",
+      "levelName": "Breakout (R4)",
+      "levelVal": 23540.9675,
+      "high": 23448.1,
+      "close": 23398.1,
+      "rejectStrengthPct": 0.21323689339434754,
+      "pattern": "SSL Sweep Reversal (Low swept 23380.1, close 23398.1)",
+      "touchTime": "02:31 pm",
+      "optionPremium": 100.5,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:ICICIBANK",
+      "levelName": "Sell reversal (R3)",
+      "levelVal": 1389.7525,
+      "high": 1389,
+      "close": 1379.3,
+      "rejectStrengthPct": 0.6983441324694057,
+      "pattern": "SSL Sweep Reversal (Low swept 1373.9, close 1379.3)",
+      "touchTime": "01:51 pm",
+      "optionPremium": 17.05,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:ICICIBANK",
+      "levelName": "Resistance (R2)",
+      "levelVal": 1388.0016666666666,
+      "high": 1389,
+      "close": 1379.3,
+      "rejectStrengthPct": 0.6983441324694057,
+      "pattern": "SSL Sweep Reversal (Low swept 1373.9, close 1379.3)",
+      "touchTime": "01:51 pm",
+      "optionPremium": 17.05,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:ICICIBANK",
+      "levelName": "R3 (VAH Reversion)",
+      "levelVal": 1389.7525,
+      "high": 1389,
+      "close": 1379.3,
+      "rejectStrengthPct": 0.6983441324694057,
+      "pattern": "SSL Sweep Reversal (Low swept 1373.9, close 1379.3)"
+    },
+    {
+      "symbol": "NSE:BHARTIARTL",
+      "levelName": "Sell reversal (R3)",
+      "levelVal": 1848.625,
+      "high": 1852,
+      "close": 1831.1,
+      "rejectStrengthPct": 1.1285097192224671,
+      "pattern": "Gravestone Doji (Bearish Rejection) | Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 1849.0, close 1831.1)",
+      "touchTime": "01:52 pm",
+      "optionPremium": 23.2,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:BHARTIARTL",
+      "levelName": "Resistance (R2)",
+      "levelVal": 1845.4166666666667,
+      "high": 1852,
+      "close": 1831.1,
+      "rejectStrengthPct": 1.1285097192224671,
+      "pattern": "Gravestone Doji (Bearish Rejection) | Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 1849.0, close 1831.1)",
+      "touchTime": "01:52 pm",
+      "optionPremium": 23.2,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:LT",
+      "levelName": "Resistance (R2)",
+      "levelVal": 3965.175,
+      "high": 3948,
+      "close": 3930.7,
+      "rejectStrengthPct": 0.43819655521783646,
+      "pattern": "SSL Sweep Reversal (Low swept 3910.0, close 3930.7)",
+      "touchTime": "01:52 pm",
+      "optionPremium": 53.9,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:BAJFINANCE",
+      "levelName": "Sell reversal (R3)",
+      "levelVal": 1046.855,
+      "high": 1035,
+      "close": 1034.5,
+      "rejectStrengthPct": 0.04830917874396135,
+      "pattern": "Hammer (Bullish Rejection)",
+      "touchTime": "01:52 pm",
+      "optionPremium": 19.25,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:BAJFINANCE",
+      "levelName": "Resistance (R2)",
+      "levelVal": 1045.7366666666667,
+      "high": 1035,
+      "close": 1034.5,
+      "rejectStrengthPct": 0.04830917874396135,
+      "pattern": "Hammer (Bullish Rejection)",
+      "touchTime": "01:52 pm",
+      "optionPremium": 19.25,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:RELIANCE",
+      "levelName": "Breakout (R4)",
+      "levelVal": 1284.45,
+      "high": 1267.4,
+      "close": 1257.5,
+      "rejectStrengthPct": 0.7811267161117319,
+      "pattern": "Double Top Breakdown",
+      "touchTime": "01:51 pm",
+      "optionPremium": 21.9,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:RELIANCE",
+      "levelName": "Sell reversal (R3)",
+      "levelVal": 1279.225,
+      "high": 1267.4,
+      "close": 1257.5,
+      "rejectStrengthPct": 0.7811267161117319,
+      "pattern": "Double Top Breakdown",
+      "touchTime": "01:51 pm",
+      "optionPremium": 21.9,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:SBIN",
+      "levelName": "Resistance (R2)",
+      "levelVal": 1011.6983333333334,
+      "high": 1001.9,
+      "close": 995.7,
+      "rejectStrengthPct": 0.6188242339554778,
+      "pattern": "Neutral Candle",
+      "touchTime": "01:52 pm",
+      "optionPremium": 13.4,
+      "isFno": true
+    }
+  ],
+  "breakouts": [
+    {
+      "symbol": "NSE:HDFCBANK",
+      "r4Val": 698.3649999999999,
+      "close": 708.25,
+      "excessPct": 1.4154489414561304
+    }
+  ],
+  "breakdowns": [
+    {
+      "symbol": "NSE:NIFTY",
+      "s4Val": 23414.6325,
+      "close": 23398.1,
+      "excessPct": 0.07060755704793216
+    },
+    {
+      "symbol": "NSE:BAJFINANCE",
+      "s4Val": 1036.79,
+      "close": 1034.5,
+      "excessPct": 0.2208740439240313
+    },
+    {
+      "symbol": "NSE:RELIANCE",
+      "s4Val": 1263.55,
+      "close": 1257.5,
+      "excessPct": 0.4788097028214123
+    },
+    {
+      "symbol": "NSE:SBIN",
+      "s4Val": 1003.705,
+      "close": 995.7,
+      "excessPct": 0.7975450954214629
+    }
+  ],
+  "niftyLevelsHit": [
+    {
+      "type": "Breakdown",
+      "levelName": "S4 (VAL Breakdown Trigger)",
+      "levelVal": 23414.6325,
+      "close": 23398.1,
+      "excessPct": 0.07060755704793216
+    }
+  ],
+  "bankniftyLevelsHit": [
+    {
+      "type": "Resistance Touch",
+      "levelName": "R3 (VAH Reversion)",
+      "levelVal": 56566.3575,
+      "high": 56645.85,
+      "close": 56606.55,
+      "time": "01:55 pm",
+      "pattern": "Neutral Candle",
+      "result": "Broke above"
+    },
+    {
+      "type": "Resistance Touch",
+      "levelName": "R4 (VAH Breakout Trigger)",
+      "levelVal": 56660.765,
+      "high": 56645.85,
+      "close": 56606.55,
+      "time": "02:00 pm",
+      "pattern": "Neutral Candle",
+      "result": "Rejected"
+    }
+  ],
+  "detectedPatterns": [
+    {
+      "symbol": "NSE:NIFTY",
+      "patterns": [
+        "SSL Sweep Reversal (Low swept 23380.1, close 23398.1)"
+      ]
+    },
+    {
+      "symbol": "NSE:BANKNIFTY",
+      "patterns": [
+        "SSL Sweep Reversal (Low swept 56231.8, close 56606.6)",
+        "Double Top Breakdown"
+      ]
+    },
+    {
+      "symbol": "NSE:HDFCBANK",
+      "patterns": [
+        "SSL Sweep Reversal (Low swept 686.2, close 708.3)"
+      ]
+    },
+    {
+      "symbol": "NSE:ICICIBANK",
+      "patterns": [
+        "SSL Sweep Reversal (Low swept 1373.9, close 1379.3)"
+      ]
+    },
+    {
+      "symbol": "NSE:RELIANCE",
+      "patterns": [
+        "Double Top Breakdown"
+      ]
+    },
+    {
+      "symbol": "NSE:BHARTIARTL",
+      "patterns": [
+        "Gravestone Doji (Bearish Rejection)",
+        "Inverted Hammer (Bullish Rejection)",
+        "BSL Sweep Reversal (High swept 1849.0, close 1831.1)"
+      ]
+    },
+    {
+      "symbol": "NSE:ITC",
+      "patterns": [
+        "SSL Sweep Reversal (Low swept 259.1, close 259.9)"
+      ]
+    },
+    {
+      "symbol": "NSE:INFY",
+      "patterns": [
+        "BSL Sweep Reversal (High swept 1046.6, close 1037.7)",
+        "Double Top Breakdown"
+      ]
+    },
+    {
+      "symbol": "NSE:TCS",
+      "patterns": [
+        "Inverted Hammer (Bullish Rejection)",
+        "SSL Sweep Reversal (Low swept 2190.6, close 2200.8)",
+        "Double Top Breakdown"
+      ]
+    },
+    {
+      "symbol": "NSE:BAJFINANCE",
+      "patterns": [
+        "Hammer (Bullish Rejection)"
+      ]
+    },
+    {
+      "symbol": "NSE:AXISBANK",
+      "patterns": [
+        "SSL Sweep Reversal (Low swept 1240.4, close 1246.0)",
+        "Double Top Breakdown"
+      ]
+    },
+    {
+      "symbol": "NSE:LT",
+      "patterns": [
+        "SSL Sweep Reversal (Low swept 3910.0, close 3930.7)"
+      ]
+    }
+  ],
+  "optionsPremiums": {
+    "NIFTY_ATM_23400_EXP_260915": {
+      "CE": 133.45,
+      "PE": 72.45
+    }
+  }
+}

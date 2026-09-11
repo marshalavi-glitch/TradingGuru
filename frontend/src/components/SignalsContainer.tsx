@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Clock, AlertCircle, Play, Sparkles } from 'lucide-react';
+import { getBackendHttpUrl } from '../utils/tvStreamer';
 
 interface ScanResult {
   symbol: string;
@@ -70,7 +71,7 @@ export const SignalsContainer: React.FC<SignalsContainerProps> = ({
     
     const fetchResults = async () => {
       try {
-        const backendUrl = window.location.port === '5175' ? 'http://localhost:3002' : window.location.origin;
+        const backendUrl = getBackendHttpUrl();
         const res = await fetch(`${backendUrl}/api/scanner/results?timeframe=5`);
         if (res.ok) {
           const data = await res.json();

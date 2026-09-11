@@ -65,7 +65,6 @@ const app = express();
 app.use(express.json()); // Enable JSON body parsing for constraints logger
 app.use(cors({ origin: '*', credentials: true }));
 app.use(compression());
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
 // Route for Live Confluence Analyzer Alerts
 app.get('/api/scanner/confluence', async (req, res) => {
@@ -182,6 +181,38 @@ try {
   console.error('[Node Backend] Failed to load presets.json:', err);
 }
 
+// Endpoint to return historical candles for any symbol and timeframe
+app.get('/api/candles', async (req, res) => {
+  try {
+    const symbol = req.query.symbol || 'NSE:NIFTY';
+    const timeframe = req.query.timeframe || '5';
+    const limit = parseInt(req.query.limit || '500', 10);
+    
+    let candles = [];
+    if (scannerCache && scannerCache.candlesCache && scannerCache.candlesCache[timeframe] && scannerCache.candlesCache[timeframe][symbol]) {
+      candles = scannerCache.candlesCache[timeframe][symbol];
+    }
+    
+    if (!candles || candles.length === 0) {
+      candles = await fetchCandlesForSymbol(tvBridge, symbol, timeframe, limit);
+    }
+    
+    if (candles && candles.length > limit) {
+      candles = candles.slice(candles.length - limit);
+    }
+
+    res.json({ symbol, timeframe, candles: candles || [] });
+  } catch (err) {
+    console.error(`[API /api/candles] Error fetching candles for ${req.query.symbol}:`, err.message);
+    res.status(500).json({ error: err.message, candles: [] });
+  }
+});
+
+// API 404 Guard: ensure unknown /api/* requests return JSON 404 instead of index.html
+app.all('/api/*', (req, res) => {
+  res.status(404).json({ error: 'API endpoint not found', path: req.path });
+});
+
 // Disable caching to prevent browser caching issues
 app.use((req, res, next) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
@@ -190,6 +221,11 @@ app.use((req, res, next) => {
 
 // Serve static files from React frontend build
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
+// SPA Wildcard route for client-side routing fallback
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+});
 
 // Health check endpoint
 app.get('/health', (req, res) => {

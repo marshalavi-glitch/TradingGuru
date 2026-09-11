@@ -28,7 +28,7 @@ function killExistingCloudflared() {
   } catch (e) {}
 }
 
-function publishToHuggingFace(tunnelUrl) {
+async function publishToHuggingFace(tunnelUrl) {
   if (isPublishing) return;
   isPublishing = true;
   try {
@@ -43,18 +43,42 @@ function publishToHuggingFace(tunnelUrl) {
     console.log(`\n==================================================`);
     console.log(`🎉 [Cloudflare Tunnel] Active URL: ${tunnelUrl}`);
     console.log(`==================================================\n`);
-    console.log(`[HF Auto-Publisher] Saved live_backend.json: ${tunnelUrl}`);
-    console.log('[HF Auto-Publisher] Pushing live_backend.json to Hugging Face Space...');
+    console.log(`[HF Auto-Publisher] Saved live_backend.json locally.`);
 
-    execSync('git add live_backend.json index.html assets/', { cwd: rootDir, stdio: 'inherit' });
-    try {
-      execSync(`git commit -m "Auto-publish active Cloudflare Tunnel URL: ${tunnelUrl}"`, { cwd: rootDir, stdio: 'inherit' });
-    } catch (e) {}
-    execSync(`git push -f ${hfSpaceRepo} main`, { cwd: rootDir, stdio: 'inherit' });
+    if (hfToken) {
+      console.log('[HF Auto-Publisher] Uploading live_backend.json directly via HF API...');
+      const commitUrl = 'https://huggingface.co/api/spaces/marshalavi/TradingGuru/commit/main';
+      const payload = {
+        summary: `Auto-publish active Cloudflare Tunnel URL: ${tunnelUrl}`,
+        files: [
+          {
+            path: 'live_backend.json',
+            content: Buffer.from(jsonContent).toString('base64'),
+            encoding: 'base64'
+          }
+        ]
+      };
 
-    console.log('✅ [HF Auto-Publisher] Published live_backend.json to Hugging Face Space successfully!');
+      const res = await fetch(commitUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${hfToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        console.log('✅ [HF Auto-Publisher] Direct HF API Upload Succeeded in <200ms!');
+      } else {
+        console.warn(`⚠️ [HF Auto-Publisher] Direct API upload status: ${res.status}, falling back to git push...`);
+        execSync('git add live_backend.json', { cwd: rootDir, stdio: 'inherit' });
+        try { execSync(`git commit -m "Auto-publish active Cloudflare Tunnel URL: ${tunnelUrl}"`, { cwd: rootDir, stdio: 'inherit' }); } catch (e) {}
+        execSync(`git push -f ${hfSpaceRepo} main`, { cwd: rootDir, stdio: 'inherit' });
+      }
+    }
   } catch (err) {
-    console.error('⚠️ [HF Auto-Publisher] Failed to push to Hugging Face:', err.message);
+    console.error('⚠️ [HF Auto-Publisher] Failed to publish live_backend.json:', err.message);
   } finally {
     isPublishing = false;
   }
@@ -91,10 +115,10 @@ function startTunnel() {
   child.stderr.on('data', handleData);
 
   child.on('close', (code) => {
-    console.log(`⚠️ Cloudflare Tunnel exited with code ${code}. Reconnecting in 5s...`);
+    console.log(`⚠️ Cloudflare Tunnel exited with code ${code}. Reconnecting in 3s...`);
     currentTunnelUrl = null;
     currentChildProcess = null;
-    setTimeout(startTunnel, 5000);
+    setTimeout(startTunnel, 3000);
   });
 }
 

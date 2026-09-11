@@ -33461,3 +33461,322 @@ B. BEARISH RESISTANCE REJECTIONS (Tested VAH Resistance and Pullback)
 * Lunchtime Theta vs IV Filter: Period G consolidation successfully filtered false breakouts between 12:15 - 12:45 PM.
 * Hero Reversal Traps: Failed morning expansions (C/D/E periods) respected the opposite extreme target.
 ================================================================================
+
+================================================================================
+SESSION REPORT: 11/9/2026
+================================================================================
+
+1. MACRO SUMMARY
+--------------------------------------------------------------------------------
+* Nifty 50: 23398.10 (-0.34%)
+* Bank Nifty: 56606.55 (0.24%)
+
+1B. INDEX LEVEL INTERACTIONS:
+--------------------------------------------------------------------------------
+  - Nifty triggered a Monthly S4 (VAL Breakdown Trigger) Breakdown (close: 23398.10, excess: 0.1%)
+  - Bank Nifty touched Monthly R3 (VAH Reversion) (56566.36) at 01:55 pm | Candle = Neutral Candle | Rejected (high: 56645.85, close: 56606.55)
+  - Bank Nifty touched Monthly R4 (VAH Breakout Trigger) (56660.76) at 02:00 pm | Candle = Neutral Candle | Rejected (high: 56645.85, close: 56606.55)
+
+2. HIGH-PROBABILITY MATRIX REVERSALS (BOUNCES & REJECTIONS)
+--------------------------------------------------------------------------------
+
+A. BULLISH SUPPORT BOUNCES (Tested VAL Support and Reverted)
+
+* NSE:HDFCBANK (+3.86% Bounce) | Candle = SSL Sweep Reversal (Low swept 686.2, close 708.3)
+  - The Setup: Price traded down to a session low of 681.90, testing the Target (S5) Matrix line at 686.57 (within 0.68% proximity).
+  - The Action: Bounced +3.86% off the level to close at 708.25.
+
+* NSE:BAJFINANCE (+1.91% Bounce) | Candle = Hammer (Bullish Rejection)
+  - The Setup: Price traded down to a session low of 1015.10, testing the Support (S2) Matrix line at 1041.26 (within 2.51% proximity).
+  - The Action: Bounced +1.91% off the level to close at 1034.50.
+
+* NSE:BAJFINANCE (+1.91% Bounce) | Candle = Hammer (Bullish Rejection)
+  - The Setup: Price traded down to a session low of 1015.10, testing the Buy Reversal (S3) Matrix line at 1040.14 (within 2.41% proximity).
+  - The Action: Bounced +1.91% off the level to close at 1034.50.
+
+* NSE:BAJFINANCE (+1.91% Bounce) | Candle = Hammer (Bullish Rejection)
+  - The Setup: Price traded down to a session low of 1015.10, testing the Break Down (S4) Matrix line at 1036.79 (within 2.09% proximity).
+  - The Action: Bounced +1.91% off the level to close at 1034.50.
+
+* NSE:BAJFINANCE (+1.91% Bounce) | Candle = Hammer (Bullish Rejection)
+  - The Setup: Price traded down to a session low of 1015.10, testing the Target (S5) Matrix line at 1032.87 (within 1.72% proximity).
+  - The Action: Bounced +1.91% off the level to close at 1034.50.
+
+B. BEARISH RESISTANCE REJECTIONS (Tested VAH Resistance and Pullback)
+
+* NSE:TCS (-1.42% Rejection) | Candle = Inverted Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 2190.6, close 2200.8) | Double Top Breakdown
+  - The Setup: Price traded up to a session high of 2232.60, testing the Breakout (R4) Matrix line at 2226.87 (within 0.26% proximity).
+  - The Action: Rejected -1.42% off the level to close at 2200.80.
+
+* NSE:TCS (-1.42% Rejection) | Candle = Inverted Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 2190.6, close 2200.8) | Double Top Breakdown
+  - The Setup: Price traded up to a session high of 2232.60, testing the Sell reversal (R3) Matrix line at 2215.49 (within 0.77% proximity).
+  - The Action: Rejected -1.42% off the level to close at 2200.80.
+
+* NSE:TCS (-1.42% Rejection) | Candle = Inverted Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 2190.6, close 2200.8) | Double Top Breakdown
+  - The Setup: Price traded up to a session high of 2232.60, testing the Resistance (R2) Matrix line at 2211.69 (within 0.95% proximity).
+  - The Action: Rejected -1.42% off the level to close at 2200.80.
+
+* NSE:BHARTIARTL (-1.13% Rejection) | Candle = Gravestone Doji (Bearish Rejection) | Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 1849.0, close 1831.1)
+  - The Setup: Price traded up to a session high of 1852.00, testing the Sell reversal (R3) Matrix line at 1848.63 (within 0.18% proximity).
+  - The Action: Rejected -1.13% off the level to close at 1831.10.
+
+* NSE:BHARTIARTL (-1.13% Rejection) | Candle = Gravestone Doji (Bearish Rejection) | Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 1849.0, close 1831.1)
+  - The Setup: Price traded up to a session high of 1852.00, testing the Resistance (R2) Matrix line at 1845.42 (within 0.36% proximity).
+  - The Action: Rejected -1.13% off the level to close at 1831.10.
+
+3. LEVEL BREAKDOWNS (Closed Below S4)
+--------------------------------------------------------------------------------
+* NSE:SBIN: Closed at 995.70, breaking below Monthly S4 (1003.71) by -0.80%.
+* NSE:RELIANCE: Closed at 1257.50, breaking below Monthly S4 (1263.55) by -0.48%.
+* NSE:BAJFINANCE: Closed at 1034.50, breaking below Monthly S4 (1036.79) by -0.22%.
+* NSE:NIFTY: Closed at 23398.10, breaking below Monthly S4 (23414.63) by -0.07%.
+
+4. DETECTED PRICE ACTION & CANDLESTICK PATTERNS
+--------------------------------------------------------------------------------
+* NSE:NIFTY: SSL Sweep Reversal (Low swept 23380.1, close 23398.1)
+* NSE:BANKNIFTY: SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown
+* NSE:HDFCBANK: SSL Sweep Reversal (Low swept 686.2, close 708.3)
+* NSE:ICICIBANK: SSL Sweep Reversal (Low swept 1373.9, close 1379.3)
+* NSE:RELIANCE: Double Top Breakdown
+* NSE:BHARTIARTL: Gravestone Doji (Bearish Rejection) | Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 1849.0, close 1831.1)
+* NSE:ITC: SSL Sweep Reversal (Low swept 259.1, close 259.9)
+* NSE:INFY: BSL Sweep Reversal (High swept 1046.6, close 1037.7) | Double Top Breakdown
+* NSE:TCS: Inverted Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 2190.6, close 2200.8) | Double Top Breakdown
+* NSE:BAJFINANCE: Hammer (Bullish Rejection)
+* NSE:AXISBANK: SSL Sweep Reversal (Low swept 1240.4, close 1246.0) | Double Top Breakdown
+* NSE:LT: SSL Sweep Reversal (Low swept 3910.0, close 3930.7)
+
+5. INTRADAY 5-MIN OPTION PREMIUM BACKTEST & LEARNINGS
+--------------------------------------------------------------------------------
+* HDFCBANK (LONG) touched Target (S5) (686.57) at 01:50 pm
+  - Entry Premium: ₹13.10 | Exit Premium: ₹19.55 | ROI: 49.2% (Target/Close Exit)
+* BAJFINANCE (LONG) touched Support (S2) (1041.26) at 01:50 pm
+  - Entry Premium: ₹22.85 | Exit Premium: ₹23.85 | ROI: 4.4% (Target Hit at 02:00 pm)
+* BAJFINANCE (LONG) touched Buy Reversal (S3) (1040.14) at 01:50 pm
+  - Entry Premium: ₹22.85 | Exit Premium: ₹23.85 | ROI: 4.4% (Target Hit at 02:00 pm)
+* BAJFINANCE (LONG) touched Break Down (S4) (1036.79) at 01:50 pm
+  - Entry Premium: ₹22.85 | Exit Premium: ₹23.85 | ROI: 4.4% (Target Hit at 02:00 pm)
+* BAJFINANCE (LONG) touched Target (S5) (1032.87) at 01:50 pm
+  - Entry Premium: ₹22.85 | Exit Premium: ₹23.85 | ROI: 4.4% (Target Hit at 02:00 pm)
+* BAJFINANCE (LONG) touched Target (S6) (1031.22) at 01:50 pm
+  - Entry Premium: ₹22.85 | Exit Premium: ₹23.85 | ROI: 4.4% (Target Hit at 02:00 pm)
+* BANKNIFTY (LONG) touched Support (S2) (56409.01) at 01:50 pm
+  - Entry Premium: ₹542.15 | Exit Premium: ₹599.16 | ROI: 10.5% (Target Hit at 01:55 pm)
+* BANKNIFTY (LONG) touched Buy Reversal (S3) (56377.54) at 01:50 pm
+  - Entry Premium: ₹786.50 | Exit Premium: ₹874.91 | ROI: 11.2% (Target Hit at 02:00 pm)
+* BANKNIFTY (LONG) touched Break Down (S4) (56283.13) at 01:50 pm
+  - Entry Premium: ₹786.50 | Exit Premium: ₹913.18 | ROI: 16.1% (Target/Close Exit)
+* BANKNIFTY (LONG) touched Target (S5) (56172.87) at 01:50 pm
+  - Entry Premium: ₹786.50 | Exit Premium: ₹913.18 | ROI: 16.1% (Target/Close Exit)
+* BANKNIFTY (LONG) touched Target (S6) (56127.18) at 01:50 pm
+  - Entry Premium: ₹786.50 | Exit Premium: ₹913.18 | ROI: 16.1% (Target/Close Exit)
+* AXISBANK (LONG) touched Support (S2) (1243.29) at 01:50 pm
+  - Entry Premium: ₹15.75 | Exit Premium: ₹18.75 | ROI: 19.0% (Target/Close Exit)
+* AXISBANK (LONG) touched Buy Reversal (S3) (1241.93) at 01:50 pm
+  - Entry Premium: ₹22.75 | Exit Premium: ₹25.75 | ROI: 13.2% (Target/Close Exit)
+* AXISBANK (LONG) touched S6 (VAL Capitulation) (1231.13) at 09:15 am
+  - Entry Premium: ₹18.50 | Exit Premium: ₹22.82 | ROI: 23.4% (Target Hit at 10:10 am)
+* LT (LONG) touched Support (S2) (3944.82) at 01:50 pm
+  - Entry Premium: ₹70.45 | Exit Premium: ₹73.05 | ROI: 3.7% (Target Hit at 01:55 pm)
+* LT (LONG) touched Buy Reversal (S3) (3939.74) at 01:50 pm
+  - Entry Premium: ₹70.45 | Exit Premium: ₹73.05 | ROI: 3.7% (Target Hit at 01:55 pm)
+* LT (LONG) touched Break Down (S4) (3924.47) at 01:50 pm
+  - Entry Premium: ₹70.45 | Exit Premium: ₹73.05 | ROI: 3.7% (Target Hit at 01:55 pm)
+* LT (LONG) touched Target (S5) (3906.65) at 01:50 pm
+  - Entry Premium: ₹70.45 | Exit Premium: ₹85.61 | ROI: 21.5% (Target Hit at 03:10 pm)
+* LT (LONG) touched Target (S6) (3898.86) at 01:50 pm
+  - Entry Premium: ₹70.45 | Exit Premium: ₹83.20 | ROI: 18.1% (Target/Close Exit)
+* ICICIBANK (LONG) touched Support (S2) (1381.00) at 01:50 pm
+  - Entry Premium: ₹24.10 | Exit Premium: ₹24.96 | ROI: 3.6% (Target Hit at 01:55 pm)
+* ICICIBANK (LONG) touched Buy Reversal (S3) (1379.25) at 01:50 pm
+  - Entry Premium: ₹24.10 | Exit Premium: ₹26.71 | ROI: 10.8% (Target Hit at 02:00 pm)
+* ICICIBANK (LONG) touched Break Down (S4) (1374.00) at 01:50 pm
+  - Entry Premium: ₹24.10 | Exit Premium: ₹25.60 | ROI: 6.2% (Target/Close Exit)
+* ICICIBANK (LONG) touched S5 (VAL Extreme) (1367.86) at 09:15 am
+  - Entry Premium: ₹20.54 | Exit Premium: ₹24.92 | ROI: 21.3% (Target Hit at 10:40 am)
+* ITC (LONG) touched S3 (VAL Reversion) (257.98) at 09:15 am
+  - Entry Premium: ₹3.90 | Exit Premium: ₹4.58 | ROI: 17.3% (Target/Close Exit)
+* INFY (LONG) touched Support (S2) (1032.96) at 01:50 pm
+  - Entry Premium: ₹26.10 | Exit Premium: ₹26.10 | ROI: 0.0% (Target/Close Exit)
+* INFY (LONG) touched Buy Reversal (S3) (1031.19) at 01:50 pm
+  - Entry Premium: ₹26.10 | Exit Premium: ₹26.10 | ROI: 0.0% (Target/Close Exit)
+* INFY (LONG) touched S3 (VAL Reversion) (1031.19) at 09:15 am
+  - Entry Premium: ₹15.68 | Exit Premium: ₹12.08 | ROI: -23.0% (Target/Close Exit)
+* NIFTY (LONG) touched Support (S2) (23456.74) at 01:50 pm
+  - Entry Premium: ₹96.30 | Exit Premium: ₹107.30 | ROI: 11.4% (Target Hit at 01:55 pm)
+* NIFTY (LONG) touched Buy Reversal (S3) (23446.22) at 01:50 pm
+  - Entry Premium: ₹106.00 | Exit Premium: ₹117.00 | ROI: 10.4% (Target Hit at 01:55 pm)
+* NIFTY (LONG) touched Break Down (S4) (23414.63) at 01:50 pm
+  - Entry Premium: ₹106.00 | Exit Premium: ₹117.00 | ROI: 10.4% (Target Hit at 01:55 pm)
+* NIFTY (LONG) touched Target (S5) (23377.74) at 01:50 pm
+  - Entry Premium: ₹106.00 | Exit Premium: ₹124.21 | ROI: 17.2% (Target Hit at 01:55 pm)
+* NIFTY (LONG) touched Target (S6) (23362.47) at 01:50 pm
+  - Entry Premium: ₹105.75 | Exit Premium: ₹139.20 | ROI: 31.6% (Target Hit at 02:00 pm)
+* TCS (LONG) touched Support (S2) (2196.51) at 01:50 pm
+  - Entry Premium: ₹55.70 | Exit Premium: ₹56.40 | ROI: 1.3% (Target/Close Exit)
+* TCS (LONG) touched Buy Reversal (S3) (2192.71) at 01:50 pm
+  - Entry Premium: ₹55.70 | Exit Premium: ₹56.40 | ROI: 1.3% (Target/Close Exit)
+* RELIANCE (LONG) touched Support (S2) (1270.52) at 01:50 pm
+  - Entry Premium: ₹20.55 | Exit Premium: ₹22.65 | ROI: 10.2% (Target Hit at 02:00 pm)
+* RELIANCE (LONG) touched Buy Reversal (S3) (1268.78) at 01:50 pm
+  - Entry Premium: ₹20.55 | Exit Premium: ₹22.65 | ROI: 10.2% (Target Hit at 02:00 pm)
+* RELIANCE (LONG) touched Target (S5) (1257.45) at 01:50 pm
+  - Entry Premium: ₹20.55 | Exit Premium: ₹23.22 | ROI: 13.0% (Target Hit at 02:00 pm)
+* RELIANCE (LONG) touched Target (S6) (1254.88) at 01:50 pm
+  - Entry Premium: ₹20.55 | Exit Premium: ₹23.25 | ROI: 13.1% (Target/Close Exit)
+* RELIANCE (LONG) touched Break Down (S4) (1263.55) at 01:55 pm
+  - Entry Premium: ₹21.70 | Exit Premium: ₹23.50 | ROI: 8.3% (Target Hit at 02:00 pm)
+* SBIN (LONG) touched Target (S6) (998.71) at 01:50 pm
+  - Entry Premium: ₹21.10 | Exit Premium: ₹21.70 | ROI: 2.8% (Target Hit at 01:55 pm)
+* SBIN (LONG) touched Target (S5) (1000.20) at 02:00 pm
+  - Entry Premium: ₹16.85 | Exit Premium: ₹15.90 | ROI: -5.6% (SL Hit at 03:00 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* BHARTIARTL (LONG) touched Support (S2) (1832.58) at 01:50 pm
+  - Entry Premium: ₹23.20 | Exit Premium: ₹23.50 | ROI: 1.3% (Target/Close Exit)
+* BHARTIARTL (LONG) touched Buy Reversal (S3) (1829.38) at 03:05 pm
+  - Entry Premium: ₹25.00 | Exit Premium: ₹26.30 | ROI: 5.2% (Target/Close Exit)
+* BHARTIARTL (LONG) touched S3 (VAL Reversion) (1829.38) at 09:15 am
+  - Entry Premium: ₹27.61 | Exit Premium: ₹27.81 | ROI: 0.7% (Target/Close Exit)
+* TCS (SHORT) touched Breakout (R4) (2226.87) at 01:50 pm
+  - Entry Premium: ₹41.50 | Exit Premium: ₹40.80 | ROI: -1.7% (Target/Close Exit)
+* TCS (SHORT) touched Sell reversal (R3) (2215.49) at 01:50 pm
+  - Entry Premium: ₹41.50 | Exit Premium: ₹40.80 | ROI: -1.7% (Target/Close Exit)
+* TCS (SHORT) touched Resistance (R2) (2211.69) at 01:50 pm
+  - Entry Premium: ₹41.50 | Exit Premium: ₹40.80 | ROI: -1.7% (Target/Close Exit)
+* BHARTIARTL (SHORT) touched Sell reversal (R3) (1848.63) at 01:50 pm
+  - Entry Premium: ₹23.20 | Exit Premium: ₹22.90 | ROI: -1.3% (Target/Close Exit)
+* BHARTIARTL (SHORT) touched Resistance (R2) (1845.42) at 01:50 pm
+  - Entry Premium: ₹23.20 | Exit Premium: ₹22.90 | ROI: -1.3% (Target/Close Exit)
+* INFY (SHORT) touched Sell reversal (R3) (1041.81) at 01:50 pm
+  - Entry Premium: ₹23.65 | Exit Premium: ₹23.65 | ROI: 0.0% (Target/Close Exit)
+* INFY (SHORT) touched Resistance (R2) (1040.04) at 01:50 pm
+  - Entry Premium: ₹23.65 | Exit Premium: ₹23.65 | ROI: 0.0% (Target/Close Exit)
+* INFY (SHORT) touched R4 (VAH Breakout Trigger) (1047.12) at 09:15 am
+  - Entry Premium: ₹15.68 | Exit Premium: ₹19.69 | ROI: 25.6% (Target Hit at 09:25 am)
+* RELIANCE (SHORT) touched Breakout (R4) (1284.45) at 01:50 pm
+  - Entry Premium: ₹21.90 | Exit Premium: ₹19.20 | ROI: -12.3% (Target/Close Exit)
+* RELIANCE (SHORT) touched Sell reversal (R3) (1279.22) at 01:50 pm
+  - Entry Premium: ₹21.90 | Exit Premium: ₹19.20 | ROI: -12.3% (Target/Close Exit)
+* ICICIBANK (SHORT) touched Sell reversal (R3) (1389.75) at 01:50 pm
+  - Entry Premium: ₹17.05 | Exit Premium: ₹15.55 | ROI: -8.8% (Target/Close Exit)
+* ICICIBANK (SHORT) touched Resistance (R2) (1388.00) at 01:50 pm
+  - Entry Premium: ₹17.05 | Exit Premium: ₹15.55 | ROI: -8.8% (Target/Close Exit)
+* ICICIBANK (SHORT) touched R3 (VAH Reversion) (1389.75) at 10:40 am
+  - Entry Premium: ₹20.68 | Exit Premium: ₹18.83 | ROI: -8.9% (Target/Close Exit)
+* ITC (SHORT) touched Target (R5) (263.48) at 01:50 pm
+  - Entry Premium: ₹3.15 | Exit Premium: ₹2.85 | ROI: -9.5% (Target/Close Exit)
+* ITC (SHORT) touched Breakout (R4) (261.94) at 01:50 pm
+  - Entry Premium: ₹3.15 | Exit Premium: ₹2.85 | ROI: -9.5% (Target/Close Exit)
+* ITC (SHORT) touched Sell reversal (R3) (260.62) at 01:50 pm
+  - Entry Premium: ₹3.15 | Exit Premium: ₹3.00 | ROI: -4.6% (SL Hit at 02:00 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* ITC (SHORT) touched Resistance (R2) (260.18) at 01:50 pm
+  - Entry Premium: ₹3.15 | Exit Premium: ₹3.10 | ROI: -1.6% (SL Hit at 01:55 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* ITC (SHORT) touched R4 (VAH Breakout Trigger) (261.94) at 09:15 am
+  - Entry Premium: ₹3.90 | Exit Premium: ₹3.23 | ROI: -17.3% (Target/Close Exit)
+* SBIN (SHORT) touched Resistance (R2) (1011.70) at 01:50 pm
+  - Entry Premium: ₹13.40 | Exit Premium: ₹12.55 | ROI: -6.3% (Target/Close Exit)
+* AXISBANK (SHORT) touched Breakout (R4) (1254.14) at 01:50 pm
+  - Entry Premium: ₹15.75 | Exit Premium: ₹12.75 | ROI: -19.0% (Target/Close Exit)
+* AXISBANK (SHORT) touched Sell reversal (R3) (1250.07) at 01:50 pm
+  - Entry Premium: ₹15.75 | Exit Premium: ₹11.96 | ROI: -24.0% (SL Hit at 02:50 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* AXISBANK (SHORT) touched Resistance (R2) (1248.71) at 01:50 pm
+  - Entry Premium: ₹15.75 | Exit Premium: ₹12.64 | ROI: -19.7% (SL Hit at 02:45 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* AXISBANK (SHORT) touched R4 (VAH Breakout Trigger) (1254.14) at 10:15 am
+  - Entry Premium: ₹18.61 | Exit Premium: ₹13.56 | ROI: -27.1% (Target/Close Exit)
+* LT (SHORT) touched Resistance (R2) (3965.18) at 01:50 pm
+  - Entry Premium: ₹53.90 | Exit Premium: ₹41.15 | ROI: -23.7% (Target/Close Exit)
+* NIFTY (SHORT) touched Sell reversal (R3) (23509.38) at 02:05 pm
+  - Entry Premium: ₹88.55 | Exit Premium: ₹78.78 | ROI: -11.0% (Target/Close Exit)
+* NIFTY (SHORT) touched Resistance (R2) (23498.86) at 02:05 pm
+  - Entry Premium: ₹88.55 | Exit Premium: ₹78.78 | ROI: -11.0% (Target/Close Exit)
+* NIFTY (SHORT) touched Breakout (R4) (23540.97) at 02:30 pm
+  - Entry Premium: ₹100.50 | Exit Premium: ₹94.85 | ROI: -5.6% (Target/Close Exit)
+* HDFCBANK (SHORT) touched Breakout (R4) (698.36) at 01:50 pm
+  - Entry Premium: ₹12.75 | Exit Premium: ₹10.72 | ROI: -15.9% (SL Hit at 01:55 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* HDFCBANK (SHORT) touched Sell reversal (R3) (696.08) at 01:50 pm
+  - Entry Premium: ₹12.75 | Exit Premium: ₹11.68 | ROI: -8.4% (SL Hit at 01:55 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* HDFCBANK (SHORT) touched Resistance (R2) (695.32) at 01:50 pm
+  - Entry Premium: ₹12.60 | Exit Premium: ₹11.53 | ROI: -8.5% (SL Hit at 01:55 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* HDFCBANK (SHORT) touched Target (R5) (701.03) at 01:55 pm
+  - Entry Premium: ₹11.95 | Exit Premium: ₹11.56 | ROI: -3.3% (SL Hit at 02:00 pm)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (95.3% body) indicating aggressive breakout force rather than rejection.
+* HDFCBANK (SHORT) touched Target (R6) (702.19) at 02:05 pm
+  - Entry Premium: ₹10.05 | Exit Premium: ₹11.50 | ROI: 14.4% (Target Hit at 02:15 pm)
+* BANKNIFTY (SHORT) touched Breakout (R4) (56660.76) at 01:50 pm
+  - Entry Premium: ₹542.15 | Exit Premium: ₹415.47 | ROI: -23.4% (Target/Close Exit)
+* BANKNIFTY (SHORT) touched Sell reversal (R3) (56566.36) at 01:50 pm
+  - Entry Premium: ₹542.15 | Exit Premium: ₹415.47 | ROI: -23.4% (Target/Close Exit)
+* BANKNIFTY (SHORT) touched Resistance (R2) (56534.89) at 01:50 pm
+  - Entry Premium: ₹542.15 | Exit Premium: ₹415.47 | ROI: -23.4% (Target/Close Exit)
+* BANKNIFTY (SHORT) touched Target (R6) (56816.72) at 02:05 pm
+  - Entry Premium: ₹523.90 | Exit Premium: ₹483.02 | ROI: -7.8% (Target/Close Exit)
+* BANKNIFTY (SHORT) touched Target (R5) (56771.03) at 02:05 pm
+  - Entry Premium: ₹523.90 | Exit Premium: ₹483.02 | ROI: -7.8% (Target/Close Exit)
+* BANKNIFTY (SHORT) touched R4 (VAH Breakout Trigger) (56660.76) at 11:10 am
+  - Entry Premium: ₹843.05 | Exit Premium: ₹641.30 | ROI: -23.9% (Target/Close Exit)
+* BAJFINANCE (SHORT) touched Sell reversal (R3) (1046.86) at 01:50 pm
+  - Entry Premium: ₹19.25 | Exit Premium: ₹16.30 | ROI: -15.3% (Target/Close Exit)
+* BAJFINANCE (SHORT) touched Resistance (R2) (1045.74) at 01:50 pm
+  - Entry Premium: ₹19.25 | Exit Premium: ₹16.30 | ROI: -15.3% (Target/Close Exit)
+
+5B. INTRADAY BACKTEST STATISTICAL SUMMARY:
+--------------------------------------------------------------------------------
+* Total Trades Triggered   : 84
+* Profit Closures (>0% ROI): 42 (50.0%)
+* Neutral Closures (0% ROI): 4 (4.8%)
+* Loss Closures (<0% ROI)  : 29 (34.5%)
+* Stop Loss Hits (SL Hit)  : 9 (10.7%)
+* Win Rate (Strict Profit) : 50.0%
+* Survival Rate (No SL Hit): 89.3%
+
+5C. PERFORMANCE BREAKDOWN BY LEVEL:
+--------------------------------------------------------------------------------
+* Level S5  : Total = 8   | Profit = 7   (87.5%) | Avg ROI = 17.1%
+* Level S6  : Total = 7   | Profit = 7   (100.0%) | Avg ROI = 15.7%
+* Level S4  : Total = 6   | Profit = 6   (100.0%) | Avg ROI = 8.2%
+* Level S3  : Total = 13  | Profit = 11  (84.6%) | Avg ROI = 5.0%
+* Level R6  : Total = 2   | Profit = 1   (50.0%) | Avg ROI = 3.3%
+* Level Unknown: Total = 22  | Profit = 9   (40.9%) | Avg ROI = -2.5%
+* Level R5  : Total = 3   | Profit = 0   (0.0%) | Avg ROI = -6.9%
+* Level R3  : Total = 12  | Profit = 0   (0.0%) | Avg ROI = -10.0%
+* Level R4  : Total = 11  | Profit = 1   (9.1%) | Avg ROI = -11.8%
+
+5D. PERFORMANCE BREAKDOWN BY DIRECTION:
+--------------------------------------------------------------------------------
+* LONG      : Total = 44  | Profit = 40  (90.9%) | Avg ROI = 9.7%
+* SHORT     : Total = 40  | Profit = 2   (5.0%) | Avg ROI = -9.6%
+
+================================================================================
+6. OPENING BIAS & BHAICHARA INSTITUTIONAL VALIDATION
+================================================================================
+
+
+8. OPENING BIAS VALIDATION (Did the market follow the 2-Year Opening Bias?):
+-----------------------------------------
+* NIFTY: SUCCESS
+  - Zone: Open Below S6 (Extreme Gap Down)
+  - Prediction: Expected GREEN Close (Probability: 65.4%)
+  - Actual: Closed GREEN (Open: 23270.30 | Close: 23398.10 | Move: 127.80 pts)
+  - Analysis: The index behaved exactly as predicted by the 2-year backtest for Open Below S6 (Extreme Gap Down).
+
+* BANKNIFTY: SUCCESS
+  - Zone: Open Below S6 (Extreme Gap Down)
+  - Prediction: Expected GREEN Close (Probability: 60%)
+  - Actual: Closed GREEN (Open: 55970.15 | Close: 56606.55 | Move: 636.40 pts)
+  - Analysis: The index behaved exactly as predicted by the 2-year backtest for Open Below S6 (Extreme Gap Down).
+
+================================================================================
+7. BHAICHARA WORK AUTO-LEARNED INSTITUTIONAL LESSONS
+================================================================================
+* ATM Straddle Skew Asymmetry: SKEW > +15% correctly predicted bullish call accumulation on winning sessions.
+* Gamma Crossover Ratio (Γ): Institutional volume accumulation (>2.0x) confirmed late-day drives after 2:15 PM.
+* Lunchtime Theta vs IV Filter: Period G consolidation successfully filtered false breakouts between 12:15 - 12:45 PM.
+* Hero Reversal Traps: Failed morning expansions (C/D/E periods) respected the opposite extreme target.
+================================================================================

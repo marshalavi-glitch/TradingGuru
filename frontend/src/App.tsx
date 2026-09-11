@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { DashboardHeader } from './components/DashboardHeader';
 import { ChartContainer } from './components/ChartContainer';
-import { tvStreamer } from './utils/tvStreamer';
+import { tvStreamer, getBackendHttpUrl } from './utils/tvStreamer';
 import type { Candle } from './utils/profileCalculator';
 import { calculateMatrixSeriesData } from './utils/matrixCalculator';
 import { AlertCircle, Loader2 } from 'lucide-react';
+import { TabErrorBoundary } from './components/TabErrorBoundary';
 import { ScannerContainer } from './components/ScannerContainer';
 import { OptionsChain } from './components/OptionsChain';
 import { SignalsContainer } from './components/SignalsContainer';
@@ -548,82 +549,116 @@ function App() {
       {/* Main Workspace */}
       <div style={{ flex: '1', display: 'flex', flexDirection: 'column', minHeight: '0' }}>
         {activeTab === 'fifteen_min' ? (
-          <FifteenMinForensicContainer />
+          <TabErrorBoundary tabName="15 Mins Forensic">
+            <FifteenMinForensicContainer />
+          </TabErrorBoundary>
         ) : activeTab === 'bhaichara' ? (
-          <BhaicharaWorkContainer
-            onSymbolSelect={setSymbol}
-            onSwitchToChart={() => setActiveTab('chart')}
-          />
+          <TabErrorBoundary tabName="Bhaichara Work">
+            <BhaicharaWorkContainer
+              onSymbolSelect={setSymbol}
+              onSwitchToChart={() => setActiveTab('chart')}
+            />
+          </TabErrorBoundary>
         ) : activeTab === 'dada_thoughts' ? (
-          <DadaThoughtsContainer
-            onSymbolSelect={setSymbol}
-            onSwitchToChart={() => setActiveTab('chart')}
-          />
+          <TabErrorBoundary tabName="Dada Thoughts">
+            <DadaThoughtsContainer
+              onSymbolSelect={setSymbol}
+              onSwitchToChart={() => setActiveTab('chart')}
+            />
+          </TabErrorBoundary>
         ) : activeTab === 'hourly_updates' ? (
-          <HourlyUpdatesContainer />
+          <TabErrorBoundary tabName="Hourly Updates">
+            <HourlyUpdatesContainer />
+          </TabErrorBoundary>
         ) : activeTab === 'backtest_results' ? (
-          <BacktestResultsContainer />
+          <TabErrorBoundary tabName="Live Math Signals">
+            <BacktestResultsContainer />
+          </TabErrorBoundary>
         ) : activeTab === 'scanner' ? (
-          <ScannerContainer 
-            onSymbolSelect={setSymbol} 
-            onSwitchToChart={() => setActiveTab('chart')} 
-          />
+          <TabErrorBoundary tabName="Scanner">
+            <ScannerContainer 
+              onSymbolSelect={setSymbol} 
+              onSwitchToChart={() => setActiveTab('chart')} 
+            />
+          </TabErrorBoundary>
         ) : activeTab === 'confluences' ? (
-          <ConfluencesContainer 
-            onSymbolSelect={setSymbol} 
-            onSwitchToChart={() => setActiveTab('chart')} 
-          />
+          <TabErrorBoundary tabName="Confluences">
+            <ConfluencesContainer 
+              onSymbolSelect={setSymbol} 
+              onSwitchToChart={() => setActiveTab('chart')} 
+            />
+          </TabErrorBoundary>
         ) : activeTab === 'options' ? (
-          <OptionsChain
-            currentSymbol={symbol}
-            onSymbolChange={setSymbol}
-            onSwitchToChart={() => setActiveTab('chart')}
-          />
+          <TabErrorBoundary tabName="Options Chain">
+            <OptionsChain
+              currentSymbol={symbol}
+              onSymbolChange={setSymbol}
+              onSwitchToChart={() => setActiveTab('chart')}
+            />
+          </TabErrorBoundary>
         ) : activeTab === 'signals' ? (
-          <SignalsContainer
-            onSymbolSelect={setSymbol}
-            onSwitchToChart={() => setActiveTab('chart')}
-          />
+          <TabErrorBoundary tabName="Live Signals">
+            <SignalsContainer
+              onSymbolSelect={setSymbol}
+              onSwitchToChart={() => setActiveTab('chart')}
+            />
+          </TabErrorBoundary>
         ) : activeTab === 'doji' ? (
-          <DojiContainer
-            onSymbolSelect={setSymbol}
-            onSwitchToChart={() => setActiveTab('chart')}
-          />
+          <TabErrorBoundary tabName="First Doji">
+            <DojiContainer
+              onSymbolSelect={setSymbol}
+              onSwitchToChart={() => setActiveTab('chart')}
+            />
+          </TabErrorBoundary>
         ) : activeTab === 'doji_novol' ? (
-          <DojiContainer
-            onSymbolSelect={setSymbol}
-            onSwitchToChart={() => setActiveTab('chart')}
-            noVolumeFilter={true}
-          />
+          <TabErrorBoundary tabName="Doji (No Vol)">
+            <DojiContainer
+              onSymbolSelect={setSymbol}
+              onSwitchToChart={() => setActiveTab('chart')}
+              noVolumeFilter={true}
+            />
+          </TabErrorBoundary>
         ) : activeTab === 'volume' ? (
-          <VolumeContainer
-            onSymbolSelect={setSymbol}
-            onSwitchToChart={() => setActiveTab('chart')}
-          />
+          <TabErrorBoundary tabName="Volume Breakouts">
+            <VolumeContainer
+              onSymbolSelect={setSymbol}
+              onSwitchToChart={() => setActiveTab('chart')}
+            />
+          </TabErrorBoundary>
         ) : activeTab === 'opening_bias' ? (
-          <OpeningBiasContainer />
+          <TabErrorBoundary tabName="Opening Bias">
+            <OpeningBiasContainer />
+          </TabErrorBoundary>
         ) : activeTab === 'early_picks' ? (
-          <EarlyPicksContainer
-            onSymbolSelect={setSymbol}
-            onSwitchToChart={() => setActiveTab('chart')}
-          />
+          <TabErrorBoundary tabName="Early Picks">
+            <EarlyPicksContainer
+              onSymbolSelect={setSymbol}
+              onSwitchToChart={() => setActiveTab('chart')}
+            />
+          </TabErrorBoundary>
         ) : activeTab === 'nr7_breakout' ? (
-          <Nr7BreakoutContainer
-            onSymbolSelect={setSymbol}
-            onSwitchToChart={() => setActiveTab('chart')}
-          />
+          <TabErrorBoundary tabName="20% Upper Circuit Potential">
+            <Nr7BreakoutContainer
+              onSymbolSelect={setSymbol}
+              onSwitchToChart={() => setActiveTab('chart')}
+            />
+          </TabErrorBoundary>
         ) : activeTab === 'order_flow' ? (
-          <OrderFlowContainer
-            candles={candles}
-            currentSymbol={symbol}
-            onSymbolSelect={setSymbol}
-            onSwitchToChart={() => setActiveTab('chart')}
-          />
+          <TabErrorBoundary tabName="Lucky Flow">
+            <OrderFlowContainer
+              candles={candles}
+              currentSymbol={symbol}
+              onSymbolSelect={setSymbol}
+              onSwitchToChart={() => setActiveTab('chart')}
+            />
+          </TabErrorBoundary>
         ) : activeTab === 'order_flow_footprint' ? (
-          <OrderFlowFootprintContainer
-            onSymbolSelect={setSymbol}
-            onSwitchToChart={() => setActiveTab('chart')}
-          />
+          <TabErrorBoundary tabName="Order Flow">
+            <OrderFlowFootprintContainer
+              onSymbolSelect={setSymbol}
+              onSwitchToChart={() => setActiveTab('chart')}
+            />
+          </TabErrorBoundary>
         ) : (
           <>
             {error && (
@@ -643,12 +678,14 @@ function App() {
               </div>
             ) : (
               <div style={{ flex: '1', display: 'flex', minHeight: '0' }}>
-                <ChartContainer
-                  candles={candles}
-                  symbol={symbol}
-                  timeframe={timeframe}
-                  matrixSeriesData={matrixSeriesData}
-                />
+                <TabErrorBoundary tabName="Candlestick Chart">
+                  <ChartContainer
+                    candles={candles}
+                    symbol={symbol}
+                    timeframe={timeframe}
+                    matrixSeriesData={matrixSeriesData}
+                  />
+                </TabErrorBoundary>
               </div>
             )}
           </>

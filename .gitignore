@@ -1,5 +1,10 @@
-﻿node_modules/
+node_modules/
 frontend/node_modules/
 backend/node_modules/
 .DS_Store
 *.log
+
+cloudflared.exe
+backend/cloudflared.exe
+.env
+backend/.env
