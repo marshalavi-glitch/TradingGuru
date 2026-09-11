@@ -208,10 +208,6 @@ app.get('/api/candles', async (req, res) => {
   }
 });
 
-// API 404 Guard: ensure unknown /api/* requests return JSON 404 instead of index.html
-app.all('/api/*', (req, res) => {
-  res.status(404).json({ error: 'API endpoint not found', path: req.path });
-});
 
 // Disable caching to prevent browser caching issues
 app.use((req, res, next) => {
@@ -222,10 +218,6 @@ app.use((req, res, next) => {
 // Serve static files from React frontend build
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
-// SPA Wildcard route for client-side routing fallback
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
-});
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -1991,6 +1983,11 @@ setInterval(() => {
 // Endpoint to retrieve all 5000+ Indian stock presets dynamically
 app.get('/api/symbols/presets', (req, res) => {
   res.json(presetsData);
+});
+
+// API 404 Guard: ensure unknown /api/* requests return JSON 404 instead of index.html
+app.all('/api/*', (req, res) => {
+  res.status(404).json({ error: 'API endpoint not found', path: req.path });
 });
 
 // Fallback to React index.html for client-side routing
