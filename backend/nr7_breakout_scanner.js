@@ -26,7 +26,7 @@ function saveNr7CacheToDisk() {
       lastScanTime: nr7Cache.lastScanTime
     }, null, 2), 'utf8');
   } catch (err) {
-    console.error('[NR7 Scanner] Failed to save backup to disk:', err);
+    console.error('[20% Upper Circuit Scanner] Failed to save backup to disk:', err);
   }
 }
 
@@ -39,13 +39,13 @@ export function loadNr7CacheFromDisk() {
         nr7Cache.date = data.date;
         nr7Cache.results = data.results || [];
         nr7Cache.lastScanTime = data.lastScanTime || null;
-        console.log(`[NR7 Scanner] Successfully restored ${nr7Cache.results.length} NR7 breakouts from disk cache.`);
+        console.log(`[20% Upper Circuit Scanner] Restored ${nr7Cache.results.length} candidates from disk cache.`);
       } else {
-        console.log('[NR7 Scanner] Disk cache is from a previous day or empty, starting clean.');
+        console.log('[20% Upper Circuit Scanner] Disk cache is from a previous day or empty, starting clean.');
       }
     }
   } catch (err) {
-    console.error('[NR7 Scanner] Failed to load backup from disk:', err);
+    console.error('[20% Upper Circuit Scanner] Failed to load backup from disk:', err);
   }
 }
 
@@ -118,48 +118,51 @@ export async function scanNr7Breakouts(tvBridge, symbolsList) {
     nr7Cache.results = [];
   }
 
-  console.log(`[NR7 Scanner] Starting scan across ${symbolsList.length} symbols...`);
+  console.log(`[20% Upper Circuit Scanner] Starting scan across ${symbolsList.length} symbols as per Chartink rules...`);
   const matchedList = [];
 
   for (let i = 0; i < symbolsList.length; i++) {
     const symbol = symbolsList[i];
     try {
-      // 1. Fetch Daily Candles
+      // Fetch Daily Candles (need at least 68 days for 60 SMA + 7 prior days)
       const dailyCandles = await fetchCandles(tvBridge, symbol, 'D', 90);
-      if (!dailyCandles || dailyCandles.length < 68) continue; // Need at least 60 days for 60 SMA + 7 prior days
+      if (!dailyCandles || dailyCandles.length < 68) continue;
 
-      const currentDaily = dailyCandles[dailyCandles.length - 1];
-      const prevDaily = dailyCandles[dailyCandles.length - 2];
+      const D0 = dailyCandles[dailyCandles.length - 1];   // Today
+      const D1 = dailyCandles[dailyCandles.length - 2];   // 1 day ago
+      const D2 = dailyCandles[dailyCandles.length - 3];   // 2 days ago
+      const D3 = dailyCandles[dailyCandles.length - 4];   // 3 days ago
+      const D4 = dailyCandles[dailyCandles.length - 5];   // 4 days ago
+      const D5 = dailyCandles[dailyCandles.length - 6];   // 5 days ago
+      const D6 = dailyCandles[dailyCandles.length - 7];   // 6 days ago
+      const D7 = dailyCandles[dailyCandles.length - 8];   // 7 days ago
 
-      // Condition 1: Today's price breaks above previous day's high
-      const isBreakoutAbovePrevHigh = currentDaily.close > prevDaily.high || currentDaily.high > prevDaily.high;
-      if (!isBreakoutAbovePrevHigh) continue;
+      const R0 = D0.high - D0.low; // Today Range (Daily High - Daily Low)
+      if (R0 <= 0) continue;
 
-      // Condition 2: NR7 - Prev day trading range was narrowest of previous 7 trading days (D-1 vs D-2..D-8)
-      const prevDayRange = prevDaily.high - prevDaily.low;
-      if (prevDayRange <= 0) continue;
+      // Rules 1-7: Today's range (Daily High - Daily Low) > range of 1, 2, 3, 4, 5, 6, 7 days ago
+      const R1 = D1.high - D1.low;
+      const R2 = D2.high - D2.low;
+      const R3 = D3.high - D3.low;
+      const R4 = D4.high - D4.low;
+      const R5 = D5.high - D5.low;
+      const R6 = D6.high - D6.low;
+      const R7 = D7.high - D7.low;
 
-      let isNr7 = true;
-      for (let k = 3; k <= 9; k++) {
-        const pastCandle = dailyCandles[dailyCandles.length - k];
-        if (!pastCandle) continue;
-        const pastRange = pastCandle.high - pastCandle.low;
-        if (prevDayRange >= pastRange) {
-          isNr7 = false;
-          break;
-        }
+      if (!(R0 > R1 && R0 > R2 && R0 > R3 && R0 > R4 && R0 > R5 && R0 > R6 && R0 > R7)) {
+        continue;
       }
-      if (!isNr7) continue;
 
-      // Condition 3: Daily Close > Daily Open
-      const isDailyBullish = currentDaily.close > currentDaily.open;
-      if (!isDailyBullish) continue;
+      // Rule 8: Daily Close > Daily Open
+      if (!(D0.close > D0.open)) continue;
 
-      // Condition 4: Volume > 10,000
-      const currentVolume = currentDaily.volume || 0;
-      if (currentVolume < 10000) continue;
+      // Rule 9: Daily Close > 1 day ago Open
+      if (!(D0.close > D1.open)) continue;
 
-      // Condition 5: 20 SMA > 40 SMA > 60 SMA
+      // Rule 12: 1 day ago Volume > 10,000
+      if (!((D1.volume || 0) > 10000)) continue;
+
+      // Rule 13 & 14: Daily 20 SMA > 40 SMA > 60 SMA
       const sma20 = calculateSMA(dailyCandles, 20);
       const sma40 = calculateSMA(dailyCandles, 40);
       const sma60 = calculateSMA(dailyCandles, 60);
@@ -167,44 +170,43 @@ export async function scanNr7Breakouts(tvBridge, symbolsList) {
       if (!sma20 || !sma40 || !sma60) continue;
       if (!(sma20 > sma40 && sma40 > sma60)) continue;
 
-      // Condition 6: Weekly Close > Weekly Open
+      // Rule 10: Weekly Close > Weekly Open
       const weeklyCandles = await fetchCandles(tvBridge, symbol, 'W', 5);
       if (!weeklyCandles || weeklyCandles.length === 0) continue;
-      const currentWeekly = weeklyCandles[weeklyCandles.length - 1];
-      const isWeeklyBullish = currentWeekly.close > currentWeekly.open;
-      if (!isWeeklyBullish) continue;
+      const W0 = weeklyCandles[weeklyCandles.length - 1];
+      if (!(W0.close > W0.open)) continue;
 
-      // Condition 7: Monthly Close > Monthly Open
+      // Rule 11: Monthly Close > Monthly Open
       const monthlyCandles = await fetchCandles(tvBridge, symbol, 'M', 5);
       if (!monthlyCandles || monthlyCandles.length === 0) continue;
-      const currentMonthly = monthlyCandles[monthlyCandles.length - 1];
-      const isMonthlyBullish = currentMonthly.close > currentMonthly.open;
-      if (!isMonthlyBullish) continue;
+      const M0 = monthlyCandles[monthlyCandles.length - 1];
+      if (!(M0.close > M0.open)) continue;
 
       // Calculate Day Change %
-      const changePts = currentDaily.close - prevDaily.close;
-      const changePct = (changePts / prevDaily.close) * 100;
+      const changePts = D0.close - D1.close;
+      const changePct = (changePts / D1.close) * 100;
       const scanTime = new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour12: false });
 
       matchedList.push({
         symbol,
-        close: currentDaily.close,
-        open: currentDaily.open,
-        prevHigh: prevDaily.high,
-        prevLow: prevDaily.low,
-        prevRange: prevDayRange,
+        close: D0.close,
+        open: D0.open,
+        prevHigh: D1.high,
+        prevLow: D1.low,
+        prevRange: R1,
+        todayRange: R0,
         changePts,
         changePct,
-        volume: currentVolume,
+        volume: D0.volume || 0,
         sma20,
         sma40,
         sma60,
         time: scanTime
       });
 
-      console.log(`[NR7 Scanner] 🎯 MATCH FOUND: ${symbol} @ ₹${currentDaily.close.toFixed(2)} (${changePct >= 0 ? '+' : ''}${changePct.toFixed(2)}%)`);
+      console.log(`[20% Upper Circuit Scanner] 🎯 MATCH FOUND: ${symbol} @ ₹${D0.close.toFixed(2)} (+${changePct.toFixed(2)}%)`);
     } catch (err) {
-      console.warn(`[NR7 Scanner] Error scanning ${symbol}:`, err.message);
+      console.warn(`[20% Upper Circuit Scanner] Error scanning ${symbol}:`, err.message);
     }
   }
 
@@ -216,5 +218,5 @@ export async function scanNr7Breakouts(tvBridge, symbolsList) {
   nr7Cache.isScanning = false;
 
   saveNr7CacheToDisk();
-  console.log(`[NR7 Scanner] Scan cycle complete. Found ${matchedList.length} matching stocks.`);
+  console.log(`[20% Upper Circuit Scanner] Scan cycle complete. Found ${matchedList.length} matching stocks.`);
 }
