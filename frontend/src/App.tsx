@@ -481,7 +481,7 @@ function App() {
             gap: '6px'
           }}
         >
-          🌊 Order Flow Analysis
+          🍀 Lucky Flow
         </button>
       </div>
 
@@ -554,6 +554,7 @@ function App() {
           />
         ) : activeTab === 'order_flow' ? (
           <OrderFlowContainer
+            candles={candles}
             currentSymbol={symbol}
             onSymbolSelect={setSymbol}
             onSwitchToChart={() => setActiveTab('chart')}
