@@ -1,23 +1,26 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   Layers,
   Activity,
   CheckCircle2,
-  BarChart2,
   Sliders,
   Sparkles,
   ShieldCheck,
   Zap,
   RefreshCw,
-  AlertTriangle,
+  AlertCircle,
+  Clock,
+  Wifi,
+  WifiOff,
 } from 'lucide-react';
-import { tvStreamer } from '../utils/tvStreamer';
+import { tvStreamer, getBackendHttpUrl } from '../utils/tvStreamer';
 import type { Candle, DayProfile } from '../utils/profileCalculator';
 import { calculateDayProfile } from '../utils/profileCalculator';
 import {
   performOrderFlowAnalysis,
   OrderFlowAnalysisResult,
 } from '../utils/orderFlowCalculator';
+import { resolveSymbol, SymbolInfo } from '../utils/symbolResolver';
 
 interface OrderFlowContainerProps {
   candles?: Candle[];
@@ -37,91 +40,150 @@ const POPULAR_SYMBOLS = [
   'NSE:SBIN',
   'NSE:TATAMOTORS',
   'NSE:BHARTIARTL',
+  'BSE:SENSEX',
 ];
 
-/**
- * Generates realistic fallback candles for ANY stock symbol if live stream is delayed
- */
-function generateFallbackCandles(symbol: string = 'NSE:NIFTY'): Candle[] {
-  const cleanSym = symbol.replace('NSE:', '').replace('BSE:', '').toUpperCase();
-  let basePrice = 24820; // Default NIFTY
-
-  if (cleanSym === 'BANKNIFTY') basePrice = 51450;
-  else if (cleanSym === 'FINNIFTY') basePrice = 23250;
-  else if (cleanSym === 'SENSEX') basePrice = 81200;
-  else if (cleanSym === 'RELIANCE') basePrice = 2980;
-  else if (cleanSym === 'HDFCBANK') basePrice = 1650;
-  else if (cleanSym === 'ICICIBANK') basePrice = 1230;
-  else if (cleanSym === 'INFY') basePrice = 1920;
-  else if (cleanSym === 'TCS') basePrice = 4530;
-  else if (cleanSym === 'SBIN') basePrice = 845;
-  else if (cleanSym === 'TATAMOTORS') basePrice = 1085;
-  else if (cleanSym === 'BHARTIARTL') basePrice = 1570;
-  else basePrice = 1500; // General stock default
-
-  const result: Candle[] = [];
-  let price = basePrice;
-  const now = Math.floor(Date.now() / 1000);
-
-  for (let i = 75; i >= 0; i--) {
-    const time = now - i * 300; // 5-min intervals
-    const delta = Math.sin(i / 4) * (basePrice * 0.0018) + (Math.random() - 0.48) * (basePrice * 0.0025);
-    const open = price;
-    const close = Math.max(1, open + delta);
-    const high = Math.max(open, close) + Math.random() * (basePrice * 0.0012);
-    const low = Math.min(open, close) - Math.random() * (basePrice * 0.0012);
-    const volume = Math.floor(20000 + Math.random() * 45000);
-
-    result.push({
-      time,
-      open: Math.round(open * 100) / 100,
-      high: Math.round(high * 100) / 100,
-      low: Math.round(low * 100) / 100,
-      close: Math.round(close * 100) / 100,
-      volume,
-    });
-    price = close;
-  }
-  return result;
-}
+type DataStatus = 'LOADING' | 'LIVE' | 'MARKET_CLOSED' | 'ERROR' | 'UNAVAILABLE';
 
 export const OrderFlowContainer: React.FC<OrderFlowContainerProps> = ({
-  candles: propCandles = [],
+  candles: propCandles,
   currentSymbol = 'NSE:NIFTY',
   onSymbolSelect,
   onSwitchToChart,
 }) => {
-  const [selectedSymbol, setSelectedSymbol] = useState(currentSymbol);
-  const [customSymbol, setCustomSymbol] = useState('');
-  const [timeframe, setTimeframe] = useState<'5m' | '15m' | '75m' | '1d'>('5m');
-  const [streamCandles, setStreamCandles] = useState<Candle[]>([]);
+  // Master Single Source of Truth Symbol & Timeframe State
+  const [selectedSymbol, setSelectedSymbol] = useState<string>(currentSymbol);
+  const [customSymbolInput, setCustomSymbolInput] = useState<string>('');
+  const [timeframe, setTimeframe] = useState<'5' | '15' | '75' | 'D'>('5');
 
-  // Sync selectedSymbol when parent currentSymbol changes
+  // Authoritative Symbol Info
+  const symbolInfo: SymbolInfo = useMemo(() => {
+    return resolveSymbol(selectedSymbol);
+  }, [selectedSymbol]);
+
+  // Data Pipeline State - Strictly Keyed by Symbol
+  const [candles, setCandles] = useState<Candle[]>([]);
+  const [dataStatus, setDataStatus] = useState<DataStatus>('LOADING');
+  const [lastUpdateTime, setLastUpdateTime] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Sync state if currentSymbol prop changes from parent
   useEffect(() => {
     if (currentSymbol && currentSymbol !== selectedSymbol) {
-      setSelectedSymbol(currentSymbol);
-      setStreamCandles([]);
+      const resolved = resolveSymbol(currentSymbol);
+      setSelectedSymbol(resolved.formattedSymbol);
     }
   }, [currentSymbol]);
 
-  // Subscribe to Streaming Data for selectedSymbol
+  // Primary Data Pipeline: Fetch fresh historical & live candles whenever symbol or timeframe changes
   useEffect(() => {
     let isMounted = true;
-    const tfMap: Record<string, string> = {
-      '5m': '5',
-      '15m': '15',
-      '75m': '75',
-      '1d': 'D',
+    const targetSymbol = symbolInfo.formattedSymbol;
+
+    // STEP 1: Strict Invalidation - Clear all prior symbol data
+    setCandles([]);
+    setDataStatus('LOADING');
+    setErrorMessage(null);
+    setLastUpdateTime(null);
+
+    console.log(`[Lucky Flow Audit Log] Switching to Symbol: ${targetSymbol} | Timeframe: ${timeframe}`);
+
+    // STEP 2: Fetch fresh OHLCV candles via REST API
+    const fetchCandles = async () => {
+      try {
+        const backendHttp = getBackendHttpUrl();
+        const url = `${backendHttp}/api/candles?symbol=${encodeURIComponent(targetSymbol)}&timeframe=${timeframe}&limit=500`;
+        const res = await fetch(url);
+        
+        if (!isMounted) return;
+
+        if (!res.ok) {
+          throw new Error(`Server returned HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+        
+        if (!isMounted) return;
+
+        // DATA VALIDATION: Verify returned symbol matches requested targetSymbol
+        if (data.symbol && data.symbol.toUpperCase() !== targetSymbol.toUpperCase()) {
+          console.warn(`[Lucky Flow Audit Log] REJECTED mismatched data payload! Expected: ${targetSymbol}, Received: ${data.symbol}`);
+          return;
+        }
+
+        if (data.candles && data.candles.length > 0) {
+          // Sort candles chronologically
+          const validCandles: Candle[] = data.candles.sort((a: Candle, b: Candle) => a.time - b.time);
+          setCandles(validCandles);
+
+          const now = new Date();
+          const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          setLastUpdateTime(timeStr);
+
+          // Determine market status based on timestamp of latest candle
+          const latestTime = validCandles[validCandles.length - 1].time * 1000;
+          const isStale = (Date.now() - latestTime) > 24 * 3600 * 1000; // > 24h
+          setDataStatus(isStale ? 'MARKET_CLOSED' : 'LIVE');
+
+          const latestClose = validCandles[validCandles.length - 1].close;
+          console.log(`[Lucky Flow Audit Log] Successfully loaded ${validCandles.length} candles for ${targetSymbol}. Live Price: ₹${latestClose}`);
+        } else {
+          setDataStatus('UNAVAILABLE');
+          setErrorMessage(`No candle data returned from market data provider for ${targetSymbol}`);
+        }
+      } catch (err: any) {
+        if (!isMounted) return;
+        console.error(`[Lucky Flow Audit Log] Failed to fetch candles for ${targetSymbol}:`, err);
+        
+        // If propCandles provided as fallback matching symbol
+        if (propCandles && propCandles.length > 0) {
+          setCandles(propCandles);
+          setDataStatus('LIVE');
+        } else {
+          setDataStatus('ERROR');
+          setErrorMessage(err.message || `Failed to connect to market data provider for ${targetSymbol}`);
+        }
+      }
     };
 
+    fetchCandles();
+
+    // STEP 3: Subscribe to live streaming updates via tvStreamer WebSocket
     const unsubscribe = tvStreamer.subscribe(
-      selectedSymbol,
-      tfMap[timeframe] || '5',
-      (data) => {
+      targetSymbol,
+      timeframe,
+      (payload) => {
         if (!isMounted) return;
-        if (data.candles && data.candles.length > 0) {
-          setStreamCandles(data.candles);
+
+        // DATA VALIDATION: Verify payload matches selected symbol
+        if (payload.symbol && payload.symbol.toUpperCase() !== targetSymbol.toUpperCase()) {
+          return; // Ignore updates for previous symbols
         }
+
+        if (payload.candles && payload.candles.length > 0) {
+          setCandles((prevCandles) => {
+            if (payload.isSnapshot) {
+              return payload.candles.sort((a, b) => a.time - b.time);
+            } else {
+              const tick = payload.candles[0];
+              const index = prevCandles.findIndex((c) => c.time === tick.time);
+              if (index !== -1) {
+                const updated = [...prevCandles];
+                updated[index] = tick;
+                return updated;
+              } else {
+                return [...prevCandles, tick];
+              }
+            }
+          });
+
+          const now = new Date();
+          setLastUpdateTime(now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+          setDataStatus('LIVE');
+        }
+      },
+      (err) => {
+        console.warn(`[Lucky Flow Audit Log] WebSocket streaming note for ${targetSymbol}:`, err);
       }
     );
 
@@ -129,34 +191,7 @@ export const OrderFlowContainer: React.FC<OrderFlowContainerProps> = ({
       isMounted = false;
       unsubscribe();
     };
-  }, [selectedSymbol, timeframe]);
-
-  // Determine effective candles matched to current selectedSymbol
-  const effectiveCandles: Candle[] = useMemo(() => {
-    if (propCandles && propCandles.length > 0) {
-      const lastClose = propCandles[propCandles.length - 1].close;
-      const cleanSym = selectedSymbol.replace('NSE:', '').replace('BSE:', '').toUpperCase();
-
-      let expectedMin = 0;
-      let expectedMax = Infinity;
-      if (cleanSym.includes('BANKNIFTY')) { expectedMin = 30000; expectedMax = 70000; }
-      else if (cleanSym.includes('NIFTY') && !cleanSym.includes('BANK')) { expectedMin = 15000; expectedMax = 35000; }
-      else if (cleanSym === 'RELIANCE') { expectedMin = 1500; expectedMax = 5000; }
-      else if (cleanSym === 'TCS') { expectedMin = 2000; expectedMax = 8000; }
-      else if (cleanSym === 'SBIN') { expectedMin = 400; expectedMax = 2000; }
-      else if (cleanSym === 'HDFCBANK') { expectedMin = 800; expectedMax = 3000; }
-
-      if (lastClose >= expectedMin && lastClose <= expectedMax) {
-        return propCandles;
-      }
-    }
-
-    if (streamCandles && streamCandles.length > 0) {
-      return streamCandles;
-    }
-
-    return generateFallbackCandles(selectedSymbol);
-  }, [propCandles, streamCandles, selectedSymbol]);
+  }, [symbolInfo.formattedSymbol, timeframe]);
 
   // Interactive Level Toggles
   const [showPoc, setShowPoc] = useState<boolean>(true);
@@ -166,77 +201,56 @@ export const OrderFlowContainer: React.FC<OrderFlowContainerProps> = ({
   const [showHvnLvn, setShowHvnLvn] = useState<boolean>(true);
   const [showConfluenceZone, setShowConfluenceZone] = useState<boolean>(true);
 
-  // Compute Day Profile with CORRECT signature
+  // Authoritative Market Profile Calculation
   const dayProfile: DayProfile | null = useMemo(() => {
-    if (!effectiveCandles || effectiveCandles.length === 0) return null;
+    if (!candles || candles.length === 0) return null;
     try {
       const todayStr = new Date().toISOString().split('T')[0];
       return calculateDayProfile(
         todayStr,
-        effectiveCandles,
+        candles,
         40,
         'daily',
         undefined,
         undefined,
-        selectedSymbol
+        symbolInfo.formattedSymbol
       );
     } catch (err) {
-      console.error('Error in calculateDayProfile:', err);
+      console.error('[Lucky Flow Audit Log] Error in calculateDayProfile:', err);
       return null;
     }
-  }, [effectiveCandles, selectedSymbol]);
+  }, [candles, symbolInfo.formattedSymbol]);
 
-  // Compute Order Flow & Market Profile Analysis
+  // Authoritative Order Flow & Market Profile Analysis
   const analysis: OrderFlowAnalysisResult | null = useMemo(() => {
-    if (!effectiveCandles || effectiveCandles.length === 0) return null;
+    if (!candles || candles.length === 0) return null;
     try {
-      return performOrderFlowAnalysis(effectiveCandles, dayProfile, selectedSymbol, timeframe);
+      const tfLabel = timeframe === 'D' ? '1d' : `${timeframe}m`;
+      const res = performOrderFlowAnalysis(candles, dayProfile, symbolInfo.formattedSymbol, tfLabel);
+      
+      console.log(`[Lucky Flow Diagnostic Log] Symbol: ${symbolInfo.formattedSymbol} | Price: ₹${res.livePrice} | POC: ₹${res.pocVpoc.pocPrice} | VPOC: ₹${res.pocVpoc.vpocPrice} | VAH: ₹${res.balance.balanceHigh} | VAL: ₹${res.balance.balanceLow} | Score: ${res.confluenceScore}`);
+      return res;
     } catch (err) {
-      console.error('Error in performOrderFlowAnalysis:', err);
+      console.error('[Lucky Flow Audit Log] Error in performOrderFlowAnalysis:', err);
       return null;
     }
-  }, [effectiveCandles, dayProfile, selectedSymbol, timeframe]);
+  }, [candles, dayProfile, symbolInfo.formattedSymbol, timeframe]);
 
-  const handleSymbolChange = (sym: string) => {
-    setSelectedSymbol(sym);
-    setStreamCandles([]);
+  // Master Symbol Selection Handler
+  const handleSymbolChange = (newSymbolInput: string) => {
+    const resolved = resolveSymbol(newSymbolInput);
+    setSelectedSymbol(resolved.formattedSymbol);
     if (onSymbolSelect) {
-      onSymbolSelect(sym);
+      onSymbolSelect(resolved.formattedSymbol);
     }
   };
 
   const handleCustomSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customSymbol.trim()) return;
-    let formatted = customSymbol.trim().toUpperCase();
-    if (!formatted.includes(':')) {
-      formatted = `NSE:${formatted}`;
-    }
-    handleSymbolChange(formatted);
-    setCustomSymbol('');
+    if (!customSymbolInput.trim()) return;
+    handleSymbolChange(customSymbolInput.trim());
+    setCustomSymbolInput('');
   };
-
-  if (!analysis) {
-    return (
-      <div
-        className="glass-panel"
-        style={{
-          padding: '40px',
-          margin: '20px',
-          textAlign: 'center',
-          borderRadius: '12px',
-          border: '1px solid var(--border-color)',
-          color: 'var(--text-primary)',
-        }}
-      >
-        <Activity className="animate-spin" size={32} style={{ marginBottom: '12px', color: 'var(--accent-blue)' }} />
-        <h3 style={{ margin: '0 0 8px 0', fontSize: '16px' }}>Loading Lucky Flow Analysis...</h3>
-        <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)' }}>
-          Preparing Market Profile metrics for {selectedSymbol}
-        </p>
-      </div>
-    );
-  }
 
   return (
     <div
@@ -284,12 +298,12 @@ export const OrderFlowContainer: React.FC<OrderFlowContainerProps> = ({
               🍀 Lucky Flow Analysis
             </h2>
             <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)' }}>
-              Order Flow Market Profile Sequence • POC/VPOC Confluence • Confluence Score (0–100)
+              Live Order Flow & Market Profile Engine • Instrument: <strong>{symbolInfo.formattedSymbol}</strong>
             </p>
           </div>
         </div>
 
-        {/* Symbol Selector & Search */}
+        {/* Symbol Selector & Controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
             <select
@@ -302,16 +316,19 @@ export const OrderFlowContainer: React.FC<OrderFlowContainerProps> = ({
                 padding: '6px 12px',
                 borderRadius: '6px',
                 fontSize: '13px',
-                fontWeight: '600',
+                fontWeight: '700',
                 outline: 'none',
                 cursor: 'pointer',
               }}
             >
-              {POPULAR_SYMBOLS.map((sym) => (
-                <option key={sym} value={sym}>
-                  {sym.replace('NSE:', '')}
-                </option>
-              ))}
+              {POPULAR_SYMBOLS.map((sym) => {
+                const sInfo = resolveSymbol(sym);
+                return (
+                  <option key={sym} value={sym}>
+                    {sInfo.displayName} ({sInfo.exchange})
+                  </option>
+                );
+              })}
             </select>
           </div>
 
@@ -319,8 +336,8 @@ export const OrderFlowContainer: React.FC<OrderFlowContainerProps> = ({
             <input
               type="text"
               placeholder="Search Stock (e.g. RELIANCE)"
-              value={customSymbol}
-              onChange={(e) => setCustomSymbol(e.target.value)}
+              value={customSymbolInput}
+              onChange={(e) => setCustomSymbolInput(e.target.value)}
               style={{
                 background: 'rgba(30, 41, 59, 0.9)',
                 border: '1px solid var(--border-color)',
@@ -349,7 +366,7 @@ export const OrderFlowContainer: React.FC<OrderFlowContainerProps> = ({
             </button>
           </form>
 
-          {/* Timeframe selector */}
+          {/* Timeframe Selector */}
           <div
             style={{
               display: 'flex',
@@ -359,7 +376,7 @@ export const OrderFlowContainer: React.FC<OrderFlowContainerProps> = ({
               border: '1px solid var(--border-color)',
             }}
           >
-            {(['5m', '15m', '75m', '1d'] as const).map((tf) => (
+            {(['5', '15', '75', 'D'] as const).map((tf) => (
               <button
                 key={tf}
                 onClick={() => setTimeframe(tf)}
@@ -375,7 +392,7 @@ export const OrderFlowContainer: React.FC<OrderFlowContainerProps> = ({
                   transition: 'all 0.15s',
                 }}
               >
-                {tf.toUpperCase()}
+                {tf === 'D' ? '1D' : `${tf}M`}
               </button>
             ))}
           </div>
@@ -426,440 +443,518 @@ export const OrderFlowContainer: React.FC<OrderFlowContainerProps> = ({
         </label>
       </div>
 
-      {/* Top Grid: Market Structure Summary & "Why This Bias?" Panel */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          gap: '16px',
-        }}
-      >
-        {/* Market Structure Summary & Confluence Score */}
+      {/* Loading / Error / Data Unavailable States */}
+      {dataStatus === 'LOADING' || !analysis ? (
         <div
           className="glass-panel"
           style={{
-            padding: '20px',
+            padding: '60px',
+            textAlign: 'center',
             borderRadius: '12px',
+            color: 'var(--text-secondary)',
             background: 'rgba(15, 23, 42, 0.7)',
             border: '1px solid var(--border-color)',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            position: 'relative',
-            overflow: 'hidden',
           }}
         >
-          <div
+          <Activity className="animate-spin" size={36} style={{ marginBottom: '16px', color: 'var(--accent-blue)' }} />
+          <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', color: '#f8fafc' }}>
+            Loading live data for {symbolInfo.displayName} ({symbolInfo.formattedSymbol})...
+          </h3>
+          <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)' }}>
+            Fetching authentic OHLCV candles and calculating Market Profile & Order Flow metrics...
+          </p>
+        </div>
+      ) : dataStatus === 'UNAVAILABLE' || dataStatus === 'ERROR' ? (
+        <div
+          className="glass-panel"
+          style={{
+            padding: '40px',
+            textAlign: 'center',
+            borderRadius: '12px',
+            color: '#ef4444',
+            background: 'rgba(239, 68, 68, 0.05)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+          }}
+        >
+          <AlertCircle size={36} style={{ marginBottom: '12px' }} />
+          <h3 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>REAL-TIME DATA UNAVAILABLE</h3>
+          <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)' }}>
+            {errorMessage || `Unable to retrieve live market data for ${symbolInfo.formattedSymbol} from TradingView feed.`}
+          </p>
+          <button
+            onClick={() => handleSymbolChange(selectedSymbol)}
             style={{
-              position: 'absolute',
-              top: 0,
-              right: 0,
-              width: '120px',
-              height: '120px',
-              background: `radial-gradient(circle, ${analysis.bracketColor}25 0%, transparent 70%)`,
-              pointerEvents: 'none',
-            }}
-          />
-
-          <div>
-            <div style={{ fontSize: '12px', textTransform: 'uppercase', tracking: '1px', color: '#94a3b8', fontWeight: '700' }}>
-              LUCKY FLOW MARKET STRUCTURE SUMMARY
-            </div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginTop: '6px' }}>
-              <span style={{ fontSize: '26px', fontWeight: '800', color: '#f8fafc' }}>
-                {selectedSymbol.replace('NSE:', '')}
-              </span>
-              <span style={{ fontSize: '18px', fontWeight: '700', color: '#38bdf8' }}>
-                ₹{analysis.livePrice.toFixed(2)}
-              </span>
-            </div>
-          </div>
-
-          <div
-            style={{
-              margin: '16px 0',
-              padding: '16px',
-              borderRadius: '10px',
-              background: 'rgba(30, 41, 59, 0.8)',
-              border: `1px solid ${analysis.bracketColor}40`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
+              marginTop: '16px',
+              background: 'var(--accent-blue)',
+              border: 'none',
+              color: '#fff',
+              padding: '8px 16px',
+              borderRadius: '6px',
+              fontSize: '13px',
+              fontWeight: '600',
+              cursor: 'pointer',
             }}
           >
-            <div>
-              <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '600' }}>SETUP CLASSIFICATION</div>
-              <div style={{ fontSize: '18px', fontWeight: '800', color: analysis.bracketColor, marginTop: '2px' }}>
-                {analysis.setupBracket}
-              </div>
-              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                Structural Bias: <strong style={{ color: analysis.bias === 'BULLISH' ? '#10b981' : analysis.bias === 'BEARISH' ? '#ef4444' : '#f59e0b' }}>{analysis.bias}</strong>
-              </div>
-            </div>
-
-            {/* Score Circular Badge */}
+            Retry Data Connection
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* Top Grid: Market Structure Summary & "Why This Bias?" Panel */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+              gap: '16px',
+            }}
+          >
+            {/* Market Structure Summary & Confluence Score */}
             <div
+              className="glass-panel"
               style={{
-                width: '64px',
-                height: '64px',
-                borderRadius: '50%',
-                background: `conic-gradient(${analysis.bracketColor} ${analysis.confluenceScore * 3.6}deg, rgba(255,255,255,0.05) 0deg)`,
+                padding: '20px',
+                borderRadius: '12px',
+                background: 'rgba(15, 23, 42, 0.7)',
+                border: '1px solid var(--border-color)',
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
                 position: 'relative',
+                overflow: 'hidden',
               }}
             >
               <div
                 style={{
-                  width: '52px',
-                  height: '52px',
-                  borderRadius: '50%',
-                  background: '#0f172a',
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
+                  width: '120px',
+                  height: '120px',
+                  background: `radial-gradient(circle, ${analysis.bracketColor}25 0%, transparent 70%)`,
+                  pointerEvents: 'none',
+                }}
+              />
+
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#94a3b8', fontWeight: '700' }}>
+                    LUCKY FLOW MARKET STRUCTURE SUMMARY
+                  </span>
+
+                  {/* Authentic Data Status & Last Update Time */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '600' }}>
+                    {dataStatus === 'LIVE' ? (
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#10b981', background: 'rgba(16, 185, 129, 0.15)', padding: '2px 8px', borderRadius: '4px' }}>
+                        <Wifi size={12} /> LIVE
+                      </span>
+                    ) : (
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#f59e0b', background: 'rgba(245, 158, 11, 0.15)', padding: '2px 8px', borderRadius: '4px' }}>
+                        <Clock size={12} /> MARKET CLOSED
+                      </span>
+                    )}
+                    {lastUpdateTime && (
+                      <span style={{ color: '#64748b' }}>Updated: {lastUpdateTime}</span>
+                    )}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginTop: '10px' }}>
+                  <span style={{ fontSize: '26px', fontWeight: '800', color: '#f8fafc' }}>
+                    {symbolInfo.displayName}
+                  </span>
+                  <span style={{ fontSize: '22px', fontWeight: '800', color: '#38bdf8' }}>
+                    ₹{analysis.livePrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  margin: '16px 0',
+                  padding: '16px',
+                  borderRadius: '10px',
+                  background: 'rgba(30, 41, 59, 0.8)',
+                  border: `1px solid ${analysis.bracketColor}40`,
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  flexDirection: 'column',
+                  justifyContent: 'space-between',
                 }}
               >
-                <span style={{ fontSize: '16px', fontWeight: '800', color: '#f8fafc', lineHeight: '1' }}>
-                  {analysis.confluenceScore}
-                </span>
-                <span style={{ fontSize: '9px', color: '#94a3b8' }}>/100</span>
+                <div>
+                  <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '600' }}>SETUP CLASSIFICATION</div>
+                  <div style={{ fontSize: '18px', fontWeight: '800', color: analysis.bracketColor, marginTop: '2px' }}>
+                    {analysis.setupBracket}
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                    Structural Bias: <strong style={{ color: analysis.bias === 'BULLISH' ? '#10b981' : analysis.bias === 'BEARISH' ? '#ef4444' : '#f59e0b' }}>{analysis.bias}</strong>
+                  </div>
+                </div>
+
+                {/* Score Circular Badge */}
+                <div
+                  style={{
+                    width: '64px',
+                    height: '64px',
+                    borderRadius: '50%',
+                    background: `conic-gradient(${analysis.bracketColor} ${analysis.confluenceScore * 3.6}deg, rgba(255,255,255,0.05) 0deg)`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'relative',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: '52px',
+                      height: '52px',
+                      borderRadius: '50%',
+                      background: '#0f172a',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexDirection: 'column',
+                    }}
+                  >
+                    <span style={{ fontSize: '16px', fontWeight: '800', color: '#f8fafc', lineHeight: '1' }}>
+                      {analysis.confluenceScore}
+                    </span>
+                    <span style={{ fontSize: '9px', color: '#94a3b8' }}>/100</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bracket Legend */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#64748b' }}>
+                <span>0-30: NO TRADE</span>
+                <span>31-50: WATCH</span>
+                <span>51-70: DEV</span>
+                <span>71-85: VALID</span>
+                <span>86-100: HIGH</span>
               </div>
             </div>
-          </div>
 
-          {/* Bracket Legend */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#64748b' }}>
-            <span>0-30: NO TRADE</span>
-            <span>31-50: WATCH</span>
-            <span>51-70: DEV</span>
-            <span>71-85: VALID</span>
-            <span>86-100: HIGH</span>
-          </div>
-        </div>
-
-        {/* "WHY THIS BIAS?" Rationale Panel */}
-        <div
-          className="glass-panel"
-          style={{
-            padding: '20px',
-            borderRadius: '12px',
-            background: 'rgba(15, 23, 42, 0.7)',
-            border: '1px solid var(--border-color)',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <Sparkles size={18} color="#38bdf8" />
-            <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: '#f8fafc' }}>
-              WHY THIS BIAS? (DATA-BACKED REASONS)
-            </h3>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {analysis.whyThisBias.map((reason, idx) => (
-              <div
-                key={idx}
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '8px',
-                  fontSize: '12px',
-                  color: '#cbd5e1',
-                  lineHeight: '1.4',
-                  padding: '6px 8px',
-                  background: 'rgba(30, 41, 59, 0.4)',
-                  borderRadius: '6px',
-                }}
-              >
-                <CheckCircle2 size={15} color="#38bdf8" style={{ flexShrink: 0, marginTop: '2px' }} />
-                <span>{reason}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Interactive Chart Preview & Level Profile Visualizer */}
-      <div
-        className="glass-panel"
-        style={{
-          padding: '16px',
-          borderRadius: '12px',
-          background: 'rgba(15, 23, 42, 0.7)',
-          border: '1px solid var(--border-color)',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-          <div style={{ fontSize: '14px', fontWeight: '700', color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Layers size={16} color="var(--accent-blue)" />
-            Interactive Lucky Flow & Volume Profile Levels Chart ({selectedSymbol.replace('NSE:', '')})
-          </div>
-          {onSwitchToChart && (
-            <button
-              onClick={onSwitchToChart}
+            {/* "WHY THIS BIAS?" Rationale Panel */}
+            <div
+              className="glass-panel"
               style={{
-                background: 'rgba(59, 130, 246, 0.15)',
-                border: '1px solid var(--accent-blue)',
-                color: '#60a5fa',
-                padding: '4px 10px',
-                borderRadius: '6px',
-                fontSize: '12px',
-                fontWeight: '600',
-                cursor: 'pointer',
+                padding: '20px',
+                borderRadius: '12px',
+                background: 'rgba(15, 23, 42, 0.7)',
+                border: '1px solid var(--border-color)',
               }}
             >
-              View Full TradingView Chart ↗
-            </button>
-          )}
-        </div>
-
-        {/* Profile Level Overview Grid */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-            gap: '10px',
-            marginBottom: '16px',
-          }}
-        >
-          {showPoc && (
-            <div style={{ padding: '8px 12px', borderRadius: '6px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
-              <div style={{ fontSize: '10px', color: '#ef4444', fontWeight: '700' }}>TPO POC</div>
-              <div style={{ fontSize: '15px', fontWeight: '800', color: '#f8fafc' }}>₹{analysis.pocVpoc.pocPrice.toFixed(2)}</div>
-            </div>
-          )}
-
-          {showVpoc && (
-            <div style={{ padding: '8px 12px', borderRadius: '6px', background: 'rgba(168, 85, 247, 0.1)', border: '1px solid rgba(168, 85, 247, 0.3)' }}>
-              <div style={{ fontSize: '10px', color: '#a855f7', fontWeight: '700' }}>Volume VPOC</div>
-              <div style={{ fontSize: '15px', fontWeight: '800', color: '#f8fafc' }}>₹{analysis.pocVpoc.vpocPrice.toFixed(2)}</div>
-            </div>
-          )}
-
-          {showVahVal && (
-            <>
-              <div style={{ padding: '8px 12px', borderRadius: '6px', background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
-                <div style={{ fontSize: '10px', color: '#60a5fa', fontWeight: '700' }}>VAH (Value High)</div>
-                <div style={{ fontSize: '15px', fontWeight: '800', color: '#f8fafc' }}>₹{analysis.balance.balanceHigh.toFixed(2)}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                <Sparkles size={18} color="#38bdf8" />
+                <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: '#f8fafc' }}>
+                  WHY THIS BIAS? (DATA-BACKED REASONS FOR {symbolInfo.displayName})
+                </h3>
               </div>
-              <div style={{ padding: '8px 12px', borderRadius: '6px', background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
-                <div style={{ fontSize: '10px', color: '#60a5fa', fontWeight: '700' }}>VAL (Value Low)</div>
-                <div style={{ fontSize: '15px', fontWeight: '800', color: '#f8fafc' }}>₹{analysis.balance.balanceLow.toFixed(2)}</div>
-              </div>
-            </>
-          )}
 
-          {showHvnLvn && (
-            <div style={{ padding: '8px 12px', borderRadius: '6px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-              <div style={{ fontSize: '10px', color: '#10b981', fontWeight: '700' }}>Major HVN</div>
-              <div style={{ fontSize: '15px', fontWeight: '800', color: '#f8fafc' }}>₹{analysis.volumeDist.majorHvn.toFixed(2)}</div>
-            </div>
-          )}
-
-          {showConfluenceZone && analysis.pocVpoc.isConfluenceZone && (
-            <div style={{ padding: '8px 12px', borderRadius: '6px', background: 'rgba(236, 72, 153, 0.15)', border: '1px solid rgba(236, 72, 153, 0.5)', gridColumn: 'span 2' }}>
-              <div style={{ fontSize: '10px', color: '#ec4899', fontWeight: '800' }}>🔥 POC/VPOC CONFLUENCE ZONE</div>
-              <div style={{ fontSize: '14px', fontWeight: '800', color: '#f8fafc' }}>
-                ₹{analysis.pocVpoc.confluenceZone?.min.toFixed(2)} - ₹{analysis.pocVpoc.confluenceZone?.max.toFixed(2)}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {analysis.whyThisBias.map((reason, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '8px',
+                      fontSize: '12px',
+                      color: '#cbd5e1',
+                      lineHeight: '1.4',
+                      padding: '6px 8px',
+                      background: 'rgba(30, 41, 59, 0.4)',
+                      borderRadius: '6px',
+                    }}
+                  >
+                    <CheckCircle2 size={15} color="#38bdf8" style={{ flexShrink: 0, marginTop: '2px' }} />
+                    <span>{reason}</span>
+                  </div>
+                ))}
               </div>
             </div>
-          )}
-        </div>
-
-        {/* Volume Histogram Profile Canvas / Visualizer Bar */}
-        <div style={{ height: '140px', background: '#090d16', borderRadius: '8px', padding: '10px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: '1px solid rgba(255,255,255,0.05)' }}>
-          <div style={{ fontSize: '11px', color: '#94a3b8', display: 'flex', justifyContent: 'space-between' }}>
-            <span>Volume Profile Distribution & Level Alignment</span>
-            <span>Total Volume: {analysis.volumeProfile.totalVolume.toLocaleString()}</span>
           </div>
 
-          {/* Bins Volume Bar Representation */}
-          <div style={{ display: 'flex', alignItems: 'flex-end', height: '80px', gap: '2px', overflowX: 'hidden' }}>
-            {analysis.volumeProfile.bins.slice(-60).map((bin, idx) => {
-              const maxVol = Math.max(...analysis.volumeProfile.bins.map((b) => b.volume)) || 1;
-              const heightPct = (bin.volume / maxVol) * 100;
-              const isPoc = bin.price === analysis.pocVpoc.pocPrice;
-              const isVpoc = bin.price === analysis.pocVpoc.vpocPrice;
-
-              return (
-                <div
-                  key={idx}
-                  title={`Price: ₹${bin.price} | Vol: ${Math.round(bin.volume)}`}
-                  style={{
-                    flex: 1,
-                    height: `${Math.max(4, heightPct)}%`,
-                    background: isPoc ? '#ef4444' : isVpoc ? '#a855f7' : bin.price >= analysis.balance.balanceLow && bin.price <= analysis.balance.balanceHigh ? 'rgba(59, 130, 246, 0.6)' : 'rgba(148, 163, 184, 0.25)',
-                    borderRadius: '1px',
-                    transition: 'height 0.2s',
-                  }}
-                />
-              );
-            })}
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#64748b' }}>
-            <span>VAL: ₹{analysis.balance.balanceLow.toFixed(2)}</span>
-            <span style={{ color: '#ef4444', fontWeight: '700' }}>POC: ₹{analysis.pocVpoc.pocPrice.toFixed(2)}</span>
-            <span style={{ color: '#a855f7', fontWeight: '700' }}>VPOC: ₹{analysis.pocVpoc.vpocPrice.toFixed(2)}</span>
-            <span>VAH: ₹{analysis.balance.balanceHigh.toFixed(2)}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* 7-Step Sequence Analysis Checklist Grid */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <h3 style={{ margin: '8px 0 0 0', fontSize: '15px', fontWeight: '700', color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <ShieldCheck size={18} color="#10b981" />
-          LUCKY FLOW CHECKLIST SEQUENCE (STEPS 1–7)
-        </h3>
-
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: '14px',
-          }}
-        >
-          {/* STEP 1: TREND */}
-          <div className="glass-panel" style={{ padding: '16px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <span style={{ fontSize: '11px', fontWeight: '800', color: '#38bdf8' }}>STEP 1 • SEE THE TREND</span>
-              <span
-                style={{
-                  fontSize: '11px',
-                  fontWeight: '700',
-                  padding: '2px 8px',
-                  borderRadius: '4px',
-                  background: analysis.trend.overallTrend.includes('Bullish') ? 'rgba(16, 185, 129, 0.15)' : analysis.trend.overallTrend.includes('Bearish') ? 'rgba(239, 68, 68, 0.15)' : 'rgba(245, 158, 11, 0.15)',
-                  color: analysis.trend.overallTrend.includes('Bullish') ? '#10b981' : analysis.trend.overallTrend.includes('Bearish') ? '#ef4444' : '#f59e0b',
-                }}
-              >
-                {analysis.trend.overallTrend}
-              </span>
-            </div>
-            <div style={{ fontSize: '13px', fontWeight: '600', color: '#f8fafc' }}>
-              {analysis.trend.priceVsEma}
-            </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-              20 EMA: ₹{analysis.trend.ema20} | 50 EMA: ₹{analysis.trend.ema50}
-            </div>
-          </div>
-
-          {/* STEP 2: BALANCED AREA */}
-          <div className="glass-panel" style={{ padding: '16px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <span style={{ fontSize: '11px', fontWeight: '800', color: '#38bdf8' }}>STEP 2 • BALANCED AREA</span>
-              <span style={{ fontSize: '11px', fontWeight: '700', color: '#f59e0b' }}>
-                {analysis.balance.status}
-              </span>
-            </div>
-            <div style={{ fontSize: '12px', color: '#cbd5e1', lineHeight: '1.4' }}>
-              {analysis.balance.interpretation}
-            </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '6px' }}>
-              Bracket High: ₹{analysis.balance.balanceHigh} | Low: ₹{analysis.balance.balanceLow}
-            </div>
-          </div>
-
-          {/* STEP 3: CVA DELTA */}
-          <div className="glass-panel" style={{ padding: '16px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <span style={{ fontSize: '11px', fontWeight: '800', color: '#38bdf8' }}>STEP 3 • CHECK CVA</span>
-              <span
-                style={{
-                  fontSize: '11px',
-                  fontWeight: '700',
-                  padding: '2px 8px',
-                  borderRadius: '4px',
-                  background: analysis.cva.status.includes('Bullish') ? 'rgba(16, 185, 129, 0.15)' : analysis.cva.status.includes('Bearish') ? 'rgba(239, 68, 68, 0.15)' : 'rgba(148, 163, 184, 0.15)',
-                  color: analysis.cva.status.includes('Bullish') ? '#10b981' : analysis.cva.status.includes('Bearish') ? '#ef4444' : '#94a3b8',
-                }}
-              >
-                {analysis.cva.status}
-              </span>
-            </div>
-            <div style={{ fontSize: '12px', color: '#cbd5e1', lineHeight: '1.4' }}>
-              {analysis.cva.interpretation}
-            </div>
-            {analysis.cva.status !== 'CVA DATA UNAVAILABLE' && (
-              <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                Buy Ratio: {(analysis.cva.deltaRatio * 100).toFixed(1)}% | Cum Delta: {analysis.cva.cumDelta > 0 ? '+' : ''}{analysis.cva.cumDelta}
-              </div>
-            )}
-          </div>
-
-          {/* STEP 4: VALUE ACCEPTANCE */}
-          <div className="glass-panel" style={{ padding: '16px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <span style={{ fontSize: '11px', fontWeight: '800', color: '#38bdf8' }}>STEP 4 • VALUE ACCEPTANCE</span>
-              <span style={{ fontSize: '11px', fontWeight: '700', color: '#60a5fa' }}>
-                {analysis.valueAcceptance.status}
-              </span>
-            </div>
-            <div style={{ fontSize: '12px', color: '#cbd5e1', lineHeight: '1.4' }}>
-              {analysis.valueAcceptance.interpretation}
-            </div>
-          </div>
-
-          {/* STEP 5: POC IMBALANCE */}
-          <div className="glass-panel" style={{ padding: '16px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <span style={{ fontSize: '11px', fontWeight: '800', color: '#38bdf8' }}>STEP 5 • POC IMBALANCE</span>
-              <span style={{ fontSize: '11px', fontWeight: '700', color: '#a855f7' }}>
-                {analysis.pocImbalance.position}
-              </span>
-            </div>
-            <div style={{ fontSize: '12px', color: '#cbd5e1', lineHeight: '1.4' }}>
-              {analysis.pocImbalance.interpretation}
-            </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-              Value Area Height Pos: {(analysis.pocImbalance.valPct * 100).toFixed(0)}%
-            </div>
-          </div>
-
-          {/* STEP 6: POC & VPOC CONFLUENCE */}
+          {/* Interactive Chart Preview & Level Profile Visualizer */}
           <div
             className="glass-panel"
             style={{
               padding: '16px',
-              borderRadius: '10px',
-              border: analysis.pocVpoc.isConfluenceZone ? '1px solid rgba(236, 72, 153, 0.6)' : '1px solid var(--border-color)',
-              background: analysis.pocVpoc.isConfluenceZone ? 'rgba(236, 72, 153, 0.08)' : undefined,
+              borderRadius: '12px',
+              background: 'rgba(15, 23, 42, 0.7)',
+              border: '1px solid var(--border-color)',
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <span style={{ fontSize: '11px', fontWeight: '800', color: '#38bdf8' }}>STEP 6 • POC & VPOC</span>
-              <span style={{ fontSize: '11px', fontWeight: '800', color: analysis.pocVpoc.isConfluenceZone ? '#ec4899' : '#a855f7' }}>
-                {analysis.pocVpoc.classification} ({analysis.pocVpoc.distancePct.toFixed(2)}%)
-              </span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <div style={{ fontSize: '14px', fontWeight: '700', color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Layers size={16} color="var(--accent-blue)" />
+                Interactive Lucky Flow & Volume Profile Levels Chart ({symbolInfo.displayName})
+              </div>
+              {onSwitchToChart && (
+                <button
+                  onClick={onSwitchToChart}
+                  style={{
+                    background: 'rgba(59, 130, 246, 0.15)',
+                    border: '1px solid var(--accent-blue)',
+                    color: '#60a5fa',
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                  }}
+                >
+                  View Full TradingView Chart ↗
+                </button>
+              )}
             </div>
-            <div style={{ fontSize: '12px', color: '#cbd5e1', lineHeight: '1.4' }}>
-              {analysis.pocVpoc.interpretation}
+
+            {/* Profile Level Overview Grid */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                gap: '10px',
+                marginBottom: '16px',
+              }}
+            >
+              {showPoc && (
+                <div style={{ padding: '8px 12px', borderRadius: '6px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
+                  <div style={{ fontSize: '10px', color: '#ef4444', fontWeight: '700' }}>TPO POC</div>
+                  <div style={{ fontSize: '15px', fontWeight: '800', color: '#f8fafc' }}>₹{analysis.pocVpoc.pocPrice.toFixed(2)}</div>
+                </div>
+              )}
+
+              {showVpoc && (
+                <div style={{ padding: '8px 12px', borderRadius: '6px', background: 'rgba(168, 85, 247, 0.1)', border: '1px solid rgba(168, 85, 247, 0.3)' }}>
+                  <div style={{ fontSize: '10px', color: '#a855f7', fontWeight: '700' }}>Volume VPOC</div>
+                  <div style={{ fontSize: '15px', fontWeight: '800', color: '#f8fafc' }}>₹{analysis.pocVpoc.vpocPrice.toFixed(2)}</div>
+                </div>
+              )}
+
+              {showVahVal && (
+                <>
+                  <div style={{ padding: '8px 12px', borderRadius: '6px', background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
+                    <div style={{ fontSize: '10px', color: '#60a5fa', fontWeight: '700' }}>VAH (Value High)</div>
+                    <div style={{ fontSize: '15px', fontWeight: '800', color: '#f8fafc' }}>₹{analysis.balance.balanceHigh.toFixed(2)}</div>
+                  </div>
+                  <div style={{ padding: '8px 12px', borderRadius: '6px', background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
+                    <div style={{ fontSize: '10px', color: '#60a5fa', fontWeight: '700' }}>VAL (Value Low)</div>
+                    <div style={{ fontSize: '15px', fontWeight: '800', color: '#f8fafc' }}>₹{analysis.balance.balanceLow.toFixed(2)}</div>
+                  </div>
+                </>
+              )}
+
+              {showHvnLvn && (
+                <div style={{ padding: '8px 12px', borderRadius: '6px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                  <div style={{ fontSize: '10px', color: '#10b981', fontWeight: '700' }}>Major HVN</div>
+                  <div style={{ fontSize: '15px', fontWeight: '800', color: '#f8fafc' }}>₹{analysis.volumeDist.majorHvn.toFixed(2)}</div>
+                </div>
+              )}
+
+              {showConfluenceZone && analysis.pocVpoc.isConfluenceZone && (
+                <div style={{ padding: '8px 12px', borderRadius: '6px', background: 'rgba(236, 72, 153, 0.15)', border: '1px solid rgba(236, 72, 153, 0.5)', gridColumn: 'span 2' }}>
+                  <div style={{ fontSize: '10px', color: '#ec4899', fontWeight: '800' }}>🔥 POC/VPOC CONFLUENCE ZONE</div>
+                  <div style={{ fontSize: '14px', fontWeight: '800', color: '#f8fafc' }}>
+                    ₹{analysis.pocVpoc.confluenceZone?.min.toFixed(2)} - ₹{analysis.pocVpoc.confluenceZone?.max.toFixed(2)}
+                  </div>
+                </div>
+              )}
             </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-              TPO POC: ₹{analysis.pocVpoc.pocPrice} | Volume VPOC: ₹{analysis.pocVpoc.vpocPrice}
+
+            {/* Volume Histogram Profile Canvas / Visualizer Bar */}
+            <div style={{ height: '140px', background: '#090d16', borderRadius: '8px', padding: '10px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ fontSize: '11px', color: '#94a3b8', display: 'flex', justifyContent: 'space-between' }}>
+                <span>{symbolInfo.displayName} Volume Profile Distribution</span>
+                <span>Total Volume: {analysis.volumeProfile.totalVolume.toLocaleString()}</span>
+              </div>
+
+              {/* Bins Volume Bar Representation */}
+              <div style={{ display: 'flex', alignItems: 'flex-end', height: '80px', gap: '2px', overflowX: 'hidden' }}>
+                {analysis.volumeProfile.bins.slice(-60).map((bin, idx) => {
+                  const maxVol = Math.max(...analysis.volumeProfile.bins.map((b) => b.volume)) || 1;
+                  const heightPct = (bin.volume / maxVol) * 100;
+                  const isPoc = bin.price === analysis.pocVpoc.pocPrice;
+                  const isVpoc = bin.price === analysis.pocVpoc.vpocPrice;
+
+                  return (
+                    <div
+                      key={idx}
+                      title={`Price: ₹${bin.price} | Vol: ${Math.round(bin.volume)}`}
+                      style={{
+                        flex: 1,
+                        height: `${Math.max(4, heightPct)}%`,
+                        background: isPoc ? '#ef4444' : isVpoc ? '#a855f7' : bin.price >= analysis.balance.balanceLow && bin.price <= analysis.balance.balanceHigh ? 'rgba(59, 130, 246, 0.6)' : 'rgba(148, 163, 184, 0.25)',
+                        borderRadius: '1px',
+                        transition: 'height 0.2s',
+                      }}
+                    />
+                  );
+                })}
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#64748b' }}>
+                <span>VAL: ₹{analysis.balance.balanceLow.toFixed(2)}</span>
+                <span style={{ color: '#ef4444', fontWeight: '700' }}>POC: ₹{analysis.pocVpoc.pocPrice.toFixed(2)}</span>
+                <span style={{ color: '#a855f7', fontWeight: '700' }}>VPOC: ₹{analysis.pocVpoc.vpocPrice.toFixed(2)}</span>
+                <span>VAH: ₹{analysis.balance.balanceHigh.toFixed(2)}</span>
+              </div>
             </div>
           </div>
 
-          {/* STEP 7: MAJOR VOLUME DISTRIBUTION */}
-          <div className="glass-panel" style={{ padding: '16px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <span style={{ fontSize: '11px', fontWeight: '800', color: '#38bdf8' }}>STEP 7 • VOLUME DISTRIBUTION</span>
-              <span style={{ fontSize: '11px', fontWeight: '700', color: '#10b981' }}>
-                HVN & LVN Nodes
-              </span>
-            </div>
-            <div style={{ fontSize: '12px', color: '#cbd5e1', lineHeight: '1.4' }}>
-              {analysis.volumeDist.interpretation}
-            </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-              Major HVN: ₹{analysis.volumeDist.majorHvn} | Major LVN: ₹{analysis.volumeDist.majorLvn}
+          {/* 7-Step Sequence Analysis Checklist Grid */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <h3 style={{ margin: '8px 0 0 0', fontSize: '15px', fontWeight: '700', color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <ShieldCheck size={18} color="#10b981" />
+              LUCKY FLOW CHECKLIST SEQUENCE FOR {symbolInfo.displayName} (STEPS 1–7)
+            </h3>
+
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                gap: '14px',
+              }}
+            >
+              {/* STEP 1: TREND */}
+              <div className="glass-panel" style={{ padding: '16px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '800', color: '#38bdf8' }}>STEP 1 • SEE THE TREND</span>
+                  <span
+                    style={{
+                      fontSize: '11px',
+                      fontWeight: '700',
+                      padding: '2px 8px',
+                      borderRadius: '4px',
+                      background: analysis.trend.overallTrend.includes('Bullish') ? 'rgba(16, 185, 129, 0.15)' : analysis.trend.overallTrend.includes('Bearish') ? 'rgba(239, 68, 68, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                      color: analysis.trend.overallTrend.includes('Bullish') ? '#10b981' : analysis.trend.overallTrend.includes('Bearish') ? '#ef4444' : '#f59e0b',
+                    }}
+                  >
+                    {analysis.trend.overallTrend}
+                  </span>
+                </div>
+                <div style={{ fontSize: '13px', fontWeight: '600', color: '#f8fafc' }}>
+                  {analysis.trend.priceVsEma}
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                  20 EMA: ₹{analysis.trend.ema20} | 50 EMA: ₹{analysis.trend.ema50}
+                </div>
+              </div>
+
+              {/* STEP 2: BALANCED AREA */}
+              <div className="glass-panel" style={{ padding: '16px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '800', color: '#38bdf8' }}>STEP 2 • BALANCED AREA</span>
+                  <span style={{ fontSize: '11px', fontWeight: '700', color: '#f59e0b' }}>
+                    {analysis.balance.status}
+                  </span>
+                </div>
+                <div style={{ fontSize: '12px', color: '#cbd5e1', lineHeight: '1.4' }}>
+                  {analysis.balance.interpretation}
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '6px' }}>
+                  Bracket High: ₹{analysis.balance.balanceHigh} | Low: ₹{analysis.balance.balanceLow}
+                </div>
+              </div>
+
+              {/* STEP 3: CVA DELTA */}
+              <div className="glass-panel" style={{ padding: '16px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '800', color: '#38bdf8' }}>STEP 3 • CHECK CVA</span>
+                  <span
+                    style={{
+                      fontSize: '11px',
+                      fontWeight: '700',
+                      padding: '2px 8px',
+                      borderRadius: '4px',
+                      background: analysis.cva.status.includes('Bullish') ? 'rgba(16, 185, 129, 0.15)' : analysis.cva.status.includes('Bearish') ? 'rgba(239, 68, 68, 0.15)' : 'rgba(148, 163, 184, 0.15)',
+                      color: analysis.cva.status.includes('Bullish') ? '#10b981' : analysis.cva.status.includes('Bearish') ? '#ef4444' : '#94a3b8',
+                    }}
+                  >
+                    {analysis.cva.status}
+                  </span>
+                </div>
+                <div style={{ fontSize: '12px', color: '#cbd5e1', lineHeight: '1.4' }}>
+                  {analysis.cva.interpretation}
+                </div>
+                {analysis.cva.status !== 'CVA DATA UNAVAILABLE' && (
+                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                    Buy Ratio: {(analysis.cva.deltaRatio * 100).toFixed(1)}% | Cum Delta: {analysis.cva.cumDelta > 0 ? '+' : ''}{analysis.cva.cumDelta.toLocaleString()}
+                  </div>
+                )}
+              </div>
+
+              {/* STEP 4: VALUE ACCEPTANCE */}
+              <div className="glass-panel" style={{ padding: '16px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '800', color: '#38bdf8' }}>STEP 4 • VALUE ACCEPTANCE</span>
+                  <span style={{ fontSize: '11px', fontWeight: '700', color: '#60a5fa' }}>
+                    {analysis.valueAcceptance.status}
+                  </span>
+                </div>
+                <div style={{ fontSize: '12px', color: '#cbd5e1', lineHeight: '1.4' }}>
+                  {analysis.valueAcceptance.interpretation}
+                </div>
+              </div>
+
+              {/* STEP 5: POC IMBALANCE */}
+              <div className="glass-panel" style={{ padding: '16px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '800', color: '#38bdf8' }}>STEP 5 • POC IMBALANCE</span>
+                  <span style={{ fontSize: '11px', fontWeight: '700', color: '#a855f7' }}>
+                    {analysis.pocImbalance.position}
+                  </span>
+                </div>
+                <div style={{ fontSize: '12px', color: '#cbd5e1', lineHeight: '1.4' }}>
+                  {analysis.pocImbalance.interpretation}
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                  Value Area Height Pos: {(analysis.pocImbalance.valPct * 100).toFixed(0)}%
+                </div>
+              </div>
+
+              {/* STEP 6: POC & VPOC CONFLUENCE */}
+              <div
+                className="glass-panel"
+                style={{
+                  padding: '16px',
+                  borderRadius: '10px',
+                  border: analysis.pocVpoc.isConfluenceZone ? '1px solid rgba(236, 72, 153, 0.6)' : '1px solid var(--border-color)',
+                  background: analysis.pocVpoc.isConfluenceZone ? 'rgba(236, 72, 153, 0.08)' : undefined,
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '800', color: '#38bdf8' }}>STEP 6 • POC & VPOC</span>
+                  <span style={{ fontSize: '11px', fontWeight: '800', color: analysis.pocVpoc.isConfluenceZone ? '#ec4899' : '#a855f7' }}>
+                    {analysis.pocVpoc.classification} ({analysis.pocVpoc.distancePct.toFixed(2)}%)
+                  </span>
+                </div>
+                <div style={{ fontSize: '12px', color: '#cbd5e1', lineHeight: '1.4' }}>
+                  {analysis.pocVpoc.interpretation}
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                  TPO POC: ₹{analysis.pocVpoc.pocPrice} | Volume VPOC: ₹{analysis.pocVpoc.vpocPrice}
+                </div>
+              </div>
+
+              {/* STEP 7: MAJOR VOLUME DISTRIBUTION */}
+              <div className="glass-panel" style={{ padding: '16px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '800', color: '#38bdf8' }}>STEP 7 • VOLUME DISTRIBUTION</span>
+                  <span style={{ fontSize: '11px', fontWeight: '700', color: '#10b981' }}>
+                    HVN & LVN Nodes
+                  </span>
+                </div>
+                <div style={{ fontSize: '12px', color: '#cbd5e1', lineHeight: '1.4' }}>
+                  {analysis.volumeDist.interpretation}
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                  Major HVN: ₹{analysis.volumeDist.majorHvn} | Major LVN: ₹{analysis.volumeDist.majorLvn}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 };

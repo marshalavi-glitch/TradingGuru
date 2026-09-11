@@ -437,6 +437,59 @@ app.get('/api/search', async (req, res) => {
   }
 });
 
+// Endpoint to retrieve real OHLCV candles for any symbol and timeframe
+app.get('/api/candles', async (req, res) => {
+  try {
+    const symbol = req.query.symbol || 'NSE:NIFTY';
+    const timeframe = req.query.timeframe || '5';
+    const limit = parseInt(req.query.limit) || 500;
+
+    console.log(`[API /api/candles] Fetching real candles for ${symbol} (${timeframe})...`);
+    
+    let resolved = false;
+    const timeout = setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        res.status(504).json({ error: `Timeout fetching candles for ${symbol}` });
+      }
+    }, 9000);
+
+    const cleanup = await tvBridge.subscribeSymbol(
+      symbol,
+      timeframe,
+      (data) => {
+        if (data.isSnapshot && !resolved) {
+          resolved = true;
+          clearTimeout(timeout);
+          if (cleanup && typeof cleanup === 'function') {
+            try { cleanup(); } catch (e) {}
+          }
+          res.json({
+            symbol,
+            timeframe,
+            timestamp: Date.now(),
+            candles: data.candles || []
+          });
+        }
+      },
+      (err) => {
+        if (!resolved) {
+          resolved = true;
+          clearTimeout(timeout);
+          if (cleanup && typeof cleanup === 'function') {
+            try { cleanup(); } catch (e) {}
+          }
+          res.status(500).json({ error: String(err) });
+        }
+      },
+      limit
+    );
+  } catch (error) {
+    console.error('Error in /api/candles:', error.message || error);
+    res.status(500).json({ error: error.message || 'Failed to fetch candles' });
+  }
+});
+
 // Option Chain Helpers
 function detectStrikeInterval(symbol, ltp) {
   const sym = symbol.replace('NSE:', '').toUpperCase();
