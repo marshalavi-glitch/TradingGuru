@@ -20,6 +20,8 @@ import { HourlyUpdatesContainer } from './components/HourlyUpdatesContainer';
 import { BacktestResultsContainer } from './components/BacktestResultsContainer';
 import { FifteenMinForensicContainer } from './components/FifteenMinForensicContainer';
 import { Nr7BreakoutContainer } from './components/Nr7BreakoutContainer';
+import { OrderFlowContainer } from './components/OrderFlowContainer';
+import { OrderFlowFootprintContainer } from './components/OrderFlowFootprintContainer';
 
 function App() {
   const [symbol, setSymbol] = useState('NSE:NIFTY');
@@ -30,7 +32,7 @@ function App() {
   const [refreshKey, setRefreshKey] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'chart' | 'bhaichara' | 'dada_thoughts' | 'fifteen_min' | 'scanner' | 'options' | 'signals' | 'doji' | 'doji_novol' | 'volume' | 'opening_bias' | 'hourly_updates' | 'backtest_results' | 'confluences' | 'early_picks' | 'nr7_breakout'>('bhaichara');
+  const [activeTab, setActiveTab] = useState<'chart' | 'bhaichara' | 'dada_thoughts' | 'fifteen_min' | 'scanner' | 'options' | 'signals' | 'doji' | 'doji_novol' | 'volume' | 'opening_bias' | 'hourly_updates' | 'backtest_results' | 'confluences' | 'early_picks' | 'nr7_breakout' | 'order_flow' | 'order_flow_footprint'>('bhaichara');
 
   // Subscribe to symbol data via TradingView WebSocket & REST fallback
   useEffect(() => {
@@ -500,6 +502,48 @@ function App() {
         >
           ⚡ 20% Upper Circuit Potential
         </button>
+        <button
+          onClick={() => setActiveTab('order_flow')}
+          style={{
+            background: activeTab === 'order_flow' ? 'rgba(59, 130, 246, 0.22)' : 'transparent',
+            border: 'none',
+            borderBottom: activeTab === 'order_flow' ? '2px solid #3b82f6' : '2px solid transparent',
+            color: activeTab === 'order_flow' ? '#60a5fa' : 'var(--text-primary)',
+            padding: '8px 16px',
+            fontSize: '14px',
+            fontWeight: '700',
+            cursor: 'pointer',
+            borderTopLeftRadius: '6px',
+            borderTopRightRadius: '6px',
+            transition: 'all 0.15s',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+        >
+          🍀 Lucky Flow
+        </button>
+        <button
+          onClick={() => setActiveTab('order_flow_footprint')}
+          style={{
+            background: activeTab === 'order_flow_footprint' ? 'rgba(59, 130, 246, 0.22)' : 'transparent',
+            border: 'none',
+            borderBottom: activeTab === 'order_flow_footprint' ? '2px solid #3b82f6' : '2px solid transparent',
+            color: activeTab === 'order_flow_footprint' ? '#60a5fa' : 'var(--text-primary)',
+            padding: '8px 16px',
+            fontSize: '14px',
+            fontWeight: '700',
+            cursor: 'pointer',
+            borderTopLeftRadius: '6px',
+            borderTopRightRadius: '6px',
+            transition: 'all 0.15s',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+        >
+          📊 Order Flow
+        </button>
       </div>
 
       {/* Main Workspace */}
@@ -595,6 +639,22 @@ function App() {
         ) : activeTab === 'nr7_breakout' ? (
           <TabErrorBoundary tabName="20% Upper Circuit Potential">
             <Nr7BreakoutContainer
+              onSymbolSelect={setSymbol}
+              onSwitchToChart={() => setActiveTab('chart')}
+            />
+          </TabErrorBoundary>
+        ) : activeTab === 'order_flow' ? (
+          <TabErrorBoundary tabName="Lucky Flow">
+            <OrderFlowContainer
+              candles={candles}
+              currentSymbol={symbol}
+              onSymbolSelect={setSymbol}
+              onSwitchToChart={() => setActiveTab('chart')}
+            />
+          </TabErrorBoundary>
+        ) : activeTab === 'order_flow_footprint' ? (
+          <TabErrorBoundary tabName="Order Flow">
+            <OrderFlowFootprintContainer
               onSymbolSelect={setSymbol}
               onSwitchToChart={() => setActiveTab('chart')}
             />
