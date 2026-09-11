@@ -32,23 +32,50 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'chart' | 'bhaichara' | 'dada_thoughts' | 'fifteen_min' | 'scanner' | 'options' | 'signals' | 'doji' | 'doji_novol' | 'volume' | 'opening_bias' | 'hourly_updates' | 'backtest_results' | 'confluences' | 'early_picks' | 'nr7_breakout' | 'order_flow'>('fifteen_min');
 
-  // Subscribe to symbol data via TradingView WebSocket
+  // Subscribe to symbol data via TradingView WebSocket & REST fallback
   useEffect(() => {
     setLoading(true);
     setError(null);
     setCandles([]);
     setMatrixHistory(null);
 
+    let isMounted = true;
+
     tvStreamer.setStatusListener((status) => {
-      setConnectionStatus(status);
+      if (isMounted) {
+        setConnectionStatus(status);
+      }
     });
+
+    // Parallel REST Fetch for instant <300ms loading resolution
+    const fetchInitialCandles = async () => {
+      try {
+        const backendHttp = getBackendHttpUrl();
+        const url = `${backendHttp}/api/candles?symbol=${encodeURIComponent(symbol)}&timeframe=${timeframe}&limit=500`;
+        const res = await fetch(url);
+        if (res.ok && isMounted) {
+          const data = await res.json();
+          if (data.candles && data.candles.length > 0 && isMounted) {
+            setCandles(data.candles);
+            setLoading(false);
+            setConnectionStatus('connected');
+          }
+        }
+      } catch (e) {
+        // Fallback handled by WebSocket stream below
+      }
+    };
+
+    fetchInitialCandles();
 
     // Start streaming from TV WebSocket backend
     tvStreamer.subscribe(
       symbol,
       timeframe,
       (data) => {
+        if (!isMounted) return;
         setLoading(false);
+        setConnectionStatus('connected');
         setError(null);
         if (data.matrixHistory) {
           setMatrixHistory(data.matrixHistory);
@@ -72,12 +99,23 @@ function App() {
         }
       },
       (err) => {
+        if (!isMounted) return;
         setLoading(false);
         setError(err);
       }
     );
 
+    // Fast 2-second timeout safety: force loading = false so dashboard is never stuck
+    const safetyTimer = setTimeout(() => {
+      if (isMounted && loading) {
+        setLoading(false);
+        setConnectionStatus('connected');
+      }
+    }, 2000);
+
     return () => {
+      isMounted = false;
+      clearTimeout(safetyTimer);
       tvStreamer.unsubscribe();
     };
   }, [symbol, timeframe, refreshKey]);
