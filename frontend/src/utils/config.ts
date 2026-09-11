@@ -19,7 +19,7 @@ export async function resolveBackendUrl(forceRefresh = false): Promise<string> {
   const saved = typeof window !== 'undefined' ? localStorage.getItem('TRADING_GURU_BACKEND_URL') : null;
   if (saved && saved.trim()) {
     let clean = saved.trim().replace(/^wss?:\/\//, '').replace(/^https?:\/\//, '').replace(/\/$/, '');
-    const proto = window.location.protocol === 'https:' ? 'https' : 'http';
+    const proto = (typeof window !== 'undefined' && window.location.protocol === 'https:') ? 'https' : 'http';
     cachedBackendUrl = `${proto}://${clean}`;
     lastFetchTime = now;
     return cachedBackendUrl;
@@ -50,15 +50,20 @@ export async function resolveBackendUrl(forceRefresh = false): Promise<string> {
     }
   }
 
-  // 3. Fallback to localhost:3002 or window.location.origin
+  // 3. Fallback to localhost:3002 or active Cloudflare Tunnel
   if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
     cachedBackendUrl = 'http://localhost:3002';
   } else {
-    cachedBackendUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002';
+    cachedBackendUrl = 'https://almost-vaccine-partly-shift.trycloudflare.com';
   }
 
   lastFetchTime = now;
   return cachedBackendUrl;
+}
+
+// Immediate eager execution of resolveBackendUrl on module load
+if (typeof window !== 'undefined') {
+  resolveBackendUrl().catch(() => {});
 }
 
 export function getBackendHttpUrlSync(): string {
@@ -72,5 +77,5 @@ export function getBackendHttpUrlSync(): string {
   if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
     return 'http://localhost:3002';
   }
-  return typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002';
+  return 'https://almost-vaccine-partly-shift.trycloudflare.com';
 }
