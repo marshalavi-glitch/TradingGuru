@@ -1042,8 +1042,14 @@ const calculateOptionPremiumLevels = (symbol, firstCandle) => {
   };
 };
 
+let openingBiasCache = { data: null, lastUpdated: 0 };
+
 // Endpoint to retrieve real-time opening bias analysis
 app.get('/api/scanner/opening-bias', async (req, res) => {
+  const now = Date.now();
+  if (openingBiasCache.data && (now - openingBiasCache.lastUpdated < 30000) && req.query.fresh !== 'true') {
+    return res.json(openingBiasCache.data);
+  }
 
   try {
     const statsPath = path.join(__dirname, 'data/opening_zones_stats.json');
@@ -1907,14 +1913,16 @@ app.get('/api/scanner/opening-bias', async (req, res) => {
       console.warn('[Live Learning Logger] Failed to save snapshot:', logErr.message || logErr);
     }
 
-    res.json({
+    const responsePayload = {
       timestamp: new Date(),
       nifty: niftyBias,
       banknifty: bankniftyBias,
       stockSignals: stockSignals || [],
       hourlyTimeline,
       forensicReports: forensicReports || []
-    });
+    };
+    openingBiasCache = { data: responsePayload, lastUpdated: Date.now() };
+    return res.json(responsePayload);
 
   } catch (error) {
     console.error('[Opening Bias Route] Error:', error.message || error);
