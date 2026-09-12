@@ -200,7 +200,7 @@ function App() {
       />
 
       {/* Navigation Tabs */}
-      <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '2px', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '4px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '2px', flexWrap: 'wrap' }}>
         <button
           onClick={() => setActiveTab('bhaichara')}
           style={{
@@ -208,16 +208,16 @@ function App() {
             border: 'none',
             borderBottom: activeTab === 'bhaichara' ? '2px solid #3b82f6' : '2px solid transparent',
             color: activeTab === 'bhaichara' ? '#60a5fa' : 'var(--text-primary)',
-            padding: '8px 16px',
-            fontSize: '14px',
+            padding: '4px 10px',
+            fontSize: '12px',
             fontWeight: '700',
             cursor: 'pointer',
-            borderTopLeftRadius: '6px',
-            borderTopRightRadius: '6px',
+            borderTopLeftRadius: '5px',
+            borderTopRightRadius: '5px',
             transition: 'all 0.15s',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px'
+            gap: '4px'
           }}
         >
           🤝 Bhaichara Work
@@ -229,16 +229,16 @@ function App() {
             border: 'none',
             borderBottom: activeTab === 'dada_thoughts' ? '2px solid #eab308' : '2px solid transparent',
             color: activeTab === 'dada_thoughts' ? '#eab308' : 'var(--text-primary)',
-            padding: '8px 16px',
-            fontSize: '14px',
+            padding: '4px 10px',
+            fontSize: '12px',
             fontWeight: '700',
             cursor: 'pointer',
-            borderTopLeftRadius: '6px',
-            borderTopRightRadius: '6px',
+            borderTopLeftRadius: '5px',
+            borderTopRightRadius: '5px',
             transition: 'all 0.15s',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px'
+            gap: '4px'
           }}
         >
           🧠 Dada Thoughts
@@ -250,16 +250,16 @@ function App() {
             border: 'none',
             borderBottom: activeTab === 'trump_mood' ? '2px solid #ef4444' : '2px solid transparent',
             color: activeTab === 'trump_mood' ? '#f87171' : 'var(--text-primary)',
-            padding: '8px 16px',
-            fontSize: '14px',
+            padding: '4px 10px',
+            fontSize: '12px',
             fontWeight: '800',
             cursor: 'pointer',
-            borderTopLeftRadius: '6px',
-            borderTopRightRadius: '6px',
+            borderTopLeftRadius: '5px',
+            borderTopRightRadius: '5px',
             transition: 'all 0.15s',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px'
+            gap: '4px'
           }}
         >
           🎺 Trump Mood
@@ -271,12 +271,12 @@ function App() {
             border: 'none',
             borderBottom: activeTab === 'chart' ? '2px solid #3b82f6' : '2px solid transparent',
             color: activeTab === 'chart' ? '#3b82f6' : 'var(--text-primary)',
-            padding: '8px 16px',
-            fontSize: '14px',
+            padding: '4px 10px',
+            fontSize: '12px',
             fontWeight: '600',
             cursor: 'pointer',
-            borderTopLeftRadius: '6px',
-            borderTopRightRadius: '6px',
+            borderTopLeftRadius: '5px',
+            borderTopRightRadius: '5px',
             transition: 'all 0.15s'
           }}
         >
@@ -289,12 +289,12 @@ function App() {
             border: 'none',
             borderBottom: activeTab === 'scanner' ? '2px solid #3b82f6' : '2px solid transparent',
             color: activeTab === 'scanner' ? '#3b82f6' : 'var(--text-primary)',
-            padding: '8px 16px',
-            fontSize: '14px',
+            padding: '4px 10px',
+            fontSize: '12px',
             fontWeight: '600',
             cursor: 'pointer',
-            borderTopLeftRadius: '6px',
-            borderTopRightRadius: '6px',
+            borderTopLeftRadius: '5px',
+            borderTopRightRadius: '5px',
             transition: 'all 0.15s'
           }}
         >
@@ -307,12 +307,12 @@ function App() {
             border: 'none',
             borderBottom: activeTab === 'confluences' ? '2px solid #3b82f6' : '2px solid transparent',
             color: activeTab === 'confluences' ? '#3b82f6' : 'var(--text-primary)',
-            padding: '8px 16px',
-            fontSize: '14px',
+            padding: '4px 10px',
+            fontSize: '12px',
             fontWeight: '600',
             cursor: 'pointer',
-            borderTopLeftRadius: '6px',
-            borderTopRightRadius: '6px',
+            borderTopLeftRadius: '5px',
+            borderTopRightRadius: '5px',
             transition: 'all 0.15s'
           }}
         >
@@ -325,12 +325,12 @@ function App() {
             border: 'none',
             borderBottom: activeTab === 'options' ? '2px solid #3b82f6' : '2px solid transparent',
             color: activeTab === 'options' ? '#3b82f6' : 'var(--text-primary)',
-            padding: '8px 16px',
-            fontSize: '14px',
+            padding: '4px 10px',
+            fontSize: '12px',
             fontWeight: '600',
             cursor: 'pointer',
-            borderTopLeftRadius: '6px',
-            borderTopRightRadius: '6px',
+            borderTopLeftRadius: '5px',
+            borderTopRightRadius: '5px',
             transition: 'all 0.15s'
           }}
         >
@@ -343,12 +343,12 @@ function App() {
             border: 'none',
             borderBottom: activeTab === 'signals' ? '2px solid #3b82f6' : '2px solid transparent',
             color: activeTab === 'signals' ? '#3b82f6' : 'var(--text-primary)',
-            padding: '8px 16px',
-            fontSize: '14px',
+            padding: '4px 10px',
+            fontSize: '12px',
             fontWeight: '600',
             cursor: 'pointer',
-            borderTopLeftRadius: '6px',
-            borderTopRightRadius: '6px',
+            borderTopLeftRadius: '5px',
+            borderTopRightRadius: '5px',
             transition: 'all 0.15s'
           }}
         >
@@ -361,12 +361,12 @@ function App() {
             border: 'none',
             borderBottom: activeTab === 'doji' ? '2px solid #3b82f6' : '2px solid transparent',
             color: activeTab === 'doji' ? '#3b82f6' : 'var(--text-primary)',
-            padding: '8px 16px',
-            fontSize: '14px',
+            padding: '4px 10px',
+            fontSize: '12px',
             fontWeight: '600',
             cursor: 'pointer',
-            borderTopLeftRadius: '6px',
-            borderTopRightRadius: '6px',
+            borderTopLeftRadius: '5px',
+            borderTopRightRadius: '5px',
             transition: 'all 0.15s'
           }}
         >
@@ -379,12 +379,12 @@ function App() {
             border: 'none',
             borderBottom: activeTab === 'doji_novol' ? '2px solid #3b82f6' : '2px solid transparent',
             color: activeTab === 'doji_novol' ? '#3b82f6' : 'var(--text-primary)',
-            padding: '8px 16px',
-            fontSize: '14px',
+            padding: '4px 10px',
+            fontSize: '12px',
             fontWeight: '600',
             cursor: 'pointer',
-            borderTopLeftRadius: '6px',
-            borderTopRightRadius: '6px',
+            borderTopLeftRadius: '5px',
+            borderTopRightRadius: '5px',
             transition: 'all 0.15s'
           }}
         >
@@ -397,12 +397,12 @@ function App() {
             border: 'none',
             borderBottom: activeTab === 'volume' ? '2px solid #3b82f6' : '2px solid transparent',
             color: activeTab === 'volume' ? '#3b82f6' : 'var(--text-primary)',
-            padding: '8px 16px',
-            fontSize: '14px',
+            padding: '4px 10px',
+            fontSize: '12px',
             fontWeight: '600',
             cursor: 'pointer',
-            borderTopLeftRadius: '6px',
-            borderTopRightRadius: '6px',
+            borderTopLeftRadius: '5px',
+            borderTopRightRadius: '5px',
             transition: 'all 0.15s'
           }}
         >
@@ -415,12 +415,12 @@ function App() {
             border: 'none',
             borderBottom: activeTab === 'opening_bias' ? '2px solid #3b82f6' : '2px solid transparent',
             color: activeTab === 'opening_bias' ? '#3b82f6' : 'var(--text-primary)',
-            padding: '8px 16px',
-            fontSize: '14px',
+            padding: '4px 10px',
+            fontSize: '12px',
             fontWeight: '600',
             cursor: 'pointer',
-            borderTopLeftRadius: '6px',
-            borderTopRightRadius: '6px',
+            borderTopLeftRadius: '5px',
+            borderTopRightRadius: '5px',
             transition: 'all 0.15s'
           }}
         >
@@ -433,16 +433,16 @@ function App() {
             border: 'none',
             borderBottom: activeTab === 'fifteen_min' ? '2px solid #3b82f6' : '2px solid transparent',
             color: activeTab === 'fifteen_min' ? '#60a5fa' : 'var(--text-primary)',
-            padding: '8px 16px',
-            fontSize: '14px',
+            padding: '4px 10px',
+            fontSize: '12px',
             fontWeight: '800',
             cursor: 'pointer',
-            borderTopLeftRadius: '6px',
-            borderTopRightRadius: '6px',
+            borderTopLeftRadius: '5px',
+            borderTopRightRadius: '5px',
             transition: 'all 0.15s',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px'
+            gap: '4px'
           }}
         >
           ⏱️ 15 Mins
@@ -454,16 +454,16 @@ function App() {
             border: 'none',
             borderBottom: activeTab === 'hourly_updates' ? '2px solid #a855f7' : '2px solid transparent',
             color: activeTab === 'hourly_updates' ? '#a855f7' : 'var(--text-primary)',
-            padding: '8px 16px',
-            fontSize: '14px',
+            padding: '4px 10px',
+            fontSize: '12px',
             fontWeight: '700',
             cursor: 'pointer',
-            borderTopLeftRadius: '6px',
-            borderTopRightRadius: '6px',
+            borderTopLeftRadius: '5px',
+            borderTopRightRadius: '5px',
             transition: 'all 0.15s',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px'
+            gap: '4px'
           }}
         >
           ⏱️ Hourly Updates
@@ -475,16 +475,16 @@ function App() {
             border: 'none',
             borderBottom: activeTab === 'backtest_results' ? '2px solid #ef4444' : '2px solid transparent',
             color: activeTab === 'backtest_results' ? '#f87171' : 'var(--text-primary)',
-            padding: '8px 16px',
-            fontSize: '14px',
+            padding: '4px 10px',
+            fontSize: '12px',
             fontWeight: '800',
             cursor: 'pointer',
-            borderTopLeftRadius: '6px',
-            borderTopRightRadius: '6px',
+            borderTopLeftRadius: '5px',
+            borderTopRightRadius: '5px',
             transition: 'all 0.15s',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px'
+            gap: '4px'
           }}
         >
           🎯 Live Math Signals
@@ -496,12 +496,12 @@ function App() {
             border: 'none',
             borderBottom: activeTab === 'early_picks' ? '2px solid #3b82f6' : '2px solid transparent',
             color: activeTab === 'early_picks' ? '#3b82f6' : 'var(--text-primary)',
-            padding: '8px 16px',
-            fontSize: '14px',
+            padding: '4px 10px',
+            fontSize: '12px',
             fontWeight: '600',
             cursor: 'pointer',
-            borderTopLeftRadius: '6px',
-            borderTopRightRadius: '6px',
+            borderTopLeftRadius: '5px',
+            borderTopRightRadius: '5px',
             transition: 'all 0.15s'
           }}
         >
@@ -514,16 +514,16 @@ function App() {
             border: 'none',
             borderBottom: activeTab === 'nr7_breakout' ? '2px solid #3b82f6' : '2px solid transparent',
             color: activeTab === 'nr7_breakout' ? '#60a5fa' : 'var(--text-primary)',
-            padding: '8px 16px',
-            fontSize: '14px',
+            padding: '4px 10px',
+            fontSize: '12px',
             fontWeight: '700',
             cursor: 'pointer',
-            borderTopLeftRadius: '6px',
-            borderTopRightRadius: '6px',
+            borderTopLeftRadius: '5px',
+            borderTopRightRadius: '5px',
             transition: 'all 0.15s',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px'
+            gap: '4px'
           }}
         >
           ⚡ 20% Upper Circuit Potential
@@ -535,16 +535,16 @@ function App() {
             border: 'none',
             borderBottom: activeTab === 'order_flow' ? '2px solid #3b82f6' : '2px solid transparent',
             color: activeTab === 'order_flow' ? '#60a5fa' : 'var(--text-primary)',
-            padding: '8px 16px',
-            fontSize: '14px',
+            padding: '4px 10px',
+            fontSize: '12px',
             fontWeight: '700',
             cursor: 'pointer',
-            borderTopLeftRadius: '6px',
-            borderTopRightRadius: '6px',
+            borderTopLeftRadius: '5px',
+            borderTopRightRadius: '5px',
             transition: 'all 0.15s',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px'
+            gap: '4px'
           }}
         >
           🍀 Lucky Flow
@@ -556,16 +556,16 @@ function App() {
             border: 'none',
             borderBottom: activeTab === 'order_flow_footprint' ? '2px solid #3b82f6' : '2px solid transparent',
             color: activeTab === 'order_flow_footprint' ? '#60a5fa' : 'var(--text-primary)',
-            padding: '8px 16px',
-            fontSize: '14px',
+            padding: '4px 10px',
+            fontSize: '12px',
             fontWeight: '700',
             cursor: 'pointer',
-            borderTopLeftRadius: '6px',
-            borderTopRightRadius: '6px',
+            borderTopLeftRadius: '5px',
+            borderTopRightRadius: '5px',
             transition: 'all 0.15s',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px'
+            gap: '4px'
           }}
         >
           📊 Order Flow
@@ -577,16 +577,16 @@ function App() {
             border: 'none',
             borderBottom: activeTab === 'cvd_adv' ? '2px solid #3b82f6' : '2px solid transparent',
             color: activeTab === 'cvd_adv' ? '#60a5fa' : 'var(--text-primary)',
-            padding: '8px 16px',
-            fontSize: '14px',
+            padding: '4px 10px',
+            fontSize: '12px',
             fontWeight: '700',
             cursor: 'pointer',
-            borderTopLeftRadius: '6px',
-            borderTopRightRadius: '6px',
+            borderTopLeftRadius: '5px',
+            borderTopRightRadius: '5px',
             transition: 'all 0.15s',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px'
+            gap: '4px'
           }}
         >
           📊 CVD / ADV
@@ -598,16 +598,16 @@ function App() {
             border: 'none',
             borderBottom: activeTab === 'heatmap' ? '2px solid #ef4444' : '2px solid transparent',
             color: activeTab === 'heatmap' ? '#f87171' : 'var(--text-primary)',
-            padding: '8px 16px',
-            fontSize: '14px',
+            padding: '4px 10px',
+            fontSize: '12px',
             fontWeight: '700',
             cursor: 'pointer',
-            borderTopLeftRadius: '6px',
-            borderTopRightRadius: '6px',
+            borderTopLeftRadius: '5px',
+            borderTopRightRadius: '5px',
             transition: 'all 0.15s',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px'
+            gap: '4px'
           }}
         >
           🔥 Heat Map
@@ -619,16 +619,16 @@ function App() {
             border: 'none',
             borderBottom: activeTab === 'market_profile' ? '2px solid #00f0ff' : '2px solid transparent',
             color: activeTab === 'market_profile' ? '#00f0ff' : 'var(--text-primary)',
-            padding: '8px 16px',
-            fontSize: '14px',
+            padding: '4px 10px',
+            fontSize: '12px',
             fontWeight: '700',
             cursor: 'pointer',
-            borderTopLeftRadius: '6px',
-            borderTopRightRadius: '6px',
+            borderTopLeftRadius: '5px',
+            borderTopRightRadius: '5px',
             transition: 'all 0.15s',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px'
+            gap: '4px'
           }}
         >
           🏛️ Market Profile
@@ -640,16 +640,16 @@ function App() {
             border: 'none',
             borderBottom: activeTab === 'footprint_chart' ? '2px solid #089981' : '2px solid transparent',
             color: activeTab === 'footprint_chart' ? '#34d399' : 'var(--text-primary)',
-            padding: '8px 16px',
-            fontSize: '14px',
+            padding: '4px 10px',
+            fontSize: '12px',
             fontWeight: '800',
             cursor: 'pointer',
-            borderTopLeftRadius: '6px',
-            borderTopRightRadius: '6px',
+            borderTopLeftRadius: '5px',
+            borderTopRightRadius: '5px',
             transition: 'all 0.15s',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px'
+            gap: '4px'
           }}
         >
           👣 Footprint Chart
