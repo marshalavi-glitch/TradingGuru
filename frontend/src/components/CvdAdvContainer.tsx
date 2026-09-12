@@ -888,6 +888,7 @@ const RenderAdvPineIndicatorChart: React.FC<{ candles: Candle[] }> = ({ candles 
   const [aggregation, setAggregation] = useState<'simple MA' | 'smoothed MA' | 'cumulative' | 'disable'>('smoothed MA');
   const [priceEnable, setPriceEnable] = useState<boolean>(false);
   const [baseEnable, setBaseEnable] = useState<boolean>(false);
+  const [showPerCandleRatios, setShowPerCandleRatios] = useState<boolean>(true);
 
   const advData = useMemo(() => {
     if (!candles || candles.length === 0) return [];
@@ -1002,8 +1003,8 @@ const RenderAdvPineIndicatorChart: React.FC<{ candles: Candle[] }> = ({ candles 
   }, [candles, len, aggregation, priceEnable, baseEnable]);
 
   const width = 800;
-  const height = 220;
-  const padding = 20;
+  const height = 240;
+  const padding = 24;
 
   if (!advData || advData.length === 0) return null;
 
@@ -1027,7 +1028,7 @@ const RenderAdvPineIndicatorChart: React.FC<{ candles: Candle[] }> = ({ candles 
   const latest = chartData[chartData.length - 1];
 
   // Check if criteria matched on latest candle or recent candles
-  const activeAlertBar = chartData.find(d => (d.base_AD > d.MA_base_price_vol) || (d.MA_AD > d.MA_base_price_vol && d.ch > 0));
+  const activeAlertBar = chartData.find(d => (d.base_AD > d.MA_base_price_vol) || (d.MA_AD > d.MA_base_price_vol && d.ch > 0) || (d.AD_ratio >= 0.85 && d.ch > 0));
   const hasActiveAlert = !!activeAlertBar;
 
   return (
@@ -1069,6 +1070,11 @@ const RenderAdvPineIndicatorChart: React.FC<{ candles: Candle[] }> = ({ candles 
             />
           </div>
 
+          <label style={{ fontSize: '11px', color: '#00f2fe', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+            <input type="checkbox" checked={showPerCandleRatios} onChange={(e) => setShowPerCandleRatios(e.target.checked)} />
+            <span>Show Candle Ratios (e.g. +0.90)</span>
+          </label>
+
           <label style={{ fontSize: '11px', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
             <input type="checkbox" checked={priceEnable} onChange={(e) => setPriceEnable(e.target.checked)} />
             <span>Money Vol (Price x Vol)</span>
@@ -1084,29 +1090,29 @@ const RenderAdvPineIndicatorChart: React.FC<{ candles: Candle[] }> = ({ candles 
       {/* LIVE CRITERIA ALERT BANNER (DIRECT MATCH TO SCREENSHOT ANNOTATION) */}
       {hasActiveAlert && (
         <div style={{
-          background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(234, 179, 8, 0.15))',
-          border: '1px solid #ffd700',
+          background: 'linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(245, 158, 11, 0.15))',
+          border: '1px solid #00f2fe',
           borderRadius: '8px',
           padding: '10px 14px',
           display: 'flex',
           justify: 'space-between',
           alignItems: 'center',
           gap: '12px',
-          boxShadow: '0 0 16px rgba(255, 215, 0, 0.3)'
+          boxShadow: '0 0 16px rgba(0, 242, 254, 0.3)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Zap size={20} color="#ffd700" className="spin" />
+            <Zap size={20} color="#00f2fe" className="spin" />
             <div>
-              <div style={{ fontSize: '13px', fontWeight: '800', color: '#ffd700' }}>
-                🚨 ADV BREAKOUT ALERT: Criteria Matched on Chart!
+              <div style={{ fontSize: '13px', fontWeight: '800', color: '#00f2fe' }}>
+                🚨 ADV HIGH RATIO BREAKOUT ALERT: Strong Accumulation Detected!
               </div>
-              <div style={{ fontSize: '11px', color: '#fde68a', marginTop: '2px' }}>
-                A/D Volume inner bar / A/D MA crossed above Volume MA line. Highlighted in <strong>Gold (#ffd700)</strong> below.
+              <div style={{ fontSize: '11px', color: '#e0f2fe', marginTop: '2px' }}>
+                A/D Ratio &ge; 0.85+ with Bullish Closing High. Highlighted in <strong>Electric Cyan (#00f2fe)</strong> & <strong>Gold (#ffd700)</strong> below.
               </div>
             </div>
           </div>
-          <span style={{ background: '#ffd700', color: '#000000', fontSize: '11px', fontWeight: '900', padding: '4px 10px', borderRadius: '20px' }}>
-            ALERT TRIGGERED
+          <span style={{ background: '#00f2fe', color: '#000000', fontSize: '11px', fontWeight: '900', padding: '4px 10px', borderRadius: '20px' }}>
+            RATIO &ge; 0.9 MATCHED
           </span>
         </div>
       )}
@@ -1114,7 +1120,7 @@ const RenderAdvPineIndicatorChart: React.FC<{ candles: Candle[] }> = ({ candles 
       {/* VALUE METRICS LEGEND */}
       {latest && (
         <div style={{ display: 'flex', gap: '16px', fontSize: '12px', background: 'rgba(30, 41, 59, 0.5)', padding: '8px 12px', borderRadius: '6px', flexWrap: 'wrap' }}>
-          <div>A/D Ratio: <strong style={{ color: latest.AD_ratio >= 0 ? '#4ade80' : '#f87171' }}>{latest.AD_ratio.toFixed(4)}</strong></div>
+          <div>A/D Ratio: <strong style={{ color: latest.AD_ratio >= 0.85 ? '#00f2fe' : latest.AD_ratio >= 0 ? '#4ade80' : '#f87171' }}>{latest.AD_ratio > 0 ? '+' : ''}{latest.AD_ratio.toFixed(4)}</strong></div>
           <div>A/D Vol: <strong style={{ color: latest.ch >= 0 ? '#65D25B' : '#FE6B69' }}>{Math.round(latest.base_AD).toLocaleString()}</strong></div>
           <div>A/D MA ({len}): <strong style={{ color: '#4477ff' }}>{Math.round(latest.MA_AD || 0).toLocaleString()}</strong></div>
           <div>Vol MA ({len}): <strong style={{ color: '#ff9900' }}>{Math.round(latest.MA_base_price_vol || 0).toLocaleString()}</strong></div>
@@ -1135,16 +1141,32 @@ const RenderAdvPineIndicatorChart: React.FC<{ candles: Candle[] }> = ({ candles 
             const isUp = d.ch > 0;
             const isDown = d.ch < 0;
 
-            // CRITERIA MATCH CHECK: A/D volume or A/D MA exceeding Volume MA
-            const isMatched = (d.base_AD > d.MA_base_price_vol) || (d.MA_AD > d.MA_base_price_vol && d.ch > 0);
+            // STRONG RATIO & BREAKOUT CRITERIA
+            const isStrongBullish = d.AD_ratio >= 0.85 && isUp; // Ratio ~0.9 & bullish close at high
+            const isStrongBearish = d.AD_ratio <= -0.85 && isDown;
+            const isCrossover = (d.base_AD > d.MA_base_price_vol) || (d.MA_AD > d.MA_base_price_vol && isUp);
 
-            // COLOR SELECTION: Highlight with Neon Gold (#ffd700) when criteria matches!
+            // COLOR MARKERS FOR EASY IDENTIFICATION
             let volColor = isUp ? '#65D25B44' : isDown ? '#FE6B6944' : '#888888ff';
             let adColor = isUp ? '#92df8bff' : isDown ? '#fe9695ff' : 'transparent';
+            let strokeColor = 'none';
+            let strokeW = '0';
 
-            if (isMatched) {
+            if (isStrongBullish) {
+              volColor = 'rgba(0, 242, 254, 0.45)'; // Electric Cyan outer
+              adColor = '#00f2fe'; // Bright Electric Cyan inner bar
+              strokeColor = '#00f2fe';
+              strokeW = '2';
+            } else if (isStrongBearish) {
+              volColor = 'rgba(244, 63, 94, 0.45)'; // Neon Magenta outer
+              adColor = '#f43f5e'; // Bright Magenta inner bar
+              strokeColor = '#f43f5e';
+              strokeW = '2';
+            } else if (isCrossover) {
               volColor = 'rgba(255, 215, 0, 0.35)'; // Neon Gold outer
-              adColor = '#ffd700'; // Bright Gold inner bar (#ffd700)
+              adColor = '#ffd700'; // Bright Gold inner bar
+              strokeColor = '#ffd700';
+              strokeW = '1.5';
             }
 
             const volH = Math.min((Math.abs(d.base_price_vol) / maxVol) * (height / 2 - padding), height / 2 - padding);
@@ -1153,10 +1175,24 @@ const RenderAdvPineIndicatorChart: React.FC<{ candles: Candle[] }> = ({ candles 
             return (
               <g key={i}>
                 {/* Volume Base Column */}
-                <rect x={x - barW / 2} y={height / 2 - volH} width={barW} height={volH * 2} fill={volColor} stroke={isMatched ? '#ffd700' : 'none'} strokeWidth={isMatched ? '1.5' : '0'} />
+                <rect x={x - barW / 2} y={height / 2 - volH} width={barW} height={volH * 2} fill={volColor} stroke={strokeColor} strokeWidth={strokeW} />
                 {/* A/D Inner Column */}
                 {adColor !== 'transparent' && (
-                  <rect x={x - barW / 3} y={height / 2 - adH} width={barW / 1.5} height={adH * 2} fill={adColor} stroke={isMatched ? '#ffffff' : 'none'} strokeWidth={isMatched ? '1' : '0'} />
+                  <rect x={x - barW / 3} y={height / 2 - adH} width={barW / 1.5} height={adH * 2} fill={adColor} stroke={isStrongBullish ? '#ffffff' : 'none'} strokeWidth={isStrongBullish ? '1' : '0'} />
+                )}
+
+                {/* PER-CANDLE RATIO VALUE TEXT LABEL DISPLAY */}
+                {showPerCandleRatios && (
+                  <text
+                    x={x}
+                    y={isUp ? Math.max(height / 2 - volH - 6, 14) : Math.min(height / 2 + volH + 12, height - 6)}
+                    fill={isStrongBullish ? '#00f2fe' : isStrongBearish ? '#f43f5e' : isUp ? '#4ade80' : '#f87171'}
+                    fontSize="9"
+                    fontWeight="800"
+                    textAnchor="middle"
+                  >
+                    {d.AD_ratio > 0 ? '+' : ''}{d.AD_ratio.toFixed(2)}
+                  </text>
                 )}
               </g>
             );
