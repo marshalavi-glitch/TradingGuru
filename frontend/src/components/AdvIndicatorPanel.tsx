@@ -128,10 +128,10 @@ export const AdvIndicatorPanel: React.FC<AdvIndicatorPanelProps> = ({ candles, s
   }, [candles, len, aggregation, priceEnable, baseEnable]);
 
   const width = 800;
-  const height = 220;
+  const height = 130;
   const paddingX = 24;
-  const baselineY = height - 22; // Bottom baseline at y = 198
-  const usableHeight = height - 38; // Usable height for bars/lines = 182px
+  const baselineY = height - 20; // Bottom baseline at y = 110
+  const usableHeight = height - 32; // Usable height for bars/lines = 98px
 
   if (!advData || advData.length === 0) return null;
 
@@ -164,24 +164,24 @@ export const AdvIndicatorPanel: React.FC<AdvIndicatorPanelProps> = ({ candles, s
   const hasActiveAlert = !!activeAlertBar;
 
   return (
-    <div style={{ background: '#0b0f19', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '10px' }}>
+    <div style={{ background: '#0b0f19', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
       
       {/* PINE SCRIPT CONTROLS HEADER */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
         <div>
-          <h4 style={{ margin: 0, fontSize: '14px', fontWeight: '700', color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h4 style={{ margin: 0, fontSize: '13px', fontWeight: '700', color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span>📈 Accumulation/Distribution Volume (ADV)</span>
           </h4>
         </div>
 
         {/* Inputs Control Panel */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: '11px', color: '#94a3b8' }}>Aggregation:</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ fontSize: '10px', color: '#94a3b8' }}>Agg:</span>
             <select
               value={aggregation}
               onChange={(e) => setAggregation(e.target.value as any)}
-              style={{ background: '#1e293b', color: '#f8fafc', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '6px', padding: '4px 8px', fontSize: '11px' }}
+              style={{ background: '#1e293b', color: '#f8fafc', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '4px', padding: '2px 6px', fontSize: '10px' }}
             >
               <option value="smoothed MA">smoothed MA (RMA)</option>
               <option value="simple MA">simple MA (SMA)</option>
@@ -190,78 +190,38 @@ export const AdvIndicatorPanel: React.FC<AdvIndicatorPanelProps> = ({ candles, s
             </select>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: '11px', color: '#94a3b8' }}>Length:</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ fontSize: '10px', color: '#94a3b8' }}>Len:</span>
             <input
               type="number"
               min="1"
               max="100"
               value={len}
               onChange={(e) => setLen(Number(e.target.value) || 14)}
-              style={{ background: '#1e293b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '6px', padding: '4px 8px', fontSize: '11px', width: '50px' }}
+              style={{ background: '#1e293b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '4px', padding: '2px 6px', fontSize: '10px', width: '42px' }}
             />
           </div>
 
-          <label style={{ fontSize: '11px', color: '#00f2fe', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+          <label style={{ fontSize: '10px', color: '#00f2fe', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
             <input type="checkbox" checked={showPerCandleRatios} onChange={(e) => setShowPerCandleRatios(e.target.checked)} />
-            <span>Show Candle Ratios</span>
+            <span>Ratios</span>
           </label>
 
-          <label style={{ fontSize: '11px', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+          <label style={{ fontSize: '10px', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
             <input type="checkbox" checked={priceEnable} onChange={(e) => setPriceEnable(e.target.checked)} />
             <span>Money Vol</span>
           </label>
 
-          <label style={{ fontSize: '11px', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+          <label style={{ fontSize: '10px', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
             <input type="checkbox" checked={baseEnable} onChange={(e) => setBaseEnable(e.target.checked)} />
             <span>Baseline</span>
           </label>
         </div>
       </div>
 
-      {/* LIVE CRITERIA ALERT BANNER */}
-      {hasActiveAlert && (
-        <div style={{
-          background: 'linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(245, 158, 11, 0.15))',
-          border: '1px solid #00f2fe',
-          borderRadius: '8px',
-          padding: '10px 14px',
-          display: 'flex',
-          justify: 'space-between',
-          alignItems: 'center',
-          gap: '12px',
-          boxShadow: '0 0 16px rgba(0, 242, 254, 0.3)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Zap size={20} color="#00f2fe" className="spin" />
-            <div>
-              <div style={{ fontSize: '13px', fontWeight: '800', color: '#00f2fe' }}>
-                🚨 ADV BREAKOUT ALERT: Accumulation Criteria Matched on {symbol || 'Chart'}!
-              </div>
-              <div style={{ fontSize: '11px', color: '#e0f2fe', marginTop: '2px' }}>
-                A/D Ratio &ge; 0.85+ with Bullish Closing High. Highlighted in <strong>Electric Cyan (#00f2fe)</strong> & <strong>Gold (#ffd700)</strong> below.
-              </div>
-            </div>
-          </div>
-          <span style={{ background: '#00f2fe', color: '#000000', fontSize: '11px', fontWeight: '900', padding: '4px 10px', borderRadius: '20px' }}>
-            ALERT TRIGGERED
-          </span>
-        </div>
-      )}
-
-      {/* VALUE METRICS LEGEND */}
-      {latest && (
-        <div style={{ display: 'flex', gap: '16px', fontSize: '12px', background: 'rgba(30, 41, 59, 0.5)', padding: '8px 12px', borderRadius: '6px', flexWrap: 'wrap' }}>
-          <div>A/D Ratio: <strong style={{ color: latest.AD_ratio >= 0.85 ? '#00f2fe' : latest.AD_ratio >= 0 ? '#4ade80' : '#f87171' }}>{latest.AD_ratio > 0 ? '+' : ''}{latest.AD_ratio.toFixed(4)}</strong></div>
-          <div>A/D Vol: <strong style={{ color: latest.ch >= 0 ? '#65D25B' : '#FE6B69' }}>{Math.round(latest.base_AD).toLocaleString()}</strong></div>
-          <div>A/D MA ({len}): <strong style={{ color: '#4477ff' }}>{Math.round(latest.MA_AD || 0).toLocaleString()}</strong></div>
-          <div>Vol MA ({len}): <strong style={{ color: '#ff9900' }}>{Math.round(latest.MA_base_price_vol || 0).toLocaleString()}</strong></div>
-        </div>
-      )}
-
-      {/* SVG CHART DRAWING */}
+      {/* SVG CHART DRAWING (COMPACT 130px HEIGHT FOR ADV CANDLES) */}
       <div style={{ width: '100%', overflowX: 'auto' }}>
-        <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: 'auto', background: '#090d16' }}>
+        <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: 'auto', background: '#090d16', borderRadius: '6px' }}>
           {/* Bottom baseline */}
           <line x1={paddingX} y1={baselineY} x2={width - paddingX} y2={baselineY} stroke="rgba(255,255,255,0.15)" strokeWidth="1" strokeDasharray="3 3" />
 
@@ -337,6 +297,46 @@ export const AdvIndicatorPanel: React.FC<AdvIndicatorPanelProps> = ({ candles, s
           <polyline fill="none" stroke="#3b82f6" strokeWidth="2.5" points={maAdPoints.join(' ')} />
         </svg>
       </div>
+
+      {/* VALUE METRICS LEGEND (MOVED BELOW ADV CHART) */}
+      {latest && (
+        <div style={{ display: 'flex', gap: '14px', fontSize: '11px', background: 'rgba(30, 41, 59, 0.5)', padding: '6px 10px', borderRadius: '6px', flexWrap: 'wrap' }}>
+          <div>A/D Ratio: <strong style={{ color: latest.AD_ratio >= 0.85 ? '#00f2fe' : latest.AD_ratio >= 0 ? '#4ade80' : '#f87171' }}>{latest.AD_ratio > 0 ? '+' : ''}{latest.AD_ratio.toFixed(4)}</strong></div>
+          <div>A/D Vol: <strong style={{ color: latest.ch >= 0 ? '#65D25B' : '#FE6B69' }}>{Math.round(latest.base_AD).toLocaleString()}</strong></div>
+          <div>A/D MA ({len}): <strong style={{ color: '#4477ff' }}>{Math.round(latest.MA_AD || 0).toLocaleString()}</strong></div>
+          <div>Vol MA ({len}): <strong style={{ color: '#ff9900' }}>{Math.round(latest.MA_base_price_vol || 0).toLocaleString()}</strong></div>
+        </div>
+      )}
+
+      {/* LIVE CRITERIA ALERT BANNER (MOVED BELOW ADV CHART) */}
+      {hasActiveAlert && (
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(245, 158, 11, 0.15))',
+          border: '1px solid #00f2fe',
+          borderRadius: '6px',
+          padding: '8px 12px',
+          display: 'flex',
+          justify: 'space-between',
+          alignItems: 'center',
+          gap: '10px',
+          boxShadow: '0 0 12px rgba(0, 242, 254, 0.25)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Zap size={16} color="#00f2fe" className="spin" />
+            <div>
+              <div style={{ fontSize: '12px', fontWeight: '800', color: '#00f2fe' }}>
+                🚨 ADV BREAKOUT ALERT: Accumulation Criteria Matched on {symbol || 'Chart'}!
+              </div>
+              <div style={{ fontSize: '10px', color: '#e0f2fe', marginTop: '1px' }}>
+                A/D Ratio &ge; 0.85+ with Bullish Closing High. Highlighted in <strong>Electric Cyan (#00f2fe)</strong> & <strong>Gold (#ffd700)</strong>.
+              </div>
+            </div>
+          </div>
+          <span style={{ background: '#00f2fe', color: '#000000', fontSize: '10px', fontWeight: '900', padding: '3px 8px', borderRadius: '16px' }}>
+            ALERT TRIGGERED
+          </span>
+        </div>
+      )}
 
     </div>
   );
