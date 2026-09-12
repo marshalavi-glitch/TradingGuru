@@ -813,8 +813,8 @@ const RenderPriceCandlesticksChart: React.FC<{ candles: Candle[] }> = ({ candles
   const stepX = (width - padding * 2) / Math.max(candles.length - 1, 1);
 
   return (
-    <div style={{ width: '100%', overflowX: 'auto', background: '#0b0f19', borderRadius: '8px', padding: '8px 10px', border: '1px solid rgba(255,255,255,0.06)' }}>
-      <svg viewBox={`0 0 ${width} ${priceHeight}`} style={{ width: '100%', height: 'auto', background: '#090d16' }}>
+    <div style={{ width: '100%', overflowX: 'auto', background: '#181c27', borderRadius: '8px', padding: '8px 10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+      <svg viewBox={`0 0 ${width} ${priceHeight}`} style={{ width: '100%', height: 'auto', background: '#131722' }}>
         <g>
           <text x={padding} y="14" fill="#94a3b8" fontSize="11" fontWeight="600">Price Candlesticks (5m)</text>
           <line x1={padding} y1={priceHeight - 5} x2={width - padding} y2={priceHeight - 5} stroke="rgba(255,255,255,0.1)" strokeDasharray="3 3" />
@@ -871,8 +871,8 @@ const RenderCvdLineHistogramChart: React.FC<{ candles: Candle[]; cvdSeries: { ti
   });
 
   return (
-    <div style={{ width: '100%', overflowX: 'auto', background: '#0b0f19', borderRadius: '8px', padding: '8px 10px', border: '1px solid rgba(255,255,255,0.06)' }}>
-      <svg viewBox={`0 0 ${width} ${cvdHeight}`} style={{ width: '100%', height: 'auto', background: '#090d16' }}>
+    <div style={{ width: '100%', overflowX: 'auto', background: '#181c27', borderRadius: '8px', padding: '8px 10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+      <svg viewBox={`0 0 ${width} ${cvdHeight}`} style={{ width: '100%', height: 'auto', background: '#131722' }}>
         <g>
           <text x={padding} y="14" fill="#38bdf8" fontSize="11" fontWeight="600">Cumulative Volume Delta (CVD) Line & Delta Histogram</text>
           

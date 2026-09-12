@@ -188,7 +188,7 @@ export const AdvIndicatorPanel: React.FC<AdvIndicatorPanelProps> = ({ candles, s
   });
 
   return (
-    <div style={{ background: '#0b0f19', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '0px' }}>
+    <div style={{ background: '#181c27', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '0px' }}>
       
       {/* PINE SCRIPT CONTROLS HEADER */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
@@ -243,9 +243,9 @@ export const AdvIndicatorPanel: React.FC<AdvIndicatorPanelProps> = ({ candles, s
         </div>
       </div>
 
-      {/* SVG CHART DRAWING (COMPACT 110px HEIGHT FOR ADV CANDLES) */}
+      {/* SVG CHART DRAWING (COMPACT 110px HEIGHT FOR ADV CANDLES WITH DARK GREY BACKGROUND) */}
       <div style={{ width: '100%', overflowX: 'auto' }}>
-        <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: 'auto', background: '#090d16', borderRadius: '6px' }}>
+        <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: 'auto', background: '#131722', borderRadius: '6px' }}>
           {/* Bottom baseline */}
           <line x1={paddingX} y1={baselineY} x2={width - paddingX} y2={baselineY} stroke="rgba(255,255,255,0.15)" strokeWidth="1" strokeDasharray="3 3" />
 
