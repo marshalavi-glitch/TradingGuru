@@ -536,20 +536,23 @@ export const CvdAdvContainer: React.FC<CvdAdvContainerProps> = ({ onSymbolSelect
             )}
           </div>
 
-          {/* DUAL SVG CHART DISPLAY (Price Candlesticks + CVD Delta Line/Histogram) */}
-          <div style={{ background: '#0b0f19', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '16px', position: 'relative' }}>
-            {cvdAnalysis.chartCandles.length > 0 ? (
-              <RenderCvdDualSvgChart candles={cvdAnalysis.chartCandles} cvdSeries={cvdAnalysis.cvdSeries} cvdStatus={cvdAnalysis.cvdStatus} />
-            ) : (
-              <div style={{ height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
-                Loading chart candles...
-              </div>
-            )}
-          </div>
+          {/* 1. PRICE CANDLESTICKS CHART */}
+          {cvdAnalysis.chartCandles.length > 0 ? (
+            <RenderPriceCandlesticksChart candles={cvdAnalysis.chartCandles} />
+          ) : (
+            <div style={{ height: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
+              Loading chart candles...
+            </div>
+          )}
 
-          {/* ACCUMULATION/DISTRIBUTION VOLUME (ADV) [cI8DH] PINE SCRIPT INDICATOR */}
+          {/* 2. ACCUMULATION/DISTRIBUTION VOLUME (ADV) PINE SCRIPT INDICATOR (RIGHT UNDER PRICE CHART) */}
           {cvdAnalysis.chartCandles.length > 0 && (
             <AdvIndicatorPanel candles={cvdAnalysis.chartCandles} symbol={symbol} timeframe={timeframe} />
+          )}
+
+          {/* 3. CUMULATIVE VOLUME DELTA (CVD) LINE & DELTA HISTOGRAM (MOVED DOWNSIDE BELOW ADV) */}
+          {cvdAnalysis.chartCandles.length > 0 && (
+            <RenderCvdLineHistogramChart candles={cvdAnalysis.chartCandles} cvdSeries={cvdAnalysis.cvdSeries} />
           )}
         </div>
       )}
@@ -781,11 +784,10 @@ function analyzeCvdAndAdv(candles: Candle[], symbol: string, name: string): Symb
   };
 }
 
-// HELPER: Dual SVG Chart Render Component (Price Candlesticks + CVD Line/Histogram)
-const RenderCvdDualSvgChart: React.FC<{ candles: Candle[]; cvdSeries: { time: number; delta: number; cumDelta: number }[]; cvdStatus: string }> = ({ candles, cvdSeries, cvdStatus }) => {
+// HELPER: Price Candlesticks SVG Chart Render Component
+const RenderPriceCandlesticksChart: React.FC<{ candles: Candle[] }> = ({ candles }) => {
   const width = 800;
   const priceHeight = 180;
-  const cvdHeight = 110;
   const padding = 20;
 
   if (!candles || candles.length === 0) return null;
@@ -793,36 +795,14 @@ const RenderCvdDualSvgChart: React.FC<{ candles: Candle[]; cvdSeries: { time: nu
   const minPrice = Math.min(...candles.map(c => c.low));
   const maxPrice = Math.max(...candles.map(c => c.high));
   const priceRange = maxPrice - minPrice || 1;
-
-  const chartCvd = cvdSeries.slice(-candles.length);
-  const minCvd = Math.min(...chartCvd.map(c => c.cumDelta));
-  const maxCvd = Math.max(...chartCvd.map(c => c.cumDelta));
-  const cvdRange = maxCvd - minCvd || 1;
-
   const stepX = (width - padding * 2) / Math.max(candles.length - 1, 1);
 
-  // Build SVG Points for Price & CVD
-  const pricePoints: string[] = [];
-  const cvdPoints: string[] = [];
-
-  candles.forEach((c, i) => {
-    const x = padding + i * stepX;
-    const yPrice = priceHeight - ((c.close - minPrice) / priceRange) * (priceHeight - padding * 2) - padding;
-    pricePoints.push(`${x},${yPrice}`);
-
-    const cumD = chartCvd[i]?.cumDelta || 0;
-    const yCvd = cvdHeight - ((cumD - minCvd) / cvdRange) * (cvdHeight - padding * 2) - padding;
-    cvdPoints.push(`${x},${yCvd}`);
-  });
-
   return (
-    <div style={{ width: '100%', overflowX: 'auto' }}>
-      <svg viewBox={`0 0 ${width} ${priceHeight + cvdHeight + 30}`} style={{ width: '100%', height: 'auto', background: '#090d16' }}>
-        
-        {/* PRICE CHART CONTAINER */}
+    <div style={{ width: '100%', overflowX: 'auto', background: '#0b0f19', borderRadius: '10px', padding: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
+      <svg viewBox={`0 0 ${width} ${priceHeight}`} style={{ width: '100%', height: 'auto', background: '#090d16' }}>
         <g>
           <text x={padding} y="16" fill="#94a3b8" fontSize="11" fontWeight="600">Price Candlesticks (5m)</text>
-          <line x1={padding} y1={priceHeight} x2={width - padding} y2={priceHeight} stroke="rgba(255,255,255,0.1)" strokeDasharray="3 3" />
+          <line x1={padding} y1={priceHeight - 5} x2={width - padding} y2={priceHeight - 5} stroke="rgba(255,255,255,0.1)" strokeDasharray="3 3" />
           
           {candles.map((c, i) => {
             const x = padding + i * stepX;
@@ -845,9 +825,37 @@ const RenderCvdDualSvgChart: React.FC<{ candles: Candle[]; cvdSeries: { time: nu
             );
           })}
         </g>
+      </svg>
+    </div>
+  );
+};
 
-        {/* CVD CHART CONTAINER */}
-        <g transform={`translate(0, ${priceHeight + 20})`}>
+// HELPER: Cumulative Volume Delta (CVD) Line & Delta Histogram Render Component
+const RenderCvdLineHistogramChart: React.FC<{ candles: Candle[]; cvdSeries: { time: number; delta: number; cumDelta: number }[] }> = ({ candles, cvdSeries }) => {
+  const width = 800;
+  const cvdHeight = 120;
+  const padding = 20;
+
+  if (!candles || candles.length === 0) return null;
+
+  const chartCvd = cvdSeries.slice(-candles.length);
+  const minCvd = Math.min(...chartCvd.map(c => c.cumDelta));
+  const maxCvd = Math.max(...chartCvd.map(c => c.cumDelta));
+  const cvdRange = maxCvd - minCvd || 1;
+  const stepX = (width - padding * 2) / Math.max(candles.length - 1, 1);
+
+  const cvdPoints: string[] = [];
+  candles.forEach((_, i) => {
+    const x = padding + i * stepX;
+    const cumD = chartCvd[i]?.cumDelta || 0;
+    const yCvd = cvdHeight - ((cumD - minCvd) / cvdRange) * (cvdHeight - padding * 2) - padding;
+    cvdPoints.push(`${x},${yCvd}`);
+  });
+
+  return (
+    <div style={{ width: '100%', overflowX: 'auto', background: '#0b0f19', borderRadius: '10px', padding: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
+      <svg viewBox={`0 0 ${width} ${cvdHeight}`} style={{ width: '100%', height: 'auto', background: '#090d16' }}>
+        <g>
           <text x={padding} y="16" fill="#38bdf8" fontSize="11" fontWeight="600">Cumulative Volume Delta (CVD) Line & Delta Histogram</text>
           
           {/* Delta Histogram Bars */}
@@ -877,7 +885,6 @@ const RenderCvdDualSvgChart: React.FC<{ candles: Candle[]; cvdSeries: { time: nu
             points={cvdPoints.join(' ')}
           />
         </g>
-
       </svg>
     </div>
   );
