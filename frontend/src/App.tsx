@@ -25,6 +25,7 @@ import { OrderFlowFootprintContainer } from './components/OrderFlowFootprintCont
 import { CvdAdvContainer } from './components/CvdAdvContainer';
 import { HeatMapContainer } from './components/HeatMapContainer';
 import { MarketProfileContainer } from './components/MarketProfileContainer';
+import { TrumpMoodContainer } from './components/TrumpMoodContainer';
 
 function App() {
   const [symbol, setSymbol] = useState('NSE:NIFTY');
@@ -35,7 +36,7 @@ function App() {
   const [refreshKey, setRefreshKey] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'chart' | 'bhaichara' | 'dada_thoughts' | 'fifteen_min' | 'scanner' | 'options' | 'signals' | 'doji' | 'doji_novol' | 'volume' | 'opening_bias' | 'hourly_updates' | 'backtest_results' | 'confluences' | 'early_picks' | 'nr7_breakout' | 'order_flow' | 'order_flow_footprint' | 'cvd_adv' | 'heatmap' | 'market_profile'>('bhaichara');
+  const [activeTab, setActiveTab] = useState<'chart' | 'bhaichara' | 'dada_thoughts' | 'trump_mood' | 'fifteen_min' | 'scanner' | 'options' | 'signals' | 'doji' | 'doji_novol' | 'volume' | 'opening_bias' | 'hourly_updates' | 'backtest_results' | 'confluences' | 'early_picks' | 'nr7_breakout' | 'order_flow' | 'order_flow_footprint' | 'cvd_adv' | 'heatmap' | 'market_profile'>('bhaichara');
 
   // Subscribe to symbol data via TradingView WebSocket & REST fallback
   useEffect(() => {
@@ -240,6 +241,27 @@ function App() {
           }}
         >
           🧠 Dada Thoughts
+        </button>
+        <button
+          onClick={() => setActiveTab('trump_mood')}
+          style={{
+            background: activeTab === 'trump_mood' ? 'rgba(239, 68, 68, 0.18)' : 'transparent',
+            border: 'none',
+            borderBottom: activeTab === 'trump_mood' ? '2px solid #ef4444' : '2px solid transparent',
+            color: activeTab === 'trump_mood' ? '#f87171' : 'var(--text-primary)',
+            padding: '8px 16px',
+            fontSize: '14px',
+            fontWeight: '800',
+            cursor: 'pointer',
+            borderTopLeftRadius: '6px',
+            borderTopRightRadius: '6px',
+            transition: 'all 0.15s',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+        >
+          🎺 Trump Mood
         </button>
         <button
           onClick={() => setActiveTab('chart')}
@@ -649,6 +671,13 @@ function App() {
         ) : activeTab === 'dada_thoughts' ? (
           <TabErrorBoundary tabName="Dada Thoughts">
             <DadaThoughtsContainer
+              onSymbolSelect={setSymbol}
+              onSwitchToChart={() => setActiveTab('chart')}
+            />
+          </TabErrorBoundary>
+        ) : activeTab === 'trump_mood' ? (
+          <TabErrorBoundary tabName="Trump Mood">
+            <TrumpMoodContainer
               onSymbolSelect={setSymbol}
               onSwitchToChart={() => setActiveTab('chart')}
             />
