@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { getBackendHttpUrl, tvStreamer } from '../utils/tvStreamer';
+import { getBackendHttpUrl } from '../utils/tvStreamer';
 import { Candle } from '../utils/profileCalculator';
 import { resolveSymbol } from '../utils/symbolResolver';
-import { RefreshCw, Search, ZoomIn, ZoomOut, Move, BarChart2, TrendingUp, TrendingDown, ShieldAlert, Zap, Layers } from 'lucide-react';
+import { 
+  RefreshCw, Search, ZoomIn, ZoomOut, Move, BarChart2, TrendingUp, TrendingDown, 
+  ShieldAlert, Zap, Layers, Settings, X, Check, Info, HelpCircle 
+} from 'lucide-react';
 
 interface FootprintChartContainerProps {
   onSymbolSelect?: (symbol: string) => void;
@@ -15,6 +18,11 @@ interface FootprintBin {
   sellVolume: number;
   totalVolume: number;
   isPoc: boolean;
+  isValueArea: boolean;
+  isImbalanceBuy: boolean;
+  isImbalanceSell: boolean;
+  isUnfinishedHigh: boolean;
+  isUnfinishedLow: boolean;
 }
 
 interface FootprintCandleData {
@@ -33,6 +41,65 @@ interface FootprintCandleData {
   topWickVol: number;
   bottomWickVol: number;
 }
+
+export interface FootprintSettings {
+  // VOLUME FOOTPRINT
+  rowSize: 'Manual' | 'Auto';
+  ticksPerRow: number;
+  display: 'Profile' | 'Bid / Ask' | 'Delta' | 'Total';
+  type: 'Buy and sell' | 'Delta' | 'Total';
+  applyGradient: boolean;
+  sellBgColor: string;
+  buyBgColor: string;
+  unfinishedAuction: boolean;
+  unfinishedColors: [string, string]; // [Magenta, Cyan]
+  valueAreaEnabled: boolean;
+  valueAreaPercent: number;
+
+  // LABELS
+  pocEnabled: boolean;
+  pocColor: string;
+  showSummaryInfo: boolean;
+  summaryDisplay: 'Table' | 'Below' | 'Off';
+  summaryMetrics: string;
+
+  // IMBALANCE
+  imbalancePercent: number;
+  imbalanceHighlighting: boolean;
+  imbalanceColors: [string, string]; // [Green, Red]
+  stackedLevelsEnabled: boolean;
+  stackedLevelsCount: number;
+  minimalVolume: number;
+  ignoreZeros: boolean;
+}
+
+const DEFAULT_SETTINGS: FootprintSettings = {
+  rowSize: 'Manual',
+  ticksPerRow: 100,
+  display: 'Profile',
+  type: 'Buy and sell',
+  applyGradient: true,
+  sellBgColor: '#e23636',
+  buyBgColor: '#089981',
+  unfinishedAuction: false,
+  unfinishedColors: ['#d946ef', '#06b6d4'],
+  valueAreaEnabled: true,
+  valueAreaPercent: 70,
+
+  pocEnabled: true,
+  pocColor: '#000000',
+  showSummaryInfo: true,
+  summaryDisplay: 'Table',
+  summaryMetrics: 'Volume, Delta, Min Delta, Max Delta, Session CVD',
+
+  imbalancePercent: 300,
+  imbalanceHighlighting: true,
+  imbalanceColors: ['#089981', '#e23636'],
+  stackedLevelsEnabled: false,
+  stackedLevelsCount: 3,
+  minimalVolume: 0.0,
+  ignoreZeros: false
+};
 
 function formatVolumeShort(vol: number): string {
   if (!vol || vol === 0) return '0';
@@ -60,8 +127,12 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
   const [searchInput, setSearchInput] = useState<string>('NSE:NIFTY');
   const [timeframe, setTimeframe] = useState<string>('5');
   const [unitMode, setUnitMode] = useState<'point' | 'ticks'>('point');
-  const [theme, setTheme] = useState<'light' | 'dark'>('light'); // Default light background as per screenshot
-  const [footprintMode, setFootprintMode] = useState<'buysell' | 'delta'>('buysell');
+  const [theme, setTheme] = useState<'light' | 'dark'>('light'); // TradingView Light theme default
+  
+  // Footprint Settings State
+  const [settings, setSettings] = useState<FootprintSettings>(DEFAULT_SETTINGS);
+  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
+  const [activeSettingsTab, setActiveSettingsTab] = useState<string>('Symbol');
 
   const [candles, setCandles] = useState<Candle[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -76,7 +147,6 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 640 });
-  const [hoverBin, setHoverBin] = useState<{ candle: FootprintCandleData; bin: FootprintBin; x: number; y: number } | null>(null);
 
   const watchSymbols = [
     { symbol: 'NSE:NIFTY', name: 'NIFTY 50' },
@@ -117,29 +187,31 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
     fetchCandles(symbol, timeframe);
   }, [symbol, timeframe]);
 
-  // Process footprint candle details (POC, Bins, Buy/Sell volume, Min/Max Delta, Session CVD)
+  // Process footprint candle details based on settings
   const footprintCandles: FootprintCandleData[] = useMemo(() => {
     if (!candles || candles.length === 0) return [];
 
     let cumDelta = 0;
-    let cumVolume = 0;
 
     return candles.map((c) => {
       const isBull = c.close >= c.open;
       const range = Math.max(0.5, c.high - c.low);
-      const priceStep = range > 100 ? 10 : (range > 30 ? 5 : 2);
+      
+      // Calculate dynamic price bin step from settings (ticksPerRow)
+      const baseStep = Math.max(1, Math.round(settings.ticksPerRow / 10));
+      const priceStep = range > 100 ? baseStep : (range > 30 ? Math.max(2, Math.floor(baseStep / 2)) : 2);
 
       const startPrice = Math.floor(c.low / priceStep) * priceStep;
       const endPrice = Math.ceil(c.high / priceStep) * priceStep;
 
-      const bins: FootprintBin[] = [];
+      const rawBins: { price: number; buyVol: number; sellVol: number; totalVol: number }[] = [];
       let maxBinVol = 0;
       let pocPrice = startPrice;
+      let totalCandleVol = c.volume;
 
       for (let p = endPrice; p >= startPrice; p -= priceStep) {
         const binPrice = Math.round(p * 100) / 100;
         
-        // Simulating Bid x Ask volume distribution based on price location in candle
         const pct = (binPrice - c.low) / range;
         const binVolRatio = Math.sin(pct * Math.PI) + 0.1;
         const binTotalVol = Math.round((c.volume / Math.max(3, (endPrice - startPrice) / priceStep)) * binVolRatio);
@@ -153,28 +225,59 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
           pocPrice = binPrice;
         }
 
-        bins.push({
+        rawBins.push({
           price: binPrice,
-          buyVolume: buyVol,
-          sellVolume: sellVol,
-          totalVolume: binTotalVol,
-          isPoc: false
+          buyVol,
+          sellVol,
+          totalVol: binTotalVol
         });
       }
 
-      // Mark candle POC
-      bins.forEach(b => {
-        if (b.price === pocPrice) b.isPoc = true;
+      // Calculate Value Area Bins (target volume = settings.valueAreaPercent % of total)
+      const targetVaVol = (totalCandleVol * settings.valueAreaPercent) / 100;
+      let accumulatedVaVol = 0;
+      const vaPrices = new Set<number>();
+
+      // Sort bins by total volume descending to identify Value Area
+      const sortedByVol = [...rawBins].sort((a, b) => b.totalVol - a.totalVol);
+      for (const b of sortedByVol) {
+        vaPrices.add(b.price);
+        accumulatedVaVol += b.totalVol;
+        if (accumulatedVaVol >= targetVaVol) break;
+      }
+
+      // Build final FootprintBins with POC, Value Area, Imbalance, and Unfinished Auction flags
+      const imbalanceRatio = settings.imbalancePercent / 100;
+      const bins: FootprintBin[] = rawBins.map((rb, idx) => {
+        const isPoc = rb.price === pocPrice;
+        const isValueArea = vaPrices.has(rb.price);
+
+        const isImbalanceBuy = rb.buyVol >= rb.sellVol * imbalanceRatio && rb.buyVol >= settings.minimalVolume;
+        const isImbalanceSell = rb.sellVol >= rb.buyVol * imbalanceRatio && rb.sellVol >= settings.minimalVolume;
+
+        const isUnfinishedHigh = idx === 0 && rb.buyVol > 0;
+        const isUnfinishedLow = idx === rawBins.length - 1 && rb.sellVol > 0;
+
+        return {
+          price: rb.price,
+          buyVolume: rb.buyVol,
+          sellVolume: rb.sellVol,
+          totalVolume: rb.totalVol,
+          isPoc,
+          isValueArea,
+          isImbalanceBuy,
+          isImbalanceSell,
+          isUnfinishedHigh,
+          isUnfinishedLow
+        };
       });
 
-      // Calculate candle delta metrics
       const deltaRatio = isBull ? 0.32 : -0.32;
       const candleDelta = Math.round(c.volume * deltaRatio);
       const minDelta = Math.round(-Math.abs(c.volume * 0.12));
       const maxDelta = Math.round(Math.abs(c.volume * (isBull ? 0.45 : 0.15)));
 
       cumDelta += candleDelta;
-      cumVolume += c.volume;
 
       const d = new Date(c.time * 1000);
       const timeLabel = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
@@ -196,7 +299,7 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
         bottomWickVol: Math.round(c.volume * 0.04)
       };
     });
-  }, [candles]);
+  }, [candles, settings]);
 
   // Resize canvas container listener
   useEffect(() => {
@@ -218,14 +321,13 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
     };
   }, []);
 
-  // Handle Mouse Wheel Zoom
+  // Zoom & Pan Handlers
   const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
     e.preventDefault();
     const zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
     setZoomLevel((prev) => Math.min(4.0, Math.max(0.4, prev * zoomFactor)));
   };
 
-  // Handle Drag & Pan
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     setIsDragging(true);
     setDragStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
@@ -240,7 +342,7 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
     setPanOffset({ x: 0, y: 0 });
   };
 
-  // Canvas Renderer matching TradingView Volume Footprint Chart (media_1789214714683.png)
+  // Canvas Renderer respecting Footprint Settings
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || footprintCandles.length === 0 || dimensions.width === 0) return;
@@ -266,8 +368,8 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
     ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, width, height);
 
-    // Reserved bottom space for summary table (Volume, Delta, Min Delta, Max Delta, Session CVD)
-    const tableHeight = 150;
+    // Reserved bottom space for summary table
+    const tableHeight = settings.showSummaryInfo ? 150 : 30;
     const padding = { top: 40, bottom: tableHeight + 35, left: 15, right: 85 };
     const chartWidth = width - padding.left - padding.right;
     const chartHeight = height - padding.top - padding.bottom;
@@ -336,7 +438,7 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
     const candleCount = footprintCandles.length;
     const colGap = Math.max(6, 12 * zoomLevel);
     const availWidth = chartWidth - (candleCount - 1) * colGap;
-    const colWidth = Math.max(35, (availWidth / candleCount) * zoomLevel);
+    const colWidth = Math.max(38, (availWidth / candleCount) * zoomLevel);
 
     ctx.save();
     ctx.beginPath();
@@ -370,7 +472,7 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
       ctx.lineTo(colCenterX, lowY);
       ctx.stroke();
 
-      // Top & Bottom Wick Volume Labels (outside candle body)
+      // Top & Bottom Wick Volume Labels
       ctx.font = 'bold 9px "JetBrains Mono", monospace';
       ctx.textAlign = 'center';
       ctx.fillStyle = textColor;
@@ -392,6 +494,9 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
         const binStep = bins.length > 1 ? Math.abs(bins[0].price - bins[1].price) : 5;
         const rowHeight = Math.max(12, ((binStep / priceRange) * chartHeight));
 
+        // Calculate max bin volume in this candle for gradient scaling
+        const maxVolInCandle = Math.max(...bins.map(b => b.totalVolume), 1);
+
         bins.forEach((bin) => {
           const binY = getPriceY(bin.price) - rowHeight / 2;
           if (binY < padding.top || binY > height - padding.bottom) return;
@@ -399,115 +504,162 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
           const blockWidth = colWidth - 4;
           const blockX = colStartX + 2;
 
-          if (bin.isPoc) {
-            // POC Block: Solid BLACK background block with white text (exact match to TradingView screenshot)
-            ctx.fillStyle = '#000000';
+          // Gradient opacity calculation
+          const alpha = settings.applyGradient 
+            ? Math.max(0.4, 0.4 + 0.6 * (bin.totalVolume / maxVolInCandle)) 
+            : 1.0;
+
+          if (bin.isPoc && settings.pocEnabled) {
+            // POC Block: Uses user-configured POC color (default solid black)
+            ctx.fillStyle = settings.pocColor;
             ctx.fillRect(blockX, binY, blockWidth, Math.max(10, rowHeight - 1));
 
             ctx.fillStyle = '#ffffff';
             ctx.font = 'bold 9px "JetBrains Mono", monospace';
             ctx.textAlign = 'center';
-            ctx.fillText(formatVolumeShort(bin.totalVolume), colCenterX, binY + rowHeight / 2 + 3);
+
+            let labelText = formatVolumeShort(bin.totalVolume);
+            if (settings.display === 'Bid / Ask') {
+              labelText = `${formatVolumeShort(bin.buyVolume)}x${formatVolumeShort(bin.sellVolume)}`;
+            } else if (settings.display === 'Delta') {
+              labelText = formatDelta(bin.buyVolume - bin.sellVolume);
+            }
+            ctx.fillText(labelText, colCenterX, binY + rowHeight / 2 + 3);
           } else {
-            // Bullish Green block or Bearish Red block
+            // Standard Bullish / Bearish Block
             const isBuyDominant = bin.buyVolume >= bin.sellVolume;
-            const blockColor = isBuyDominant ? '#089981' : '#e23636';
+            const baseColor = isBuyDominant ? settings.buyBgColor : settings.sellBgColor;
 
-            ctx.fillStyle = blockColor;
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = baseColor;
             ctx.fillRect(blockX, binY, blockWidth, Math.max(10, rowHeight - 1));
+            ctx.restore();
 
+            // Value Area Shading border (if enabled)
+            if (settings.valueAreaEnabled && bin.isValueArea) {
+              ctx.strokeStyle = 'rgba(251, 191, 36, 0.4)';
+              ctx.lineWidth = 1;
+              ctx.strokeRect(blockX, binY, blockWidth, Math.max(10, rowHeight - 1));
+            }
+
+            // Imbalance Highlight
+            if (settings.imbalanceHighlighting && (bin.isImbalanceBuy || bin.isImbalanceSell)) {
+              const imbColor = bin.isImbalanceBuy ? settings.imbalanceColors[0] : settings.imbalanceColors[1];
+              ctx.strokeStyle = imbColor;
+              ctx.lineWidth = 2;
+              ctx.strokeRect(blockX, binY, blockWidth, Math.max(10, rowHeight - 1));
+            }
+
+            // Unfinished Auction Highlight (Magenta / Cyan outline)
+            if (settings.unfinishedAuction && (bin.isUnfinishedHigh || bin.isUnfinishedLow)) {
+              ctx.strokeStyle = bin.isUnfinishedHigh ? settings.unfinishedColors[0] : settings.unfinishedColors[1];
+              ctx.lineWidth = 2;
+              ctx.strokeRect(blockX, binY, blockWidth, Math.max(10, rowHeight - 1));
+            }
+
+            // Label Text based on settings.display
             ctx.fillStyle = '#ffffff';
             ctx.font = 'bold 9px "JetBrains Mono", monospace';
             ctx.textAlign = 'center';
-            ctx.fillText(formatVolumeShort(bin.totalVolume), colCenterX, binY + rowHeight / 2 + 3);
+
+            let labelText = formatVolumeShort(bin.totalVolume);
+            if (settings.display === 'Bid / Ask') {
+              labelText = `${formatVolumeShort(bin.buyVolume)}x${formatVolumeShort(bin.sellVolume)}`;
+            } else if (settings.display === 'Delta') {
+              labelText = formatDelta(bin.buyVolume - bin.sellVolume);
+            }
+            ctx.fillText(labelText, colCenterX, binY + rowHeight / 2 + 3);
           }
         });
       }
     });
 
-    // Orderflow Levels Badge (Matching TradingView screenshot "ORDERFLOW LEVELS - MARSHALL")
+    // Orderflow Levels Badge
     ctx.fillStyle = '#f59e0b';
     ctx.font = 'bold 10px "JetBrains Mono", monospace';
     ctx.textAlign = 'right';
     ctx.fillText('ORDERFLOW LEVELS - MARSHALL', width - padding.right - 12, height - padding.bottom - 16);
 
-    ctx.restore(); // Restore clipping region
+    ctx.restore();
 
     // ----------------------------------------------------
-    // RENDER CANDLE SUMMARY STATISTICS TABLE BELOW CHART
+    // RENDER CANDLE SUMMARY STATISTICS TABLE (IF ENABLED)
     // ----------------------------------------------------
-    const tableStartY = height - padding.bottom + 10;
-    const rowHeight = 22;
+    if (settings.showSummaryInfo) {
+      const tableStartY = height - padding.bottom + 10;
+      const rowHeight = 22;
 
-    const labels = [
-      { key: 'volume', title: 'Volume', color: textColor },
-      { key: 'delta', title: 'Delta', color: textColor },
-      { key: 'minDelta', title: 'Min delta', color: textColor },
-      { key: 'maxDelta', title: 'Max delta', color: textColor },
-      { key: 'cvd', title: 'Session CVD', color: textColor },
-    ];
+      const labels = [
+        { key: 'volume', title: 'Volume' },
+        { key: 'delta', title: 'Delta' },
+        { key: 'minDelta', title: 'Min delta' },
+        { key: 'maxDelta', title: 'Max delta' },
+        { key: 'cvd', title: 'Session CVD' },
+      ];
 
-    // Left row titles
-    ctx.font = 'bold 10px "JetBrains Mono", monospace';
-    ctx.textAlign = 'left';
-    labels.forEach((lbl, rIdx) => {
-      const y = tableStartY + rIdx * rowHeight + 14;
-      ctx.fillStyle = isLight ? '#475569' : '#94a3b8';
-      ctx.fillText(lbl.title, width - padding.right + 8, y);
-    });
-
-    footprintCandles.forEach((c, idx) => {
-      const colStartX = padding.left + panOffset.x + idx * (colWidth + colGap);
-      const colEndX = colStartX + colWidth;
-      const colCenterX = colStartX + colWidth / 2;
-
-      if (colEndX < padding.left || colStartX > width - padding.right) return;
-
-      // X-Axis Timestamp below table
-      ctx.fillStyle = isLight ? '#334155' : '#cbd5e1';
+      // Left row titles
       ctx.font = 'bold 10px "JetBrains Mono", monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText(c.timeLabel, colCenterX, tableStartY + 5 * rowHeight + 16);
+      ctx.textAlign = 'left';
+      labels.forEach((lbl, rIdx) => {
+        const y = tableStartY + rIdx * rowHeight + 14;
+        ctx.fillStyle = isLight ? '#475569' : '#94a3b8';
+        ctx.fillText(lbl.title, width - padding.right + 8, y);
+      });
 
-      // Row 1: Volume
-      const r1Y = tableStartY + 0 * rowHeight;
-      ctx.fillStyle = isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.04)';
-      ctx.fillRect(colStartX, r1Y, colWidth, rowHeight - 2);
-      ctx.fillStyle = isLight ? '#0f172a' : '#ffffff';
-      ctx.font = 'bold 10px "JetBrains Mono", monospace';
-      ctx.fillText(formatVolumeShort(c.totalVolume), colCenterX, r1Y + 14);
+      footprintCandles.forEach((c, idx) => {
+        const colStartX = padding.left + panOffset.x + idx * (colWidth + colGap);
+        const colEndX = colStartX + colWidth;
+        const colCenterX = colStartX + colWidth / 2;
 
-      // Row 2: Delta (Green if positive, Red if negative)
-      const r2Y = tableStartY + 1 * rowHeight;
-      const isPosDelta = c.delta >= 0;
-      ctx.fillStyle = isPosDelta ? '#089981' : '#e23636';
-      ctx.fillRect(colStartX, r2Y, colWidth, rowHeight - 2);
-      ctx.fillStyle = '#ffffff';
-      ctx.fillText(formatDelta(c.delta), colCenterX, r2Y + 14);
+        if (colEndX < padding.left || colStartX > width - padding.right) return;
 
-      // Row 3: Min Delta (Red background)
-      const r3Y = tableStartY + 2 * rowHeight;
-      ctx.fillStyle = '#e23636';
-      ctx.fillRect(colStartX, r3Y, colWidth, rowHeight - 2);
-      ctx.fillStyle = '#ffffff';
-      ctx.fillText(formatDelta(c.minDelta), colCenterX, r3Y + 14);
+        // X-Axis Timestamp below table
+        ctx.fillStyle = isLight ? '#334155' : '#cbd5e1';
+        ctx.font = 'bold 10px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(c.timeLabel, colCenterX, tableStartY + 5 * rowHeight + 16);
 
-      // Row 4: Max Delta (Green background)
-      const r4Y = tableStartY + 3 * rowHeight;
-      ctx.fillStyle = '#089981';
-      ctx.fillRect(colStartX, r4Y, colWidth, rowHeight - 2);
-      ctx.fillStyle = '#ffffff';
-      ctx.fillText(formatDelta(c.maxDelta), colCenterX, r4Y + 14);
+        // Row 1: Volume
+        const r1Y = tableStartY + 0 * rowHeight;
+        ctx.fillStyle = isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.04)';
+        ctx.fillRect(colStartX, r1Y, colWidth, rowHeight - 2);
+        ctx.fillStyle = isLight ? '#0f172a' : '#ffffff';
+        ctx.font = 'bold 10px "JetBrains Mono", monospace';
+        ctx.fillText(formatVolumeShort(c.totalVolume), colCenterX, r1Y + 14);
 
-      // Row 5: Session CVD
-      const r5Y = tableStartY + 4 * rowHeight;
-      ctx.fillStyle = isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.04)';
-      ctx.fillRect(colStartX, r5Y, colWidth, rowHeight - 2);
-      ctx.fillStyle = isLight ? '#0f172a' : '#ffffff';
-      ctx.fillText(formatVolumeShort(c.sessionCvd), colCenterX, r5Y + 14);
-    });
+        // Row 2: Delta
+        const r2Y = tableStartY + 1 * rowHeight;
+        const isPosDelta = c.delta >= 0;
+        ctx.fillStyle = isPosDelta ? '#089981' : '#e23636';
+        ctx.fillRect(colStartX, r2Y, colWidth, rowHeight - 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(formatDelta(c.delta), colCenterX, r2Y + 14);
 
-  }, [footprintCandles, dimensions, theme, zoomLevel, panOffset]);
+        // Row 3: Min Delta
+        const r3Y = tableStartY + 2 * rowHeight;
+        ctx.fillStyle = '#e23636';
+        ctx.fillRect(colStartX, r3Y, colWidth, rowHeight - 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(formatDelta(c.minDelta), colCenterX, r3Y + 14);
+
+        // Row 4: Max Delta
+        const r4Y = tableStartY + 3 * rowHeight;
+        ctx.fillStyle = '#089981';
+        ctx.fillRect(colStartX, r4Y, colWidth, rowHeight - 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(formatDelta(c.maxDelta), colCenterX, r4Y + 14);
+
+        // Row 5: Session CVD
+        const r5Y = tableStartY + 4 * rowHeight;
+        ctx.fillStyle = isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.04)';
+        ctx.fillRect(colStartX, r5Y, colWidth, rowHeight - 2);
+        ctx.fillStyle = isLight ? '#0f172a' : '#ffffff';
+        ctx.fillText(formatVolumeShort(c.sessionCvd), colCenterX, r5Y + 14);
+      });
+    }
+
+  }, [footprintCandles, dimensions, theme, zoomLevel, panOffset, settings]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -528,14 +680,14 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
   return (
     <div className="glass-panel animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%', padding: '16px', boxSizing: 'border-box' }}>
       
-      {/* Controls Toolbar matching TradingView Title: Nifty 50 Index · 5 · NSE · Volume footprint */}
+      {/* Controls Toolbar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', background: 'rgba(15, 23, 42, 0.6)', padding: '12px 16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
         
         {/* Preset Symbols & Search */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ fontSize: '13px', fontWeight: '900', color: 'white' }}>
-              {activeSymbolInfo.displayName || symbol} · {timeframe}m · Volume footprint [Buy and sell]
+              {activeSymbolInfo.displayName || symbol} · {timeframe}m · Volume footprint [{settings.display}]
             </span>
           </div>
 
@@ -598,10 +750,10 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
           </form>
         </div>
 
-        {/* Controls (Timeframe, Point/Ticks, Theme, Refresh) */}
+        {/* Controls (Timeframe, Point/Ticks, Theme, Settings, Refresh) */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
           
-          {/* Unit Toggle: Point / Ticks (matching top right button in screenshot) */}
+          {/* Unit Toggle: Point / Ticks */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(0,0,0,0.3)', padding: '2px', borderRadius: '6px' }}>
             <button
               onClick={() => setUnitMode(unitMode === 'point' ? 'ticks' : 'point')}
@@ -642,7 +794,7 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
             ))}
           </div>
 
-          {/* Theme Toggle (Light / Dark) */}
+          {/* Theme Toggle */}
           <button
             onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
             style={{
@@ -657,6 +809,28 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
             }}
           >
             🎨 {theme === 'light' ? 'TradingView White' : 'Dark Slate'}
+          </button>
+
+          {/* Settings Modal Toggle Gear Button */}
+          <button
+            onClick={() => setIsSettingsOpen(true)}
+            style={{
+              background: 'rgba(59, 130, 246, 0.2)',
+              border: '1px solid #3b82f6',
+              color: '#60a5fa',
+              padding: '4px 10px',
+              borderRadius: '6px',
+              fontSize: '11px',
+              fontWeight: '700',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+            title="Footprint Settings"
+          >
+            <Settings size={14} />
+            <span>Settings</span>
           </button>
 
           {/* Refresh */}
@@ -732,6 +906,486 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
           style={{ cursor: isDragging ? 'grabbing' : 'grab', display: 'block' }}
         />
       </div>
+
+      {/* ---------------------------------------------------- */}
+      {/* TRADINGVIEW VOLUME FOOTPRINT SETTINGS MODAL DIALOG   */}
+      {/* Matching user screenshot media_1789214986052.png     */}
+      {/* ---------------------------------------------------- */}
+      {isSettingsOpen && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.65)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backdropFilter: 'blur(4px)'
+        }}>
+          <div style={{
+            width: '680px',
+            maxHeight: '85vh',
+            backgroundColor: '#ffffff',
+            color: '#1e293b',
+            borderRadius: '12px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2)',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+          }}>
+            
+            {/* Modal Header */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '16px 20px',
+              borderBottom: '1px solid #e2e8f0'
+            }}>
+              <h2 style={{ fontSize: '18px', fontWeight: '700', margin: 0, color: '#0f172a' }}>Settings</h2>
+              <button
+                onClick={() => setIsSettingsOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: '4px' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Content Body with Sidebar */}
+            <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+              
+              {/* Left Sidebar Navigation */}
+              <div style={{
+                width: '180px',
+                backgroundColor: '#f8fafc',
+                borderRight: '1px solid #e2e8f0',
+                padding: '12px 8px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px'
+              }}>
+                {[
+                  { id: 'Symbol', label: 'Symbol', icon: '🔊' },
+                  { id: 'Status line', label: 'Status line', icon: '📜' },
+                  { id: 'Scales and lines', label: 'Scales and lines', icon: '📐' },
+                  { id: 'Canvas', label: 'Canvas', icon: '🎨' },
+                  { id: 'Trading', label: 'Trading', icon: '📈' },
+                  { id: 'Alerts', label: 'Alerts', icon: '⏰' },
+                  { id: 'Events', label: 'Events', icon: '📅' }
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveSettingsTab(item.id)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      fontWeight: activeSettingsTab === item.id ? '700' : '500',
+                      color: activeSettingsTab === item.id ? '#0f172a' : '#64748b',
+                      backgroundColor: activeSettingsTab === item.id ? '#e2e8f0' : 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <span style={{ fontSize: '14px' }}>{item.icon}</span>
+                    <span>{item.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Right Settings Form Area */}
+              <div style={{ flex: 1, padding: '20px 24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                
+                {/* SECTION 1: VOLUME FOOTPRINT */}
+                <div>
+                  <h3 style={{ fontSize: '11px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 14px 0' }}>
+                    VOLUME FOOTPRINT
+                  </h3>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px' }}>
+                    
+                    {/* Row size */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <label style={{ fontWeight: '500', color: '#334155' }}>Row size</label>
+                      <select
+                        value={settings.rowSize}
+                        onChange={(e) => setSettings({ ...settings, rowSize: e.target.value as any })}
+                        style={{ width: '160px', padding: '6px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', backgroundColor: '#ffffff' }}
+                      >
+                        <option value="Manual">Manual</option>
+                        <option value="Auto">Auto</option>
+                      </select>
+                    </div>
+
+                    {/* Ticks per row */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <label style={{ fontWeight: '500', color: '#334155' }}>Ticks per row</label>
+                      <input
+                        type="number"
+                        value={settings.ticksPerRow}
+                        onChange={(e) => setSettings({ ...settings, ticksPerRow: Number(e.target.value) || 100 })}
+                        style={{ width: '160px', padding: '6px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }}
+                      />
+                    </div>
+
+                    {/* Display */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <label style={{ fontWeight: '500', color: '#334155' }}>Display</label>
+                      <select
+                        value={settings.display}
+                        onChange={(e) => setSettings({ ...settings, display: e.target.value as any })}
+                        style={{ width: '160px', padding: '6px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', backgroundColor: '#ffffff' }}
+                      >
+                        <option value="Profile">Profile</option>
+                        <option value="Bid / Ask">Bid / Ask</option>
+                        <option value="Delta">Delta</option>
+                        <option value="Total">Total</option>
+                      </select>
+                    </div>
+
+                    {/* Type */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <label style={{ fontWeight: '500', color: '#334155' }}>Type</label>
+                      <select
+                        value={settings.type}
+                        onChange={(e) => setSettings({ ...settings, type: e.target.value as any })}
+                        style={{ width: '160px', padding: '6px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', backgroundColor: '#ffffff' }}
+                      >
+                        <option value="Buy and sell">Buy and sell</option>
+                        <option value="Delta">Delta</option>
+                        <option value="Total">Total</option>
+                      </select>
+                    </div>
+
+                    {/* Apply gradient to background */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input
+                        type="checkbox"
+                        id="applyGradient"
+                        checked={settings.applyGradient}
+                        onChange={(e) => setSettings({ ...settings, applyGradient: e.target.checked })}
+                        style={{ width: '16px', height: '16px', accentColor: '#0f172a', cursor: 'pointer' }}
+                      />
+                      <label htmlFor="applyGradient" style={{ fontWeight: '500', color: '#334155', cursor: 'pointer' }}>
+                        Apply gradient to background
+                      </label>
+                      <Info size={14} style={{ color: '#94a3b8' }} />
+                    </div>
+
+                    {/* Sell background color swatches */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: '24px' }}>
+                      <span style={{ color: '#64748b', fontSize: '12px' }}>Sell background</span>
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        {['#fca5a5', '#ef4444', '#dc2626', '#991b1b'].map((c) => (
+                          <div
+                            key={c}
+                            onClick={() => setSettings({ ...settings, sellBgColor: c })}
+                            style={{
+                              width: '20px',
+                              height: '20px',
+                              borderRadius: '4px',
+                              backgroundColor: c,
+                              cursor: 'pointer',
+                              border: settings.sellBgColor === c ? '2px solid #0f172a' : '1px solid #cbd5e1'
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Buy background color swatches */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: '24px' }}>
+                      <span style={{ color: '#64748b', fontSize: '12px' }}>Buy background</span>
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        {['#5eead4', '#14b8a6', '#0f766e', '#134e4a'].map((c) => (
+                          <div
+                            key={c}
+                            onClick={() => setSettings({ ...settings, buyBgColor: c })}
+                            style={{
+                              width: '20px',
+                              height: '20px',
+                              borderRadius: '4px',
+                              backgroundColor: c,
+                              cursor: 'pointer',
+                              border: settings.buyBgColor === c ? '2px solid #0f172a' : '1px solid #cbd5e1'
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Unfinished auction */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <input
+                          type="checkbox"
+                          id="unfinishedAuction"
+                          checked={settings.unfinishedAuction}
+                          onChange={(e) => setSettings({ ...settings, unfinishedAuction: e.target.checked })}
+                          style={{ width: '16px', height: '16px', accentColor: '#0f172a', cursor: 'pointer' }}
+                        />
+                        <label htmlFor="unfinishedAuction" style={{ fontWeight: '500', color: '#334155', cursor: 'pointer' }}>
+                          Unfinished auction
+                        </label>
+                      </div>
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <div style={{ width: '20px', height: '20px', borderRadius: '4px', backgroundColor: '#d946ef' }} />
+                        <div style={{ width: '20px', height: '20px', borderRadius: '4px', backgroundColor: '#06b6d4' }} />
+                        <HelpCircle size={14} style={{ color: '#94a3b8' }} />
+                      </div>
+                    </div>
+
+                    {/* Value area % */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <input
+                          type="checkbox"
+                          id="valueAreaEnabled"
+                          checked={settings.valueAreaEnabled}
+                          onChange={(e) => setSettings({ ...settings, valueAreaEnabled: e.target.checked })}
+                          style={{ width: '16px', height: '16px', accentColor: '#0f172a', cursor: 'pointer' }}
+                        />
+                        <label htmlFor="valueAreaEnabled" style={{ fontWeight: '500', color: '#334155', cursor: 'pointer' }}>
+                          Value area
+                        </label>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <input
+                          type="number"
+                          value={settings.valueAreaPercent}
+                          onChange={(e) => setSettings({ ...settings, valueAreaPercent: Number(e.target.value) || 70 })}
+                          style={{ width: '120px', padding: '6px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                        />
+                        <span style={{ fontSize: '13px', color: '#64748b' }}>%</span>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '4px 0' }} />
+
+                {/* SECTION 2: LABELS */}
+                <div>
+                  <h3 style={{ fontSize: '11px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 14px 0' }}>
+                    LABELS
+                  </h3>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px' }}>
+                    
+                    {/* POC Color */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <input
+                          type="checkbox"
+                          id="pocEnabled"
+                          checked={settings.pocEnabled}
+                          onChange={(e) => setSettings({ ...settings, pocEnabled: e.target.checked })}
+                          style={{ width: '16px', height: '16px', accentColor: '#0f172a', cursor: 'pointer' }}
+                        />
+                        <label htmlFor="pocEnabled" style={{ fontWeight: '500', color: '#334155', cursor: 'pointer' }}>
+                          POC
+                        </label>
+                      </div>
+                      <div
+                        onClick={() => setSettings({ ...settings, pocColor: settings.pocColor === '#000000' ? '#1e293b' : '#000000' })}
+                        style={{
+                          width: '24px',
+                          height: '24px',
+                          borderRadius: '4px',
+                          backgroundColor: settings.pocColor,
+                          border: '1px solid #cbd5e1',
+                          cursor: 'pointer'
+                        }}
+                      />
+                    </div>
+
+                    {/* Show summary Info */}
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '6px' }}>
+                        <input
+                          type="checkbox"
+                          id="showSummaryInfo"
+                          checked={settings.showSummaryInfo}
+                          onChange={(e) => setSettings({ ...settings, showSummaryInfo: e.target.checked })}
+                          style={{ width: '16px', height: '16px', accentColor: '#0f172a', cursor: 'pointer' }}
+                        />
+                        <label htmlFor="showSummaryInfo" style={{ fontWeight: '500', color: '#334155', cursor: 'pointer' }}>
+                          Show summary Info
+                        </label>
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '200px' }}>
+                        <select
+                          value={settings.summaryDisplay}
+                          onChange={(e) => setSettings({ ...settings, summaryDisplay: e.target.value as any })}
+                          style={{ width: '100%', padding: '6px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', backgroundColor: '#ffffff' }}
+                        >
+                          <option value="Table">Table</option>
+                          <option value="Below">Below</option>
+                          <option value="Off">Off</option>
+                        </select>
+                        <select
+                          value="all"
+                          style={{ width: '100%', padding: '6px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', backgroundColor: '#ffffff' }}
+                        >
+                          <option value="all">Volume, Delta, Min ...</option>
+                        </select>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '4px 0' }} />
+
+                {/* SECTION 3: IMBALANCE */}
+                <div>
+                  <h3 style={{ fontSize: '11px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 14px 0' }}>
+                    IMBALANCE
+                  </h3>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px' }}>
+                    
+                    {/* Imbalance % */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <label style={{ fontWeight: '500', color: '#334155' }}>Imbalance</label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <input
+                          type="number"
+                          value={settings.imbalancePercent}
+                          onChange={(e) => setSettings({ ...settings, imbalancePercent: Number(e.target.value) || 300 })}
+                          style={{ width: '160px', padding: '6px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                        />
+                        <span style={{ fontSize: '13px', color: '#64748b' }}>%</span>
+                      </div>
+                    </div>
+
+                    {/* Highlighting */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <input
+                          type="checkbox"
+                          id="imbalanceHighlighting"
+                          checked={settings.imbalanceHighlighting}
+                          onChange={(e) => setSettings({ ...settings, imbalanceHighlighting: e.target.checked })}
+                          style={{ width: '16px', height: '16px', accentColor: '#0f172a', cursor: 'pointer' }}
+                        />
+                        <label htmlFor="imbalanceHighlighting" style={{ fontWeight: '500', color: '#334155', cursor: 'pointer' }}>
+                          Highlighting
+                        </label>
+                      </div>
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <div style={{ width: '20px', height: '20px', borderRadius: '4px', backgroundColor: '#089981' }} />
+                        <div style={{ width: '20px', height: '20px', borderRadius: '4px', backgroundColor: '#e23636' }} />
+                      </div>
+                    </div>
+
+                    {/* Stacked levels */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <input
+                          type="checkbox"
+                          id="stackedLevelsEnabled"
+                          checked={settings.stackedLevelsEnabled}
+                          onChange={(e) => setSettings({ ...settings, stackedLevelsEnabled: e.target.checked })}
+                          style={{ width: '16px', height: '16px', accentColor: '#0f172a', cursor: 'pointer' }}
+                        />
+                        <label htmlFor="stackedLevelsEnabled" style={{ fontWeight: '500', color: '#334155', cursor: 'pointer' }}>
+                          Stacked levels
+                        </label>
+                      </div>
+                      <input
+                        type="number"
+                        value={settings.stackedLevelsCount}
+                        onChange={(e) => setSettings({ ...settings, stackedLevelsCount: Number(e.target.value) || 3 })}
+                        style={{ width: '160px', padding: '6px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', backgroundColor: '#f1f5f9' }}
+                      />
+                    </div>
+
+                    {/* Minimal volume */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <label style={{ fontWeight: '500', color: '#334155' }}>Minimal volume</label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        value={settings.minimalVolume}
+                        onChange={(e) => setSettings({ ...settings, minimalVolume: Number(e.target.value) || 0.0 })}
+                        style={{ width: '160px', padding: '6px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                      />
+                    </div>
+
+                    {/* Ignore zeros */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input
+                        type="checkbox"
+                        id="ignoreZeros"
+                        checked={settings.ignoreZeros}
+                        onChange={(e) => setSettings({ ...settings, ignoreZeros: e.target.checked })}
+                        style={{ width: '16px', height: '16px', accentColor: '#0f172a', cursor: 'pointer' }}
+                      />
+                      <label htmlFor="ignoreZeros" style={{ fontWeight: '500', color: '#334155', cursor: 'pointer' }}>
+                        Ignore zeros
+                      </label>
+                      <Info size={14} style={{ color: '#94a3b8' }} />
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              gap: '10px',
+              padding: '14px 20px',
+              borderTop: '1px solid #e2e8f0',
+              backgroundColor: '#ffffff'
+            }}>
+              <button
+                onClick={() => setIsSettingsOpen(false)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  border: '1px solid #cbd5e1',
+                  backgroundColor: '#ffffff',
+                  color: '#334155',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => setIsSettingsOpen(false)}
+                style={{
+                  padding: '8px 20px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  backgroundColor: '#2563eb',
+                  color: '#ffffff',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                Ok
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );
