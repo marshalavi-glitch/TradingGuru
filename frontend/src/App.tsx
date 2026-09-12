@@ -24,6 +24,7 @@ import { OrderFlowContainer } from './components/OrderFlowContainer';
 import { OrderFlowFootprintContainer } from './components/OrderFlowFootprintContainer';
 import { CvdAdvContainer } from './components/CvdAdvContainer';
 import { HeatMapContainer } from './components/HeatMapContainer';
+import { MarketProfileContainer } from './components/MarketProfileContainer';
 
 function App() {
   const [symbol, setSymbol] = useState('NSE:NIFTY');
@@ -34,7 +35,7 @@ function App() {
   const [refreshKey, setRefreshKey] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'chart' | 'bhaichara' | 'dada_thoughts' | 'fifteen_min' | 'scanner' | 'options' | 'signals' | 'doji' | 'doji_novol' | 'volume' | 'opening_bias' | 'hourly_updates' | 'backtest_results' | 'confluences' | 'early_picks' | 'nr7_breakout' | 'order_flow' | 'order_flow_footprint' | 'cvd_adv' | 'heatmap'>('bhaichara');
+  const [activeTab, setActiveTab] = useState<'chart' | 'bhaichara' | 'dada_thoughts' | 'fifteen_min' | 'scanner' | 'options' | 'signals' | 'doji' | 'doji_novol' | 'volume' | 'opening_bias' | 'hourly_updates' | 'backtest_results' | 'confluences' | 'early_picks' | 'nr7_breakout' | 'order_flow' | 'order_flow_footprint' | 'cvd_adv' | 'heatmap' | 'market_profile'>('bhaichara');
 
   // Subscribe to symbol data via TradingView WebSocket & REST fallback
   useEffect(() => {
@@ -588,11 +589,39 @@ function App() {
         >
           🔥 Heat Map
         </button>
+        <button
+          onClick={() => setActiveTab('market_profile')}
+          style={{
+            background: activeTab === 'market_profile' ? 'rgba(0, 240, 255, 0.22)' : 'transparent',
+            border: 'none',
+            borderBottom: activeTab === 'market_profile' ? '2px solid #00f0ff' : '2px solid transparent',
+            color: activeTab === 'market_profile' ? '#00f0ff' : 'var(--text-primary)',
+            padding: '8px 16px',
+            fontSize: '14px',
+            fontWeight: '700',
+            cursor: 'pointer',
+            borderTopLeftRadius: '6px',
+            borderTopRightRadius: '6px',
+            transition: 'all 0.15s',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+        >
+          🏛️ Market Profile
+        </button>
       </div>
 
       {/* Main Workspace */}
       <div style={{ flex: '1', display: 'flex', flexDirection: 'column', minHeight: '0' }}>
-        {activeTab === 'heatmap' ? (
+        {activeTab === 'market_profile' ? (
+          <TabErrorBoundary tabName="Market Profile">
+            <MarketProfileContainer
+              onSymbolSelect={setSymbol}
+              onSwitchToChart={() => setActiveTab('chart')}
+            />
+          </TabErrorBoundary>
+        ) : activeTab === 'heatmap' ? (
           <TabErrorBoundary tabName="Heat Map">
             <HeatMapContainer
               onSymbolSelect={setSymbol}
