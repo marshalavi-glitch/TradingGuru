@@ -790,6 +790,21 @@ const RenderPriceCandlesticksChart: React.FC<{ candles: Candle[] }> = ({ candles
   const priceHeight = 135;
   const padding = 16;
 
+  const strongCandleSignals = useMemo(() => {
+    if (!candles || candles.length < 3) return [];
+    const signals: boolean[] = new Array(candles.length).fill(false);
+    for (let i = 2; i < candles.length; i++) {
+      const c = candles[i];
+      const prev1 = candles[i - 1];
+      const prev2 = candles[i - 2];
+      const qualifies = c.close > prev1.high && c.close > prev2.high;
+      if (qualifies && !signals[i - 1]) {
+        signals[i] = true;
+      }
+    }
+    return signals;
+  }, [candles]);
+
   if (!candles || candles.length === 0) return null;
 
   const minPrice = Math.min(...candles.map(c => c.low));
@@ -811,16 +826,19 @@ const RenderPriceCandlesticksChart: React.FC<{ candles: Candle[] }> = ({ candles
             const yOpen = priceHeight - ((c.open - minPrice) / priceRange) * (priceHeight - padding * 2) - padding;
             const yClose = priceHeight - ((c.close - minPrice) / priceRange) * (priceHeight - padding * 2) - padding;
 
+            const isStrongCandle = strongCandleSignals[i] || false;
             const isGreen = c.close >= c.open;
-            const color = isGreen ? '#22c55e' : '#ef4444';
+            const color = isStrongCandle ? '#00f2fe' : isGreen ? '#22c55e' : '#ef4444';
+            const strokeColor = isStrongCandle ? '#ffffff' : color;
+            const strokeW = isStrongCandle ? '1.5' : '1';
             const bodyTop = Math.min(yOpen, yClose);
             const bodyHeight = Math.max(Math.abs(yClose - yOpen), 2);
             const barW = Math.max(stepX * 0.6, 3);
 
             return (
               <g key={i}>
-                <line x1={x} y1={yHigh} x2={x} y2={yLow} stroke={color} strokeWidth="1" />
-                <rect x={x - barW / 2} y={bodyTop} width={barW} height={bodyHeight} fill={color} rx="1" />
+                <line x1={x} y1={yHigh} x2={x} y2={yLow} stroke={color} strokeWidth={strokeW} />
+                <rect x={x - barW / 2} y={bodyTop} width={barW} height={bodyHeight} fill={color} stroke={strokeColor} strokeWidth={isStrongCandle ? '1' : '0'} rx="1" />
               </g>
             );
           })}

@@ -127,6 +127,28 @@ export const AdvIndicatorPanel: React.FC<AdvIndicatorPanelProps> = ({ candles, s
     }));
   }, [candles, len, aggregation, priceEnable, baseEnable]);
 
+  // Compute strong candle signals: Close > highs of previous 2 candles (filtering out 2nd consecutive signal)
+  const strongCandleSignals = useMemo(() => {
+    if (!candles || candles.length < 3) return [];
+    const signals: boolean[] = new Array(candles.length).fill(false);
+    for (let i = 2; i < candles.length; i++) {
+      const c = candles[i];
+      const prev1 = candles[i - 1];
+      const prev2 = candles[i - 2];
+      
+      // Close > previous 2 highs (regardless of candle color!)
+      const qualifies = c.close > prev1.high && c.close > prev2.high;
+      
+      if (qualifies) {
+        // The 2nd consecutive candle should NOT be displayed/shown as a signal
+        if (!signals[i - 1]) {
+          signals[i] = true;
+        }
+      }
+    }
+    return signals;
+  }, [candles]);
+
   const width = 800;
   const height = 110;
   const paddingX = 24;
@@ -159,9 +181,11 @@ export const AdvIndicatorPanel: React.FC<AdvIndicatorPanelProps> = ({ candles, s
 
   const latest = chartData[chartData.length - 1];
 
-  // Check if criteria matched on latest candle or recent candles
-  const activeAlertBar = chartData.find(d => (d.base_AD > d.MA_base_price_vol) || (d.MA_AD > d.MA_base_price_vol && d.ch > 0) || (d.AD_ratio >= 0.85 && d.ch > 0));
-  const hasActiveAlert = !!activeAlertBar;
+  // Check if criteria matched on recent candles
+  const hasActiveAlert = chartData.some((_, idx) => {
+    const origIdx = candles.length - chartData.length + idx;
+    return strongCandleSignals[origIdx];
+  });
 
   return (
     <div style={{ background: '#0b0f19', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '0px' }}>
@@ -219,7 +243,7 @@ export const AdvIndicatorPanel: React.FC<AdvIndicatorPanelProps> = ({ candles, s
         </div>
       </div>
 
-      {/* SVG CHART DRAWING (COMPACT 130px HEIGHT FOR ADV CANDLES) */}
+      {/* SVG CHART DRAWING (COMPACT 110px HEIGHT FOR ADV CANDLES) */}
       <div style={{ width: '100%', overflowX: 'auto' }}>
         <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: 'auto', background: '#090d16', borderRadius: '6px' }}>
           {/* Bottom baseline */}
@@ -230,10 +254,10 @@ export const AdvIndicatorPanel: React.FC<AdvIndicatorPanelProps> = ({ candles, s
             const x = paddingX + i * stepX;
             const barW = Math.max(stepX * 0.65, 2);
             
+            const origIdx = candles.length - chartData.length + i;
+            const isStrongCandle = strongCandleSignals[origIdx] || false;
             const isUp = d.ch >= 0;
 
-            const isStrongBullish = d.AD_ratio >= 0.85 && isUp;
-            const isStrongBearish = d.AD_ratio <= -0.85 && !isUp;
             const isCrossover = (d.base_AD > d.MA_base_price_vol) || (d.MA_AD > d.MA_base_price_vol && isUp);
 
             let volColor = isUp ? 'rgba(34, 197, 94, 0.35)' : 'rgba(239, 68, 68, 0.35)';
@@ -241,15 +265,10 @@ export const AdvIndicatorPanel: React.FC<AdvIndicatorPanelProps> = ({ candles, s
             let strokeColor = 'none';
             let strokeW = '0';
 
-            if (isStrongBullish) {
+            if (isStrongCandle) {
               volColor = 'rgba(0, 242, 254, 0.45)';
-              adColor = '#00f2fe';
+              adColor = '#00f2fe'; // Electric Cyan highlight for Strong Candle
               strokeColor = '#00f2fe';
-              strokeW = '2';
-            } else if (isStrongBearish) {
-              volColor = 'rgba(244, 63, 94, 0.45)';
-              adColor = '#f43f5e';
-              strokeColor = '#f43f5e';
               strokeW = '2';
             } else if (isCrossover) {
               volColor = 'rgba(255, 215, 0, 0.35)';
@@ -270,14 +289,14 @@ export const AdvIndicatorPanel: React.FC<AdvIndicatorPanelProps> = ({ candles, s
                 <rect x={x - barW / 2} y={yVol} width={barW} height={volH} fill={volColor} stroke={strokeColor} strokeWidth={strokeW} rx="1" />
                 {/* A/D Inner Column (narrower) */}
                 {adColor !== 'transparent' && (
-                  <rect x={x - barW / 3} y={yAd} width={barW / 1.5} height={adH} fill={adColor} stroke={isStrongBullish ? '#ffffff' : 'none'} strokeWidth={isStrongBullish ? '1' : '0'} rx="1" />
+                  <rect x={x - barW / 3} y={yAd} width={barW / 1.5} height={adH} fill={adColor} stroke={isStrongCandle ? '#ffffff' : 'none'} strokeWidth={isStrongCandle ? '1' : '0'} rx="1" />
                 )}
 
                 {showPerCandleRatios && (
                   <text
                     x={x}
                     y={height - 4}
-                    fill={isStrongBullish ? '#00f2fe' : isStrongBearish ? '#f43f5e' : isUp ? '#4ade80' : '#f87171'}
+                    fill={isStrongCandle ? '#00f2fe' : isUp ? '#4ade80' : '#f87171'}
                     fontSize="5.5"
                     fontWeight="700"
                     textAnchor="end"
