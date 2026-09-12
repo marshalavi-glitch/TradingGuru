@@ -26,6 +26,7 @@ import { CvdAdvContainer } from './components/CvdAdvContainer';
 import { HeatMapContainer } from './components/HeatMapContainer';
 import { MarketProfileContainer } from './components/MarketProfileContainer';
 import { TrumpMoodContainer } from './components/TrumpMoodContainer';
+import { FootprintChartContainer } from './components/FootprintChartContainer';
 
 function App() {
   const [symbol, setSymbol] = useState('NSE:NIFTY');
@@ -36,7 +37,7 @@ function App() {
   const [refreshKey, setRefreshKey] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'chart' | 'bhaichara' | 'dada_thoughts' | 'trump_mood' | 'fifteen_min' | 'scanner' | 'options' | 'signals' | 'doji' | 'doji_novol' | 'volume' | 'opening_bias' | 'hourly_updates' | 'backtest_results' | 'confluences' | 'early_picks' | 'nr7_breakout' | 'order_flow' | 'order_flow_footprint' | 'cvd_adv' | 'heatmap' | 'market_profile'>('bhaichara');
+  const [activeTab, setActiveTab] = useState<'chart' | 'bhaichara' | 'dada_thoughts' | 'trump_mood' | 'fifteen_min' | 'scanner' | 'options' | 'signals' | 'doji' | 'doji_novol' | 'volume' | 'opening_bias' | 'hourly_updates' | 'backtest_results' | 'confluences' | 'early_picks' | 'nr7_breakout' | 'order_flow' | 'order_flow_footprint' | 'cvd_adv' | 'heatmap' | 'market_profile' | 'footprint_chart'>('bhaichara');
 
   // Subscribe to symbol data via TradingView WebSocket & REST fallback
   useEffect(() => {
@@ -632,11 +633,39 @@ function App() {
         >
           🏛️ Market Profile
         </button>
+        <button
+          onClick={() => setActiveTab('footprint_chart')}
+          style={{
+            background: activeTab === 'footprint_chart' ? 'rgba(8, 153, 129, 0.22)' : 'transparent',
+            border: 'none',
+            borderBottom: activeTab === 'footprint_chart' ? '2px solid #089981' : '2px solid transparent',
+            color: activeTab === 'footprint_chart' ? '#34d399' : 'var(--text-primary)',
+            padding: '8px 16px',
+            fontSize: '14px',
+            fontWeight: '800',
+            cursor: 'pointer',
+            borderTopLeftRadius: '6px',
+            borderTopRightRadius: '6px',
+            transition: 'all 0.15s',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+        >
+          👣 Footprint Chart
+        </button>
       </div>
 
       {/* Main Workspace */}
       <div style={{ flex: '1', display: 'flex', flexDirection: 'column', minHeight: '0' }}>
-        {activeTab === 'market_profile' ? (
+        {activeTab === 'footprint_chart' ? (
+          <TabErrorBoundary tabName="Footprint Chart">
+            <FootprintChartContainer
+              onSymbolSelect={setSymbol}
+              onSwitchToChart={() => setActiveTab('chart')}
+            />
+          </TabErrorBoundary>
+        ) : activeTab === 'market_profile' ? (
           <TabErrorBoundary tabName="Market Profile">
             <MarketProfileContainer
               onSymbolSelect={setSymbol}
