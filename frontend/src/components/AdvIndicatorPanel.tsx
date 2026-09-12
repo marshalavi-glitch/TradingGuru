@@ -128,10 +128,10 @@ export const AdvIndicatorPanel: React.FC<AdvIndicatorPanelProps> = ({ candles, s
   }, [candles, len, aggregation, priceEnable, baseEnable]);
 
   const width = 800;
-  const height = 130;
+  const height = 110;
   const paddingX = 24;
-  const baselineY = height - 20; // Bottom baseline at y = 110
-  const usableHeight = height - 32; // Usable height for bars/lines = 98px
+  const baselineY = height - 18; // Bottom baseline at y = 92
+  const usableHeight = height - 28; // Usable height for bars/lines = 82px
 
   if (!advData || advData.length === 0) return null;
 
@@ -164,7 +164,7 @@ export const AdvIndicatorPanel: React.FC<AdvIndicatorPanelProps> = ({ candles, s
   const hasActiveAlert = !!activeAlertBar;
 
   return (
-    <div style={{ background: '#0b0f19', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
+    <div style={{ background: '#0b0f19', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '0px' }}>
       
       {/* PINE SCRIPT CONTROLS HEADER */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>

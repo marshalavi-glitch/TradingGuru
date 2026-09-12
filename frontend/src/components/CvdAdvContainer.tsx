@@ -486,10 +486,10 @@ export const CvdAdvContainer: React.FC<CvdAdvContainerProps> = ({ onSymbolSelect
           background: 'rgba(15, 23, 42, 0.85)',
           border: '1px solid rgba(255, 255, 255, 0.1)',
           borderRadius: '12px',
-          padding: '20px',
+          padding: '10px 12px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '16px'
+          gap: '4px'
         }}>
           {/* Chart Header Info Bar */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
@@ -787,8 +787,8 @@ function analyzeCvdAndAdv(candles: Candle[], symbol: string, name: string): Symb
 // HELPER: Price Candlesticks SVG Chart Render Component
 const RenderPriceCandlesticksChart: React.FC<{ candles: Candle[] }> = ({ candles }) => {
   const width = 800;
-  const priceHeight = 180;
-  const padding = 20;
+  const priceHeight = 135;
+  const padding = 16;
 
   if (!candles || candles.length === 0) return null;
 
@@ -798,10 +798,10 @@ const RenderPriceCandlesticksChart: React.FC<{ candles: Candle[] }> = ({ candles
   const stepX = (width - padding * 2) / Math.max(candles.length - 1, 1);
 
   return (
-    <div style={{ width: '100%', overflowX: 'auto', background: '#0b0f19', borderRadius: '10px', padding: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
+    <div style={{ width: '100%', overflowX: 'auto', background: '#0b0f19', borderRadius: '8px', padding: '8px 10px', border: '1px solid rgba(255,255,255,0.06)' }}>
       <svg viewBox={`0 0 ${width} ${priceHeight}`} style={{ width: '100%', height: 'auto', background: '#090d16' }}>
         <g>
-          <text x={padding} y="16" fill="#94a3b8" fontSize="11" fontWeight="600">Price Candlesticks (5m)</text>
+          <text x={padding} y="14" fill="#94a3b8" fontSize="11" fontWeight="600">Price Candlesticks (5m)</text>
           <line x1={padding} y1={priceHeight - 5} x2={width - padding} y2={priceHeight - 5} stroke="rgba(255,255,255,0.1)" strokeDasharray="3 3" />
           
           {candles.map((c, i) => {
@@ -833,8 +833,8 @@ const RenderPriceCandlesticksChart: React.FC<{ candles: Candle[] }> = ({ candles
 // HELPER: Cumulative Volume Delta (CVD) Line & Delta Histogram Render Component
 const RenderCvdLineHistogramChart: React.FC<{ candles: Candle[]; cvdSeries: { time: number; delta: number; cumDelta: number }[] }> = ({ candles, cvdSeries }) => {
   const width = 800;
-  const cvdHeight = 120;
-  const padding = 20;
+  const cvdHeight = 90;
+  const padding = 16;
 
   if (!candles || candles.length === 0) return null;
 
@@ -853,16 +853,16 @@ const RenderCvdLineHistogramChart: React.FC<{ candles: Candle[]; cvdSeries: { ti
   });
 
   return (
-    <div style={{ width: '100%', overflowX: 'auto', background: '#0b0f19', borderRadius: '10px', padding: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
+    <div style={{ width: '100%', overflowX: 'auto', background: '#0b0f19', borderRadius: '8px', padding: '8px 10px', border: '1px solid rgba(255,255,255,0.06)' }}>
       <svg viewBox={`0 0 ${width} ${cvdHeight}`} style={{ width: '100%', height: 'auto', background: '#090d16' }}>
         <g>
-          <text x={padding} y="16" fill="#38bdf8" fontSize="11" fontWeight="600">Cumulative Volume Delta (CVD) Line & Delta Histogram</text>
+          <text x={padding} y="14" fill="#38bdf8" fontSize="11" fontWeight="600">Cumulative Volume Delta (CVD) Line & Delta Histogram</text>
           
           {/* Delta Histogram Bars */}
           {chartCvd.map((item, i) => {
             const x = padding + i * stepX;
             const isPos = item.delta >= 0;
-            const barH = Math.min(Math.abs(item.delta) / 1000, 35);
+            const barH = Math.min(Math.abs(item.delta) / 1000, 25);
             const yBar = isPos ? (cvdHeight / 2) - barH : (cvdHeight / 2);
             const barW = Math.max(stepX * 0.5, 2);
             return (
@@ -881,7 +881,7 @@ const RenderCvdLineHistogramChart: React.FC<{ candles: Candle[]; cvdSeries: { ti
           <polyline
             fill="none"
             stroke="#38bdf8"
-            strokeWidth="2.5"
+            strokeWidth="2"
             points={cvdPoints.join(' ')}
           />
         </g>
