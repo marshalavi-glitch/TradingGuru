@@ -1185,10 +1185,10 @@ const RenderAdvPineIndicatorChart: React.FC<{ candles: Candle[] }> = ({ candles 
                 {showPerCandleRatios && (
                   <text
                     x={x}
-                    y={isUp ? Math.max(height / 2 - volH - 6, 14) : Math.min(height / 2 + volH + 12, height - 6)}
+                    y={height - 4}
                     fill={isStrongBullish ? '#00f2fe' : isStrongBearish ? '#f43f5e' : isUp ? '#4ade80' : '#f87171'}
-                    fontSize="9"
-                    fontWeight="800"
+                    fontSize="7"
+                    fontWeight="700"
                     textAnchor="middle"
                   >
                     {d.AD_ratio > 0 ? '+' : ''}{d.AD_ratio.toFixed(2)}
