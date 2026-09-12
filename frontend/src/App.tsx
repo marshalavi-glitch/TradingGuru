@@ -22,6 +22,7 @@ import { FifteenMinForensicContainer } from './components/FifteenMinForensicCont
 import { Nr7BreakoutContainer } from './components/Nr7BreakoutContainer';
 import { OrderFlowContainer } from './components/OrderFlowContainer';
 import { OrderFlowFootprintContainer } from './components/OrderFlowFootprintContainer';
+import { CvdAdvContainer } from './components/CvdAdvContainer';
 
 function App() {
   const [symbol, setSymbol] = useState('NSE:NIFTY');
@@ -32,7 +33,7 @@ function App() {
   const [refreshKey, setRefreshKey] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'chart' | 'bhaichara' | 'dada_thoughts' | 'fifteen_min' | 'scanner' | 'options' | 'signals' | 'doji' | 'doji_novol' | 'volume' | 'opening_bias' | 'hourly_updates' | 'backtest_results' | 'confluences' | 'early_picks' | 'nr7_breakout' | 'order_flow' | 'order_flow_footprint'>('bhaichara');
+  const [activeTab, setActiveTab] = useState<'chart' | 'bhaichara' | 'dada_thoughts' | 'fifteen_min' | 'scanner' | 'options' | 'signals' | 'doji' | 'doji_novol' | 'volume' | 'opening_bias' | 'hourly_updates' | 'backtest_results' | 'confluences' | 'early_picks' | 'nr7_breakout' | 'order_flow' | 'order_flow_footprint' | 'cvd_adv'>('bhaichara');
 
   // Subscribe to symbol data via TradingView WebSocket & REST fallback
   useEffect(() => {
@@ -544,11 +545,39 @@ function App() {
         >
           📊 Order Flow
         </button>
+        <button
+          onClick={() => setActiveTab('cvd_adv')}
+          style={{
+            background: activeTab === 'cvd_adv' ? 'rgba(59, 130, 246, 0.22)' : 'transparent',
+            border: 'none',
+            borderBottom: activeTab === 'cvd_adv' ? '2px solid #3b82f6' : '2px solid transparent',
+            color: activeTab === 'cvd_adv' ? '#60a5fa' : 'var(--text-primary)',
+            padding: '8px 16px',
+            fontSize: '14px',
+            fontWeight: '700',
+            cursor: 'pointer',
+            borderTopLeftRadius: '6px',
+            borderTopRightRadius: '6px',
+            transition: 'all 0.15s',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+        >
+          📊 CVD / ADV
+        </button>
       </div>
 
       {/* Main Workspace */}
       <div style={{ flex: '1', display: 'flex', flexDirection: 'column', minHeight: '0' }}>
-        {activeTab === 'fifteen_min' ? (
+        {activeTab === 'cvd_adv' ? (
+          <TabErrorBoundary tabName="CVD / ADV">
+            <CvdAdvContainer
+              onSymbolSelect={setSymbol}
+              onSwitchToChart={() => setActiveTab('chart')}
+            />
+          </TabErrorBoundary>
+        ) : activeTab === 'fifteen_min' ? (
           <TabErrorBoundary tabName="15 Mins Forensic">
             <FifteenMinForensicContainer />
           </TabErrorBoundary>
