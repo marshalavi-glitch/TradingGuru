@@ -3,6 +3,7 @@ import { createChart } from 'lightweight-charts';
 import type { IChartApi, ISeriesApi, Time } from 'lightweight-charts';
 import type { Candle } from '../utils/profileCalculator';
 import type { MatrixSeriesData } from '../utils/matrixCalculator';
+import { AdvIndicatorPanel } from './AdvIndicatorPanel';
 
 interface ChartContainerProps {
   candles: Candle[];
@@ -80,6 +81,7 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
   gexMaxPain
 }) => {
   const [candleStyle, setCandleStyle] = useState<'japanese' | 'heikin-ashi'>('japanese');
+  const [showAdvPanel, setShowAdvPanel] = useState<boolean>(false);
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const candlestickSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
@@ -946,6 +948,23 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
             >
               Heikin Ashi
             </button>
+            <button 
+              onClick={() => setShowAdvPanel(!showAdvPanel)}
+              style={{
+                fontSize: '10px',
+                fontWeight: '600',
+                padding: '3px 8px',
+                borderRadius: '4px',
+                border: 'none',
+                cursor: 'pointer',
+                backgroundColor: showAdvPanel ? 'rgba(245, 158, 11, 0.25)' : 'transparent',
+                color: showAdvPanel ? '#f59e0b' : 'var(--text-secondary)',
+                borderLeft: '1px solid rgba(255,255,255,0.08)',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              📈 ADV Indicator
+            </button>
           </div>
         </div>
         {candles.length > 0 && (
@@ -962,6 +981,12 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
         ref={chartContainerRef} 
         style={{ flex: '1', minHeight: '380px', width: '100%', position: 'relative' }} 
       />
+
+      {showAdvPanel && (
+        <div style={{ padding: '0 16px 16px 16px', overflowY: 'auto' }}>
+          <AdvIndicatorPanel candles={candles} symbol={symbol} timeframe={timeframe} />
+        </div>
+      )}
 
     </div>
   );
