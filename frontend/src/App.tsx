@@ -23,6 +23,7 @@ import { Nr7BreakoutContainer } from './components/Nr7BreakoutContainer';
 import { OrderFlowContainer } from './components/OrderFlowContainer';
 import { OrderFlowFootprintContainer } from './components/OrderFlowFootprintContainer';
 import { CvdAdvContainer } from './components/CvdAdvContainer';
+import { HeatMapContainer } from './components/HeatMapContainer';
 
 function App() {
   const [symbol, setSymbol] = useState('NSE:NIFTY');
@@ -33,7 +34,7 @@ function App() {
   const [refreshKey, setRefreshKey] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'chart' | 'bhaichara' | 'dada_thoughts' | 'fifteen_min' | 'scanner' | 'options' | 'signals' | 'doji' | 'doji_novol' | 'volume' | 'opening_bias' | 'hourly_updates' | 'backtest_results' | 'confluences' | 'early_picks' | 'nr7_breakout' | 'order_flow' | 'order_flow_footprint' | 'cvd_adv'>('bhaichara');
+  const [activeTab, setActiveTab] = useState<'chart' | 'bhaichara' | 'dada_thoughts' | 'fifteen_min' | 'scanner' | 'options' | 'signals' | 'doji' | 'doji_novol' | 'volume' | 'opening_bias' | 'hourly_updates' | 'backtest_results' | 'confluences' | 'early_picks' | 'nr7_breakout' | 'order_flow' | 'order_flow_footprint' | 'cvd_adv' | 'heatmap'>('bhaichara');
 
   // Subscribe to symbol data via TradingView WebSocket & REST fallback
   useEffect(() => {
@@ -566,11 +567,39 @@ function App() {
         >
           📊 CVD / ADV
         </button>
+        <button
+          onClick={() => setActiveTab('heatmap')}
+          style={{
+            background: activeTab === 'heatmap' ? 'rgba(239, 68, 68, 0.22)' : 'transparent',
+            border: 'none',
+            borderBottom: activeTab === 'heatmap' ? '2px solid #ef4444' : '2px solid transparent',
+            color: activeTab === 'heatmap' ? '#f87171' : 'var(--text-primary)',
+            padding: '8px 16px',
+            fontSize: '14px',
+            fontWeight: '700',
+            cursor: 'pointer',
+            borderTopLeftRadius: '6px',
+            borderTopRightRadius: '6px',
+            transition: 'all 0.15s',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+        >
+          🔥 Heat Map
+        </button>
       </div>
 
       {/* Main Workspace */}
       <div style={{ flex: '1', display: 'flex', flexDirection: 'column', minHeight: '0' }}>
-        {activeTab === 'cvd_adv' ? (
+        {activeTab === 'heatmap' ? (
+          <TabErrorBoundary tabName="Heat Map">
+            <HeatMapContainer
+              onSymbolSelect={setSymbol}
+              onSwitchToChart={() => setActiveTab('chart')}
+            />
+          </TabErrorBoundary>
+        ) : activeTab === 'cvd_adv' ? (
           <TabErrorBoundary tabName="CVD / ADV">
             <CvdAdvContainer
               onSymbolSelect={setSymbol}
