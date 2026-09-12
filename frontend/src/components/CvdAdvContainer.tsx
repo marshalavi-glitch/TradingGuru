@@ -1037,11 +1037,8 @@ const RenderAdvPineIndicatorChart: React.FC<{ candles: Candle[] }> = ({ candles 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
         <div>
           <h4 style={{ margin: 0, fontSize: '14px', fontWeight: '700', color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>📈 Accumulation/Distribution Volume (ADV) [cI8DH]</span>
+            <span>📈 Accumulation/Distribution Volume (ADV)</span>
           </h4>
-          <span style={{ fontSize: '11px', color: '#94a3b8' }}>
-            Pine Script Port v3 (Aggregation: {aggregation} | Length: {len})
-          </span>
         </div>
 
         {/* Inputs Control Panel */}
