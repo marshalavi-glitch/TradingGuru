@@ -65,7 +65,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     loadPresets();
   }, []);
 
-  // Handle debounced search query fetching from backend search proxy endpoint
+  // Debounced search query fetching from backend search proxy endpoint
   useEffect(() => {
     if (!searchQuery.trim()) {
       setApiResults([]);
@@ -136,7 +136,6 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     }
   };
 
-  // Filter symbols based on search query and category tabs
   const filteredSymbols = symbolsList.filter((item) => {
     const matchesQuery = item.value.toLowerCase().includes(searchQuery.toLowerCase()) || 
                          item.label.toLowerCase().includes(searchQuery.toLowerCase());
@@ -144,146 +143,159 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     return matchesQuery && matchesTab;
   }).slice(0, 100);
 
+  const timeframes = [
+    { value: '1', label: '1m' },
+    { value: '5', label: '5m' },
+    { value: '15', label: '15m' },
+    { value: '30', label: '30m' },
+    { value: '60', label: '1H' },
+    { value: 'D', label: '1D' },
+    { value: 'W', label: '1W' },
+    { value: 'M', label: '1M' },
+  ];
+
   return (
-    <header className="glass-panel animate-fade-in" style={{ padding: '16px 24px', position: 'relative', zIndex: 1100, overflow: 'visible' }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
+    <header className="glass-panel animate-fade-in" style={{ padding: '12px 16px', position: 'relative', zIndex: 1100, overflow: 'visible' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
         
-        {/* Title */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{
-            background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-purple))',
-            borderRadius: '10px',
-            padding: '8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 0 15px rgba(99, 102, 241, 0.4)'
-          }}>
-            <Activity size={24} color="white" />
-          </div>
-          <div>
-            <h1 style={{ fontSize: '20px', fontWeight: '700', margin: 0, letterSpacing: '-0.5px' }}>
-              Trading Guru
-            </h1>
-            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0, fontWeight: '700', letterSpacing: '0.5px' }}>
-              REAL-TIME CANDLESTICK CHARTS
-            </p>
-          </div>
-        </div>
-
-        {/* Trigger Search Button (Mock Search Box) */}
-        <div 
-          onClick={() => setIsModalOpen(true)}
-          style={{ 
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            background: 'var(--bg-input)',
-            border: '1px solid var(--border-color)',
-            borderRadius: '8px',
-            padding: '8px 14px',
-            cursor: 'pointer',
-            flex: '1',
-            minWidth: '200px',
-            maxWidth: '300px',
-            transition: 'border 0.2s',
-            boxSizing: 'border-box'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--border-hover)'}
-          onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
-        >
-          <Search size={16} color="var(--text-secondary)" />
-          <span style={{ fontSize: '14px', color: 'var(--text-primary)', fontWeight: '500', flex: 1 }}>
-            {currentSymbol}
-          </span>
-          <span style={{ fontSize: '10px', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '4px' }}>
-            Search
-          </span>
-        </div>
-
-        {/* Timeframe selector */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <label style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 'bold' }}>TF:</label>
-          <select
-            className="custom-input custom-select"
-            style={{ width: '85px', padding: '6px 28px 6px 12px' }}
-            value={currentTimeframe}
-            onChange={(e) => onTimeframeChange(e.target.value)}
-          >
-            <option value="1">1 Min</option>
-            <option value="5">5 Min</option>
-            <option value="15">15 Min</option>
-            <option value="30">30 Min</option>
-            <option value="60">1 Hour</option>
-            <option value="D">Daily</option>
-            <option value="W">Weekly</option>
-            <option value="M">Monthly</option>
-          </select>
-        </div>
-
-        {/* Clock, Updated Time, Connection Status, and Refresh */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {/* IST Clock */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--bg-input)', border: '1px solid var(--border-color)', padding: '6px 12px', borderRadius: '8px' }}>
-            <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#00f0ff', fontFamily: 'monospace' }}>
-              {currentTime ? `${currentTime} IST` : '--:--:-- IST'}
-            </span>
-          </div>
-
-          {/* Updated Time */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--bg-input)', border: '1px solid var(--border-color)', padding: '6px 12px', borderRadius: '8px' }}>
-            <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Updated:</span>
-            <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-primary)', fontFamily: 'monospace' }}>
-              {lastUpdateTime || '--:--:--'}
-            </span>
-          </div>
-
-          <button
-            onClick={() => {
-              setLastUpdateTime(new Date().toLocaleTimeString('en-GB', { timeZone: 'Asia/Kolkata' }));
-              onRefresh();
-            }}
-            style={{
-              background: 'transparent',
-              cursor: 'pointer',
-              padding: '8px',
+        {/* Row 1: Logo & Title + Connection Status + Refresh */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+          
+          {/* Logo & Title */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{
+              background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-purple))',
               borderRadius: '8px',
-              color: 'var(--text-secondary)',
+              padding: '6px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '1px solid var(--border-color)'
-            }}
-            title="Force refresh"
-          >
-            <RefreshCw size={15} />
-          </button>
+              boxShadow: '0 0 12px rgba(99, 102, 241, 0.4)'
+            }}>
+              <Activity size={20} color="white" />
+            </div>
+            <div>
+              <h1 style={{ fontSize: '18px', fontWeight: '800', margin: 0, letterSpacing: '-0.3px', lineHeight: '1.2' }}>
+                Trading Guru
+              </h1>
+              <p style={{ fontSize: '10px', color: 'var(--text-secondary)', margin: 0, fontWeight: '700', letterSpacing: '0.4px' }}>
+                REAL-TIME CANDLESTICK CHARTS
+              </p>
+            </div>
+          </div>
 
-          <div
-            onClick={() => {
-              const current = tvStreamer.computeBackendUrl();
-              const input = window.prompt('Enter Live Backend Server / Tunnel URL (e.g. https://profundum.loca.lt or http://YOUR_SERVER_IP:3002):', current);
-              if (input !== null) {
-                tvStreamer.setBackendUrl(input);
+          {/* Right Controls: IST Clock + Status + Refresh */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            
+            {/* IST Clock */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--bg-input)', border: '1px solid var(--border-color)', padding: '4px 8px', borderRadius: '6px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#00f0ff', fontFamily: 'monospace' }}>
+                {currentTime ? `${currentTime}` : '--:--:--'}
+              </span>
+            </div>
+
+            {/* Live Connection Badge */}
+            <div
+              onClick={() => {
+                const current = tvStreamer.computeBackendUrl();
+                const input = window.prompt('Enter Live Backend Server / Tunnel URL:', current);
+                if (input !== null) {
+                  tvStreamer.setBackendUrl(input);
+                  onRefresh();
+                }
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'var(--bg-input)',
+                border: '1px solid var(--border-color)',
+                padding: '4px 10px',
+                borderRadius: '6px',
+                cursor: 'pointer'
+              }}
+              title="Click to configure Backend URL"
+            >
+              <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: getStatusColor(), boxShadow: `0 0 8px ${getStatusColor()}` }} />
+              <span style={{ fontSize: '11px', textTransform: 'capitalize', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                {connectionStatus === 'connected' ? 'LIVE' : connectionStatus}
+              </span>
+            </div>
+
+            {/* Refresh */}
+            <button
+              onClick={() => {
+                setLastUpdateTime(new Date().toLocaleTimeString('en-GB', { timeZone: 'Asia/Kolkata' }));
                 onRefresh();
-              }
-            }}
-            style={{
+              }}
+              style={{
+                background: 'transparent',
+                cursor: 'pointer',
+                padding: '6px',
+                borderRadius: '6px',
+                color: 'var(--text-secondary)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '1px solid var(--border-color)'
+              }}
+              title="Refresh Data"
+            >
+              <RefreshCw size={14} />
+            </button>
+          </div>
+        </div>
+
+        {/* Row 2: Symbol Search Tap Target & Timeframe Selector Bar */}
+        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', width: '100%' }}>
+          
+          {/* Symbol Search Selector Button (Full width on mobile) */}
+          <div 
+            onClick={() => setIsModalOpen(true)}
+            style={{ 
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
               background: 'var(--bg-input)',
               border: '1px solid var(--border-color)',
-              padding: '6px 12px',
               borderRadius: '8px',
-              cursor: 'pointer'
+              padding: '8px 12px',
+              cursor: 'pointer',
+              flex: '1 1 200px',
+              minWidth: '180px',
+              boxSizing: 'border-box'
             }}
-            title="Click to configure Backend Server / Tunnel URL"
           >
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: getStatusColor(), boxShadow: `0 0 10px ${getStatusColor()}` }}></div>
-            <span style={{ fontSize: '12px', textTransform: 'capitalize', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-              {connectionStatus === 'connected' ? 'Live' : connectionStatus}
+            <Search size={15} color="var(--text-secondary)" />
+            <span style={{ fontSize: '13px', color: '#60a5fa', fontWeight: '800', flex: 1, letterSpacing: '0.2px' }}>
+              {currentSymbol}
             </span>
+            <span style={{ fontSize: '10px', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.06)', padding: '2px 6px', borderRadius: '4px', fontWeight: '600' }}>
+              Search 🔍
+            </span>
+          </div>
+
+          {/* Timeframe Selector Pill Bar */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', padding: '2px 0' }}>
+            {timeframes.map((tf) => (
+              <button
+                key={tf.value}
+                onClick={() => onTimeframeChange(tf.value)}
+                style={{
+                  background: currentTimeframe === tf.value ? '#3b82f6' : 'rgba(255, 255, 255, 0.05)',
+                  border: currentTimeframe === tf.value ? '1px solid #3b82f6' : '1px solid transparent',
+                  color: currentTimeframe === tf.value ? '#ffffff' : 'var(--text-secondary)',
+                  padding: '5px 9px',
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {tf.label}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -303,25 +315,25 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             backdropFilter: 'blur(8px)',
             zIndex: 9999,
             display: 'flex',
-            justifyContent: 'center',
+            justify: 'center',
             alignItems: 'center',
-            padding: '20px',
+            padding: '12px',
             boxSizing: 'border-box'
           }}
         >
           {/* Modal Container */}
           <div 
-            onClick={(e) => e.stopPropagation()} // Stop bubble up to prevent closing modal
+            onClick={(e) => e.stopPropagation()}
             style={{
               width: '100%',
               maxWidth: '650px',
               backgroundColor: '#0d1017',
               border: '1px solid var(--border-color)',
-              borderRadius: '16px',
+              borderRadius: '14px',
               boxShadow: '0 20px 50px rgba(0, 0, 0, 0.7)',
               display: 'flex',
               flexDirection: 'column',
-              maxHeight: '80vh',
+              maxHeight: '90vh',
               overflow: 'hidden',
               animation: 'fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards',
               boxSizing: 'border-box'
@@ -329,21 +341,21 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           >
             
             {/* Input Row */}
-            <form onSubmit={handleCustomSubmit} style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.06)', padding: '16px 20px', gap: '12px' }}>
-              <Search size={20} color="var(--text-secondary)" />
+            <form onSubmit={handleCustomSubmit} style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.06)', padding: '14px 16px', gap: '10px' }}>
+              <Search size={18} color="var(--text-secondary)" />
               <input
                 ref={modalInputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search symbol description or type..."
+                placeholder="Search symbol (e.g. RELIANCE, NIFTY)..."
                 style={{
                   flex: 1,
                   background: 'transparent',
                   border: 'none',
                   outline: 'none',
                   color: 'white',
-                  fontSize: '16px',
+                  fontSize: '15px',
                   fontWeight: '500',
                   padding: '4px 0'
                 }}
@@ -371,34 +383,28 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                   marginLeft: '4px'
                 }}
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </form>
 
             {/* Category tabs */}
-            <div style={{ display: 'flex', borderBottom: '1px solid rgba(255, 255, 255, 0.03)', padding: '8px 20px', gap: '8px' }}>
+            <div style={{ display: 'flex', borderBottom: '1px solid rgba(255, 255, 255, 0.03)', padding: '8px 16px', gap: '6px', overflowX: 'auto' }}>
               {(['all', 'stock', 'futures', 'index'] as const).map((tab) => (
                 <button
                   key={tab}
                   type="button"
                   onClick={() => setActiveTab(tab)}
                   style={{
-                    background: activeTab === tab ? 'rgba(59, 130, 246, 0.12)' : 'transparent',
+                    background: activeTab === tab ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
                     border: 'none',
                     color: activeTab === tab ? '#3b82f6' : 'var(--text-secondary)',
                     borderRadius: '6px',
-                    padding: '6px 14px',
+                    padding: '6px 12px',
                     fontSize: '12px',
                     fontWeight: '600',
                     textTransform: 'capitalize',
                     cursor: 'pointer',
-                    transition: 'all 0.15s'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (activeTab !== tab) e.currentTarget.style.color = '#ffffff';
-                  }}
-                  onMouseLeave={(e) => {
-                    if (activeTab !== tab) e.currentTarget.style.color = 'var(--text-secondary)';
+                    whiteSpace: 'nowrap'
                   }}
                 >
                   {tab === 'all' ? 'All' : tab === 'stock' ? 'Stocks' : tab === 'futures' ? 'Futures' : 'Indices'}
@@ -407,7 +413,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             </div>
 
             {/* Symbol preset results list */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '10px 0' }}>
+            <div style={{ flex: 1, overflowY: 'auto', padding: '6px 0', WebkitOverflowScrolling: 'touch' }}>
               {searchQuery && (
                 <div 
                   onClick={() => {
@@ -418,7 +424,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                     handleSelectSymbol(formatted);
                   }}
                   style={{
-                    padding: '12px 24px',
+                    padding: '12px 20px',
                     fontSize: '13px',
                     cursor: 'pointer',
                     color: '#3b82f6',
@@ -431,7 +437,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               )}
 
               {loadingApi ? (
-                <div style={{ padding: '40px 24px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '14px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
+                <div style={{ padding: '30px 20px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
                   <div style={{ width: '16px', height: '16px', borderRadius: '50%', border: '2px solid rgba(255,255,255,0.1)', borderTopColor: '#3b82f6', animation: 'spin 0.8s linear infinite' }} />
                   Searching TradingView database...
                 </div>
@@ -440,7 +446,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                   const activeApiResults = apiResults.filter(item => activeTab === 'all' || item.type === activeTab);
                   if (activeApiResults.length === 0) {
                     return (
-                      <div style={{ padding: '40px 24px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '14px' }}>
+                      <div style={{ padding: '30px 20px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13px' }}>
                         No matching Indian symbols found.
                       </div>
                     );
@@ -462,18 +468,13 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
-                          padding: '12px 24px',
+                          padding: '12px 20px',
                           cursor: 'pointer',
-                          transition: 'background-color 0.15s'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.03)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'transparent';
+                          minHeight: '44px',
+                          borderBottom: '1px solid rgba(255, 255, 255, 0.02)'
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                           <div style={{
                             width: '26px',
                             height: '26px',
@@ -481,8 +482,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                             backgroundColor: 'rgba(255, 255, 255, 0.04)',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center',
-                            border: '1px solid rgba(255, 255, 255, 0.06)'
+                            justifyContent: 'center'
                           }}>
                             {getIcon()}
                           </div>
@@ -490,19 +490,18 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                             <div style={{ fontSize: '14px', fontWeight: '700', color: 'white' }}>
                               {item.value.split(':')[1]}
                             </div>
-                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                            <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                               {item.label}
                             </div>
                           </div>
                         </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <span style={{ 
                             fontSize: '10px', 
                             fontWeight: '800', 
                             color: item.type === 'index' ? '#00f0ff' : item.type === 'futures' ? '#f59e0b' : '#ec4899',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.4px'
+                            textTransform: 'uppercase'
                           }}>
                             {item.type}
                           </span>
@@ -532,18 +531,13 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        padding: '12px 24px',
+                        padding: '12px 20px',
                         cursor: 'pointer',
-                        transition: 'background-color 0.15s'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.03)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent';
+                        minHeight: '44px',
+                        borderBottom: '1px solid rgba(255, 255, 255, 0.02)'
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <div style={{
                           width: '26px',
                           height: '26px',
@@ -551,8 +545,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                           backgroundColor: 'rgba(255, 255, 255, 0.04)',
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'center',
-                          border: '1px solid rgba(255, 255, 255, 0.06)'
+                          justifyContent: 'center'
                         }}>
                           {getIcon()}
                         </div>
@@ -560,19 +553,18 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                           <div style={{ fontSize: '14px', fontWeight: '700', color: 'white' }}>
                             {item.value.split(':')[1]}
                           </div>
-                          <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                          <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                             {item.label}
                           </div>
                         </div>
                       </div>
 
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span style={{ 
                           fontSize: '10px', 
                           fontWeight: '800', 
                           color: item.type === 'index' ? '#00f0ff' : item.type === 'futures' ? '#f59e0b' : '#ec4899',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.4px'
+                          textTransform: 'uppercase'
                         }}>
                           {item.type}
                         </span>
@@ -584,23 +576,23 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                   );
                 })
               ) : (
-                <div style={{ padding: '40px 24px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '14px' }}>
+                <div style={{ padding: '30px 20px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13px' }}>
                   No matching presets found. Type and press Enter to search.
                 </div>
               )}
             </div>
 
             <div style={{ 
-              padding: '12px 20px', 
+              padding: '10px 16px', 
               borderTop: '1px solid rgba(255,255,255,0.03)', 
               fontSize: '11px', 
               color: 'var(--text-muted)',
               display: 'flex',
-              justifyContent: 'space-between',
+              justify: 'space-between',
               alignItems: 'center'
             }}>
-              <span>Search using symbol text (e.g. RELIANCE, SWIGGY, ZOMATO)</span>
-              <span>ESC to close</span>
+              <span>Search stocks (e.g. RELIANCE, ZOMATO)</span>
+              <span>Tap outside or ESC to close</span>
             </div>
             
           </div>

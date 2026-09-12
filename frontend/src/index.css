@@ -50,12 +50,15 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
+  touch-action: manipulation;
 }
 
 #root {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  padding: 24px;
+  box-sizing: border-box;
 }
 
 /* Glassmorphism panel styling */
@@ -118,15 +121,31 @@ body {
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* Layout utilities */
-#root {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  padding: 24px;
-  box-sizing: border-box;
+/* Responsive Table Wrapper with Touch Inertia */
+.table-responsive-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 12px;
+  border-radius: 8px;
 }
 
+/* Responsive Navigation Bar Styling */
+.mobile-tab-scroll {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+.mobile-tab-scroll::-webkit-scrollbar {
+  height: 3px;
+}
+
+/* Layout utilities */
 .dashboard-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -198,4 +217,20 @@ body {
 
 .glow-btn:active {
   transform: translateY(0);
+}
+
+/* Responsive Media Queries */
+@media (max-width: 767px) {
+  #root {
+    padding: 8px !important;
+  }
+
+  .glass-panel {
+    border-radius: 10px !important;
+    padding: 10px !important;
+  }
+
+  button, select, input {
+    min-height: 38px;
+  }
 }

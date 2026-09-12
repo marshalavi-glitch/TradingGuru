@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { DashboardHeader } from './components/DashboardHeader';
 import { ChartContainer } from './components/ChartContainer';
 import { tvStreamer, getBackendHttpUrl } from './utils/tvStreamer';
 import type { Candle } from './utils/profileCalculator';
 import { calculateMatrixSeriesData } from './utils/matrixCalculator';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2, Layers } from 'lucide-react';
 import { TabErrorBoundary } from './components/TabErrorBoundary';
 import { ScannerContainer } from './components/ScannerContainer';
 import { OptionsChain } from './components/OptionsChain';
@@ -28,16 +28,58 @@ import { MarketProfileContainer } from './components/MarketProfileContainer';
 import { TrumpMoodContainer } from './components/TrumpMoodContainer';
 import { FootprintChartContainer } from './components/FootprintChartContainer';
 
+export type TabType = 
+  | 'chart' | 'bhaichara' | 'dada_thoughts' | 'trump_mood' | 'fifteen_min' 
+  | 'scanner' | 'options' | 'signals' | 'doji' | 'doji_novol' | 'volume' 
+  | 'opening_bias' | 'hourly_updates' | 'backtest_results' | 'confluences' 
+  | 'early_picks' | 'nr7_breakout' | 'order_flow' | 'order_flow_footprint' 
+  | 'cvd_adv' | 'heatmap' | 'market_profile' | 'footprint_chart';
+
+interface TabItem {
+  id: TabType;
+  label: string;
+  color: string;
+  badge?: string;
+}
+
+const TABS_LIST: TabItem[] = [
+  { id: 'bhaichara', label: '🤝 Bhaichara Work', color: '#60a5fa' },
+  { id: 'dada_thoughts', label: '🧠 Dada Thoughts', color: '#eab308' },
+  { id: 'trump_mood', label: '🎺 Trump Mood', color: '#f87171' },
+  { id: 'chart', label: '📈 Candlestick Chart', color: '#3b82f6' },
+  { id: 'footprint_chart', label: '👣 Footprint Chart', color: '#34d399' },
+  { id: 'market_profile', label: '🏛️ Market Profile', color: '#00f0ff' },
+  { id: 'order_flow', label: '🍀 Lucky Flow', color: '#10b981' },
+  { id: 'order_flow_footprint', label: '📊 Order Flow', color: '#60a5fa' },
+  { id: 'cvd_adv', label: '📊 CVD / ADV', color: '#60a5fa' },
+  { id: 'heatmap', label: '🔥 Heat Map', color: '#f87171' },
+  { id: 'scanner', label: '🔍 Scanner', color: '#3b82f6' },
+  { id: 'confluences', label: '⚡ Confluences', color: '#3b82f6' },
+  { id: 'fifteen_min', label: '⏱️ 15 Mins Forensic', color: '#ec4899' },
+  { id: 'hourly_updates', label: '🕒 Hourly Updates', color: '#8b5cf6' },
+  { id: 'backtest_results', label: '🧪 Live Math Signals', color: '#10b981' },
+  { id: 'options', label: '⛓️ Options Chain', color: '#3b82f6' },
+  { id: 'signals', label: '📡 Signals', color: '#3b82f6' },
+  { id: 'doji', label: '🎯 First Doji', color: '#3b82f6' },
+  { id: 'doji_novol', label: '🎯 Doji (No Vol)', color: '#3b82f6' },
+  { id: 'volume', label: '📊 Volume Breakouts', color: '#3b82f6' },
+  { id: 'opening_bias', label: '🌅 Opening Bias', color: '#3b82f6' },
+  { id: 'early_picks', label: '🌅 Early Picks', color: '#3b82f6' },
+  { id: 'nr7_breakout', label: '🚀 20% Upper Circuit Potential', color: '#f59e0b' },
+];
+
 function App() {
   const [symbol, setSymbol] = useState('NSE:NIFTY');
-  const [timeframe, setTimeframe] = useState('5'); // Default to 5-minute interval
+  const [timeframe, setTimeframe] = useState('5'); // Default 5-minute interval
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
   const [candles, setCandles] = useState<Candle[]>([]);
   const [matrixHistory, setMatrixHistory] = useState<Record<string, any> | null>(null);
   const [refreshKey, setRefreshKey] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'chart' | 'bhaichara' | 'dada_thoughts' | 'trump_mood' | 'fifteen_min' | 'scanner' | 'options' | 'signals' | 'doji' | 'doji_novol' | 'volume' | 'opening_bias' | 'hourly_updates' | 'backtest_results' | 'confluences' | 'early_picks' | 'nr7_breakout' | 'order_flow' | 'order_flow_footprint' | 'cvd_adv' | 'heatmap' | 'market_profile' | 'footprint_chart'>('bhaichara');
+  const [activeTab, setActiveTab] = useState<TabType>('bhaichara');
+
+  const activeTabRef = useRef<HTMLButtonElement | null>(null);
 
   // Subscribe to symbol data via TradingView WebSocket & REST fallback
   useEffect(() => {
@@ -54,7 +96,6 @@ function App() {
       }
     });
 
-    // Parallel REST Fetch for instant <300ms loading resolution
     const fetchInitialCandles = async () => {
       try {
         const backendHttp = getBackendHttpUrl();
@@ -75,7 +116,6 @@ function App() {
 
     fetchInitialCandles();
 
-    // Start streaming from TV WebSocket backend
     tvStreamer.subscribe(
       symbol,
       timeframe,
@@ -112,7 +152,6 @@ function App() {
       }
     );
 
-    // Fast 2-second timeout safety: force loading = false so dashboard is never stuck
     const safetyTimer = setTimeout(() => {
       if (isMounted && loading) {
         setLoading(false);
@@ -161,7 +200,6 @@ function App() {
 
       groupKeys.sort();
 
-      // Only plot levels for the LATEST intraday session
       if (groupKeys.length > 0) {
         const latestKey = groupKeys[groupKeys.length - 1];
         const latestCandles = groups[latestKey];
@@ -186,10 +224,12 @@ function App() {
     return calculateMatrixSeriesData(candles, timeframe);
   }, [candles, timeframe, matrixHistory]);
 
+  const activeTabInfo = TABS_LIST.find((t) => t.id === activeTab) || TABS_LIST[0];
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%', minHeight: '100vh', boxSizing: 'border-box', overflowY: 'auto' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', minHeight: '100vh', boxSizing: 'border-box', overflowY: 'auto' }}>
       
-      {/* Header controls */}
+      {/* Responsive Header */}
       <DashboardHeader
         currentSymbol={symbol}
         currentTimeframe={timeframe}
@@ -199,461 +239,67 @@ function App() {
         onRefresh={handleRefresh}
       />
 
-      {/* Navigation Tabs */}
-      <div style={{ display: 'flex', gap: '4px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '2px', flexWrap: 'wrap' }}>
-        <button
-          onClick={() => setActiveTab('bhaichara')}
-          style={{
-            background: activeTab === 'bhaichara' ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
-            border: 'none',
-            borderBottom: activeTab === 'bhaichara' ? '2px solid #3b82f6' : '2px solid transparent',
-            color: activeTab === 'bhaichara' ? '#60a5fa' : 'var(--text-primary)',
-            padding: '4px 10px',
-            fontSize: '12px',
-            fontWeight: '700',
-            cursor: 'pointer',
-            borderTopLeftRadius: '5px',
-            borderTopRightRadius: '5px',
-            transition: 'all 0.15s',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}
-        >
-          🤝 Bhaichara Work
-        </button>
-        <button
-          onClick={() => setActiveTab('dada_thoughts')}
-          style={{
-            background: activeTab === 'dada_thoughts' ? 'rgba(234, 179, 8, 0.15)' : 'transparent',
-            border: 'none',
-            borderBottom: activeTab === 'dada_thoughts' ? '2px solid #eab308' : '2px solid transparent',
-            color: activeTab === 'dada_thoughts' ? '#eab308' : 'var(--text-primary)',
-            padding: '4px 10px',
-            fontSize: '12px',
-            fontWeight: '700',
-            cursor: 'pointer',
-            borderTopLeftRadius: '5px',
-            borderTopRightRadius: '5px',
-            transition: 'all 0.15s',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}
-        >
-          🧠 Dada Thoughts
-        </button>
-        <button
-          onClick={() => setActiveTab('trump_mood')}
-          style={{
-            background: activeTab === 'trump_mood' ? 'rgba(239, 68, 68, 0.18)' : 'transparent',
-            border: 'none',
-            borderBottom: activeTab === 'trump_mood' ? '2px solid #ef4444' : '2px solid transparent',
-            color: activeTab === 'trump_mood' ? '#f87171' : 'var(--text-primary)',
-            padding: '4px 10px',
-            fontSize: '12px',
-            fontWeight: '800',
-            cursor: 'pointer',
-            borderTopLeftRadius: '5px',
-            borderTopRightRadius: '5px',
-            transition: 'all 0.15s',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}
-        >
-          🎺 Trump Mood
-        </button>
-        <button
-          onClick={() => setActiveTab('chart')}
-          style={{
-            background: activeTab === 'chart' ? 'rgba(59, 130, 246, 0.12)' : 'transparent',
-            border: 'none',
-            borderBottom: activeTab === 'chart' ? '2px solid #3b82f6' : '2px solid transparent',
-            color: activeTab === 'chart' ? '#3b82f6' : 'var(--text-primary)',
-            padding: '4px 10px',
-            fontSize: '12px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            borderTopLeftRadius: '5px',
-            borderTopRightRadius: '5px',
-            transition: 'all 0.15s'
-          }}
-        >
-          Candlestick Chart
-        </button>
-        <button
-          onClick={() => setActiveTab('scanner')}
-          style={{
-            background: activeTab === 'scanner' ? 'rgba(59, 130, 246, 0.12)' : 'transparent',
-            border: 'none',
-            borderBottom: activeTab === 'scanner' ? '2px solid #3b82f6' : '2px solid transparent',
-            color: activeTab === 'scanner' ? '#3b82f6' : 'var(--text-primary)',
-            padding: '4px 10px',
-            fontSize: '12px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            borderTopLeftRadius: '5px',
-            borderTopRightRadius: '5px',
-            transition: 'all 0.15s'
-          }}
-        >
-          Scanner
-        </button>
-        <button
-          onClick={() => setActiveTab('confluences')}
-          style={{
-            background: activeTab === 'confluences' ? 'rgba(59, 130, 246, 0.12)' : 'transparent',
-            border: 'none',
-            borderBottom: activeTab === 'confluences' ? '2px solid #3b82f6' : '2px solid transparent',
-            color: activeTab === 'confluences' ? '#3b82f6' : 'var(--text-primary)',
-            padding: '4px 10px',
-            fontSize: '12px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            borderTopLeftRadius: '5px',
-            borderTopRightRadius: '5px',
-            transition: 'all 0.15s'
-          }}
-        >
-          Confluences
-        </button>
-        <button
-          onClick={() => setActiveTab('options')}
-          style={{
-            background: activeTab === 'options' ? 'rgba(59, 130, 246, 0.12)' : 'transparent',
-            border: 'none',
-            borderBottom: activeTab === 'options' ? '2px solid #3b82f6' : '2px solid transparent',
-            color: activeTab === 'options' ? '#3b82f6' : 'var(--text-primary)',
-            padding: '4px 10px',
-            fontSize: '12px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            borderTopLeftRadius: '5px',
-            borderTopRightRadius: '5px',
-            transition: 'all 0.15s'
-          }}
-        >
-          Options Chain
-        </button>
-        <button
-          onClick={() => setActiveTab('signals')}
-          style={{
-            background: activeTab === 'signals' ? 'rgba(59, 130, 246, 0.12)' : 'transparent',
-            border: 'none',
-            borderBottom: activeTab === 'signals' ? '2px solid #3b82f6' : '2px solid transparent',
-            color: activeTab === 'signals' ? '#3b82f6' : 'var(--text-primary)',
-            padding: '4px 10px',
-            fontSize: '12px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            borderTopLeftRadius: '5px',
-            borderTopRightRadius: '5px',
-            transition: 'all 0.15s'
-          }}
-        >
-          Live Signals
-        </button>
-        <button
-          onClick={() => setActiveTab('doji')}
-          style={{
-            background: activeTab === 'doji' ? 'rgba(59, 130, 246, 0.12)' : 'transparent',
-            border: 'none',
-            borderBottom: activeTab === 'doji' ? '2px solid #3b82f6' : '2px solid transparent',
-            color: activeTab === 'doji' ? '#3b82f6' : 'var(--text-primary)',
-            padding: '4px 10px',
-            fontSize: '12px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            borderTopLeftRadius: '5px',
-            borderTopRightRadius: '5px',
-            transition: 'all 0.15s'
-          }}
-        >
-          First Doji
-        </button>
-        <button
-          onClick={() => setActiveTab('doji_novol')}
-          style={{
-            background: activeTab === 'doji_novol' ? 'rgba(59, 130, 246, 0.12)' : 'transparent',
-            border: 'none',
-            borderBottom: activeTab === 'doji_novol' ? '2px solid #3b82f6' : '2px solid transparent',
-            color: activeTab === 'doji_novol' ? '#3b82f6' : 'var(--text-primary)',
-            padding: '4px 10px',
-            fontSize: '12px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            borderTopLeftRadius: '5px',
-            borderTopRightRadius: '5px',
-            transition: 'all 0.15s'
-          }}
-        >
-          Doji (No Vol)
-        </button>
-        <button
-          onClick={() => setActiveTab('volume')}
-          style={{
-            background: activeTab === 'volume' ? 'rgba(59, 130, 246, 0.12)' : 'transparent',
-            border: 'none',
-            borderBottom: activeTab === 'volume' ? '2px solid #3b82f6' : '2px solid transparent',
-            color: activeTab === 'volume' ? '#3b82f6' : 'var(--text-primary)',
-            padding: '4px 10px',
-            fontSize: '12px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            borderTopLeftRadius: '5px',
-            borderTopRightRadius: '5px',
-            transition: 'all 0.15s'
-          }}
-        >
-          🔥 Volume Breakouts
-        </button>
-        <button
-          onClick={() => setActiveTab('opening_bias')}
-          style={{
-            background: activeTab === 'opening_bias' ? 'rgba(59, 130, 246, 0.12)' : 'transparent',
-            border: 'none',
-            borderBottom: activeTab === 'opening_bias' ? '2px solid #3b82f6' : '2px solid transparent',
-            color: activeTab === 'opening_bias' ? '#3b82f6' : 'var(--text-primary)',
-            padding: '4px 10px',
-            fontSize: '12px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            borderTopLeftRadius: '5px',
-            borderTopRightRadius: '5px',
-            transition: 'all 0.15s'
-          }}
-        >
-          ⚡ Opening Bias
-        </button>
-        <button
-          onClick={() => setActiveTab('fifteen_min')}
-          style={{
-            background: activeTab === 'fifteen_min' ? 'rgba(59, 130, 246, 0.22)' : 'transparent',
-            border: 'none',
-            borderBottom: activeTab === 'fifteen_min' ? '2px solid #3b82f6' : '2px solid transparent',
-            color: activeTab === 'fifteen_min' ? '#60a5fa' : 'var(--text-primary)',
-            padding: '4px 10px',
-            fontSize: '12px',
-            fontWeight: '800',
-            cursor: 'pointer',
-            borderTopLeftRadius: '5px',
-            borderTopRightRadius: '5px',
-            transition: 'all 0.15s',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}
-        >
-          ⏱️ 15 Mins
-        </button>
-        <button
-          onClick={() => setActiveTab('hourly_updates')}
-          style={{
-            background: activeTab === 'hourly_updates' ? 'rgba(168, 85, 247, 0.15)' : 'transparent',
-            border: 'none',
-            borderBottom: activeTab === 'hourly_updates' ? '2px solid #a855f7' : '2px solid transparent',
-            color: activeTab === 'hourly_updates' ? '#a855f7' : 'var(--text-primary)',
-            padding: '4px 10px',
-            fontSize: '12px',
-            fontWeight: '700',
-            cursor: 'pointer',
-            borderTopLeftRadius: '5px',
-            borderTopRightRadius: '5px',
-            transition: 'all 0.15s',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}
-        >
-          ⏱️ Hourly Updates
-        </button>
-        <button
-          onClick={() => setActiveTab('backtest_results')}
-          style={{
-            background: activeTab === 'backtest_results' ? 'rgba(239, 68, 68, 0.18)' : 'transparent',
-            border: 'none',
-            borderBottom: activeTab === 'backtest_results' ? '2px solid #ef4444' : '2px solid transparent',
-            color: activeTab === 'backtest_results' ? '#f87171' : 'var(--text-primary)',
-            padding: '4px 10px',
-            fontSize: '12px',
-            fontWeight: '800',
-            cursor: 'pointer',
-            borderTopLeftRadius: '5px',
-            borderTopRightRadius: '5px',
-            transition: 'all 0.15s',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}
-        >
-          🎯 Live Math Signals
-        </button>
-        <button
-          onClick={() => setActiveTab('early_picks')}
-          style={{
-            background: activeTab === 'early_picks' ? 'rgba(59, 130, 246, 0.12)' : 'transparent',
-            border: 'none',
-            borderBottom: activeTab === 'early_picks' ? '2px solid #3b82f6' : '2px solid transparent',
-            color: activeTab === 'early_picks' ? '#3b82f6' : 'var(--text-primary)',
-            padding: '4px 10px',
-            fontSize: '12px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            borderTopLeftRadius: '5px',
-            borderTopRightRadius: '5px',
-            transition: 'all 0.15s'
-          }}
-        >
-          ⚡ Early Picks
-        </button>
-        <button
-          onClick={() => setActiveTab('nr7_breakout')}
-          style={{
-            background: activeTab === 'nr7_breakout' ? 'rgba(59, 130, 246, 0.18)' : 'transparent',
-            border: 'none',
-            borderBottom: activeTab === 'nr7_breakout' ? '2px solid #3b82f6' : '2px solid transparent',
-            color: activeTab === 'nr7_breakout' ? '#60a5fa' : 'var(--text-primary)',
-            padding: '4px 10px',
-            fontSize: '12px',
-            fontWeight: '700',
-            cursor: 'pointer',
-            borderTopLeftRadius: '5px',
-            borderTopRightRadius: '5px',
-            transition: 'all 0.15s',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}
-        >
-          ⚡ 20% Upper Circuit Potential
-        </button>
-        <button
-          onClick={() => setActiveTab('order_flow')}
-          style={{
-            background: activeTab === 'order_flow' ? 'rgba(59, 130, 246, 0.22)' : 'transparent',
-            border: 'none',
-            borderBottom: activeTab === 'order_flow' ? '2px solid #3b82f6' : '2px solid transparent',
-            color: activeTab === 'order_flow' ? '#60a5fa' : 'var(--text-primary)',
-            padding: '4px 10px',
-            fontSize: '12px',
-            fontWeight: '700',
-            cursor: 'pointer',
-            borderTopLeftRadius: '5px',
-            borderTopRightRadius: '5px',
-            transition: 'all 0.15s',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}
-        >
-          🍀 Lucky Flow
-        </button>
-        <button
-          onClick={() => setActiveTab('order_flow_footprint')}
-          style={{
-            background: activeTab === 'order_flow_footprint' ? 'rgba(59, 130, 246, 0.22)' : 'transparent',
-            border: 'none',
-            borderBottom: activeTab === 'order_flow_footprint' ? '2px solid #3b82f6' : '2px solid transparent',
-            color: activeTab === 'order_flow_footprint' ? '#60a5fa' : 'var(--text-primary)',
-            padding: '4px 10px',
-            fontSize: '12px',
-            fontWeight: '700',
-            cursor: 'pointer',
-            borderTopLeftRadius: '5px',
-            borderTopRightRadius: '5px',
-            transition: 'all 0.15s',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}
-        >
-          📊 Order Flow
-        </button>
-        <button
-          onClick={() => setActiveTab('cvd_adv')}
-          style={{
-            background: activeTab === 'cvd_adv' ? 'rgba(59, 130, 246, 0.22)' : 'transparent',
-            border: 'none',
-            borderBottom: activeTab === 'cvd_adv' ? '2px solid #3b82f6' : '2px solid transparent',
-            color: activeTab === 'cvd_adv' ? '#60a5fa' : 'var(--text-primary)',
-            padding: '4px 10px',
-            fontSize: '12px',
-            fontWeight: '700',
-            cursor: 'pointer',
-            borderTopLeftRadius: '5px',
-            borderTopRightRadius: '5px',
-            transition: 'all 0.15s',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}
-        >
-          📊 CVD / ADV
-        </button>
-        <button
-          onClick={() => setActiveTab('heatmap')}
-          style={{
-            background: activeTab === 'heatmap' ? 'rgba(239, 68, 68, 0.22)' : 'transparent',
-            border: 'none',
-            borderBottom: activeTab === 'heatmap' ? '2px solid #ef4444' : '2px solid transparent',
-            color: activeTab === 'heatmap' ? '#f87171' : 'var(--text-primary)',
-            padding: '4px 10px',
-            fontSize: '12px',
-            fontWeight: '700',
-            cursor: 'pointer',
-            borderTopLeftRadius: '5px',
-            borderTopRightRadius: '5px',
-            transition: 'all 0.15s',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}
-        >
-          🔥 Heat Map
-        </button>
-        <button
-          onClick={() => setActiveTab('market_profile')}
-          style={{
-            background: activeTab === 'market_profile' ? 'rgba(0, 240, 255, 0.22)' : 'transparent',
-            border: 'none',
-            borderBottom: activeTab === 'market_profile' ? '2px solid #00f0ff' : '2px solid transparent',
-            color: activeTab === 'market_profile' ? '#00f0ff' : 'var(--text-primary)',
-            padding: '4px 10px',
-            fontSize: '12px',
-            fontWeight: '700',
-            cursor: 'pointer',
-            borderTopLeftRadius: '5px',
-            borderTopRightRadius: '5px',
-            transition: 'all 0.15s',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}
-        >
-          🏛️ Market Profile
-        </button>
-        <button
-          onClick={() => setActiveTab('footprint_chart')}
-          style={{
-            background: activeTab === 'footprint_chart' ? 'rgba(8, 153, 129, 0.22)' : 'transparent',
-            border: 'none',
-            borderBottom: activeTab === 'footprint_chart' ? '2px solid #089981' : '2px solid transparent',
-            color: activeTab === 'footprint_chart' ? '#34d399' : 'var(--text-primary)',
-            padding: '4px 10px',
-            fontSize: '12px',
-            fontWeight: '800',
-            cursor: 'pointer',
-            borderTopLeftRadius: '5px',
-            borderTopRightRadius: '5px',
-            transition: 'all 0.15s',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}
-        >
-          👣 Footprint Chart
-        </button>
+      {/* Navigation Controls Bar (Mobile Quick Select + Touch Scroll Tab List) */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '4px', width: '100%', boxSizing: 'border-box' }}>
+        
+        {/* Mobile Quick Dropdown Selector (Instant 1-tap jump to any tab) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(30, 41, 59, 0.8)', border: '1px solid rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '6px', shrink: 0 }}>
+          <Layers size={14} color="#60a5fa" />
+          <select
+            value={activeTab}
+            onChange={(e) => setActiveTab(e.target.value as TabType)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: activeTabInfo.color,
+              fontSize: '12px',
+              fontWeight: '800',
+              outline: 'none',
+              cursor: 'pointer',
+              maxWidth: '130px'
+            }}
+          >
+            {TABS_LIST.map((tab) => (
+              <option key={tab.id} value={tab.id} style={{ backgroundColor: '#0f172a', color: '#ffffff' }}>
+                {tab.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Horizontally Scrollable Touch Tab Bar */}
+        <div className="mobile-tab-scroll" style={{ flex: 1 }}>
+          {TABS_LIST.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                ref={isActive ? activeTabRef : null}
+                onClick={() => setActiveTab(tab.id)}
+                style={{
+                  background: isActive ? `${tab.color}22` : 'transparent',
+                  border: 'none',
+                  borderBottom: isActive ? `2px solid ${tab.color}` : '2px solid transparent',
+                  color: isActive ? tab.color : 'var(--text-primary)',
+                  padding: '4px 10px',
+                  fontSize: '12px',
+                  fontWeight: isActive ? '800' : '600',
+                  cursor: 'pointer',
+                  borderTopLeftRadius: '5px',
+                  borderTopRightRadius: '5px',
+                  transition: 'all 0.15s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
       </div>
 
       {/* Main Workspace */}

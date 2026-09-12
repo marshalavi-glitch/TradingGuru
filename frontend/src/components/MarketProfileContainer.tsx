@@ -1110,8 +1110,23 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
+          onTouchStart={(e) => {
+            if (e.touches.length === 1) {
+              setIsDragging(true);
+              setDragStart({ x: e.touches[0].clientX - panOffset.x, y: e.touches[0].clientY - panOffset.y });
+            }
+          }}
+          onTouchMove={(e) => {
+            if (isDragging && e.touches.length === 1) {
+              setPanOffset({
+                x: e.touches[0].clientX - dragStart.x,
+                y: e.touches[0].clientY - dragStart.y
+              });
+            }
+          }}
+          onTouchEnd={() => setIsDragging(false)}
           onDoubleClick={handleDoubleClick}
-          style={{ cursor: isDragging ? 'grabbing' : 'grab', display: 'block' }}
+          style={{ cursor: isDragging ? 'grabbing' : 'grab', display: 'block', touchAction: 'none' }}
         />
 
         {/* Hover Tooltip */}

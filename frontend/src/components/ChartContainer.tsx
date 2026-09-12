@@ -147,6 +147,17 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
         fontSize: 12,
         fontFamily: 'Outfit, sans-serif'
       },
+      handleScroll: {
+        vertTouchDrag: true,
+        horzTouchDrag: true,
+        mouseWheel: true,
+        pressedMouseMove: true,
+      },
+      handleScale: {
+        axisPressedMouseMove: true,
+        mouseWheel: true,
+        pinch: true,
+      },
       grid: {
         vertLines: { color: 'rgba(255, 255, 255, 0.03)' },
         horzLines: { color: 'rgba(255, 255, 255, 0.03)' }
