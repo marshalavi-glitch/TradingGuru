@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { getBackendHttpUrl } from '../utils/tvStreamer';
 import { groupCandlesByDay, calculateDayProfile, Candle, DayProfile, TPOBin } from '../utils/profileCalculator';
 import { resolveSymbol } from '../utils/symbolResolver';
-import { RefreshCw, Search, ZoomIn, ZoomOut, Move, BarChart2, TrendingUp, TrendingDown, ShieldAlert, Zap } from 'lucide-react';
+import { RefreshCw, Search, ZoomIn, ZoomOut, Move, BarChart2, TrendingUp, TrendingDown, ShieldAlert, Zap, Sliders, Layers } from 'lucide-react';
 
 interface MarketProfileContainerProps {
   onSymbolSelect?: (symbol: string) => void;
@@ -21,6 +21,12 @@ function formatDateShort(dateStr: string): string {
   return dateStr;
 }
 
+function formatDayNumber(dateStr: string): string {
+  const parts = dateStr.split('-');
+  if (parts.length < 3) return dateStr;
+  return parseInt(parts[2], 10).toString();
+}
+
 export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
   onSymbolSelect,
   onSwitchToChart
@@ -32,6 +38,11 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
   const [lookbackDays, setLookbackDays] = useState<number>(10);
   const [profileMode, setProfileMode] = useState<'tpo-collapsed' | 'tpo-split' | 'volume'>('tpo-collapsed');
   const [theme, setTheme] = useState<'dark-slate' | 'dark'>('dark-slate');
+
+  // Customization Options
+  const [gridStep, setGridStep] = useState<number>(20); // 20 points price step as requested
+  const [highlightSinglePrints, setHighlightSinglePrints] = useState<boolean>(true);
+  const [showIbLine, setShowIbLine] = useState<boolean>(true);
 
   // Interactive Zoom & Pan State
   const [zoomLevel, setZoomLevel] = useState<number>(1.0);
@@ -45,12 +56,13 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 0, height: 620 });
+  const [dimensions, setDimensions] = useState({ width: 0, height: 640 });
   const [hoverInfo, setHoverInfo] = useState<{
     profile: DayProfile;
     bin: TPOBin;
     x: number;
     y: number;
+    isSinglePrint?: boolean;
   } | null>(null);
 
   const watchSymbols = [
@@ -134,7 +146,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
       if (canvasContainerRef.current) {
         setDimensions({
           width: canvasContainerRef.current.clientWidth,
-          height: Math.max(540, canvasContainerRef.current.clientHeight || 620)
+          height: Math.max(560, canvasContainerRef.current.clientHeight || 640)
         });
       }
     };
@@ -176,7 +188,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
     setPanOffset({ x: 0, y: 0 });
   };
 
-  // Multi-session Canvas Renderer with Dynamic Zoom, Pan & TPO Letter Rendering
+  // Multi-session Canvas Renderer with 20-pt axis lines, TradingView dates/times, VAH/VAL/POC lines, Single Prints, and IB line
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || dayProfiles.length === 0 || dimensions.width === 0) return;
@@ -196,13 +208,13 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
 
     const isDarkSlate = theme === 'dark-slate';
     const bgColor = isDarkSlate ? '#181c27' : '#0d1017';
-    const gridLineColor = isDarkSlate ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.03)';
+    const gridLineColor = isDarkSlate ? 'rgba(255, 255, 255, 0.06)' : 'rgba(255, 255, 255, 0.04)';
     const textColor = isDarkSlate ? '#94a3b8' : '#6b7280';
 
     ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, width, height);
 
-    const padding = { top: 40, bottom: 40, left: 15, right: 75 };
+    const padding = { top: 40, bottom: 45, left: 20, right: 75 };
     const baseChartWidth = width - padding.left - padding.right;
     const baseChartHeight = height - padding.top - padding.bottom;
 
@@ -223,7 +235,6 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
     const rawMax = globalMax + pMargin;
     const rawRange = rawMax - rawMin;
 
-    // Zoom centers around middle price unless panned
     const centerPrice = (rawMax + rawMin) / 2 - (panOffset.y / baseChartHeight) * rawRange;
     const visibleRange = rawRange / zoomLevel;
 
@@ -235,34 +246,36 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
       return padding.top + ((maxPrice - price) / priceRange) * baseChartHeight;
     };
 
-    // Draw horizontal grid lines & Right Y-Axis Price Scale
-    const numTicks = Math.max(6, Math.floor(12 * zoomLevel));
-    const tickStep = priceRange / numTicks;
+    // 1. Draw Price Axis Grid Lines Spaced by 20 Points (or user gridStep)
+    const step = gridStep > 0 ? gridStep : 20; // 20 points step
+    const startTick = Math.floor(minPrice / step) * step;
+    const endTick = Math.ceil(maxPrice / step) * step;
 
     ctx.font = '10px "JetBrains Mono", monospace';
     ctx.textAlign = 'left';
 
-    for (let i = 0; i <= numTicks; i++) {
-      const priceTick = minPrice + i * tickStep;
+    for (let priceTick = startTick; priceTick <= endTick; priceTick += step) {
       const y = getPriceY(priceTick);
 
       if (y >= padding.top && y <= height - padding.bottom) {
-        // Grid line
+        // Grid line across chart
         ctx.strokeStyle = gridLineColor;
         ctx.lineWidth = 1;
+        ctx.setLineDash([2, 4]);
         ctx.beginPath();
         ctx.moveTo(padding.left, y);
         ctx.lineTo(width - padding.right, y);
         ctx.stroke();
+        ctx.setLineDash([]);
 
-        // Price tick label on right Y axis
+        // Price tick label on right Y axis (20-point spaced)
         ctx.fillStyle = textColor;
         ctx.fillText(priceTick.toFixed(1), width - padding.right + 8, y + 3.5);
       }
     }
 
     // Vertical Y-axis border
-    ctx.strokeStyle = isDarkSlate ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.06)';
+    ctx.strokeStyle = isDarkSlate ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.08)';
     ctx.beginPath();
     ctx.moveTo(width - padding.right, padding.top);
     ctx.lineTo(width - padding.right, height - padding.bottom);
@@ -287,12 +300,27 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
       // Skip rendering if column is entirely outside visible canvas horizontal bounds
       if (colEndX < padding.left || colStartX > width - padding.right) return;
 
-      // Session X-axis date label
-      const dateLabel = formatDateShort(profile.dateStr);
-      ctx.fillStyle = isDarkSlate ? '#cbd5e1' : '#9ca3af';
-      ctx.font = `bold ${Math.max(9, Math.min(13, 11 * Math.sqrt(zoomLevel)))}px "Outfit", sans-serif`;
+      // 2. TradingView Style X-Axis Date & Time Plotting
+      const dayNum = formatDayNumber(profile.dateStr);
+      ctx.fillStyle = isDarkSlate ? '#f1f5f9' : '#ffffff';
+      ctx.font = `bold ${Math.max(10, Math.min(13, 11 * Math.sqrt(zoomLevel)))}px "Outfit", sans-serif`;
       ctx.textAlign = 'center';
-      ctx.fillText(dateLabel, colStartX + colWidth / 2, height - padding.bottom + 20);
+      
+      // Top row: Day Date Number (e.g. 8, 9, 10, 11, 15, 16)
+      ctx.fillText(dayNum, colStartX + colWidth * 0.25, height - padding.bottom + 18);
+
+      // Sub-row: Intraday Time Marker (e.g. 12:15 midpoint as in TradingView)
+      ctx.fillStyle = isDarkSlate ? '#94a3b8' : '#6b7280';
+      ctx.font = '10px "JetBrains Mono", monospace';
+      ctx.fillText('12:15', colStartX + colWidth * 0.75, height - padding.bottom + 18);
+
+      // Small vertical tick mark on bottom X axis
+      ctx.strokeStyle = isDarkSlate ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.1)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(colStartX + colWidth * 0.75, height - padding.bottom);
+      ctx.lineTo(colStartX + colWidth * 0.75, height - padding.bottom + 5);
+      ctx.stroke();
 
       // Light column background highlight
       ctx.fillStyle = isDarkSlate ? 'rgba(255, 255, 255, 0.015)' : 'rgba(255, 255, 255, 0.01)';
@@ -300,7 +328,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
 
       // Session separator vertical line
       if (sIdx > 0) {
-        ctx.strokeStyle = isDarkSlate ? 'rgba(255, 255, 255, 0.06)' : 'rgba(255, 255, 255, 0.03)';
+        ctx.strokeStyle = isDarkSlate ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.04)';
         ctx.lineWidth = 1;
         ctx.setLineDash([3, 3]);
         ctx.beginPath();
@@ -310,12 +338,12 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
         ctx.setLineDash([]);
       }
 
-      // Value Area Shading Box (subtle background box between VAH and VAL)
+      // 3. Pink / Purple Value Area Shading Box (Exact match to TradingView screenshot)
       if (profile.vahPrice && profile.valPrice) {
         const vahY = getPriceY(profile.vahPrice);
         const valY = getPriceY(profile.valPrice);
         if (vahY < height - padding.bottom && valY > padding.top) {
-          ctx.fillStyle = 'rgba(168, 85, 247, 0.05)';
+          ctx.fillStyle = 'rgba(236, 72, 153, 0.08)'; // Pinkish Value Area tint matching TradingView screenshot
           ctx.fillRect(colStartX, Math.max(padding.top, vahY), colWidth, Math.min(baseChartHeight, valY - vahY));
         }
       }
@@ -346,6 +374,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
 
         const isPoc = bin.price === profile.pocPrice;
         const isAbovePoc = bin.price > profile.pocPrice;
+        const isSinglePrint = bin.tpos.length === 1 && highlightSinglePrints;
 
         if (profileMode === 'volume') {
           // Volume Profile bars
@@ -369,7 +398,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
 
           if (isPoc) {
             // Solid BLACK row background for POC level (exact match to TradingView screenshot)
-            const pocLabelWidth = showLetters ? 36 : 28;
+            const pocLabelWidth = showLetters ? 38 : 28;
             const pocRowWidth = Math.min(colWidth * 0.98, tpoCount * (baseBlockSize + blockGap) + pocLabelWidth);
             
             ctx.fillStyle = '#000000';
@@ -388,7 +417,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
                 // Individual block border/fill
                 ctx.fillStyle = '#111111';
                 ctx.fillRect(x, binY + (rowHeight - baseBlockSize) / 2, baseBlockSize, baseBlockSize);
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
                 ctx.lineWidth = 0.5;
                 ctx.strokeRect(x, binY + (rowHeight - baseBlockSize) / 2, baseBlockSize, baseBlockSize);
 
@@ -404,8 +433,13 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
               }
             });
           } else {
-            // Upper TPOs: Red/Pink square blocks. Lower TPOs: Emerald Green square blocks
-            const blockBgColor = isAbovePoc ? '#e23636' : '#089981';
+            // 4. Mark Single Prints (Single TPO rows) with distinct highlight/accent
+            let blockBgColor = isAbovePoc ? '#e23636' : '#089981';
+            
+            if (isSinglePrint) {
+              // Single Print highlight: Amber/Cyan accent with outline
+              blockBgColor = isAbovePoc ? '#f43f5e' : '#10b981';
+            }
 
             bin.tpos.forEach((letter, colIdx) => {
               const x = colStartX + colIdx * (baseBlockSize + blockGap);
@@ -413,13 +447,18 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
                 ctx.fillStyle = blockBgColor;
                 ctx.fillRect(x, binY + (rowHeight - baseBlockSize) / 2, baseBlockSize, baseBlockSize);
 
-                if (showLetters) {
-                  // Subtle border between blocks
+                // Single Print outline box
+                if (isSinglePrint) {
+                  ctx.strokeStyle = '#f59e0b'; // Amber outline for Single Prints
+                  ctx.lineWidth = 1;
+                  ctx.strokeRect(x, binY + (rowHeight - baseBlockSize) / 2, baseBlockSize, baseBlockSize);
+                } else {
                   ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
                   ctx.lineWidth = 0.5;
                   ctx.strokeRect(x, binY + (rowHeight - baseBlockSize) / 2, baseBlockSize, baseBlockSize);
+                }
 
-                  // White bold TPO letter inside block (A, B, C, D, E, F, G, H, I, J, K, L, M...)
+                if (showLetters) {
                   ctx.fillStyle = '#ffffff';
                   ctx.font = `bold ${Math.max(8, Math.floor(baseBlockSize * 0.75))}px "JetBrains Mono", monospace`;
                   ctx.textAlign = 'center';
@@ -431,34 +470,85 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
         }
       });
 
-      // Overlay horizontal dotted purple VAH & VAL lines
-      const drawMarkerLine = (price: number, label: string, color: string) => {
+      // 5. Plot Initial Balance (IB) Vertical Line on the left edge of profile (matching media_1789212650684.png)
+      if (showIbLine && profile.ibHigh && profile.ibLow) {
+        const ibYTop = getPriceY(profile.ibHigh);
+        const ibYBottom = getPriceY(profile.ibLow);
+
+        if (ibYTop < height - padding.bottom && ibYBottom > padding.top) {
+          const drawTop = Math.max(padding.top, ibYTop);
+          const drawBottom = Math.min(height - padding.bottom, ibYBottom);
+          const ibX = colStartX - 4; // Far-left edge of profile histogram
+
+          // Thick solid BLACK vertical IB line (exact match to screenshot)
+          ctx.strokeStyle = '#000000';
+          ctx.lineWidth = 3.5;
+          ctx.beginPath();
+          ctx.moveTo(ibX, drawTop);
+          ctx.lineTo(ibX, drawBottom);
+          ctx.stroke();
+
+          // White inner line for contrast
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.moveTo(ibX, drawTop);
+          ctx.lineTo(ibX, drawBottom);
+          ctx.stroke();
+
+          // Top and bottom horizontal tick caps
+          ctx.strokeStyle = '#000000';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.moveTo(ibX - 4, drawTop);
+          ctx.lineTo(ibX + 4, drawTop);
+          ctx.moveTo(ibX - 4, drawBottom);
+          ctx.lineTo(ibX + 4, drawBottom);
+          ctx.stroke();
+
+          // Label IB at top
+          ctx.fillStyle = isDarkSlate ? '#cbd5e1' : '#ffffff';
+          ctx.font = 'bold 9px "JetBrains Mono", monospace';
+          ctx.textAlign = 'right';
+          ctx.fillText('IB', ibX - 6, drawTop + 3);
+        }
+      }
+
+      // 3. Render VAH, VAL, POC Reference Lines Clearly Visible across Chart
+      const drawMarkerLine = (price: number, label: string, color: string, isPocLine = false) => {
         const lineY = getPriceY(price);
         if (lineY < padding.top || lineY > height - padding.bottom) return;
 
         ctx.strokeStyle = color;
-        ctx.lineWidth = 1.2;
+        ctx.lineWidth = isPocLine ? 1.5 : 1.2;
         ctx.setLineDash([3, 3]);
         ctx.beginPath();
         ctx.moveTo(colStartX, lineY);
-        ctx.lineTo(colEndX, lineY);
+        ctx.lineTo(width - padding.right, lineY); // Extend across the session & right scale
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Label on left of line
-        ctx.fillStyle = color;
+        // Label on left of line with background box
+        const labelText = `${label} ▶`;
         ctx.font = 'bold 9px "JetBrains Mono", monospace';
-        ctx.textAlign = 'left';
-        ctx.fillText(`${label} ▶`, colStartX + 2, lineY - 2);
+        const txtWidth = ctx.measureText(labelText).width;
+
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+        ctx.fillRect(colStartX - txtWidth - 4, lineY - 6, txtWidth + 4, 12);
+
+        ctx.fillStyle = color;
+        ctx.textAlign = 'right';
+        ctx.fillText(labelText, colStartX - 2, lineY + 3);
       };
 
-      if (profile.vahPrice) drawMarkerLine(profile.vahPrice, 'VAH', '#a855f7');
-      if (profile.valPrice) drawMarkerLine(profile.valPrice, 'VAL', '#a855f7');
+      if (profile.vahPrice) drawMarkerLine(profile.vahPrice, 'VAH', '#000000'); // Solid black dotted VAH line as in media_1789212650684.png
+      if (profile.valPrice) drawMarkerLine(profile.valPrice, 'VAL', '#000000'); // Solid black dotted VAL line as in media_1789212650684.png
+      if (profile.pocPrice) drawMarkerLine(profile.pocPrice, 'POC', '#00f0ff', true);
     });
 
     ctx.restore(); // Restore clipping region
 
-  }, [dayProfiles, dimensions, profileMode, theme, zoomLevel, panOffset]);
+  }, [dayProfiles, dimensions, profileMode, theme, zoomLevel, panOffset, gridStep, highlightSinglePrints, showIbLine]);
 
   // Canvas Mouse Move Handler for Hover Tooltip & Panning Drag
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -477,7 +567,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
-    const padding = { top: 40, bottom: 40, left: 15, right: 75 };
+    const padding = { top: 40, bottom: 45, left: 20, right: 75 };
     const baseChartWidth = rect.width - padding.left - padding.right;
     const baseChartHeight = rect.height - padding.top - padding.bottom;
 
@@ -545,7 +635,8 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
         profile,
         bin: closestBin,
         x: mouseX + 15,
-        y: mouseY
+        y: mouseY,
+        isSinglePrint: closestBin.tpos.length === 1
       });
     } else {
       setHoverInfo(null);
@@ -701,9 +792,67 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
           </form>
         </div>
 
-        {/* Timeframe & Lookback & Zoom Controls */}
+        {/* Customization & View Controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
           
+          {/* Axis Grid Step (20 points step default) */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(0,0,0,0.4)', padding: '3px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <Sliders size={12} style={{ color: '#00f0ff' }} />
+            <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600' }}>Grid:</span>
+            <select
+              value={gridStep}
+              onChange={(e) => setGridStep(Number(e.target.value))}
+              style={{
+                background: 'transparent',
+                color: '#00f0ff',
+                border: 'none',
+                fontSize: '11px',
+                fontWeight: '800',
+                cursor: 'pointer',
+                outline: 'none'
+              }}
+            >
+              <option value={10} style={{ background: '#1e293b' }}>10 pts</option>
+              <option value={20} style={{ background: '#1e293b' }}>20 pts (Req)</option>
+              <option value={50} style={{ background: '#1e293b' }}>50 pts</option>
+              <option value={100} style={{ background: '#1e293b' }}>100 pts</option>
+            </select>
+          </div>
+
+          {/* IB & Single Prints Toggles */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(0,0,0,0.3)', padding: '2px', borderRadius: '6px' }}>
+            <button
+              onClick={() => setShowIbLine(!showIbLine)}
+              style={{
+                background: showIbLine ? 'rgba(59, 130, 246, 0.25)' : 'transparent',
+                color: showIbLine ? '#60a5fa' : 'var(--text-secondary)',
+                border: 'none',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer'
+              }}
+            >
+              IB Line
+            </button>
+            <button
+              onClick={() => setHighlightSinglePrints(!highlightSinglePrints)}
+              style={{
+                background: highlightSinglePrints ? 'rgba(245, 158, 11, 0.25)' : 'transparent',
+                color: highlightSinglePrints ? '#f59e0b' : 'var(--text-secondary)',
+                border: 'none',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer'
+              }}
+            >
+              Single Prints
+            </button>
+          </div>
+
           {/* Zoom Controls */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(0,0,0,0.4)', padding: '3px 6px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
             <button
@@ -836,7 +985,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
         style={{ 
           position: 'relative', 
           width: '100%', 
-          minHeight: '620px', 
+          minHeight: '640px', 
           backgroundColor: theme === 'dark-slate' ? '#181c27' : '#0d1017', 
           borderRadius: '8px', 
           border: '1px solid var(--border-color)',
@@ -853,7 +1002,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(15, 23, 42, 0.75)', padding: '4px 10px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.08)' }}>
             <Move size={12} style={{ color: '#60a5fa' }} />
             <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: '600' }}>
-              Scroll wheel to Zoom In/Out | Drag to Pan | Double-click to Reset
+              Scroll wheel to Zoom | Drag to Pan | IB Line & Single Prints Enabled | 20pt Grid
             </span>
           </div>
         </div>
@@ -900,7 +1049,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
               boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
               fontSize: '11px',
               color: 'white',
-              minWidth: '190px'
+              minWidth: '200px'
             }}
           >
             <div style={{ fontWeight: 'bold', color: '#00f0ff', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '4px', marginBottom: '6px' }}>
@@ -918,6 +1067,11 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
               <span style={{ color: 'var(--text-secondary)' }}>Volume:</span>
               <span style={{ fontWeight: 'bold', color: '#3b82f6' }}>{Math.round(hoverInfo.bin.volume).toLocaleString()}</span>
             </div>
+            {hoverInfo.isSinglePrint && (
+              <div style={{ color: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.2)', fontWeight: 'bold', fontSize: '9px', textAlign: 'center', padding: '2px 4px', borderRadius: '3px', marginTop: '4px' }}>
+                ⚡ Single Print Imbalance Level
+              </div>
+            )}
             {hoverInfo.bin.price === hoverInfo.profile.pocPrice && (
               <div style={{ color: '#000', backgroundColor: '#00f0ff', fontWeight: 'bold', fontSize: '9px', textAlign: 'center', padding: '2px 4px', borderRadius: '3px', marginTop: '6px', textTransform: 'uppercase' }}>
                 ⭐ Point of Control (POC)
@@ -959,6 +1113,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
                 <th style={{ padding: '8px 12px', color: '#00f0ff' }}>POC</th>
                 <th style={{ padding: '8px 12px', color: '#a855f7' }}>VAH</th>
                 <th style={{ padding: '8px 12px', color: '#a855f7' }}>VAL</th>
+                <th style={{ padding: '8px 12px', color: '#f59e0b' }}>IB Range</th>
                 <th style={{ padding: '8px 12px' }}>Total TPOs</th>
                 <th style={{ padding: '8px 12px' }}>Structure / Bias</th>
               </tr>
@@ -968,6 +1123,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
                 const isBullish = p.closePrice >= p.openPrice;
                 const priceChange = p.closePrice - p.openPrice;
                 const changePct = p.openPrice ? ((priceChange / p.openPrice) * 100).toFixed(2) : '0.00';
+                const ibWidth = p.ibHigh && p.ibLow ? (p.ibHigh - p.ibLow).toFixed(1) : '-';
 
                 return (
                   <tr 
@@ -987,6 +1143,9 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
                     <td style={{ padding: '8px 12px', fontWeight: '800', color: '#00f0ff' }}>{p.pocPrice.toFixed(2)}</td>
                     <td style={{ padding: '8px 12px', color: '#a855f7' }}>{p.vahPrice.toFixed(2)}</td>
                     <td style={{ padding: '8px 12px', color: '#a855f7' }}>{p.valPrice.toFixed(2)}</td>
+                    <td style={{ padding: '8px 12px', color: '#f59e0b', fontWeight: '700' }}>
+                      {p.ibLow.toFixed(1)} - {p.ibHigh.toFixed(1)} ({ibWidth} pts)
+                    </td>
                     <td style={{ padding: '8px 12px', color: '#f59e0b', fontWeight: '600' }}>{p.totalTPOs}</td>
                     <td style={{ padding: '8px 12px' }}>
                       <span style={{ 
