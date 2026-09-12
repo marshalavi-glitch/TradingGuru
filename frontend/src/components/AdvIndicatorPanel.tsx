@@ -128,24 +128,31 @@ export const AdvIndicatorPanel: React.FC<AdvIndicatorPanelProps> = ({ candles, s
   }, [candles, len, aggregation, priceEnable, baseEnable]);
 
   const width = 800;
-  const height = 240;
-  const padding = 28;
+  const height = 220;
+  const paddingX = 24;
+  const baselineY = height - 22; // Bottom baseline at y = 198
+  const usableHeight = height - 38; // Usable height for bars/lines = 182px
 
   if (!advData || advData.length === 0) return null;
 
   const chartData = advData.slice(-60); // Last 60 candles
-  const maxVol = Math.max(...chartData.map(d => Math.abs(d.base_price_vol)), 1);
-  const maxAd = Math.max(...chartData.map(d => Math.abs(d.MA_AD || 0)), ...chartData.map(d => Math.abs(d.MA_base_price_vol || 0)), 1);
+  const maxVal = Math.max(
+    ...chartData.map(d => Math.abs(d.base_price_vol)),
+    ...chartData.map(d => Math.abs(d.base_AD)),
+    ...chartData.map(d => Math.abs(d.MA_AD || 0)),
+    ...chartData.map(d => Math.abs(d.MA_base_price_vol || 0)),
+    1
+  ) * 1.12;
 
-  const stepX = (width - padding * 2) / Math.max(chartData.length - 1, 1);
+  const stepX = (width - paddingX * 2) / Math.max(chartData.length - 1, 1);
 
   const maAdPoints: string[] = [];
   const maVolPoints: string[] = [];
 
   chartData.forEach((d, i) => {
-    const x = padding + i * stepX;
-    const yAd = height - padding - ((d.MA_AD || 0) / (maxAd * 1.2)) * (height - padding * 2);
-    const yVol = height - padding - ((d.MA_base_price_vol || 0) / (maxAd * 1.2)) * (height - padding * 2);
+    const x = paddingX + i * stepX;
+    const yAd = baselineY - ((d.MA_AD || 0) / maxVal) * usableHeight;
+    const yVol = baselineY - ((d.MA_base_price_vol || 0) / maxVal) * usableHeight;
     maAdPoints.push(`${x},${yAd}`);
     maVolPoints.push(`${x},${yVol}`);
   });
@@ -255,23 +262,22 @@ export const AdvIndicatorPanel: React.FC<AdvIndicatorPanelProps> = ({ candles, s
       {/* SVG CHART DRAWING */}
       <div style={{ width: '100%', overflowX: 'auto' }}>
         <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: 'auto', background: '#090d16' }}>
-          {/* Zero line */}
-          <line x1={padding} y1={height / 2} x2={width - padding} y2={height / 2} stroke="#888888" strokeWidth="1" strokeDasharray="2 2" opacity="0.5" />
+          {/* Bottom baseline */}
+          <line x1={paddingX} y1={baselineY} x2={width - paddingX} y2={baselineY} stroke="rgba(255,255,255,0.15)" strokeWidth="1" strokeDasharray="3 3" />
 
-          {/* Volume Columns & A/D Volume Columns */}
+          {/* Volume Columns & A/D Volume Columns starting from baselineY going up */}
           {chartData.map((d, i) => {
-            const x = padding + i * stepX;
-            const barW = Math.max(stepX * 0.6, 2);
+            const x = paddingX + i * stepX;
+            const barW = Math.max(stepX * 0.65, 2);
             
-            const isUp = d.ch > 0;
-            const isDown = d.ch < 0;
+            const isUp = d.ch >= 0;
 
             const isStrongBullish = d.AD_ratio >= 0.85 && isUp;
-            const isStrongBearish = d.AD_ratio <= -0.85 && isDown;
+            const isStrongBearish = d.AD_ratio <= -0.85 && !isUp;
             const isCrossover = (d.base_AD > d.MA_base_price_vol) || (d.MA_AD > d.MA_base_price_vol && isUp);
 
-            let volColor = isUp ? '#65D25B44' : isDown ? '#FE6B6944' : '#888888ff';
-            let adColor = isUp ? '#92df8bff' : isDown ? '#fe9695ff' : 'transparent';
+            let volColor = isUp ? 'rgba(34, 197, 94, 0.35)' : 'rgba(239, 68, 68, 0.35)';
+            let adColor = isUp ? '#22c55e' : '#ef4444';
             let strokeColor = 'none';
             let strokeW = '0';
 
@@ -292,25 +298,30 @@ export const AdvIndicatorPanel: React.FC<AdvIndicatorPanelProps> = ({ candles, s
               strokeW = '1.5';
             }
 
-            const volH = Math.min((Math.abs(d.base_price_vol) / maxVol) * (height / 2 - padding), height / 2 - padding);
-            const adH = Math.min((Math.abs(d.base_AD) / maxVol) * (height / 2 - padding), height / 2 - padding);
+            const volH = Math.max(((Math.abs(d.base_price_vol) / maxVal) * usableHeight), 1);
+            const adH = Math.max(((Math.abs(d.base_AD) / maxVal) * usableHeight), 1);
+
+            const yVol = baselineY - volH;
+            const yAd = baselineY - adH;
 
             return (
               <g key={i}>
-                <rect x={x - barW / 2} y={height / 2 - volH} width={barW} height={volH * 2} fill={volColor} stroke={strokeColor} strokeWidth={strokeW} />
+                {/* Volume Base Column (wide) */}
+                <rect x={x - barW / 2} y={yVol} width={barW} height={volH} fill={volColor} stroke={strokeColor} strokeWidth={strokeW} rx="1" />
+                {/* A/D Inner Column (narrower) */}
                 {adColor !== 'transparent' && (
-                  <rect x={x - barW / 3} y={height / 2 - adH} width={barW / 1.5} height={adH * 2} fill={adColor} stroke={isStrongBullish ? '#ffffff' : 'none'} strokeWidth={isStrongBullish ? '1' : '0'} />
+                  <rect x={x - barW / 3} y={yAd} width={barW / 1.5} height={adH} fill={adColor} stroke={isStrongBullish ? '#ffffff' : 'none'} strokeWidth={isStrongBullish ? '1' : '0'} rx="1" />
                 )}
 
                 {showPerCandleRatios && (
                   <text
                     x={x}
-                    y={height - 6}
+                    y={height - 4}
                     fill={isStrongBullish ? '#00f2fe' : isStrongBearish ? '#f43f5e' : isUp ? '#4ade80' : '#f87171'}
                     fontSize="5.5"
                     fontWeight="700"
                     textAnchor="end"
-                    transform={`rotate(-45, ${x}, ${height - 6})`}
+                    transform={`rotate(-45, ${x}, ${height - 4})`}
                   >
                     {d.AD_ratio >= 0 ? '.' : '-.'}{Math.round(Math.abs(d.AD_ratio) * 100).toString().padStart(2, '0')}
                   </text>
@@ -319,8 +330,11 @@ export const AdvIndicatorPanel: React.FC<AdvIndicatorPanelProps> = ({ candles, s
             );
           })}
 
-          <polyline fill="none" stroke="#4477ff" strokeWidth="2.5" points={maAdPoints.join(' ')} />
+          {/* Volume MA Line (#ff9900) */}
           <polyline fill="none" stroke="#ff9900" strokeWidth="2" strokeDasharray="3 3" points={maVolPoints.join(' ')} />
+
+          {/* ADV MA Line (#3b82f6) */}
+          <polyline fill="none" stroke="#3b82f6" strokeWidth="2.5" points={maAdPoints.join(' ')} />
         </svg>
       </div>
 
