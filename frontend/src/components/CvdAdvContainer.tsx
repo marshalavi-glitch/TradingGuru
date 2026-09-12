@@ -1026,6 +1026,10 @@ const RenderAdvPineIndicatorChart: React.FC<{ candles: Candle[] }> = ({ candles 
 
   const latest = chartData[chartData.length - 1];
 
+  // Check if criteria matched on latest candle or recent candles
+  const activeAlertBar = chartData.find(d => (d.base_AD > d.MA_base_price_vol) || (d.MA_AD > d.MA_base_price_vol && d.ch > 0));
+  const hasActiveAlert = !!activeAlertBar;
+
   return (
     <div style={{ background: '#0b0f19', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
       
@@ -1080,6 +1084,36 @@ const RenderAdvPineIndicatorChart: React.FC<{ candles: Candle[] }> = ({ candles 
         </div>
       </div>
 
+      {/* LIVE CRITERIA ALERT BANNER (DIRECT MATCH TO SCREENSHOT ANNOTATION) */}
+      {hasActiveAlert && (
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(234, 179, 8, 0.15))',
+          border: '1px solid #ffd700',
+          borderRadius: '8px',
+          padding: '10px 14px',
+          display: 'flex',
+          justify: 'space-between',
+          alignItems: 'center',
+          gap: '12px',
+          boxShadow: '0 0 16px rgba(255, 215, 0, 0.3)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Zap size={20} color="#ffd700" className="spin" />
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: '800', color: '#ffd700' }}>
+                🚨 ADV BREAKOUT ALERT: Criteria Matched on Chart!
+              </div>
+              <div style={{ fontSize: '11px', color: '#fde68a', marginTop: '2px' }}>
+                A/D Volume inner bar / A/D MA crossed above Volume MA line. Highlighted in <strong>Gold (#ffd700)</strong> below.
+              </div>
+            </div>
+          </div>
+          <span style={{ background: '#ffd700', color: '#000000', fontSize: '11px', fontWeight: '900', padding: '4px 10px', borderRadius: '20px' }}>
+            ALERT TRIGGERED
+          </span>
+        </div>
+      )}
+
       {/* VALUE METRICS LEGEND */}
       {latest && (
         <div style={{ display: 'flex', gap: '16px', fontSize: '12px', background: 'rgba(30, 41, 59, 0.5)', padding: '8px 12px', borderRadius: '6px', flexWrap: 'wrap' }}>
@@ -1103,8 +1137,18 @@ const RenderAdvPineIndicatorChart: React.FC<{ candles: Candle[] }> = ({ candles 
             
             const isUp = d.ch > 0;
             const isDown = d.ch < 0;
-            const volColor = isUp ? '#65D25B44' : isDown ? '#FE6B6944' : '#888888ff';
-            const adColor = isUp ? '#92df8bff' : isDown ? '#fe9695ff' : 'transparent';
+
+            // CRITERIA MATCH CHECK: A/D volume or A/D MA exceeding Volume MA
+            const isMatched = (d.base_AD > d.MA_base_price_vol) || (d.MA_AD > d.MA_base_price_vol && d.ch > 0);
+
+            // COLOR SELECTION: Highlight with Neon Gold (#ffd700) when criteria matches!
+            let volColor = isUp ? '#65D25B44' : isDown ? '#FE6B6944' : '#888888ff';
+            let adColor = isUp ? '#92df8bff' : isDown ? '#fe9695ff' : 'transparent';
+
+            if (isMatched) {
+              volColor = 'rgba(255, 215, 0, 0.35)'; // Neon Gold outer
+              adColor = '#ffd700'; // Bright Gold inner bar (#ffd700)
+            }
 
             const volH = Math.min((Math.abs(d.base_price_vol) / maxVol) * (height / 2 - padding), height / 2 - padding);
             const adH = Math.min((Math.abs(d.base_AD) / maxVol) * (height / 2 - padding), height / 2 - padding);
@@ -1112,10 +1156,10 @@ const RenderAdvPineIndicatorChart: React.FC<{ candles: Candle[] }> = ({ candles 
             return (
               <g key={i}>
                 {/* Volume Base Column */}
-                <rect x={x - barW / 2} y={height / 2 - volH} width={barW} height={volH * 2} fill={volColor} />
+                <rect x={x - barW / 2} y={height / 2 - volH} width={barW} height={volH * 2} fill={volColor} stroke={isMatched ? '#ffd700' : 'none'} strokeWidth={isMatched ? '1.5' : '0'} />
                 {/* A/D Inner Column */}
                 {adColor !== 'transparent' && (
-                  <rect x={x - barW / 3} y={height / 2 - adH} width={barW / 1.5} height={adH * 2} fill={adColor} />
+                  <rect x={x - barW / 3} y={height / 2 - adH} width={barW / 1.5} height={adH * 2} fill={adColor} stroke={isMatched ? '#ffffff' : 'none'} strokeWidth={isMatched ? '1' : '0'} />
                 )}
               </g>
             );
