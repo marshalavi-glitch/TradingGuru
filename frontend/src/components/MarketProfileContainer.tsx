@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { getBackendHttpUrl } from '../utils/tvStreamer';
 import { groupCandlesByDay, calculateDayProfile, Candle, DayProfile, TPOBin } from '../utils/profileCalculator';
-import { RefreshCw, Search, ZoomIn, ZoomOut, Maximize2, Move, BarChart2, TrendingUp, TrendingDown, ShieldAlert } from 'lucide-react';
+import { resolveSymbol } from '../utils/symbolResolver';
+import { RefreshCw, Search, ZoomIn, ZoomOut, Move, BarChart2, TrendingUp, TrendingDown, ShieldAlert, Zap } from 'lucide-react';
 
 interface MarketProfileContainerProps {
   onSymbolSelect?: (symbol: string) => void;
@@ -24,8 +25,9 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
   onSymbolSelect,
   onSwitchToChart
 }) => {
-  const [symbol, setSymbol] = useState<string>('NSE:NIFTY');
-  const [searchInput, setSearchInput] = useState<string>('NSE:NIFTY');
+  const [symbol, setSymbol] = useState<string>('NSE:NIFTY1!');
+  const [searchInput, setSearchInput] = useState<string>('NSE:NIFTY1!');
+  const [symbolCategory, setSymbolCategory] = useState<'futures' | 'indices' | 'all'>('futures');
   const [timeframe, setTimeframe] = useState<string>('30'); // 30m default for standard TPO
   const [lookbackDays, setLookbackDays] = useState<number>(10);
   const [profileMode, setProfileMode] = useState<'tpo-collapsed' | 'tpo-split' | 'volume'>('tpo-collapsed');
@@ -52,16 +54,30 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
   } | null>(null);
 
   const watchSymbols = [
-    { symbol: 'NSE:NIFTY', name: 'NIFTY 50' },
-    { symbol: 'NSE:BANKNIFTY', name: 'BANK NIFTY' },
-    { symbol: 'NSE:FINNIFTY', name: 'FIN NIFTY' },
-    { symbol: 'NSE:RELIANCE', name: 'Reliance Ind.' },
-    { symbol: 'NSE:HDFCBANK', name: 'HDFC Bank' },
-    { symbol: 'NSE:ICICIBANK', name: 'ICICI Bank' },
-    { symbol: 'NSE:INFY', name: 'Infosys' },
-    { symbol: 'NSE:TCS', name: 'TCS' },
-    { symbol: 'NSE:SBIN', name: 'State Bank of India' }
+    // Futures Contracts
+    { symbol: 'NSE:NIFTY1!', name: 'NIFTY FUT', category: 'futures' },
+    { symbol: 'NSE:BANKNIFTY1!', name: 'BANK NIFTY FUT', category: 'futures' },
+    { symbol: 'NSE:FINNIFTY1!', name: 'FIN NIFTY FUT', category: 'futures' },
+    { symbol: 'NSE:RELIANCE1!', name: 'RELIANCE FUT', category: 'futures' },
+    { symbol: 'MCX:CRUDEOIL1!', name: 'CRUDE OIL FUT', category: 'futures' },
+    { symbol: 'MCX:NATURALGAS1!', name: 'NAT GAS FUT', category: 'futures' },
+    { symbol: 'MCX:GOLD1!', name: 'GOLD FUT', category: 'futures' },
+
+    // Indices / Spot
+    { symbol: 'NSE:NIFTY', name: 'NIFTY 50 Spot', category: 'indices' },
+    { symbol: 'NSE:BANKNIFTY', name: 'BANK NIFTY Spot', category: 'indices' },
+    { symbol: 'NSE:FINNIFTY', name: 'FIN NIFTY Spot', category: 'indices' },
+    { symbol: 'BSE:SENSEX', name: 'SENSEX', category: 'indices' }
   ];
+
+  const filteredSymbols = useMemo(() => {
+    if (symbolCategory === 'all') return watchSymbols;
+    return watchSymbols.filter(s => s.category === symbolCategory);
+  }, [symbolCategory]);
+
+  const activeSymbolInfo = useMemo(() => {
+    return resolveSymbol(symbol);
+  }, [symbol]);
 
   // Fetch candles
   const fetchCandles = async (sym: string, tf: string) => {
@@ -76,7 +92,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
         setCandles(data.candles);
       } else {
         setCandles([]);
-        setError('No candle data available for this symbol.');
+        setError('No candle data available for this contract.');
       }
     } catch (err: any) {
       console.error('[MarketProfileContainer] Fetch error:', err);
@@ -539,13 +555,24 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchInput.trim()) {
-      let formatted = searchInput.trim().toUpperCase();
-      if (!formatted.includes(':')) {
-        formatted = `NSE:${formatted}`;
+      const resolved = resolveSymbol(searchInput);
+      setSymbol(resolved.formattedSymbol);
+      setSearchInput(resolved.formattedSymbol);
+      if (onSymbolSelect) {
+        onSymbolSelect(resolved.formattedSymbol);
       }
-      setSymbol(formatted);
     }
   };
+
+  const handleSelectSymbol = (sym: string) => {
+    setSymbol(sym);
+    setSearchInput(sym);
+    if (onSymbolSelect) {
+      onSymbolSelect(sym);
+    }
+  };
+
+  const isFuturesContract = symbol.endsWith('1!') || activeSymbolInfo.type === 'futures';
 
   return (
     <div className="glass-panel animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%', padding: '16px', boxSizing: 'border-box' }}>
@@ -553,8 +580,89 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
       {/* Controls Toolbar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', background: 'rgba(15, 23, 42, 0.6)', padding: '12px 16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
         
-        {/* Preset Symbols & Search */}
+        {/* Preset Symbols, Category Filter & Search */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          
+          {/* Symbol Category Selector (Futures / Spot Indices / All) */}
+          <div style={{ display: 'flex', background: 'rgba(0,0,0,0.4)', padding: '2px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <button
+              onClick={() => setSymbolCategory('futures')}
+              style={{
+                background: symbolCategory === 'futures' ? '#00f0ff' : 'transparent',
+                color: symbolCategory === 'futures' ? '#000000' : 'var(--text-secondary)',
+                border: 'none',
+                padding: '4px 10px',
+                borderRadius: '4px',
+                fontSize: '11px',
+                fontWeight: '800',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              <Zap size={12} /> Futures
+            </button>
+            <button
+              onClick={() => setSymbolCategory('indices')}
+              style={{
+                background: symbolCategory === 'indices' ? '#3b82f6' : 'transparent',
+                color: symbolCategory === 'indices' ? 'white' : 'var(--text-secondary)',
+                border: 'none',
+                padding: '4px 10px',
+                borderRadius: '4px',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer'
+              }}
+            >
+              Indices / Spot
+            </button>
+            <button
+              onClick={() => setSymbolCategory('all')}
+              style={{
+                background: symbolCategory === 'all' ? 'rgba(255,255,255,0.15)' : 'transparent',
+                color: symbolCategory === 'all' ? 'white' : 'var(--text-secondary)',
+                border: 'none',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                fontSize: '11px',
+                fontWeight: '600',
+                cursor: 'pointer'
+              }}
+            >
+              All
+            </button>
+          </div>
+
+          {/* Quick preset buttons */}
+          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+            {filteredSymbols.map((item) => (
+              <button
+                key={item.symbol}
+                onClick={() => handleSelectSymbol(item.symbol)}
+                style={{
+                  background: symbol === item.symbol 
+                    ? (item.category === 'futures' ? 'rgba(0, 240, 255, 0.25)' : 'rgba(59, 130, 246, 0.25)') 
+                    : 'rgba(255, 255, 255, 0.04)',
+                  border: symbol === item.symbol 
+                    ? (item.category === 'futures' ? '1px solid #00f0ff' : '1px solid #3b82f6') 
+                    : '1px solid transparent',
+                  color: symbol === item.symbol 
+                    ? (item.category === 'futures' ? '#00f0ff' : '#60a5fa') 
+                    : 'var(--text-secondary)',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  cursor: 'pointer'
+                }}
+              >
+                {item.name}
+              </button>
+            ))}
+          </div>
+
           <form onSubmit={handleSearchSubmit} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               <Search size={14} style={{ position: 'absolute', left: '10px', color: 'var(--text-secondary)' }} />
@@ -562,7 +670,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
                 type="text"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Search symbol..."
+                placeholder="e.g. NIFTY1! or RELIANCE FUT"
                 style={{
                   background: 'rgba(0, 0, 0, 0.4)',
                   border: '1px solid var(--border-color)',
@@ -571,7 +679,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
                   color: 'white',
                   fontSize: '12px',
                   fontWeight: '600',
-                  width: '130px'
+                  width: '160px'
                 }}
               />
             </div>
@@ -591,33 +699,6 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
               Go
             </button>
           </form>
-
-          <div style={{ height: '20px', width: '1px', backgroundColor: 'rgba(255,255,255,0.1)' }}></div>
-
-          {/* Quick preset buttons */}
-          <div style={{ display: 'flex', gap: '4px' }}>
-            {watchSymbols.map((item) => (
-              <button
-                key={item.symbol}
-                onClick={() => {
-                  setSymbol(item.symbol);
-                  setSearchInput(item.symbol);
-                }}
-                style={{
-                  background: symbol === item.symbol ? 'rgba(59, 130, 246, 0.25)' : 'rgba(255, 255, 255, 0.04)',
-                  border: symbol === item.symbol ? '1px solid #3b82f6' : '1px solid transparent',
-                  color: symbol === item.symbol ? '#60a5fa' : 'var(--text-secondary)',
-                  padding: '4px 8px',
-                  borderRadius: '4px',
-                  fontSize: '11px',
-                  fontWeight: '600',
-                  cursor: 'pointer'
-                }}
-              >
-                {item.name}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Timeframe & Lookback & Zoom Controls */}
@@ -762,18 +843,25 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
           overflow: 'hidden'
         }}
       >
-        {/* Navigation / Zoom hint overlay */}
-        <div style={{ position: 'absolute', top: '10px', left: '15px', zIndex: 5, display: 'flex', alignItems: 'center', gap: '8px', pointerEvents: 'none', background: 'rgba(15, 23, 42, 0.7)', padding: '4px 10px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <Move size={12} style={{ color: '#00f0ff' }} />
-          <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: '600' }}>
-            Scroll wheel to Zoom In/Out | Drag to Pan | Double-click to Reset
-          </span>
+        {/* Navigation & Active Contract Header */}
+        <div style={{ position: 'absolute', top: '10px', left: '15px', zIndex: 5, display: 'flex', alignItems: 'center', gap: '10px', pointerEvents: 'none' }}>
+          {isFuturesContract && (
+            <span style={{ fontSize: '11px', fontWeight: '800', color: '#00f0ff', backgroundColor: 'rgba(0, 240, 255, 0.15)', border: '1px solid rgba(0, 240, 255, 0.4)', padding: '3px 8px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Zap size={12} /> {activeSymbolInfo.displayName || symbol} (Futures)
+            </span>
+          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(15, 23, 42, 0.75)', padding: '4px 10px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <Move size={12} style={{ color: '#60a5fa' }} />
+            <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: '600' }}>
+              Scroll wheel to Zoom In/Out | Drag to Pan | Double-click to Reset
+            </span>
+          </div>
         </div>
 
         {loading && (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(15, 23, 42, 0.8)', zIndex: 10 }}>
             <RefreshCw size={28} className="animate-spin" style={{ color: '#00f0ff', marginBottom: '12px' }} />
-            <span style={{ fontSize: '14px', color: 'white', fontWeight: '600' }}>Calculating Multi-Session TPO Market Profiles...</span>
+            <span style={{ fontSize: '14px', color: 'white', fontWeight: '600' }}>Calculating Multi-Session TPO Market Profiles for {symbol}...</span>
           </div>
         )}
 
@@ -855,7 +943,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <BarChart2 size={16} style={{ color: '#00f0ff' }} />
             <span style={{ fontSize: '14px', fontWeight: '700', color: 'white' }}>Session Market Profile Analytics</span>
-            <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>({dayProfiles.length} Daily Sessions)</span>
+            <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>({symbol} - {dayProfiles.length} Daily Sessions)</span>
           </div>
         </div>
 

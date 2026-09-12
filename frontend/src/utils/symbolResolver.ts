@@ -11,17 +11,40 @@ export interface SymbolInfo {
   type: 'stock' | 'index' | 'futures' | 'commodity';
 }
 
-const INDEX_MAP: Record<string, { symbol: string; display: string }> = {
-  'NIFTY': { symbol: 'NSE:NIFTY', display: 'NIFTY 50' },
-  'NIFTY50': { symbol: 'NSE:NIFTY', display: 'NIFTY 50' },
-  'NSE:NIFTY': { symbol: 'NSE:NIFTY', display: 'NIFTY 50' },
-  'BANKNIFTY': { symbol: 'NSE:BANKNIFTY', display: 'BANK NIFTY' },
-  'NSE:BANKNIFTY': { symbol: 'NSE:BANKNIFTY', display: 'BANK NIFTY' },
-  'FINNIFTY': { symbol: 'NSE:FINNIFTY', display: 'FIN NIFTY' },
-  'NSE:FINNIFTY': { symbol: 'NSE:FINNIFTY', display: 'FIN NIFTY' },
-  'MIDCPNIFTY': { symbol: 'NSE:MIDCPNIFTY', display: 'MIDCAP NIFTY' },
-  'SENSEX': { symbol: 'BSE:SENSEX', display: 'BSE SENSEX' },
-  'BSE:SENSEX': { symbol: 'BSE:SENSEX', display: 'BSE SENSEX' },
+const INDEX_MAP: Record<string, { symbol: string; display: string; type?: 'index' | 'futures' | 'commodity' }> = {
+  'NIFTY': { symbol: 'NSE:NIFTY', display: 'NIFTY 50', type: 'index' },
+  'NIFTY50': { symbol: 'NSE:NIFTY', display: 'NIFTY 50', type: 'index' },
+  'NSE:NIFTY': { symbol: 'NSE:NIFTY', display: 'NIFTY 50', type: 'index' },
+  'BANKNIFTY': { symbol: 'NSE:BANKNIFTY', display: 'BANK NIFTY', type: 'index' },
+  'NSE:BANKNIFTY': { symbol: 'NSE:BANKNIFTY', display: 'BANK NIFTY', type: 'index' },
+  'FINNIFTY': { symbol: 'NSE:FINNIFTY', display: 'FIN NIFTY', type: 'index' },
+  'NSE:FINNIFTY': { symbol: 'NSE:FINNIFTY', display: 'FIN NIFTY', type: 'index' },
+  'MIDCPNIFTY': { symbol: 'NSE:MIDCPNIFTY', display: 'MIDCAP NIFTY', type: 'index' },
+  'SENSEX': { symbol: 'BSE:SENSEX', display: 'BSE SENSEX', type: 'index' },
+  'BSE:SENSEX': { symbol: 'BSE:SENSEX', display: 'BSE SENSEX', type: 'index' },
+
+  // Futures Mappings
+  'NIFTY1!': { symbol: 'NSE:NIFTY1!', display: 'NIFTY FUT', type: 'futures' },
+  'NIFTY FUT': { symbol: 'NSE:NIFTY1!', display: 'NIFTY FUT', type: 'futures' },
+  'NSE:NIFTY1!': { symbol: 'NSE:NIFTY1!', display: 'NIFTY FUT', type: 'futures' },
+  'BANKNIFTY1!': { symbol: 'NSE:BANKNIFTY1!', display: 'BANK NIFTY FUT', type: 'futures' },
+  'BANKNIFTY FUT': { symbol: 'NSE:BANKNIFTY1!', display: 'BANK NIFTY FUT', type: 'futures' },
+  'NSE:BANKNIFTY1!': { symbol: 'NSE:BANKNIFTY1!', display: 'BANK NIFTY FUT', type: 'futures' },
+  'FINNIFTY1!': { symbol: 'NSE:FINNIFTY1!', display: 'FIN NIFTY FUT', type: 'futures' },
+  'FINNIFTY FUT': { symbol: 'NSE:FINNIFTY1!', display: 'FIN NIFTY FUT', type: 'futures' },
+  'NSE:FINNIFTY1!': { symbol: 'NSE:FINNIFTY1!', display: 'FIN NIFTY FUT', type: 'futures' },
+  'RELIANCE1!': { symbol: 'NSE:RELIANCE1!', display: 'RELIANCE FUT', type: 'futures' },
+  'RELIANCE FUT': { symbol: 'NSE:RELIANCE1!', display: 'RELIANCE FUT', type: 'futures' },
+  'NSE:RELIANCE1!': { symbol: 'NSE:RELIANCE1!', display: 'RELIANCE FUT', type: 'futures' },
+  'CRUDEOIL': { symbol: 'MCX:CRUDEOIL1!', display: 'CRUDE OIL FUT', type: 'commodity' },
+  'CRUDEOIL1!': { symbol: 'MCX:CRUDEOIL1!', display: 'CRUDE OIL FUT', type: 'commodity' },
+  'MCX:CRUDEOIL1!': { symbol: 'MCX:CRUDEOIL1!', display: 'CRUDE OIL FUT', type: 'commodity' },
+  'NATURALGAS': { symbol: 'MCX:NATURALGAS1!', display: 'NATURAL GAS FUT', type: 'commodity' },
+  'NATURALGAS1!': { symbol: 'MCX:NATURALGAS1!', display: 'NATURAL GAS FUT', type: 'commodity' },
+  'MCX:NATURALGAS1!': { symbol: 'MCX:NATURALGAS1!', display: 'NATURAL GAS FUT', type: 'commodity' },
+  'GOLD': { symbol: 'MCX:GOLD1!', display: 'GOLD FUT', type: 'commodity' },
+  'GOLD1!': { symbol: 'MCX:GOLD1!', display: 'GOLD FUT', type: 'commodity' },
+  'MCX:GOLD1!': { symbol: 'MCX:GOLD1!', display: 'GOLD FUT', type: 'commodity' },
 };
 
 export function resolveSymbol(input: string): SymbolInfo {
