@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { getBackendHttpUrl } from '../utils/tvStreamer';
 import { groupCandlesByDay, calculateDayProfile, Candle, DayProfile, TPOBin } from '../utils/profileCalculator';
-import { RefreshCw, Search, Layers, Calendar, BarChart2, TrendingUp, TrendingDown, Info, ShieldAlert, Sparkles } from 'lucide-react';
+import { RefreshCw, Search, ZoomIn, ZoomOut, Maximize2, Move, BarChart2, TrendingUp, TrendingDown, ShieldAlert } from 'lucide-react';
 
 interface MarketProfileContainerProps {
   onSymbolSelect?: (symbol: string) => void;
@@ -26,10 +26,16 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
 }) => {
   const [symbol, setSymbol] = useState<string>('NSE:NIFTY');
   const [searchInput, setSearchInput] = useState<string>('NSE:NIFTY');
-  const [timeframe, setTimeframe] = useState<string>('30'); // 30m default for TPO standard
+  const [timeframe, setTimeframe] = useState<string>('30'); // 30m default for standard TPO
   const [lookbackDays, setLookbackDays] = useState<number>(10);
   const [profileMode, setProfileMode] = useState<'tpo-collapsed' | 'tpo-split' | 'volume'>('tpo-collapsed');
   const [theme, setTheme] = useState<'dark-slate' | 'dark'>('dark-slate');
+
+  // Interactive Zoom & Pan State
+  const [zoomLevel, setZoomLevel] = useState<number>(1.0);
+  const [panOffset, setPanOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [dragStart, setDragStart] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
   const [candles, setCandles] = useState<Candle[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -37,7 +43,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 0, height: 600 });
+  const [dimensions, setDimensions] = useState({ width: 0, height: 620 });
   const [hoverInfo, setHoverInfo] = useState<{
     profile: DayProfile;
     bin: TPOBin;
@@ -63,7 +69,6 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
     setError(null);
     try {
       const backendHttp = getBackendHttpUrl();
-      // Request up to 2000 candles for rich historical profile sessions
       const res = await fetch(`${backendHttp}/api/candles?symbol=${encodeURIComponent(sym)}&timeframe=${tf}&limit=2000`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
@@ -113,7 +118,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
       if (canvasContainerRef.current) {
         setDimensions({
           width: canvasContainerRef.current.clientWidth,
-          height: Math.max(520, canvasContainerRef.current.clientHeight || 580)
+          height: Math.max(540, canvasContainerRef.current.clientHeight || 620)
         });
       }
     };
@@ -127,7 +132,35 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
     };
   }, []);
 
-  // Multi-session Canvas Renderer
+  // Reset zoom & pan when symbol, timeframe, or lookback changes
+  useEffect(() => {
+    setZoomLevel(1.0);
+    setPanOffset({ x: 0, y: 0 });
+  }, [symbol, timeframe, lookbackDays]);
+
+  // Handle Mouse Wheel Zooming
+  const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    const zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
+    setZoomLevel((prev) => Math.min(5.0, Math.max(0.4, prev * zoomFactor)));
+  };
+
+  // Handle Drag & Pan
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleDoubleClick = () => {
+    setZoomLevel(1.0);
+    setPanOffset({ x: 0, y: 0 });
+  };
+
+  // Multi-session Canvas Renderer with Dynamic Zoom, Pan & TPO Letter Rendering
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || dayProfiles.length === 0 || dimensions.width === 0) return;
@@ -153,9 +186,9 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
     ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, width, height);
 
-    const padding = { top: 35, bottom: 40, left: 15, right: 75 };
-    const chartWidth = width - padding.left - padding.right;
-    const chartHeight = height - padding.top - padding.bottom;
+    const padding = { top: 40, bottom: 40, left: 15, right: 75 };
+    const baseChartWidth = width - padding.left - padding.right;
+    const baseChartHeight = height - padding.top - padding.bottom;
 
     // Calculate global price bounds across all visible profiles
     let globalMin = Infinity;
@@ -168,18 +201,26 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
 
     if (globalMin === Infinity || globalMax === -Infinity || globalMin >= globalMax) return;
 
-    // Add small buffer to top and bottom bounds
+    // Apply Zoom & Pan to price range and vertical scaling
     const pMargin = (globalMax - globalMin) * 0.03;
-    const minPrice = globalMin - pMargin;
-    const maxPrice = globalMax + pMargin;
+    const rawMin = globalMin - pMargin;
+    const rawMax = globalMax + pMargin;
+    const rawRange = rawMax - rawMin;
+
+    // Zoom centers around middle price unless panned
+    const centerPrice = (rawMax + rawMin) / 2 - (panOffset.y / baseChartHeight) * rawRange;
+    const visibleRange = rawRange / zoomLevel;
+
+    const minPrice = centerPrice - visibleRange / 2;
+    const maxPrice = centerPrice + visibleRange / 2;
     const priceRange = maxPrice - minPrice;
 
     const getPriceY = (price: number) => {
-      return padding.top + ((maxPrice - price) / priceRange) * chartHeight;
+      return padding.top + ((maxPrice - price) / priceRange) * baseChartHeight;
     };
 
     // Draw horizontal grid lines & Right Y-Axis Price Scale
-    const numTicks = 12;
+    const numTicks = Math.max(6, Math.floor(12 * zoomLevel));
     const tickStep = priceRange / numTicks;
 
     ctx.font = '10px "JetBrains Mono", monospace';
@@ -189,17 +230,19 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
       const priceTick = minPrice + i * tickStep;
       const y = getPriceY(priceTick);
 
-      // Grid line
-      ctx.strokeStyle = gridLineColor;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(padding.left, y);
-      ctx.lineTo(width - padding.right, y);
-      ctx.stroke();
+      if (y >= padding.top && y <= height - padding.bottom) {
+        // Grid line
+        ctx.strokeStyle = gridLineColor;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(width - padding.right, y);
+        ctx.stroke();
 
-      // Price tick label on right Y axis
-      ctx.fillStyle = textColor;
-      ctx.fillText(priceTick.toFixed(1), width - padding.right + 8, y + 3.5);
+        // Price tick label on right Y axis
+        ctx.fillStyle = textColor;
+        ctx.fillText(priceTick.toFixed(1), width - padding.right + 8, y + 3.5);
+      }
     }
 
     // Vertical Y-axis border
@@ -209,26 +252,35 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
     ctx.lineTo(width - padding.right, height - padding.bottom);
     ctx.stroke();
 
-    // Render session columns side by side
+    // Render session columns side by side with panOffset.x support
     const sessionCount = dayProfiles.length;
-    const colGap = 8;
-    const availWidthForCols = chartWidth - (sessionCount - 1) * colGap;
-    const colWidth = availWidthForCols / sessionCount;
+    const colGap = Math.max(4, 8 * zoomLevel);
+    const availWidthForCols = baseChartWidth - (sessionCount - 1) * colGap;
+    const colWidth = (availWidthForCols / sessionCount) * zoomLevel;
+
+    // Clip rendering area inside padding boundaries
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(padding.left, padding.top, baseChartWidth, baseChartHeight);
+    ctx.clip();
 
     dayProfiles.forEach((profile, sIdx) => {
-      const colStartX = padding.left + sIdx * (colWidth + colGap);
+      const colStartX = padding.left + panOffset.x + sIdx * (colWidth + colGap);
       const colEndX = colStartX + colWidth;
 
-      // Session X-axis date label below chart
+      // Skip rendering if column is entirely outside visible canvas horizontal bounds
+      if (colEndX < padding.left || colStartX > width - padding.right) return;
+
+      // Session X-axis date label
       const dateLabel = formatDateShort(profile.dateStr);
       ctx.fillStyle = isDarkSlate ? '#cbd5e1' : '#9ca3af';
-      ctx.font = 'bold 11px "Outfit", sans-serif';
+      ctx.font = `bold ${Math.max(9, Math.min(13, 11 * Math.sqrt(zoomLevel)))}px "Outfit", sans-serif`;
       ctx.textAlign = 'center';
       ctx.fillText(dateLabel, colStartX + colWidth / 2, height - padding.bottom + 20);
 
       // Light column background highlight
       ctx.fillStyle = isDarkSlate ? 'rgba(255, 255, 255, 0.015)' : 'rgba(255, 255, 255, 0.01)';
-      ctx.fillRect(colStartX, padding.top, colWidth, chartHeight);
+      ctx.fillRect(colStartX, padding.top, colWidth, baseChartHeight);
 
       // Session separator vertical line
       if (sIdx > 0) {
@@ -242,12 +294,22 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
         ctx.setLineDash([]);
       }
 
-      // Calculate row height per bin
+      // Value Area Shading Box (subtle background box between VAH and VAL)
+      if (profile.vahPrice && profile.valPrice) {
+        const vahY = getPriceY(profile.vahPrice);
+        const valY = getPriceY(profile.valPrice);
+        if (vahY < height - padding.bottom && valY > padding.top) {
+          ctx.fillStyle = 'rgba(168, 85, 247, 0.05)';
+          ctx.fillRect(colStartX, Math.max(padding.top, vahY), colWidth, Math.min(baseChartHeight, valY - vahY));
+        }
+      }
+
       const bins = profile.bins;
       if (bins.length === 0) return;
 
       const binStep = bins.length > 1 ? Math.abs(bins[0].price - bins[1].price) : profile.tickSize;
-      const rowHeight = Math.max(2, (binStep / priceRange) * chartHeight);
+      const rawRowHeight = (binStep / priceRange) * baseChartHeight;
+      const rowHeight = Math.max(2, rawRowHeight);
 
       let maxTpoCountInBin = 1;
       let maxVolInBin = 1;
@@ -256,14 +318,17 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
         if (b.volume > maxVolInBin) maxVolInBin = b.volume;
       });
 
+      // Determine block size & whether to show TPO letter text inside blocks
+      const baseBlockSize = Math.max(2, Math.min(22, (rowHeight - 0.5)));
+      const showLetters = baseBlockSize >= 9 && profileMode !== 'volume';
+      const blockGap = showLetters ? 1 : 0.5;
+
       // Render TPOs or Volume per price bin
       bins.forEach((bin) => {
         const binY = getPriceY(bin.price) - rowHeight / 2;
         if (binY < padding.top - rowHeight || binY > height - padding.bottom) return;
 
         const isPoc = bin.price === profile.pocPrice;
-        const isVah = bin.price === profile.vahPrice;
-        const isVal = bin.price === profile.valPrice;
         const isAbovePoc = bin.price > profile.pocPrice;
 
         if (profileMode === 'volume') {
@@ -275,10 +340,10 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
             ctx.fillStyle = '#00f0ff';
             ctx.fillRect(colStartX, binY + 0.5, barWidth, Math.max(1, rowHeight - 1));
           } else if (isAbovePoc) {
-            ctx.fillStyle = 'rgba(239, 68, 68, 0.65)';
+            ctx.fillStyle = 'rgba(239, 68, 68, 0.7)';
             ctx.fillRect(colStartX, binY, barWidth, Math.max(1, rowHeight - 0.5));
           } else {
-            ctx.fillStyle = 'rgba(16, 185, 129, 0.65)';
+            ctx.fillStyle = 'rgba(16, 185, 129, 0.7)';
             ctx.fillRect(colStartX, binY, barWidth, Math.max(1, rowHeight - 0.5));
           }
         } else {
@@ -286,38 +351,64 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
           const tpoCount = bin.tpos.length;
           if (tpoCount === 0) return;
 
-          const blockSize = Math.max(2, Math.min(8, Math.floor(rowHeight - 0.5)));
-          const blockGap = 0.5;
-
           if (isPoc) {
             // Solid BLACK row background for POC level (exact match to TradingView screenshot)
-            const pocRowWidth = Math.min(colWidth * 0.95, tpoCount * (blockSize + blockGap) + 40);
+            const pocLabelWidth = showLetters ? 36 : 28;
+            const pocRowWidth = Math.min(colWidth * 0.98, tpoCount * (baseBlockSize + blockGap) + pocLabelWidth);
+            
             ctx.fillStyle = '#000000';
-            ctx.fillRect(colStartX, binY - 1, pocRowWidth, Math.max(rowHeight + 1, 8));
+            ctx.fillRect(colStartX, binY - 0.5, pocRowWidth, Math.max(rowHeight + 1, baseBlockSize + 1));
 
-            // Black/Cyan POC label on left
+            // Left text badge: POC ▶
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 8px "JetBrains Mono", monospace';
+            ctx.font = `bold ${Math.max(7, Math.min(10, baseBlockSize * 0.75))}px "JetBrains Mono", monospace`;
             ctx.textAlign = 'left';
-            ctx.fillText('POC ▶', colStartX + 2, binY + rowHeight / 2 + 2.5);
+            ctx.fillText('POC ▶', colStartX + 2, binY + rowHeight / 2 + (baseBlockSize * 0.28));
 
-            // Draw POC TPO blocks in solid black row
+            // Draw POC TPO blocks in solid black row with crisp white letters inside
             bin.tpos.forEach((letter, colIdx) => {
-              const x = colStartX + 34 + colIdx * (blockSize + blockGap);
-              if (x + blockSize <= colEndX) {
-                ctx.fillStyle = '#00f0ff';
-                ctx.fillRect(x, binY + (rowHeight - blockSize) / 2, blockSize, blockSize);
+              const x = colStartX + pocLabelWidth + colIdx * (baseBlockSize + blockGap);
+              if (x + baseBlockSize <= colEndX) {
+                // Individual block border/fill
+                ctx.fillStyle = '#111111';
+                ctx.fillRect(x, binY + (rowHeight - baseBlockSize) / 2, baseBlockSize, baseBlockSize);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+                ctx.lineWidth = 0.5;
+                ctx.strokeRect(x, binY + (rowHeight - baseBlockSize) / 2, baseBlockSize, baseBlockSize);
+
+                if (showLetters) {
+                  ctx.fillStyle = '#ffffff';
+                  ctx.font = `bold ${Math.max(8, Math.floor(baseBlockSize * 0.75))}px "JetBrains Mono", monospace`;
+                  ctx.textAlign = 'center';
+                  ctx.fillText(letter, x + baseBlockSize / 2, binY + rowHeight / 2 + (baseBlockSize * 0.28));
+                } else {
+                  ctx.fillStyle = '#00f0ff';
+                  ctx.fillRect(x + 1, binY + (rowHeight - baseBlockSize) / 2 + 1, baseBlockSize - 2, baseBlockSize - 2);
+                }
               }
             });
           } else {
             // Upper TPOs: Red/Pink square blocks. Lower TPOs: Emerald Green square blocks
-            const blockColor = isAbovePoc ? '#f23645' : '#089981';
+            const blockBgColor = isAbovePoc ? '#e23636' : '#089981';
 
             bin.tpos.forEach((letter, colIdx) => {
-              const x = colStartX + colIdx * (blockSize + blockGap);
-              if (x + blockSize <= colEndX) {
-                ctx.fillStyle = blockColor;
-                ctx.fillRect(x, binY + (rowHeight - blockSize) / 2, blockSize, blockSize);
+              const x = colStartX + colIdx * (baseBlockSize + blockGap);
+              if (x + baseBlockSize <= colEndX) {
+                ctx.fillStyle = blockBgColor;
+                ctx.fillRect(x, binY + (rowHeight - baseBlockSize) / 2, baseBlockSize, baseBlockSize);
+
+                if (showLetters) {
+                  // Subtle border between blocks
+                  ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
+                  ctx.lineWidth = 0.5;
+                  ctx.strokeRect(x, binY + (rowHeight - baseBlockSize) / 2, baseBlockSize, baseBlockSize);
+
+                  // White bold TPO letter inside block (A, B, C, D, E, F, G, H, I, J, K, L, M...)
+                  ctx.fillStyle = '#ffffff';
+                  ctx.font = `bold ${Math.max(8, Math.floor(baseBlockSize * 0.75))}px "JetBrains Mono", monospace`;
+                  ctx.textAlign = 'center';
+                  ctx.fillText(letter, x + baseBlockSize / 2, binY + rowHeight / 2 + (baseBlockSize * 0.28));
+                }
               }
             });
           }
@@ -340,7 +431,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
 
         // Label on left of line
         ctx.fillStyle = color;
-        ctx.font = 'bold 8px "JetBrains Mono", monospace';
+        ctx.font = 'bold 9px "JetBrains Mono", monospace';
         ctx.textAlign = 'left';
         ctx.fillText(`${label} ▶`, colStartX + 2, lineY - 2);
       };
@@ -349,10 +440,20 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
       if (profile.valPrice) drawMarkerLine(profile.valPrice, 'VAL', '#a855f7');
     });
 
-  }, [dayProfiles, dimensions, profileMode, theme]);
+    ctx.restore(); // Restore clipping region
 
-  // Canvas Mouse Move Handler for Hover Tooltip
+  }, [dayProfiles, dimensions, profileMode, theme, zoomLevel, panOffset]);
+
+  // Canvas Mouse Move Handler for Hover Tooltip & Panning Drag
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (isDragging) {
+      setPanOffset({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      });
+      return;
+    }
+
     const canvas = canvasRef.current;
     if (!canvas || dayProfiles.length === 0) return;
 
@@ -360,9 +461,9 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
-    const padding = { top: 35, bottom: 40, left: 15, right: 75 };
-    const chartWidth = rect.width - padding.left - padding.right;
-    const chartHeight = rect.height - padding.top - padding.bottom;
+    const padding = { top: 40, bottom: 40, left: 15, right: 75 };
+    const baseChartWidth = rect.width - padding.left - padding.right;
+    const baseChartHeight = rect.height - padding.top - padding.bottom;
 
     if (mouseY < padding.top || mouseY > rect.height - padding.bottom || mouseX < padding.left || mouseX > rect.width - padding.right) {
       setHoverInfo(null);
@@ -370,14 +471,14 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
     }
 
     const sessionCount = dayProfiles.length;
-    const colGap = 8;
-    const availWidthForCols = chartWidth - (sessionCount - 1) * colGap;
-    const colWidth = availWidthForCols / sessionCount;
+    const colGap = Math.max(4, 8 * zoomLevel);
+    const availWidthForCols = baseChartWidth - (sessionCount - 1) * colGap;
+    const colWidth = (availWidthForCols / sessionCount) * zoomLevel;
 
     // Find hovered session index
     let hoveredSessionIdx = -1;
     for (let i = 0; i < sessionCount; i++) {
-      const colStartX = padding.left + i * (colWidth + colGap);
+      const colStartX = padding.left + panOffset.x + i * (colWidth + colGap);
       if (mouseX >= colStartX && mouseX <= colStartX + colWidth) {
         hoveredSessionIdx = i;
         break;
@@ -398,11 +499,18 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
     });
 
     const pMargin = (globalMax - globalMin) * 0.03;
-    const minPrice = globalMin - pMargin;
-    const maxPrice = globalMax + pMargin;
+    const rawMin = globalMin - pMargin;
+    const rawMax = globalMax + pMargin;
+    const rawRange = rawMax - rawMin;
+
+    const centerPrice = (rawMax + rawMin) / 2 - (panOffset.y / baseChartHeight) * rawRange;
+    const visibleRange = rawRange / zoomLevel;
+
+    const minPrice = centerPrice - visibleRange / 2;
+    const maxPrice = centerPrice + visibleRange / 2;
     const priceRange = maxPrice - minPrice;
 
-    const clickPct = (mouseY - padding.top) / chartHeight;
+    const clickPct = (mouseY - padding.top) / baseChartHeight;
     const hoveredPrice = maxPrice - clickPct * priceRange;
 
     // Find closest bin
@@ -512,9 +620,37 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
           </div>
         </div>
 
-        {/* Timeframe & Lookback & Mode Controls */}
+        {/* Timeframe & Lookback & Zoom Controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
           
+          {/* Zoom Controls */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(0,0,0,0.4)', padding: '3px 6px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <button
+              onClick={() => setZoomLevel(prev => Math.min(5.0, prev * 1.25))}
+              style={{ background: 'transparent', border: 'none', color: '#60a5fa', cursor: 'pointer', padding: '3px', display: 'flex', alignItems: 'center' }}
+              title="Zoom In (+)"
+            >
+              <ZoomIn size={15} />
+            </button>
+            <span style={{ fontSize: '11px', fontWeight: '800', color: '#00f0ff', padding: '0 4px', minWidth: '38px', textAlign: 'center' }}>
+              {Math.round(zoomLevel * 100)}%
+            </span>
+            <button
+              onClick={() => setZoomLevel(prev => Math.max(0.4, prev * 0.8))}
+              style={{ background: 'transparent', border: 'none', color: '#60a5fa', cursor: 'pointer', padding: '3px', display: 'flex', alignItems: 'center' }}
+              title="Zoom Out (-)"
+            >
+              <ZoomOut size={15} />
+            </button>
+            <button
+              onClick={handleDoubleClick}
+              style={{ background: 'rgba(255,255,255,0.08)', border: 'none', color: 'white', cursor: 'pointer', padding: '3px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: '700', marginLeft: '4px' }}
+              title="Reset Zoom & Pan"
+            >
+              Reset
+            </button>
+          </div>
+
           {/* Timeframe */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(0,0,0,0.3)', padding: '2px', borderRadius: '6px' }}>
             {['5', '15', '30'].map((tf) => (
@@ -574,7 +710,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
                 cursor: 'pointer'
               }}
             >
-              TPO Blocks
+              TPO Letters
             </button>
             <button
               onClick={() => setProfileMode('volume')}
@@ -592,23 +728,6 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
               Volume Profile
             </button>
           </div>
-
-          {/* Theme Toggle */}
-          <button
-            onClick={() => setTheme(theme === 'dark-slate' ? 'dark' : 'dark-slate')}
-            style={{
-              background: 'rgba(255, 255, 255, 0.06)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              color: 'white',
-              padding: '4px 10px',
-              borderRadius: '6px',
-              fontSize: '11px',
-              fontWeight: '600',
-              cursor: 'pointer'
-            }}
-          >
-            🎨 {theme === 'dark-slate' ? 'Slate Theme' : 'Dark Theme'}
-          </button>
 
           {/* Refresh */}
           <button
@@ -636,13 +755,21 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
         style={{ 
           position: 'relative', 
           width: '100%', 
-          minHeight: '580px', 
+          minHeight: '620px', 
           backgroundColor: theme === 'dark-slate' ? '#181c27' : '#0d1017', 
           borderRadius: '8px', 
           border: '1px solid var(--border-color)',
           overflow: 'hidden'
         }}
       >
+        {/* Navigation / Zoom hint overlay */}
+        <div style={{ position: 'absolute', top: '10px', left: '15px', zIndex: 5, display: 'flex', alignItems: 'center', gap: '8px', pointerEvents: 'none', background: 'rgba(15, 23, 42, 0.7)', padding: '4px 10px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <Move size={12} style={{ color: '#00f0ff' }} />
+          <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: '600' }}>
+            Scroll wheel to Zoom In/Out | Drag to Pan | Double-click to Reset
+          </span>
+        </div>
+
         {loading && (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(15, 23, 42, 0.8)', zIndex: 10 }}>
             <RefreshCw size={28} className="animate-spin" style={{ color: '#00f0ff', marginBottom: '12px' }} />
@@ -659,13 +786,17 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
 
         <canvas
           ref={canvasRef}
+          onWheel={handleWheel}
+          onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
-          onMouseLeave={() => setHoverInfo(null)}
-          style={{ cursor: 'crosshair', display: 'block' }}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onDoubleClick={handleDoubleClick}
+          style={{ cursor: isDragging ? 'grabbing' : 'grab', display: 'block' }}
         />
 
         {/* Hover Tooltip */}
-        {hoverInfo && (
+        {hoverInfo && !isDragging && (
           <div
             style={{
               position: 'absolute',
@@ -681,7 +812,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
               boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
               fontSize: '11px',
               color: 'white',
-              minWidth: '180px'
+              minWidth: '190px'
             }}
           >
             <div style={{ fontWeight: 'bold', color: '#00f0ff', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '4px', marginBottom: '6px' }}>
@@ -692,8 +823,8 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
               <span style={{ fontWeight: 'bold', color: 'white' }}>{hoverInfo.bin.price.toFixed(2)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
-              <span style={{ color: 'var(--text-secondary)' }}>TPO Count:</span>
-              <span style={{ fontWeight: 'bold', color: '#f59e0b' }}>{hoverInfo.bin.tpos.length}</span>
+              <span style={{ color: 'var(--text-secondary)' }}>TPOs:</span>
+              <span style={{ fontWeight: 'bold', color: '#f59e0b' }}>{hoverInfo.bin.tpos.length} ({hoverInfo.bin.tpos.join('')})</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
               <span style={{ color: 'var(--text-secondary)' }}>Volume:</span>
