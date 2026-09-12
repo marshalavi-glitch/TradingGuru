@@ -1003,8 +1003,8 @@ const RenderAdvPineIndicatorChart: React.FC<{ candles: Candle[] }> = ({ candles 
   }, [candles, len, aggregation, priceEnable, baseEnable]);
 
   const width = 800;
-  const height = 240;
-  const padding = 24;
+  const height = 250;
+  const padding = 28;
 
   if (!advData || advData.length === 0) return null;
 
@@ -1181,17 +1181,18 @@ const RenderAdvPineIndicatorChart: React.FC<{ candles: Candle[] }> = ({ candles 
                   <rect x={x - barW / 3} y={height / 2 - adH} width={barW / 1.5} height={adH * 2} fill={adColor} stroke={isStrongBullish ? '#ffffff' : 'none'} strokeWidth={isStrongBullish ? '1' : '0'} />
                 )}
 
-                {/* PER-CANDLE RATIO VALUE TEXT LABEL DISPLAY */}
+                {/* PER-CANDLE RATIO VALUE TEXT LABEL DISPLAY (COMPACT 5.5px ROTATED TO PREVENT OVERLAP) */}
                 {showPerCandleRatios && (
                   <text
                     x={x}
-                    y={height - 4}
+                    y={height - 6}
                     fill={isStrongBullish ? '#00f2fe' : isStrongBearish ? '#f43f5e' : isUp ? '#4ade80' : '#f87171'}
-                    fontSize="7"
+                    fontSize="5.5"
                     fontWeight="700"
-                    textAnchor="middle"
+                    textAnchor="end"
+                    transform={`rotate(-45, ${x}, ${height - 6})`}
                   >
-                    {d.AD_ratio > 0 ? '+' : ''}{d.AD_ratio.toFixed(2)}
+                    {d.AD_ratio >= 0 ? '.' : '-.'}{Math.round(Math.abs(d.AD_ratio) * 100).toString().padStart(2, '0')}
                   </text>
                 )}
               </g>
