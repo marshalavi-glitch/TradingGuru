@@ -128,7 +128,27 @@ export const CasPredictionContainer: React.FC<CasPredictionContainerProps> = ({
         return d.getHours() === 15 && d.getMinutes() >= 10 && d.getMinutes() <= 20;
       }) || dayCandles[dayCandles.length - 3] || dayCandles[dayCandles.length - 1];
 
-      const actualClose = dayCandles[dayCandles.length - 1].close;
+      // Official SEBI Daily Closing Price Rule: Volume Weighted Average Price (VWAP) of last 30 mins (3:00 PM - 3:30 PM)
+      const closingWindowCandles = dayCandles.filter((c) => {
+        const d = new Date(c.time * 1000);
+        const mins = d.getHours() * 60 + d.getMinutes();
+        return mins >= 15 * 60; // 3:00 PM (15:00) onwards
+      });
+
+      let actualClose = dayCandles[dayCandles.length - 1].close; // Fallback
+      if (closingWindowCandles.length > 0) {
+        let sumPV = 0;
+        let sumVol = 0;
+        closingWindowCandles.forEach((c) => {
+          const typical = (c.high + c.low + c.close) / 3;
+          sumPV += typical * c.volume;
+          sumVol += c.volume;
+        });
+        if (sumVol > 0) {
+          actualClose = Math.round((sumPV / sumVol) * 100) / 100;
+        }
+      }
+
       const price315 = candle315.close;
 
       // Calculate Day VWAP up to 3:15 PM
@@ -581,7 +601,7 @@ export const CasPredictionContainer: React.FC<CasPredictionContainerProps> = ({
               <span>1-Month Historical Backtest Results (Last 30 Trading Days)</span>
             </h3>
             <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#94a3b8' }}>
-              Comparing projected 3:15 PM CAS prices against actual official SEBI closing prices.
+              Comparing projected 3:15 PM CAS prices against official SEBI closing prices (3:00 PM - 3:30 PM 30-min VWAP).
             </p>
           </div>
 
