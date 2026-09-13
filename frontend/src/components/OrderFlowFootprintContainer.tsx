@@ -33,7 +33,7 @@ export const OrderFlowFootprintContainer: React.FC<OrderFlowFootprintContainerPr
   onSwitchToChart,
 }) => {
   const [selectedSymbol, setSelectedSymbol] = useState<string>('NSE:NIFTY');
-  const [selectedFilter, setSelectedFilter] = useState<'ALL' | 'ABSORPTION' | 'EXHAUSTION' | 'DIVERGENCE' | 'COT'>('ALL');
+  const [selectedFilter, setSelectedFilter] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [candlesMap, setCandlesMap] = useState<Record<string, Candle[]>>({});
   const [loading, setLoading] = useState<boolean>(false);
@@ -530,7 +530,7 @@ export const OrderFlowFootprintContainer: React.FC<OrderFlowFootprintContainerPr
               />
             </div>
 
-            {/* Filter Tabs */}
+            {/* Filter Tabs for All 8 Order Flow Patterns */}
             <div
               style={{
                 display: 'flex',
@@ -538,17 +538,29 @@ export const OrderFlowFootprintContainer: React.FC<OrderFlowFootprintContainerPr
                 borderRadius: '6px',
                 padding: '2px',
                 border: '1px solid var(--border-color)',
+                flexWrap: 'wrap',
+                gap: '2px'
               }}
             >
-              {(['ALL', 'ABSORPTION', 'EXHAUSTION', 'DIVERGENCE', 'COT'] as const).map((tab) => (
+              {[
+                { id: 'ALL', label: 'ALL' },
+                { id: 'ABSORPTION', label: '🛡️ ABSORPTION' },
+                { id: 'EXHAUSTION', label: '🪫 EXHAUSTION' },
+                { id: 'INITIATIVE', label: '🚀 INITIATIVE' },
+                { id: 'RESPONSIVE', label: '↩️ RESPONSIVE' },
+                { id: 'LIQUIDITY', label: '💧 LIQUIDITY' },
+                { id: 'STOP_HUNTING', label: '🎯 STOP HUNTING' },
+                { id: 'STOPPING_VOL', label: '🛑 STOPPING VOL' },
+                { id: 'UNFINISHED', label: '⚠️ UNFINISHED' },
+              ].map((tab) => (
                 <button
-                  key={tab}
-                  onClick={() => setSelectedFilter(tab)}
+                  key={tab.id}
+                  onClick={() => setSelectedFilter(tab.id)}
                   style={{
-                    background: selectedFilter === tab ? 'var(--accent-blue)' : 'transparent',
-                    color: selectedFilter === tab ? '#ffffff' : '#94a3b8',
+                    background: selectedFilter === tab.id ? 'var(--accent-blue)' : 'transparent',
+                    color: selectedFilter === tab.id ? '#ffffff' : '#94a3b8',
                     border: 'none',
-                    padding: '4px 10px',
+                    padding: '4px 8px',
                     borderRadius: '4px',
                     fontSize: '11px',
                     fontWeight: '700',
@@ -556,7 +568,7 @@ export const OrderFlowFootprintContainer: React.FC<OrderFlowFootprintContainerPr
                     transition: 'all 0.15s',
                   }}
                 >
-                  {tab}
+                  {tab.label}
                 </button>
               ))}
             </div>
@@ -635,16 +647,16 @@ export const OrderFlowFootprintContainer: React.FC<OrderFlowFootprintContainerPr
                     <td style={{ padding: '10px 12px' }}>
                       <span
                         style={{
-                          fontSize: '10px',
+                          fontSize: '11px',
                           fontWeight: '800',
                           padding: '3px 8px',
                           borderRadius: '4px',
-                          background: `${item.signalBadgeColor}20`,
-                          color: item.signalBadgeColor,
-                          border: `1px solid ${item.signalBadgeColor}40`,
+                          background: `${item.signalBadgeColor}25`,
+                          color: '#ffffff',
+                          border: `1px solid ${item.signalBadgeColor}`,
                         }}
                       >
-                        {item.signalType}
+                        {item.signalBadgeText}
                       </span>
                     </td>
 
