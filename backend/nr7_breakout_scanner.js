@@ -210,13 +210,24 @@ export async function scanNr7Breakouts(tvBridge, symbolsList) {
     }
   }
 
-  // Sort by highest gain / strength
-  matchedList.sort((a, b) => b.changePct - a.changePct);
+  // Deduplicate results by symbol to ensure no duplicates
+  const uniqueMap = new Map();
+  matchedList.forEach((item) => {
+    const key = item.symbol.toUpperCase();
+    if (!uniqueMap.has(key)) {
+      uniqueMap.set(key, item);
+    }
+  });
 
-  nr7Cache.results = matchedList;
+  const uniqueResults = Array.from(uniqueMap.values());
+
+  // Sort by highest gain / strength
+  uniqueResults.sort((a, b) => b.changePct - a.changePct);
+
+  nr7Cache.results = uniqueResults;
   nr7Cache.lastScanTime = new Date().toISOString();
   nr7Cache.isScanning = false;
 
   saveNr7CacheToDisk();
-  console.log(`[20% Upper Circuit Scanner] Scan cycle complete. Found ${matchedList.length} matching stocks.`);
+  console.log(`[20% Upper Circuit Scanner] Scan cycle complete. Found ${uniqueResults.length} unique matching stocks.`);
 }
