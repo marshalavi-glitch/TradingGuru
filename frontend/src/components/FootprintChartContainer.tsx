@@ -922,6 +922,124 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
         />
       </div>
 
+      {/* ---------------------------------------------------------------- */}
+      {/* ORDER FLOW & FOOTPRINT PATTERN CARDS (Matching media_1789306131485.png) */}
+      {/* ---------------------------------------------------------------- */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <BarChart2 size={18} style={{ color: '#00f0ff' }} />
+            <span>Footprint & Order Flow Core Mechanics</span>
+          </h3>
+          <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: '600' }}>
+            Reference guide for institutional footprint signals
+          </span>
+        </div>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
+          gap: '16px'
+        }}>
+          {[
+            {
+              title: 'Absorption',
+              bannerColor: '#1b4d4f',
+              description: 'Large limit orders absorb aggressive market orders. Price stalls despite heavy volume. Often precedes a reversal.'
+            },
+            {
+              title: 'Exhaustion',
+              bannerColor: '#ea580c',
+              description: 'Buy/sell aggression continues but momentum decays. Price fails to follow through. Delta diverges from price.'
+            },
+            {
+              title: 'Initiative Buyer/Seller',
+              bannerColor: '#2a7b88',
+              description: 'Participants who initiate price movement away from value — typically institutions entering directional trades.'
+            },
+            {
+              title: 'Responsive Buyer/Seller',
+              bannerColor: '#b45309',
+              description: 'Participants who fade price moves away from value, fading the initiative. They act when price reaches extremes.'
+            },
+            {
+              title: 'Liquidity',
+              bannerColor: '#1e5659',
+              description: 'Availability of resting orders at price levels. High liquidity = stable zone; low liquidity = fast-move zone.'
+            },
+            {
+              title: 'Stop Loss Hunting',
+              bannerColor: '#dc2626',
+              description: 'Large players push price beyond obvious levels to trigger retail stop orders, collecting their liquidity.'
+            },
+            {
+              title: 'Stopping Volume',
+              bannerColor: '#f97316',
+              description: 'Surge of volume that halts a trending move — aggressive orders meet a wall of limit orders. First signal of reversal.'
+            },
+            {
+              title: 'Unfinished Auction',
+              bannerColor: '#1b7a82',
+              description: 'A price level where the auction is incomplete — bid/ask imbalance remains visible, signaling a likely revisit.'
+            }
+          ].map((card, idx) => (
+            <div
+              key={idx}
+              style={{
+                display: 'flex',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                background: theme === 'light' ? '#f8fafc' : 'rgba(255, 255, 255, 0.02)',
+                minHeight: '80px'
+              }}
+            >
+              {/* Left Color Banner with Title */}
+              <div style={{
+                width: '140px',
+                minWidth: '140px',
+                backgroundColor: card.bannerColor,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '12px',
+                boxSizing: 'border-box'
+              }}>
+                <span style={{
+                  color: '#ffffff',
+                  fontWeight: '800',
+                  fontSize: '13px',
+                  textAlign: 'center',
+                  lineHeight: '1.3'
+                }}>
+                  {card.title}
+                </span>
+              </div>
+
+              {/* Right Description Body */}
+              <div style={{
+                flex: 1,
+                padding: '14px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                backgroundColor: theme === 'light' ? '#ffffff' : 'rgba(15, 23, 42, 0.5)'
+              }}>
+                <p style={{
+                  margin: 0,
+                  fontSize: '12px',
+                  lineHeight: '1.5',
+                  color: theme === 'light' ? '#334155' : '#cbd5e1',
+                  fontWeight: '500'
+                }}>
+                  {card.description}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* ---------------------------------------------------- */}
       {/* TRADINGVIEW VOLUME FOOTPRINT SETTINGS MODAL DIALOG   */}
       {/* Matching user screenshot media_1789214986052.png     */}
