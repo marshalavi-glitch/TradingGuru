@@ -41,12 +41,14 @@ function formatVolume(vol: number): string {
 
 export function DojiContainer({ onSymbolSelect, onSwitchToChart, noVolumeFilter = false }: DojiContainerProps) {
   const [data, setData] = useState<DojiCache | null>(null);
-  const [selectedSlot, setSelectedSlot] = useState<string>('first_5min'); // Default to First 5-Min Opening Doji
+  const [selectedSlot, setSelectedSlot] = useState<string>('first_5min');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const timeSlots = [
     { code: 'first_5min', label: '⚡ First 5-Min Candle (9:15 AM)' },
+    { code: 'second_5min', label: '⚡ 9:20 AM Candle' },
+    { code: 'third_5min', label: '⚡ 9:25 AM Candle' },
     { code: 'daily', label: '📅 Daily Timeframe (End of Day)' }
   ];
 
@@ -80,26 +82,26 @@ export function DojiContainer({ onSymbolSelect, onSwitchToChart, noVolumeFilter 
   const stocksList = noVolumeFilter ? data?.allDojiStocks : data?.stocks;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', height: '100%', minHeight: '0' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', height: '100%', minHeight: '0' }}>
       
-      {/* Top Header */}
+      {/* Top Header matching user reference media_1789303102278.png */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <h2 style={{ fontSize: '20px', fontWeight: '800', color: 'var(--text-primary)', margin: '0 0 4px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {selectedSlot === 'daily' ? <Calendar size={22} color="#eab308" /> : <Clock size={22} color="#3b82f6" />}
+            {selectedSlot === 'daily' ? <Calendar size={22} color="#eab308" /> : <Clock size={22} color="#ef4444" />}
             {noVolumeFilter 
-              ? (selectedSlot === 'daily' ? 'All Daily Dojis (With Volume)' : 'All 5-Min Opening Dojis (With Volume)') 
+              ? (selectedSlot === 'daily' ? '🔥 All Daily Dojis' : '🔥 All 5-Min Opening Dojis') 
               : (selectedSlot === 'daily' ? '🔥 High Volume Daily Doji (≥1.2x Vol)' : '🔥 First 5-Min High Volume Doji (≥1.2x Vol)')}
           </h2>
-          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
+          <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
             {noVolumeFilter 
               ? `Displays ALL stocks that printed a Doji (sorted by raw volume quantity) without volume threshold.`
               : `Displays ONLY high-volume Doji breakouts (volume ≥ 1.2x historical average).`}
           </p>
         </div>
 
-        {/* Time Slot Selector & Refresh */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        {/* Time Slot Selector & Rescan Slot Button */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <select
             value={selectedSlot}
             onChange={(e) => setSelectedSlot(e.target.value)}
@@ -129,7 +131,7 @@ export function DojiContainer({ onSymbolSelect, onSwitchToChart, noVolumeFilter 
               alignItems: 'center',
               gap: '8px',
               background: 'rgba(59, 130, 246, 0.15)',
-              color: '#3b82f6',
+              color: '#60a5fa',
               border: '1px solid rgba(59, 130, 246, 0.3)',
               borderRadius: '8px',
               padding: '8px 16px',
@@ -150,98 +152,125 @@ export function DojiContainer({ onSymbolSelect, onSwitchToChart, noVolumeFilter 
       </div>
 
       {error && (
-        <div className="glass-panel" style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid rgba(239, 68, 68, 0.3)', backgroundColor: 'rgba(239, 68, 68, 0.05)', borderRadius: '12px' }}>
+        <div className="glass-panel" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid rgba(239, 68, 68, 0.3)', backgroundColor: 'rgba(239, 68, 68, 0.05)', borderRadius: '10px' }}>
           <AlertCircle color="#ef4444" size={20} />
           <span style={{ color: '#ef4444', fontSize: '13px' }}>{error}</span>
         </div>
       )}
 
+      {/* Status Banner */}
+      <div style={{ display: 'flex', gap: '10px', padding: '10px 16px', background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.2)', borderRadius: '8px', alignItems: 'center' }}>
+        <Info size={16} color="#60a5fa" />
+        <span style={{ fontSize: '13px', color: '#cbd5e1' }}>
+          Scan Status: <strong style={{ color: '#60a5fa' }}>{stocksList?.length || 0} stocks found</strong> for <strong>{timeSlots.find(t => t.code === selectedSlot)?.label}</strong>.
+        </span>
+      </div>
+
+      {/* Main Stock Card Grid matching media_1789303102278.png */}
       {loading && !data ? (
         <div className="glass-panel" style={{ flex: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px', minHeight: '300px' }}>
           <Loader2 className="animate-spin" size={32} color="var(--accent-blue)" style={{ animation: 'spin 1.5s linear infinite' }} />
-          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: 0 }}>Scanning stocks for {selectedSlot === 'daily' ? 'Daily' : 'First 5-Min'} Doji patterns...</p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: 0 }}>Scanning liquid stocks for Doji patterns...</p>
         </div>
       ) : (
-        <div style={{ flex: '1', display: 'flex', flexDirection: 'column', gap: '16px', minHeight: '0', overflowY: 'auto' }}>
+        <div style={{ flex: '1', minHeight: '0', overflowY: 'auto' }}>
           
-          <div style={{ display: 'flex', gap: '12px', padding: '12px 16px', background: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59, 130, 246, 0.15)', borderRadius: '10px', alignItems: 'center' }}>
-            <Info size={16} color="#3b82f6" />
-            <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-              Scan Status: <strong>{stocksList?.length || 0} stocks found</strong> for <strong>{selectedSlot === 'daily' ? 'Daily Timeframe (End of Day)' : 'First 5-Min Candle'}</strong>.
-            </span>
-          </div>
-
           {stocksList && stocksList.length > 0 ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
-              {stocksList.map((stock, index) => (
-                <div
-                  key={index}
-                  onClick={() => handleStockClick(stock.symbol)}
-                  className="glass-panel"
-                  style={{
-                    padding: '16px',
-                    borderRadius: '12px',
-                    border: stock.isHighVolume ? '1px solid rgba(234, 179, 8, 0.4)' : '1px solid rgba(255,255,255,0.06)',
-                    background: stock.isHighVolume ? 'rgba(234, 179, 8, 0.04)' : 'rgba(255,255,255,0.02)',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '8px',
-                    transition: 'all 0.15s'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                  onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-                >
-                  {/* Symbol and Volume display */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '16px', fontWeight: '800', color: 'white' }}>{stock.symbol}</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{
-                        fontSize: '11px',
-                        fontWeight: '800',
-                        padding: '2px 8px',
-                        borderRadius: '6px',
-                        background: 'rgba(59, 130, 246, 0.15)',
-                        color: '#60a5fa'
-                      }}>
-                        Vol: {formatVolume(stock.volume)}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '14px' }}>
+              {stocksList.map((stock, index) => {
+                const isDragonfly = stock.dojiType?.includes('Dragonfly');
+                const isGravestone = stock.dojiType?.includes('Gravestone');
+                const badgeBg = isDragonfly ? 'rgba(16, 185, 129, 0.2)' : isGravestone ? 'rgba(239, 68, 68, 0.2)' : 'rgba(234, 179, 8, 0.2)';
+                const badgeColor = isDragonfly ? '#10b981' : isGravestone ? '#ef4444' : '#facc15';
+
+                return (
+                  <div
+                    key={index}
+                    onClick={() => handleStockClick(stock.symbol)}
+                    className="glass-panel"
+                    style={{
+                      padding: '14px 16px',
+                      borderRadius: '12px',
+                      border: '1px solid rgba(234, 179, 8, 0.3)',
+                      background: 'rgba(15, 23, 42, 0.7)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '10px',
+                      transition: 'all 0.15s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.borderColor = 'rgba(234, 179, 8, 0.6)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.borderColor = 'rgba(234, 179, 8, 0.3)';
+                    }}
+                  >
+                    {/* Top Row: Symbol Name, Volume Pill, Volume Multiple Badge */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '15px', fontWeight: '900', color: 'white', letterSpacing: '0.2px' }}>
+                        {stock.symbol}
                       </span>
-                      {stock.volumeRatio && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <span style={{
                           fontSize: '11px',
                           fontWeight: '800',
-                          padding: '2px 6px',
+                          padding: '2px 8px',
                           borderRadius: '6px',
-                          background: stock.volumeRatio >= 1.2 ? 'rgba(234, 179, 8, 0.2)' : 'rgba(255,255,255,0.06)',
-                          color: stock.volumeRatio >= 1.2 ? '#eab308' : 'var(--text-muted)'
+                          background: 'rgba(59, 130, 246, 0.2)',
+                          color: '#60a5fa'
                         }}>
-                          {stock.volumeRatio}x
+                          Vol: {formatVolume(stock.volume)}
                         </span>
-                      )}
+                        {stock.volumeRatio && (
+                          <span style={{
+                            fontSize: '11px',
+                            fontWeight: '900',
+                            padding: '2px 6px',
+                            borderRadius: '6px',
+                            background: 'rgba(234, 179, 8, 0.25)',
+                            color: '#facc15'
+                          }}>
+                            {stock.volumeRatio}x
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Middle Row: Spot Price & Body % */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--text-secondary)' }}>
+                      <span>Spot: <strong style={{ color: 'white', fontWeight: '800' }}>₹{stock.ltp.toFixed(2)}</strong></span>
+                      <span>Body: <strong style={{ color: '#60a5fa', fontWeight: '800' }}>{stock.bodyPct}%</strong></span>
+                    </div>
+
+                    {/* Bottom Row: Doji Type Badge */}
+                    <div style={{
+                      display: 'flex',
+                      justify: 'space-between',
+                      alignItems: 'center',
+                      background: 'rgba(0,0,0,0.4)',
+                      padding: '6px 12px',
+                      borderRadius: '6px',
+                      border: '1px solid rgba(255,255,255,0.04)'
+                    }}>
+                      <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600' }}>Type:</span>
+                      <span style={{
+                        fontSize: '11px',
+                        fontWeight: '900',
+                        color: badgeColor,
+                        backgroundColor: badgeBg,
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        letterSpacing: '0.2px'
+                      }}>
+                        {stock.dojiType || 'Doji'}
+                      </span>
                     </div>
                   </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-secondary)' }}>
-                    <span>Spot: <strong style={{ color: 'white' }}>₹{stock.ltp}</strong></span>
-                    <span>Body: <strong style={{ color: '#60a5fa' }}>{stock.bodyPct}%</strong></span>
-                  </div>
-
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    background: 'rgba(0,0,0,0.3)',
-                    padding: '6px 10px',
-                    borderRadius: '6px',
-                    border: '1px solid rgba(255,255,255,0.04)'
-                  }}>
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Type:</span>
-                    <span style={{ fontSize: '11px', fontWeight: '700', color: stock.dojiType?.includes('Dragonfly') ? '#10b981' : (stock.dojiType?.includes('Gravestone') ? '#ef4444' : '#eab308') }}>
-                      {stock.dojiType || 'Doji'}
-                    </span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
