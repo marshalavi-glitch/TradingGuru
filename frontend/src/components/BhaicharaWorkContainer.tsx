@@ -103,7 +103,7 @@ export const BhaicharaWorkContainer: React.FC<BhaicharaWorkProps> = ({
     let isMounted = true;
     const fetchBhaicharaData = async () => {
       try {
-        const backendUrl = getBackendHttpUrl();
+        const backendUrl = await getBackendHttpUrl();
         
         const [biasRes, picksRes, confluenceRes] = await Promise.all([
           fetch(`${backendUrl}/api/scanner/opening-bias`).catch(() => null),

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, X, Activity, RefreshCw, Landmark, TrendingUp, Layers, Users } from 'lucide-react';
-import { tvStreamer } from '../utils/tvStreamer';
+import { tvStreamer, getBackendHttpUrl } from '../utils/tvStreamer';
 
 interface DashboardHeaderProps {
   currentSymbol: string;
@@ -41,7 +41,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const backendUrl = window.location.port === '5175' ? 'http://localhost:3002' : window.location.origin;
+        const backendUrl = await getBackendHttpUrl();
         const res = await fetch(`${backendUrl}/api/online-users`);
         if (res.ok) {
           const data = await res.json();
@@ -79,7 +79,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   useEffect(() => {
     const loadPresets = async () => {
       try {
-        const backendUrl = window.location.port === '5175' ? 'http://localhost:3002' : window.location.origin;
+        const backendUrl = await getBackendHttpUrl();
         const res = await fetch(`${backendUrl}/api/symbols/presets`);
         if (res.ok) {
           const data = await res.json();
@@ -102,7 +102,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     const delayDebounce = setTimeout(async () => {
       setLoadingApi(true);
       try {
-        const backendUrl = window.location.port === '5175' ? 'http://localhost:3002' : window.location.origin;
+        const backendUrl = await getBackendHttpUrl();
         const res = await fetch(`${backendUrl}/api/search?query=${encodeURIComponent(searchQuery)}`);
         if (res.ok) {
           const data = await res.json();

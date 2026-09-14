@@ -1,4 +1,4 @@
-import { resolveBackendUrl, getBackendHttpUrlSync, clearBackendUrlCache } from './config';
+import { resolveBackendUrl, getBackendHttpUrlSync as getBackendHttpUrlSyncConfig, clearBackendUrlCache } from './config';
 
 export interface TVDataMessage {
   symbol: string;
@@ -295,9 +295,15 @@ class TVWebSocketStreamer {
 
 export const tvStreamer = new TVWebSocketStreamer();
 
-export function getBackendHttpUrl(): string {
-  const httpUrl = getBackendHttpUrlSync();
+export async function getBackendHttpUrl(): Promise<string> {
+  const httpUrl = await resolveBackendUrl();
   return httpUrl;
 }
+
+export function getBackendHttpUrlSync(): string {
+  return getBackendHttpUrlSyncConfig();
+}
+
+
 
 export default tvStreamer;

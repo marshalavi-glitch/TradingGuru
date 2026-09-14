@@ -113,7 +113,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
     while (attempts < maxAttempts) {
       try {
         attempts++;
-        const backendHttp = getBackendHttpUrl();
+        const backendHttp = await getBackendHttpUrl();
         const res = await fetch(`${backendHttp}/api/candles?symbol=${encodeURIComponent(sym)}&timeframe=${tf}&limit=2000`);
         if (res.ok) {
           const data = await res.json();

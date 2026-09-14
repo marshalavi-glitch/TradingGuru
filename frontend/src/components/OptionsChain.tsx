@@ -34,8 +34,6 @@ interface SearchResult {
 }
 
 export function OptionsChain({ currentSymbol, onSymbolChange, onSwitchToChart }: OptionsChainProps) {
-  const backendUrl = getBackendHttpUrl();
-
   const [expiry, setExpiry] = useState<string>('');
   const [data, setData] = useState<OptionChainResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -67,14 +65,13 @@ export function OptionsChain({ currentSymbol, onSymbolChange, onSwitchToChart }:
     setLoading(true);
     setError(null);
 
-    const fetchUrl = `${backendUrl}/api/options/chain?symbol=${underlyingSymbol}${expiry ? `&expiry=${expiry}` : ''}`;
-    
-    fetch(fetchUrl)
-      .then((res) => {
+    const loadChain = async () => {
+      try {
+        const backendUrl = await getBackendHttpUrl();
+        const fetchUrl = `${backendUrl}/api/options/chain?symbol=${underlyingSymbol}${expiry ? `&expiry=${expiry}` : ''}`;
+        const res = await fetch(fetchUrl);
         if (!res.ok) throw new Error('Failed to load options chain data');
-        return res.json();
-      })
-      .then((payload: OptionChainResponse) => {
+        const payload: OptionChainResponse = await res.json();
         if (active) {
           setData(payload);
           if (!expiry || !payload.expiries.some(e => e.code === expiry)) {
@@ -82,18 +79,20 @@ export function OptionsChain({ currentSymbol, onSymbolChange, onSwitchToChart }:
           }
           setLoading(false);
         }
-      })
-      .catch((err) => {
+      } catch (err: any) {
         if (active) {
           setError(err.message || 'An error occurred');
           setLoading(false);
         }
-      });
+      }
+    };
+
+    loadChain();
 
     return () => {
       active = false;
     };
-  }, [underlyingSymbol, expiry, backendUrl]);
+  }, [underlyingSymbol, expiry]);
 
   // Debounced search query lookup
   useEffect(() => {

@@ -162,7 +162,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
     while (attempts < maxAttempts) {
       try {
         attempts++;
-        const backendHttp = getBackendHttpUrl();
+        const backendHttp = await getBackendHttpUrl();
         const resolved = resolveSymbol(symbol);
         const limit = 2000;
         const url = `${backendHttp}/api/candles?symbol=${encodeURIComponent(resolved.formattedSymbol)}&timeframe=${timeframe}&limit=${limit}`;

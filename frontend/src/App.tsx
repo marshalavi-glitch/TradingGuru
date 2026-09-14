@@ -104,7 +104,7 @@ function App() {
 
     const fetchInitialCandles = async () => {
       try {
-        const backendHttp = getBackendHttpUrl();
+        const backendHttp = await getBackendHttpUrl();
         const url = `${backendHttp}/api/candles?symbol=${encodeURIComponent(symbol)}&timeframe=${timeframe}&limit=500`;
         const res = await fetch(url);
         if (res.ok && isMounted) {
