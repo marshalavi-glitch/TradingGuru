@@ -363,8 +363,26 @@ async function fetchAnchorLevels(symbol, timeframe) {
   });
 }
 
+function broadcastOnlineUsers() {
+  const count = wss && wss.clients ? wss.clients.size : 0;
+  const msg = JSON.stringify({ type: 'online_users', count });
+  if (wss && wss.clients) {
+    wss.clients.forEach(client => {
+      if (client.readyState === 1) {
+        try { client.send(msg); } catch (e) {}
+      }
+    });
+  }
+}
+
+app.get('/api/online-users', (req, res) => {
+  const count = wss && wss.clients ? wss.clients.size : 1;
+  res.json({ count: Math.max(1, count) });
+});
+
 wss.on('connection', (ws) => {
   console.log('Client connected to WebSocket server');
+  broadcastOnlineUsers();
   
   ws.on('error', (err) => {
     console.error('[Node Backend] Client WebSocket error:', err);
@@ -434,6 +452,7 @@ wss.on('connection', (ws) => {
 
   ws.on('close', async () => {
     console.log('Client disconnected');
+    broadcastOnlineUsers();
     if (unsubscribePromise) {
       try {
         const cleanup = await unsubscribePromise;

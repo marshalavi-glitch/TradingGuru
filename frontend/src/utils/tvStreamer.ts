@@ -18,6 +18,7 @@ export interface TVDataMessage {
 type OnDataCallback = (data: TVDataMessage) => void;
 type OnErrorCallback = (error: string) => void;
 type OnStatusCallback = (status: 'connecting' | 'connected' | 'disconnected') => void;
+type OnOnlineUsersCallback = (count: number) => void;
 
 class TVWebSocketStreamer {
   private ws: WebSocket | null = null;
@@ -26,6 +27,7 @@ class TVWebSocketStreamer {
   private onDataCallback: OnDataCallback | null = null;
   private onErrorCallback: OnErrorCallback | null = null;
   private onStatusCallback: OnStatusCallback | null = null;
+  private onOnlineUsersCallback: OnOnlineUsersCallback | null = null;
   private reconnectTimeout: number | null = null;
   private fallbackPollInterval: number | null = null;
   private statusTimer: number | null = null;
@@ -63,6 +65,10 @@ class TVWebSocketStreamer {
   public setStatusListener(callback: OnStatusCallback) {
     this.onStatusCallback = callback;
     callback(this.status);
+  }
+
+  public setOnlineUsersListener(callback: OnOnlineUsersCallback) {
+    this.onOnlineUsersCallback = callback;
   }
 
   private setStatus(newStatus: 'connecting' | 'connected' | 'disconnected') {
@@ -144,6 +150,10 @@ class TVWebSocketStreamer {
             this.setStatus('connected');
             if (this.onDataCallback) {
               this.onDataCallback(payload);
+            }
+          } else if (payload.type === 'online_users') {
+            if (this.onOnlineUsersCallback && typeof payload.count === 'number') {
+              this.onOnlineUsersCallback(payload.count);
             }
           } else if (payload.type === 'error') {
             console.error('WebSocket error from server:', payload.message);

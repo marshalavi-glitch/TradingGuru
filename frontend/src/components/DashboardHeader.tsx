@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, X, Activity, RefreshCw, Landmark, TrendingUp, Layers } from 'lucide-react';
+import { Search, X, Activity, RefreshCw, Landmark, TrendingUp, Layers, Users } from 'lucide-react';
 import { tvStreamer } from '../utils/tvStreamer';
 
 interface DashboardHeaderProps {
@@ -34,7 +34,34 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   const [symbolsList, setSymbolsList] = useState<SymbolPreset[]>([]);
   const [currentTime, setCurrentTime] = useState<string>('');
   const [lastUpdateTime, setLastUpdateTime] = useState<string>('');
+  const [onlineUsers, setOnlineUsers] = useState<number>(1);
   const modalInputRef = useRef<HTMLInputElement>(null);
+
+  // Live Active Online Users Counter
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const backendUrl = window.location.port === '5175' ? 'http://localhost:3002' : window.location.origin;
+        const res = await fetch(`${backendUrl}/api/online-users`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && typeof data.count === 'number') {
+            setOnlineUsers(Math.max(1, data.count));
+          }
+        }
+      } catch (err) {
+        // Ignore fetch errors
+      }
+    };
+
+    fetchUsers();
+    tvStreamer.setOnlineUsersListener((count) => {
+      setOnlineUsers(Math.max(1, count));
+    });
+
+    const interval = setInterval(fetchUsers, 15000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Live IST Clock
   useEffect(() => {
@@ -191,6 +218,25 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--bg-input)', border: '1px solid var(--border-color)', padding: '4px 8px', borderRadius: '6px' }}>
               <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#00f0ff', fontFamily: 'monospace' }}>
                 {currentTime ? `${currentTime}` : '--:--:--'}
+              </span>
+            </div>
+
+            {/* Active Users Badge */}
+            <div 
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '5px', 
+                background: 'rgba(16, 185, 129, 0.12)', 
+                border: '1px solid rgba(16, 185, 129, 0.35)', 
+                padding: '4px 10px', 
+                borderRadius: '6px' 
+              }} 
+              title="Current Active Users Connected to Dashboard"
+            >
+              <Users size={13} color="#10b981" />
+              <span style={{ fontSize: '11px', fontWeight: '800', color: '#10b981' }}>
+                {onlineUsers} Online
               </span>
             </div>
 
