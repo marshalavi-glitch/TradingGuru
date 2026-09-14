@@ -128,6 +128,10 @@ export class TradingViewBridge {
         if (exchange === 'MCX' || name.includes('CRUDE')) {
           console.log('[TV Bridge] Falling back to TVC:USOIL for Crude Oil feed...');
           resolvedSymbol = await chart.resolve('USOIL', 'TVC');
+        } else if (name.endsWith('1!') && exchange === 'NSE') {
+          const spotName = name.replace('1!', '');
+          console.log(`[TV Bridge] Futures resolve failed for ${name}, falling back to spot index ${spotName}...`);
+          resolvedSymbol = await chart.resolve(spotName, 'NSE');
         } else {
           throw err;
         }
