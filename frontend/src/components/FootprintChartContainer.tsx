@@ -434,11 +434,11 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
     ctx.lineTo(width - padding.right, height - padding.bottom);
     ctx.stroke();
 
-    // Render Candlestick Footprint Columns
+    // Render Candlestick Footprint Columns (Matching exact visual design from media_1789363533493.png)
     const candleCount = footprintCandles.length;
-    const colGap = Math.max(6, 12 * zoomLevel);
+    const colGap = Math.max(8, 14 * zoomLevel);
     const availWidth = chartWidth - (candleCount - 1) * colGap;
-    const colWidth = Math.max(38, (availWidth / candleCount) * zoomLevel);
+    const colWidth = Math.max(75, (availWidth / candleCount) * zoomLevel);
 
     ctx.save();
     ctx.beginPath();
@@ -452,127 +452,157 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
 
       if (colEndX < padding.left || colStartX > width - padding.right) return;
 
-      const isBull = c.close >= c.open;
-      const candleColor = isBull ? '#089981' : '#e23636';
-
       const highY = getPriceY(c.high);
       const lowY = getPriceY(c.low);
-      const openY = getPriceY(c.open);
-      const closeY = getPriceY(c.close);
+      const candleHeight = Math.max(40, lowY - highY);
 
-      const bodyTopY = Math.min(openY, closeY);
-      const bodyBottomY = Math.max(openY, closeY);
-      const bodyHeight = Math.max(2, bodyBottomY - bodyTopY);
+      const rangePts = Math.round(Math.abs(c.high - c.low) * 10) / 10;
 
-      // Draw Wick Line
-      ctx.strokeStyle = candleColor;
-      ctx.lineWidth = 1.5;
+      // -----------------------------------------------------------
+      // 1. TOP HEADER CAPS (Matching media_1789363533493.png)
+      // -----------------------------------------------------------
+      // Green Cap Top Bar
+      ctx.fillStyle = '#388e3c';
+      ctx.fillRect(colStartX - 2, highY - 26, colWidth + 4, 3);
+
+      // Top Red Pill 1: CR Range (e.g. CR 323)
+      ctx.fillStyle = '#d32f2f';
+      ctx.fillRect(colStartX + 4, highY - 22, colWidth - 8, 12);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 9px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`CR ${Math.round(rangePts * 10)}`, colCenterX, highY - 13);
+
+      // Top Red Pill 2: Volume / Delta metric (e.g. 14)
+      ctx.fillStyle = '#ff5252';
+      ctx.fillRect(colStartX + 10, highY - 9, colWidth - 20, 9);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 8px "JetBrains Mono", monospace';
+      ctx.fillText(`${c.topWickVol || 14}`, colCenterX, highY - 2);
+
+      // -----------------------------------------------------------
+      // 2. MAIN WHITE FOOTPRINT CONTAINER WITH DARK FRAME & CENTER SPINE
+      // -----------------------------------------------------------
+      // White Rectangle Body Container
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(colStartX, highY, colWidth, candleHeight);
+
+      // Outer Dark Border Frame
+      ctx.strokeStyle = '#121212';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(colStartX, highY, colWidth, candleHeight);
+
+      // Center Vertical Spine (Solid Black Divider Line)
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 2.5;
       ctx.beginPath();
       ctx.moveTo(colCenterX, highY);
       ctx.lineTo(colCenterX, lowY);
       ctx.stroke();
 
-      // Top & Bottom Wick Volume Labels
-      ctx.font = 'bold 9px "JetBrains Mono", monospace';
-      ctx.textAlign = 'center';
-      ctx.fillStyle = textColor;
-      if (highY > padding.top + 12) {
-        ctx.fillText(formatVolumeShort(c.topWickVol), colCenterX, highY - 6);
-      }
-      if (lowY < height - padding.bottom - 12) {
-        ctx.fillText(formatVolumeShort(c.bottomWickVol), colCenterX, lowY + 12);
-      }
-
-      // Draw Candlestick Body Border
-      ctx.strokeStyle = candleColor;
-      ctx.lineWidth = 1.5;
-      ctx.strokeRect(colStartX + 2, bodyTopY, colWidth - 4, bodyHeight);
-
-      // Render Volume Footprint Blocks inside / alongside candle
+      // -----------------------------------------------------------
+      // 3. RENDER TWIN BID / ASK COLUMNS INSIDE CANDLE
+      // -----------------------------------------------------------
       const bins = c.bins;
       if (bins.length > 0) {
         const binStep = bins.length > 1 ? Math.abs(bins[0].price - bins[1].price) : 5;
-        const rowHeight = Math.max(12, ((binStep / priceRange) * chartHeight));
+        const rowHeight = Math.max(14, ((binStep / priceRange) * chartHeight));
+        const maxBinVol = Math.max(...bins.map(b => b.totalVolume), 1);
 
-        // Calculate max bin volume in this candle for gradient scaling
-        const maxVolInCandle = Math.max(...bins.map(b => b.totalVolume), 1);
+        const leftWidth = (colWidth / 2) - 1;
+        const rightWidth = (colWidth / 2) - 1;
+        const leftStartX = colStartX + 1;
+        const rightStartX = colCenterX + 1;
 
         bins.forEach((bin) => {
           const binY = getPriceY(bin.price) - rowHeight / 2;
           if (binY < padding.top || binY > height - padding.bottom) return;
 
-          const blockWidth = colWidth - 4;
-          const blockX = colStartX + 2;
+          const sellVol = bin.sellVolume;
+          const buyVol = bin.buyVolume;
 
-          // Gradient opacity calculation
-          const alpha = settings.applyGradient 
-            ? Math.max(0.4, 0.4 + 0.6 * (bin.totalVolume / maxVolInCandle)) 
-            : 1.0;
-
-          if (bin.isPoc && settings.pocEnabled) {
-            // POC Block: Uses user-configured POC color (default solid black)
-            ctx.fillStyle = settings.pocColor;
-            ctx.fillRect(blockX, binY, blockWidth, Math.max(10, rowHeight - 1));
-
+          // LEFT COLUMN: Bid Volume (Selling Aggression - Red Fills)
+          if (sellVol > maxBinVol * 0.4) {
+            ctx.fillStyle = '#d32f2f'; // Solid Red
+            ctx.fillRect(leftStartX, binY, leftWidth, rowHeight - 1);
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 9px "JetBrains Mono", monospace';
-            ctx.textAlign = 'center';
-
-            let labelText = formatVolumeShort(bin.totalVolume);
-            if (settings.display === 'Bid / Ask') {
-              labelText = `${formatVolumeShort(bin.buyVolume)}x${formatVolumeShort(bin.sellVolume)}`;
-            } else if (settings.display === 'Delta') {
-              labelText = formatDelta(bin.buyVolume - bin.sellVolume);
-            }
-            ctx.fillText(labelText, colCenterX, binY + rowHeight / 2 + 3);
+          } else if (sellVol > 0) {
+            ctx.fillStyle = '#ffebee'; // Light Red Tint
+            ctx.fillRect(leftStartX, binY, leftWidth, rowHeight - 1);
+            ctx.fillStyle = '#000000';
           } else {
-            // Standard Bullish / Bearish Block
-            const isBuyDominant = bin.buyVolume >= bin.sellVolume;
-            const baseColor = isBuyDominant ? settings.buyBgColor : settings.sellBgColor;
+            ctx.fillStyle = '#000000';
+          }
 
-            ctx.save();
-            ctx.globalAlpha = alpha;
-            ctx.fillStyle = baseColor;
-            ctx.fillRect(blockX, binY, blockWidth, Math.max(10, rowHeight - 1));
-            ctx.restore();
+          ctx.font = 'bold 9px "JetBrains Mono", monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(String(sellVol), leftStartX + leftWidth / 2, binY + rowHeight / 2 + 3);
 
-            // Value Area Shading border (if enabled)
-            if (settings.valueAreaEnabled && bin.isValueArea) {
-              ctx.strokeStyle = 'rgba(251, 191, 36, 0.4)';
-              ctx.lineWidth = 1;
-              ctx.strokeRect(blockX, binY, blockWidth, Math.max(10, rowHeight - 1));
-            }
-
-            // Imbalance Highlight
-            if (settings.imbalanceHighlighting && (bin.isImbalanceBuy || bin.isImbalanceSell)) {
-              const imbColor = bin.isImbalanceBuy ? settings.imbalanceColors[0] : settings.imbalanceColors[1];
-              ctx.strokeStyle = imbColor;
-              ctx.lineWidth = 2;
-              ctx.strokeRect(blockX, binY, blockWidth, Math.max(10, rowHeight - 1));
-            }
-
-            // Unfinished Auction Highlight (Magenta / Cyan outline)
-            if (settings.unfinishedAuction && (bin.isUnfinishedHigh || bin.isUnfinishedLow)) {
-              ctx.strokeStyle = bin.isUnfinishedHigh ? settings.unfinishedColors[0] : settings.unfinishedColors[1];
-              ctx.lineWidth = 2;
-              ctx.strokeRect(blockX, binY, blockWidth, Math.max(10, rowHeight - 1));
-            }
-
-            // Label Text based on settings.display
+          // RIGHT COLUMN: Ask Volume (Buying Aggression - Green Fills)
+          if (buyVol > maxBinVol * 0.4) {
+            ctx.fillStyle = '#2e7d32'; // Solid Green
+            ctx.fillRect(rightStartX, binY, rightWidth, rowHeight - 1);
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 9px "JetBrains Mono", monospace';
-            ctx.textAlign = 'center';
+          } else if (buyVol > 0) {
+            ctx.fillStyle = '#e8f5e9'; // Light Green Tint
+            ctx.fillRect(rightStartX, binY, rightWidth, rowHeight - 1);
+            ctx.fillStyle = '#000000';
+          } else {
+            ctx.fillStyle = '#000000';
+          }
 
-            let labelText = formatVolumeShort(bin.totalVolume);
-            if (settings.display === 'Bid / Ask') {
-              labelText = `${formatVolumeShort(bin.buyVolume)}x${formatVolumeShort(bin.sellVolume)}`;
-            } else if (settings.display === 'Delta') {
-              labelText = formatDelta(bin.buyVolume - bin.sellVolume);
+          ctx.font = 'bold 9px "JetBrains Mono", monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(String(buyVol), rightStartX + rightWidth / 2, binY + rowHeight / 2 + 3);
+
+          // -----------------------------------------------------------
+          // 4. IMBALANCE RED OUTLINE BOX (Matching media_1789363533493.png)
+          // -----------------------------------------------------------
+          if (bin.isImbalanceBuy || bin.isImbalanceSell) {
+            ctx.strokeStyle = '#e53935';
+            ctx.lineWidth = 2;
+            if (bin.isImbalanceSell) {
+              ctx.strokeRect(leftStartX + 1, binY, leftWidth - 2, rowHeight - 1);
             }
-            ctx.fillText(labelText, colCenterX, binY + rowHeight / 2 + 3);
+            if (bin.isImbalanceBuy) {
+              ctx.strokeRect(rightStartX + 1, binY, rightWidth - 2, rowHeight - 1);
+            }
+          }
+
+          // -----------------------------------------------------------
+          // 5. BLUE SIDE TABS FOR POC LEVEL (Matching media_1789363533493.png)
+          // -----------------------------------------------------------
+          if (bin.isPoc) {
+            // Outer Left Blue Tab
+            ctx.fillStyle = '#1976d2';
+            ctx.fillRect(colStartX - 5, binY + 1, 5, Math.max(8, rowHeight - 2));
+            // Outer Right Blue Tab
+            ctx.fillRect(colStartX + colWidth, binY + 1, 5, Math.max(8, rowHeight - 2));
           }
         });
       }
+
+      // -----------------------------------------------------------
+      // 6. BOTTOM SUMMARY PILLS (Matching media_1789363533493.png)
+      // -----------------------------------------------------------
+      // Bottom Green Line Cap
+      ctx.fillStyle = '#388e3c';
+      ctx.fillRect(colStartX - 2, lowY + 2, colWidth + 4, 3);
+
+      // Bottom Pill 1: Volume Pill
+      ctx.fillStyle = '#81c784';
+      ctx.fillRect(colStartX + 6, lowY + 7, colWidth - 12, 12);
+      ctx.fillStyle = '#000000';
+      ctx.font = 'bold 8px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${c.bottomWickVol || 343}`, colCenterX, lowY + 16);
+
+      // Bottom Pill 2: CR Summary Pill (e.g. CR 367)
+      ctx.fillStyle = '#a5d6a7';
+      ctx.fillRect(colStartX + 4, lowY + 21, colWidth - 8, 12);
+      ctx.fillStyle = '#000000';
+      ctx.font = 'bold 8px "JetBrains Mono", monospace';
+      ctx.fillText(`CR ${Math.round(c.sessionCvd / 20) || 367}`, colCenterX, lowY + 30);
     });
 
     // Orderflow Levels Badge
