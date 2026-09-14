@@ -76,6 +76,12 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
     y: number;
     isSinglePrint?: boolean;
   } | null>(null);
+  const [crosshairPos, setCrosshairPos] = useState<{
+    x: number;
+    y: number;
+    price: number;
+    dateStr?: string;
+  } | null>(null);
 
   const watchSymbols = [
     // Futures Contracts
@@ -736,7 +742,95 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
 
     ctx.restore(); // Restore clipping region
 
-  }, [dayProfiles, dimensions, profileMode, theme, zoomLevel, panOffset, gridStep, highlightSinglePrints, showIbLine, extendPocMode, pocTestStatusMap]);
+    // 6. DRAW X-AXIS DATE/TIME RULER & Y-AXIS PRICE SCALE RULER LINES
+    const rulerY = height - padding.bottom;
+    const rulerX = width - padding.right;
+
+    // X-Axis Horizontal Ruler Line
+    ctx.strokeStyle = isDarkSlate ? '#334155' : '#475569';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(padding.left, rulerY);
+    ctx.lineTo(rulerX, rulerY);
+    ctx.stroke();
+
+    // Y-Axis Vertical Ruler Line
+    ctx.beginPath();
+    ctx.moveTo(rulerX, padding.top);
+    ctx.lineTo(rulerX, rulerY);
+    ctx.stroke();
+
+    // Price Scale Ticks on Right Y-Axis Ruler
+    for (let priceTick = startTick; priceTick <= endTick; priceTick += step) {
+      const y = getPriceY(priceTick);
+      if (y >= padding.top && y <= rulerY) {
+        ctx.strokeStyle = isDarkSlate ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.2)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(rulerX, y);
+        ctx.lineTo(rulerX + 5, y);
+        ctx.stroke();
+      }
+    }
+
+    // 7. DRAW INTERACTIVE CROSSHAIR & PRICE/DATE RULER BADGES
+    if (crosshairPos && crosshairPos.x >= padding.left && crosshairPos.x <= rulerX && crosshairPos.y >= padding.top && crosshairPos.y <= rulerY) {
+      ctx.save();
+
+      // Crosshair Vertical & Horizontal Cyan Lines
+      ctx.strokeStyle = '#00f0ff';
+      ctx.lineWidth = 1.0;
+      ctx.setLineDash([4, 4]);
+
+      // Vertical Crosshair Line
+      ctx.beginPath();
+      ctx.moveTo(crosshairPos.x, padding.top);
+      ctx.lineTo(crosshairPos.x, rulerY);
+      ctx.stroke();
+
+      // Horizontal Crosshair Line
+      ctx.beginPath();
+      ctx.moveTo(padding.left, crosshairPos.y);
+      ctx.lineTo(rulerX, crosshairPos.y);
+      ctx.stroke();
+
+      ctx.setLineDash([]);
+
+      // Price Ruler Badge Tag on Right Axis
+      const priceText = crosshairPos.price.toFixed(2);
+      ctx.font = 'bold 10px "JetBrains Mono", monospace';
+      const priceMetrics = ctx.measureText(priceText);
+      const priceBadgeW = priceMetrics.width + 12;
+      const priceBadgeH = 20;
+
+      ctx.fillStyle = '#00f0ff';
+      ctx.fillRect(rulerX, crosshairPos.y - priceBadgeH / 2, priceBadgeW, priceBadgeH);
+
+      ctx.fillStyle = '#000000';
+      ctx.textAlign = 'center';
+      ctx.fillText(priceText, rulerX + priceBadgeW / 2, crosshairPos.y + 3.5);
+
+      // Date/Time Ruler Badge Tag on Bottom Axis
+      if (crosshairPos.dateStr) {
+        const dateText = formatDateShort(crosshairPos.dateStr);
+        ctx.font = 'bold 10px "Outfit", sans-serif';
+        const dateMetrics = ctx.measureText(dateText);
+        const dateBadgeW = dateMetrics.width + 14;
+        const dateBadgeH = 20;
+        const dateBadgeX = Math.max(padding.left + dateBadgeW / 2, Math.min(rulerX - dateBadgeW / 2, crosshairPos.x));
+
+        ctx.fillStyle = '#00f0ff';
+        ctx.fillRect(dateBadgeX - dateBadgeW / 2, rulerY, dateBadgeW, dateBadgeH);
+
+        ctx.fillStyle = '#000000';
+        ctx.textAlign = 'center';
+        ctx.fillText(dateText, dateBadgeX, rulerY + 14);
+      }
+
+      ctx.restore();
+    }
+
+  }, [dayProfiles, dimensions, profileMode, theme, zoomLevel, panOffset, gridStep, highlightSinglePrints, showIbLine, extendPocMode, pocTestStatusMap, crosshairPos]);
 
   // Canvas Mouse Move Handler for Hover Tooltip & Panning Drag
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -761,6 +855,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
 
     if (mouseY < padding.top || mouseY > rect.height - padding.bottom || mouseX < padding.left || mouseX > rect.width - padding.right) {
       setHoverInfo(null);
+      setCrosshairPos(null);
       return;
     }
 
@@ -778,12 +873,6 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
       }
     }
 
-    if (hoveredSessionIdx === -1) {
-      setHoverInfo(null);
-      return;
-    }
-
-    const profile = dayProfiles[hoveredSessionIdx];
     let globalMin = Infinity;
     let globalMax = -Infinity;
     dayProfiles.forEach(p => {
@@ -806,24 +895,37 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
     const clickPct = (mouseY - padding.top) / baseChartHeight;
     const hoveredPrice = maxPrice - clickPct * priceRange;
 
-    let closestBin: TPOBin | null = null;
-    let minDiff = Infinity;
-    profile.bins.forEach(b => {
-      const diff = Math.abs(b.price - hoveredPrice);
-      if (diff < minDiff) {
-        minDiff = diff;
-        closestBin = b;
-      }
+    const profile = hoveredSessionIdx !== -1 ? dayProfiles[hoveredSessionIdx] : null;
+
+    setCrosshairPos({
+      x: mouseX,
+      y: mouseY,
+      price: hoveredPrice,
+      dateStr: profile ? profile.dateStr : (dayProfiles[0] ? dayProfiles[0].dateStr : undefined)
     });
 
-    if (closestBin) {
-      setHoverInfo({
-        profile,
-        bin: closestBin,
-        x: mouseX + 15,
-        y: mouseY,
-        isSinglePrint: closestBin.tpos.length === 1
+    if (profile) {
+      let closestBin: TPOBin | null = null;
+      let minDiff = Infinity;
+      profile.bins.forEach(b => {
+        const diff = Math.abs(b.price - hoveredPrice);
+        if (diff < minDiff) {
+          minDiff = diff;
+          closestBin = b;
+        }
       });
+
+      if (closestBin) {
+        setHoverInfo({
+          profile,
+          bin: closestBin,
+          x: mouseX + 15,
+          y: mouseY,
+          isSinglePrint: closestBin.tpos.length === 1
+        });
+      } else {
+        setHoverInfo(null);
+      }
     } else {
       setHoverInfo(null);
     }

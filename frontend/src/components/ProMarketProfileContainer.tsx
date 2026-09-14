@@ -140,6 +140,12 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
     x: number;
     y: number;
   } | null>(null);
+  const [crosshairPos, setCrosshairPos] = useState<{
+    x: number;
+    y: number;
+    price: number;
+    dateStr?: string;
+  } | null>(null);
 
   const watchSymbols = [
     { symbol: 'NSE:NIFTY', name: 'NIFTY 50' },
@@ -549,7 +555,175 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
 
     ctx.restore();
 
-  }, [dayProfiles, dimensions, viewMode, zoomLevel, panOffset, tpoStep, globalVolumeProfile]);
+    // 6. DRAW X-AXIS DATE/TIME RULER & Y-AXIS PRICE SCALE RULER LINES
+    const rulerY = height - padding.bottom;
+    const rulerX = width - padding.right;
+
+    ctx.strokeStyle = '#1e3a8a';
+    ctx.lineWidth = 1.5;
+
+    // X-Axis Horizontal Ruler Line
+    ctx.beginPath();
+    ctx.moveTo(padding.left, rulerY);
+    ctx.lineTo(rulerX, rulerY);
+    ctx.stroke();
+
+    // Y-Axis Vertical Ruler Line
+    ctx.beginPath();
+    ctx.moveTo(rulerX, padding.top);
+    ctx.lineTo(rulerX, rulerY);
+    ctx.stroke();
+
+    // Price Scale Ticks on Right Y-Axis Ruler
+    const rulerStep = tpoStep > 0 ? tpoStep * 5 : 20;
+    const rulerStartTick = Math.floor(minPrice / rulerStep) * rulerStep;
+    const rulerEndTick = Math.ceil(maxPrice / rulerStep) * rulerStep;
+
+    for (let priceTick = rulerStartTick; priceTick <= rulerEndTick; priceTick += rulerStep) {
+      const y = getPriceY(priceTick);
+      if (y >= padding.top && y <= rulerY) {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(rulerX, y);
+        ctx.lineTo(rulerX + 5, y);
+        ctx.stroke();
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = 'bold 9px "JetBrains Mono", monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText(priceTick.toFixed(1), rulerX + 7, y + 3);
+      }
+    }
+
+    // 7. DRAW INTERACTIVE CROSSHAIR & PRICE/DATE RULER BADGES
+    if (crosshairPos && crosshairPos.x >= padding.left && crosshairPos.x <= rulerX && crosshairPos.y >= padding.top && crosshairPos.y <= rulerY) {
+      ctx.save();
+
+      // Crosshair Vertical & Horizontal Cyan Lines
+      ctx.strokeStyle = '#00f0ff';
+      ctx.lineWidth = 1.0;
+      ctx.setLineDash([4, 4]);
+
+      // Vertical Line
+      ctx.beginPath();
+      ctx.moveTo(crosshairPos.x, padding.top);
+      ctx.lineTo(crosshairPos.x, rulerY);
+      ctx.stroke();
+
+      // Horizontal Line
+      ctx.beginPath();
+      ctx.moveTo(padding.left, crosshairPos.y);
+      ctx.lineTo(rulerX, crosshairPos.y);
+      ctx.stroke();
+
+      ctx.setLineDash([]);
+
+      // Price Badge Tag on Right Y-Axis Scale
+      const priceText = crosshairPos.price.toFixed(2);
+      ctx.font = 'bold 10px "JetBrains Mono", monospace';
+      const priceMetrics = ctx.measureText(priceText);
+      const priceBadgeW = priceMetrics.width + 12;
+      const priceBadgeH = 20;
+
+      ctx.fillStyle = '#00f0ff';
+      ctx.fillRect(rulerX, crosshairPos.y - priceBadgeH / 2, priceBadgeW, priceBadgeH);
+
+      ctx.fillStyle = '#000000';
+      ctx.textAlign = 'center';
+      ctx.fillText(priceText, rulerX + priceBadgeW / 2, crosshairPos.y + 3.5);
+
+      // Date/Time Badge Tag on Bottom X-Axis Scale
+      if (crosshairPos.dateStr) {
+        const dateText = crosshairPos.dateStr;
+        ctx.font = 'bold 10px "Outfit", sans-serif';
+        const dateMetrics = ctx.measureText(dateText);
+        const dateBadgeW = dateMetrics.width + 14;
+        const dateBadgeH = 20;
+        const dateBadgeX = Math.max(padding.left + dateBadgeW / 2, Math.min(rulerX - dateBadgeW / 2, crosshairPos.x));
+
+        ctx.fillStyle = '#00f0ff';
+        ctx.fillRect(dateBadgeX - dateBadgeW / 2, rulerY, dateBadgeW, dateBadgeH);
+
+        ctx.fillStyle = '#000000';
+        ctx.textAlign = 'center';
+        ctx.fillText(dateText, dateBadgeX, rulerY + 14);
+      }
+
+      ctx.restore();
+    }
+
+  }, [dayProfiles, dimensions, viewMode, zoomLevel, panOffset, tpoStep, globalVolumeProfile, crosshairPos]);
+
+  const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (isDragging) {
+      setPanOffset({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
+      setCrosshairPos(null);
+      return;
+    }
+
+    const canvas = canvasRef.current;
+    if (!canvas || dayProfiles.length === 0) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    const padding = { top: 40, bottom: 40, left: 75, right: 80 };
+    const baseChartWidth = rect.width - padding.left - padding.right;
+    const baseChartHeight = rect.height - padding.top - padding.bottom;
+
+    if (mouseY < padding.top || mouseY > rect.height - padding.bottom || mouseX < padding.left || mouseX > rect.width - padding.right) {
+      setHoverInfo(null);
+      setCrosshairPos(null);
+      return;
+    }
+
+    const sessionCount = dayProfiles.length;
+    const colGap = Math.max(4, 8 * zoomLevel);
+    const availWidthForCols = baseChartWidth - (sessionCount - 1) * colGap;
+    const colWidth = (availWidthForCols / sessionCount) * zoomLevel;
+
+    let hoveredSessionIdx = -1;
+    for (let i = 0; i < sessionCount; i++) {
+      const colStartX = padding.left + panOffset.x + i * (colWidth + colGap);
+      if (mouseX >= colStartX && mouseX <= colStartX + colWidth) {
+        hoveredSessionIdx = i;
+        break;
+      }
+    }
+
+    let globalMin = Infinity;
+    let globalMax = -Infinity;
+    dayProfiles.forEach(p => {
+      if (p.dayLow < globalMin) globalMin = p.dayLow;
+      if (p.dayHigh > globalMax) globalMax = p.dayHigh;
+    });
+
+    const pMargin = (globalMax - globalMin) * 0.02;
+    const rawMin = globalMin - pMargin;
+    const rawMax = globalMax + pMargin;
+    const rawRange = rawMax - rawMin;
+
+    const centerPrice = (rawMax + rawMin) / 2 - (panOffset.y / baseChartHeight) * rawRange;
+    const visibleRange = rawRange / zoomLevel;
+
+    const minPrice = centerPrice - visibleRange / 2;
+    const maxPrice = centerPrice + visibleRange / 2;
+    const priceRange = maxPrice - minPrice;
+
+    const clickPct = (mouseY - padding.top) / baseChartHeight;
+    const hoveredPrice = maxPrice - clickPct * priceRange;
+
+    const profile = hoveredSessionIdx !== -1 ? dayProfiles[hoveredSessionIdx] : null;
+
+    setCrosshairPos({
+      x: mouseX,
+      y: mouseY,
+      price: hoveredPrice,
+      dateStr: profile ? profile.dateStr : (dayProfiles[0] ? dayProfiles[0].dateStr : undefined)
+    });
+  };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -730,14 +904,10 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
             setIsDragging(true);
             setDragStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
           }}
-          onMouseMove={(e) => {
-            if (isDragging) {
-              setPanOffset({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
-            }
-          }}
-          onMouseUp={() => setIsDragging(false)}
-          onMouseLeave={() => setIsDragging(false)}
-          style={{ cursor: isDragging ? 'grabbing' : 'grab', display: 'block' }}
+          onMouseMove={handleCanvasMouseMove}
+          onMouseUp={() => { setIsDragging(false); setCrosshairPos(null); }}
+          onMouseLeave={() => { setIsDragging(false); setCrosshairPos(null); }}
+          style={{ cursor: isDragging ? 'grabbing' : 'crosshair', display: 'block' }}
         />
       </div>
 
