@@ -360,15 +360,23 @@ export function calculateDayProfile(
       ibLow = Math.min(...ibCandles.map(c => c.low));
     }
   } else {
-    // Daily IB: first 1 hour (2 periods of 30 minutes)
-    const firstPeriod = periodRanges[0];
-    const secondPeriod = periodRanges[1];
-    if (firstPeriod) {
-      ibHigh = firstPeriod.high;
-      ibLow = firstPeriod.low;
-      if (secondPeriod) {
-        ibHigh = Math.max(ibHigh, secondPeriod.high);
-        ibLow = Math.min(ibLow, secondPeriod.low);
+    // Daily IB: First 60 minutes of trading session (09:15 AM to 10:15 AM IST)
+    const sessionStart = sorted[0].time;
+    const first60MinCandles = sorted.filter(c => c.time < sessionStart + 3600);
+    
+    if (first60MinCandles.length > 0) {
+      ibHigh = Math.max(...first60MinCandles.map(c => c.high));
+      ibLow = Math.min(...first60MinCandles.map(c => c.low));
+    } else {
+      const firstPeriod = periodRanges[0]; // Period A (09:15-09:45)
+      const secondPeriod = periodRanges[1]; // Period B (09:45-10:15)
+      if (firstPeriod) {
+        ibHigh = firstPeriod.high;
+        ibLow = firstPeriod.low;
+        if (secondPeriod) {
+          ibHigh = Math.max(ibHigh, secondPeriod.high);
+          ibLow = Math.min(ibLow, secondPeriod.low);
+        }
       }
     }
   }
