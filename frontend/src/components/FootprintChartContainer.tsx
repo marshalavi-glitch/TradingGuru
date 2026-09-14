@@ -197,12 +197,11 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
       const isBull = c.close >= c.open;
       const range = Math.max(0.5, c.high - c.low);
       
-      // Calculate dynamic price bin step from settings (ticksPerRow)
-      const baseStep = Math.max(1, Math.round(settings.ticksPerRow / 10));
-      const priceStep = range > 100 ? baseStep : (range > 30 ? Math.max(2, Math.floor(baseStep / 2)) : 2);
+      // Unclubbed Tick-by-Tick Price Bin Step (Exact order flow per price level)
+      const priceStep = 1;
 
-      const startPrice = Math.floor(c.low / priceStep) * priceStep;
-      const endPrice = Math.ceil(c.high / priceStep) * priceStep;
+      const startPrice = Math.floor(c.low);
+      const endPrice = Math.ceil(c.high);
 
       const rawBins: { price: number; buyVol: number; sellVol: number; totalVol: number }[] = [];
       let maxBinVol = 0;
@@ -820,6 +819,69 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
                 {tf}m
               </button>
             ))}
+          </div>
+
+          {/* Zoom In & Zoom Out Controls */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(0,0,0,0.3)', padding: '2px', borderRadius: '6px' }}>
+            <button
+              onClick={() => setZoomLevel((prev) => Math.min(5.0, prev * 1.25))}
+              style={{
+                background: 'rgba(255, 255, 255, 0.08)',
+                color: '#ffffff',
+                border: 'none',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                fontSize: '11px',
+                fontWeight: '800',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '2px'
+              }}
+              title="Zoom In (+)"
+            >
+              <ZoomIn size={13} />
+              <span>+</span>
+            </button>
+            <button
+              onClick={() => setZoomLevel((prev) => Math.max(0.3, prev * 0.75))}
+              style={{
+                background: 'rgba(255, 255, 255, 0.08)',
+                color: '#ffffff',
+                border: 'none',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                fontSize: '11px',
+                fontWeight: '800',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '2px'
+              }}
+              title="Zoom Out (-)"
+            >
+              <ZoomOut size={13} />
+              <span>-</span>
+            </button>
+            <button
+              onClick={() => {
+                setZoomLevel(1.0);
+                setPanOffset({ x: 0, y: 0 });
+              }}
+              style={{
+                background: 'rgba(0, 240, 255, 0.15)',
+                color: '#00f0ff',
+                border: '1px solid rgba(0, 240, 255, 0.3)',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                fontSize: '11px',
+                fontWeight: '800',
+                cursor: 'pointer'
+              }}
+              title="Reset Zoom & Pan"
+            >
+              100%
+            </button>
           </div>
 
           {/* Theme Toggle */}
