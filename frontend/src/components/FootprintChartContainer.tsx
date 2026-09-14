@@ -559,17 +559,12 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
           ctx.fillText(String(buyVol), rightStartX + rightWidth / 2, binY + rowHeight / 2 + 4);
 
           // -----------------------------------------------------------
-          // 4. IMBALANCE RED OUTLINE BOX (Matching media_1789363533493.png)
+          // 4. UNIFIED ROW-WIDE IMBALANCE RED OUTLINE BOX (Matching media_1789363861826.png)
           // -----------------------------------------------------------
           if (settings.imbalanceHighlighting && (bin.isImbalanceBuy || bin.isImbalanceSell)) {
-            ctx.strokeStyle = '#d32f2f';
+            ctx.strokeStyle = '#d32f2f'; // Bold Red Border
             ctx.lineWidth = 3.0;
-            if (bin.isImbalanceSell) {
-              ctx.strokeRect(leftStartX + 1, binY + 0.5, leftWidth - 2, rowHeight - 1);
-            }
-            if (bin.isImbalanceBuy) {
-              ctx.strokeRect(rightStartX + 1, binY + 0.5, rightWidth - 2, rowHeight - 1);
-            }
+            ctx.strokeRect(colStartX + 2, binY + 0.5, colWidth - 4, rowHeight - 1);
           }
 
           // -----------------------------------------------------------
