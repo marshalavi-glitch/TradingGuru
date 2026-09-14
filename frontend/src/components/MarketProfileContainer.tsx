@@ -27,6 +27,17 @@ function formatDayNumber(dateStr: string): string {
   return parseInt(parts[2], 10).toString();
 }
 
+function getLetterColor(letter: string): string {
+  const code = letter.toUpperCase().charCodeAt(0);
+  if (code >= 65 && code <= 66) return '#10b981'; // A-B: Initial Balance Green
+  if (code >= 67 && code <= 70) return '#3b82f6'; // C-F: Royal Blue (Morning Session)
+  if (code >= 71 && code <= 74) return '#00f0ff'; // G-J: Cyan (Midday)
+  if (code >= 75 && code <= 78) return '#8b5cf6'; // K-N: Purple (Afternoon)
+  if (code >= 79 && code <= 82) return '#ec4899'; // O-R: Pink (Late Afternoon)
+  if (code >= 83 && code <= 86) return '#f59e0b'; // S-V: Amber/Orange (Pre-Close)
+  return '#ef4444'; // W-Z and lower: Red
+}
+
 export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
   onSymbolSelect,
   onSwitchToChart
@@ -392,6 +403,57 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
       const showLetters = baseBlockSize >= 9 && profileMode !== 'volume';
       const blockGap = showLetters ? 1 : 0.5;
 
+      const uniqueLetters = Array.from(new Set(
+        bins.flatMap(b => b.tpos)
+      )).sort((a, b) => {
+        const getIdx = (l: string) => {
+          const code = l.charCodeAt(0);
+          return code >= 97 ? code - 97 + 26 : code - 65;
+        };
+        return getIdx(a) - getIdx(b);
+      });
+
+      const splitStep = Math.max(9, Math.min(22, (colWidth / Math.max(1, uniqueLetters.length))));
+      const splitWidth = Math.max(7, splitStep - 1);
+
+      if (profileMode === 'tpo-split') {
+        uniqueLetters.forEach((letter, uIdx) => {
+          const subX = colStartX + uIdx * splitStep;
+          if (subX + splitWidth <= colEndX) {
+            // Top Header Box for TPO Letter
+            ctx.fillStyle = getLetterColor(letter);
+            ctx.fillRect(subX, padding.top - 18, splitWidth, 14);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 9px "JetBrains Mono", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(letter, subX + splitWidth / 2, padding.top - 7);
+
+            // Subtle Period Vertical Guide Line
+            ctx.strokeStyle = isDarkSlate ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.03)';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(subX, padding.top);
+            ctx.lineTo(subX, height - padding.bottom);
+            ctx.stroke();
+          }
+        });
+
+        // POC Line across Split Columns
+        if (profile.pocPrice) {
+          const pocY = getPriceY(profile.pocPrice);
+          if (pocY >= padding.top && pocY <= height - padding.bottom) {
+            ctx.strokeStyle = '#00f0ff';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([3, 3]);
+            ctx.beginPath();
+            ctx.moveTo(colStartX, pocY);
+            ctx.lineTo(colStartX + uniqueLetters.length * splitStep, pocY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+          }
+        }
+      }
+
       // Render TPOs or Volume per price bin
       bins.forEach((bin) => {
         const binY = getPriceY(bin.price) - rowHeight / 2;
@@ -415,6 +477,35 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
             ctx.fillStyle = 'rgba(16, 185, 129, 0.7)';
             ctx.fillRect(colStartX, binY, barWidth, Math.max(1, rowHeight - 0.5));
           }
+        } else if (profileMode === 'tpo-split') {
+          if (bin.tpos.length === 0) return;
+
+          bin.tpos.forEach((letter) => {
+            const uIdx = uniqueLetters.indexOf(letter);
+            if (uIdx === -1) return;
+            const x = colStartX + uIdx * splitStep;
+            if (x + splitWidth <= colEndX) {
+              ctx.fillStyle = getLetterColor(letter);
+              ctx.fillRect(x, binY + (rowHeight - splitWidth) / 2, splitWidth, splitWidth);
+
+              if (isPoc) {
+                ctx.strokeStyle = '#00f0ff';
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(x, binY + (rowHeight - splitWidth) / 2, splitWidth, splitWidth);
+              } else {
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.lineWidth = 0.5;
+                ctx.strokeRect(x, binY + (rowHeight - splitWidth) / 2, splitWidth, splitWidth);
+              }
+
+              if (showLetters && splitWidth >= 8) {
+                ctx.fillStyle = '#ffffff';
+                ctx.font = `bold ${Math.max(7, Math.floor(splitWidth * 0.75))}px "JetBrains Mono", monospace`;
+                ctx.textAlign = 'center';
+                ctx.fillText(letter, x + splitWidth / 2, binY + rowHeight / 2 + (splitWidth * 0.28));
+              }
+            }
+          });
         } else {
           const tpoCount = bin.tpos.length;
           if (tpoCount === 0) return;
@@ -1021,8 +1112,25 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
                 fontWeight: '700',
                 cursor: 'pointer'
               }}
+              title="Merged Daily Composite TPO Profile"
             >
-              TPO Letters
+              🥞 Merged TPO
+            </button>
+            <button
+              onClick={() => setProfileMode('tpo-split')}
+              style={{
+                background: profileMode === 'tpo-split' ? '#00f0ff' : 'transparent',
+                color: profileMode === 'tpo-split' ? '#000000' : 'var(--text-secondary)',
+                border: 'none',
+                padding: '4px 10px',
+                borderRadius: '4px',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer'
+              }}
+              title="Split Profile into 30-min Chronological TPO Columns"
+            >
+              ✂️ Split by TPO
             </button>
             <button
               onClick={() => setProfileMode('volume')}
@@ -1036,8 +1144,9 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
                 fontWeight: '700',
                 cursor: 'pointer'
               }}
+              title="Volume Distribution Profile"
             >
-              Volume Profile
+              📊 Volume Profile
             </button>
           </div>
 

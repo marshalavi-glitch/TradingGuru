@@ -203,8 +203,8 @@ export const MarketProfile: React.FC<MarketProfileProps> = ({
         ctx.stroke();
       });
 
-      const tpoWidthRatio = profileType === 'volume' ? 0 : 0.65;
-      const volumeWidthRatio = profileType === 'volume' ? 0.9 : 0.3;
+      const tpoWidthRatio = profileType === 'volume' ? 0 : (profileType === 'tpo-split' ? 0.95 : 0.65);
+      const volumeWidthRatio = profileType === 'volume' ? 0.9 : (profileType === 'tpo-split' ? 0.05 : 0.3);
 
       // Render TPOs
       if (profileType === 'tpo-collapsed' || profileType === 'tpo-split') {
@@ -238,15 +238,23 @@ export const MarketProfile: React.FC<MarketProfileProps> = ({
               }
             });
           } else {
-            // Split View
+            // Split View by 30-min TPO Period
             bin.tpos.forEach((letter) => {
               const periodIndex = letter.charCodeAt(0) - (letter.charCodeAt(0) >= 97 ? 97 - 26 : 65);
-              const spacing = charWidth + 2;
+              const spacing = isBlockView ? blockWidth + 1 : charWidth + 3;
               const x = startX + periodIndex * spacing;
               
               if (x < startX + tpoAreaWidth) {
                 ctx.fillStyle = getLetterColor(letter);
-                ctx.fillText(letter, x, y + rowHeight / 2 + fontHeight / 3);
+                if (isBlockView) {
+                  ctx.fillRect(x, y + (rowHeight - blockHeight)/2, blockWidth, blockHeight);
+                } else {
+                  ctx.fillRect(x - 1, y, charWidth + 2, Math.max(1, rowHeight));
+                  ctx.fillStyle = '#ffffff';
+                  ctx.font = `bold ${fontHeight}px "JetBrains Mono", monospace`;
+                  ctx.textAlign = 'center';
+                  ctx.fillText(letter, x + charWidth / 2, y + rowHeight / 2 + fontHeight / 3);
+                }
               }
             });
           }
