@@ -197,11 +197,23 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
       const isBull = c.close >= c.open;
       const range = Math.max(0.5, c.high - c.low);
       
-      // Unclubbed Tick-by-Tick Price Bin Step (Exact order flow per price level)
-      const priceStep = 1;
+      // Dynamic Price Bin Step based on asset range & price magnitude
+      // Target 6 to 10 clean footprint rows per candle to prevent text overlapping
+      let priceStep = 1;
+      const targetBins = 8;
+      const rawStep = range / targetBins;
 
-      const startPrice = Math.floor(c.low);
-      const endPrice = Math.ceil(c.high);
+      if (rawStep > 50) priceStep = 50;
+      else if (rawStep > 20) priceStep = 25;
+      else if (rawStep > 8) priceStep = 10;
+      else if (rawStep > 4) priceStep = 5;
+      else if (rawStep > 1.5) priceStep = 2;
+      else if (rawStep > 0.5) priceStep = 1;
+      else if (rawStep > 0.1) priceStep = 0.5;
+      else priceStep = 0.1;
+
+      const startPrice = Math.floor(c.low / priceStep) * priceStep;
+      const endPrice = Math.ceil(c.high / priceStep) * priceStep;
 
       const rawBins: { price: number; buyVol: number; sellVol: number; totalVol: number }[] = [];
       let maxBinVol = 0;
@@ -507,8 +519,12 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
       // -----------------------------------------------------------
       const bins = c.bins;
       if (bins.length > 0) {
-        const binStep = bins.length > 1 ? Math.abs(bins[0].price - bins[1].price) : 5;
-        const rowHeight = Math.max(20, ((binStep / priceRange) * chartHeight));
+        const topBinY = getPriceY(bins[0].price);
+        const nextBinY = bins.length > 1 ? getPriceY(bins[1].price) : topBinY + 22;
+        const rowSpacing = Math.max(14, Math.abs(nextBinY - topBinY));
+        const rowHeight = Math.min(32, rowSpacing);
+        const fontPx = Math.max(9, Math.min(12, Math.floor(rowHeight * 0.55)));
+
         const maxBinVol = Math.max(...bins.map(b => b.totalVolume), 1);
 
         const leftWidth = (colWidth / 2) - 1.5;
@@ -517,7 +533,8 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
         const rightStartX = colCenterX + 1.5;
 
         bins.forEach((bin) => {
-          const binY = getPriceY(bin.price) - rowHeight / 2;
+          const binCenterY = getPriceY(bin.price);
+          const binY = binCenterY - rowHeight / 2;
           if (binY < padding.top || binY > height - padding.bottom) return;
 
           const sellVol = bin.sellVolume;
@@ -536,9 +553,9 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
             ctx.fillStyle = '#000000';
           }
 
-          ctx.font = 'bold 11px "JetBrains Mono", monospace';
+          ctx.font = `bold ${fontPx}px "JetBrains Mono", monospace`;
           ctx.textAlign = 'center';
-          ctx.fillText(String(sellVol), leftStartX + leftWidth / 2, binY + rowHeight / 2 + 4);
+          ctx.fillText(String(sellVol), leftStartX + leftWidth / 2, binY + rowHeight / 2 + fontPx * 0.35);
 
           // RIGHT COLUMN: Ask Volume (Buying Aggression - Green Fills)
           if (buyVol > maxBinVol * 0.4) {
@@ -553,9 +570,9 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
             ctx.fillStyle = '#000000';
           }
 
-          ctx.font = 'bold 11px "JetBrains Mono", monospace';
+          ctx.font = `bold ${fontPx}px "JetBrains Mono", monospace`;
           ctx.textAlign = 'center';
-          ctx.fillText(String(buyVol), rightStartX + rightWidth / 2, binY + rowHeight / 2 + 4);
+          ctx.fillText(String(buyVol), rightStartX + rightWidth / 2, binY + rowHeight / 2 + fontPx * 0.35);
 
           // -----------------------------------------------------------
           // 4. UNIFIED ROW-WIDE IMBALANCE RED OUTLINE BOX (Matching media_1789363861826.png)
