@@ -24,7 +24,7 @@ interface SymbolCvdScanResult {
 
 export const CvdAdvContainer: React.FC<CvdAdvContainerProps> = ({ onSymbolSelect, onSwitchToChart }) => {
   const [symbol, setSymbol] = useState<string>('NSE:NIFTY');
-  const [timeframe, setTimeframe] = useState<string>('5');
+  const [timeframe, setTimeframe] = useState<string>('15');
   const [candles, setCandles] = useState<Candle[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -78,7 +78,7 @@ export const CvdAdvContainer: React.FC<CvdAdvContainerProps> = ({ onSymbolSelect
 
     for (const item of watchSymbols) {
       try {
-        const res = await fetch(`${backendHttp}/api/candles?symbol=${encodeURIComponent(item.symbol)}&timeframe=5&limit=150`);
+        const res = await fetch(`${backendHttp}/api/candles?symbol=${encodeURIComponent(item.symbol)}&timeframe=${timeframe}&limit=150`);
         if (res.ok) {
           const data = await res.json();
           if (data.candles && data.candles.length >= 20) {
@@ -97,7 +97,7 @@ export const CvdAdvContainer: React.FC<CvdAdvContainerProps> = ({ onSymbolSelect
 
   useEffect(() => {
     runCvdAdvScan();
-  }, []);
+  }, [timeframe]);
 
   // Compute CVD series and Divergence/ADV patterns for current chart candles
   const cvdAnalysis = useMemo(() => {
@@ -202,7 +202,9 @@ export const CvdAdvContainer: React.FC<CvdAdvContainerProps> = ({ onSymbolSelect
             <option value="1">1 Min</option>
             <option value="3">3 Min</option>
             <option value="5">5 Min</option>
-            <option value="15">15 Min</option>
+            <option value="15">15 Min (Default)</option>
+            <option value="30">30 Min</option>
+            <option value="60">60 Min (1H)</option>
           </select>
 
           <button
