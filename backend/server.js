@@ -47,11 +47,13 @@ import { startDojiScanner, dojiCache, scanDojiForSlot } from './doji_scanner.js'
 import { startVolumeScanner, volumeCache, scanVolumeBreakouts } from './volume_scanner.js';
 import { scanWeekly200EMASymbols, getCachedWeekly200EMASymbols } from './weekly_200_ema_scanner.js';
 import { scanNr7Breakouts, nr7Cache, loadNr7CacheFromDisk } from './nr7_breakout_scanner.js';
+import { scanSwingTrades, getSwingResults, loadSwingCacheFromDisk } from './swing_scanner.js';
 import fs from 'fs';
 import { exec } from 'child_process';
 import { analyzeConfluences, updateConstraintsFromError } from './confluenceAnalyzer.js';
 
 loadNr7CacheFromDisk();
+loadSwingCacheFromDisk();
 
 process.on('uncaughtException', (err) => {
   console.error('[Node Backend Error] Uncaught Exception:', err.stack || err);
@@ -94,6 +96,22 @@ app.get('/api/scanner/confluence', async (req, res) => {
   } catch (err) {
     console.error('[Confluence Endpoint] Failed to analyze alerts:', err.message);
     res.status(500).json({ error: err.message, alerts: [] });
+  }
+});
+
+// Route for MACD & RSI Swing Scanner
+app.get('/api/swing-scanner', async (req, res) => {
+  try {
+    const timeframe = req.query.timeframe || 'D';
+    const forceScan = req.query.scan === 'true';
+    if (forceScan) {
+      scanSwingTrades(timeframe);
+    }
+    const data = getSwingResults(timeframe);
+    res.json(data);
+  } catch (err) {
+    console.error('[Swing Scanner API] Error:', err.message);
+    res.status(500).json({ error: err.message, results: [] });
   }
 });
 

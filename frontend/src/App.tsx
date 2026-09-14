@@ -30,13 +30,14 @@ import { TrumpMoodContainer } from './components/TrumpMoodContainer';
 import { FootprintChartContainer } from './components/FootprintChartContainer';
 import { CasPredictionContainer } from './components/CasPredictionContainer';
 import { VsaContainer } from './components/VsaContainer';
+import { SwingTradeContainer } from './components/SwingTradeContainer';
 
 export type TabType = 
   | 'chart' | 'bhaichara' | 'dada_thoughts' | 'trump_mood' | 'fifteen_min' 
   | 'scanner' | 'options' | 'signals' | 'doji' | 'doji_novol' | 'volume' 
   | 'opening_bias' | 'hourly_updates' | 'backtest_results' | 'confluences' 
   | 'early_picks' | 'nr7_breakout' | 'order_flow' | 'order_flow_footprint' 
-  | 'cvd_adv' | 'heatmap' | 'market_profile' | 'pro_market_profile' | 'footprint_chart' | 'cas_prediction' | 'vsa';
+  | 'cvd_adv' | 'heatmap' | 'market_profile' | 'pro_market_profile' | 'footprint_chart' | 'cas_prediction' | 'vsa' | 'swing_trade';
 
 interface TabItem {
   id: TabType;
@@ -50,6 +51,7 @@ const TABS_LIST: TabItem[] = [
   { id: 'dada_thoughts', label: '🧠 Dada Thoughts', color: '#eab308' },
   { id: 'trump_mood', label: '🎺 Trump Mood', color: '#f87171' },
   { id: 'cas_prediction', label: '🎯 CAS Prediction', color: '#00f0ff' },
+  { id: 'swing_trade', label: '🌊 Swing Trade (MACD/RSI)', color: '#00f0ff' },
   { id: 'vsa', label: '📊 Volume Spread (VSA)', color: '#a855f7' },
   { id: 'chart', label: '📈 Candlestick Chart', color: '#3b82f6' },
   { id: 'footprint_chart', label: '👣 Footprint Chart', color: '#34d399' },
@@ -473,6 +475,13 @@ function App() {
         ) : activeTab === 'order_flow_footprint' ? (
           <TabErrorBoundary tabName="Order Flow">
             <OrderFlowFootprintContainer
+              onSymbolSelect={setSymbol}
+              onSwitchToChart={() => setActiveTab('chart')}
+            />
+          </TabErrorBoundary>
+        ) : activeTab === 'swing_trade' ? (
+          <TabErrorBoundary tabName="Swing Trade (MACD/RSI)">
+            <SwingTradeContainer
               onSymbolSelect={setSymbol}
               onSwitchToChart={() => setActiveTab('chart')}
             />
