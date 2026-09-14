@@ -103,7 +103,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
     return resolveSymbol(symbol);
   }, [symbol]);
 
-  // Fetch candles with auto-retry
+  // Fetch candles with auto-retry & symbol fallback
   const fetchCandles = async (sym: string, tf: string) => {
     setLoading(true);
     setError(null);
@@ -122,6 +122,18 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
             setError(null);
             setLoading(false);
             return;
+          } else if (sym.includes('1!')) {
+            const fallbackSym = sym.replace('1!', '');
+            const fbRes = await fetch(`${backendHttp}/api/candles?symbol=${encodeURIComponent(fallbackSym)}&timeframe=${tf}&limit=2000`);
+            if (fbRes.ok) {
+              const fbData = await fbRes.json();
+              if (fbData.candles && fbData.candles.length > 0) {
+                setCandles(fbData.candles);
+                setError(null);
+                setLoading(false);
+                return;
+              }
+            }
           }
         }
       } catch (err: any) {

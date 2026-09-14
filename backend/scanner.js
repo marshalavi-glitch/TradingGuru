@@ -216,7 +216,7 @@ try {
 
 export { getExpiriesForSymbol, findClosestValidOptionSymbol, fetchCandlesForSymbol };
 
-async function fetchCandlesForSymbol(tvBridge, symbol, timeframe, limit = 10) {
+async function fetchCandlesDirect(tvBridge, symbol, timeframe, limit = 10) {
   let cleanupFn = null;
   let resolved = false;
   let cachedData = null;
@@ -263,10 +263,10 @@ async function fetchCandlesForSymbol(tvBridge, symbol, timeframe, limit = 10) {
           try { await cleanupFn(); } catch (e) {}
           return;
         }
-        if (cachedData && !resolved) {
+        if (cachedData) {
           resolved = true;
           clearTimeout(timeout);
-          try { await cleanupFn(); } catch (err) {}
+          try { await cleanupFn(); } catch (e) {}
           resolve(cachedData);
         }
       })
@@ -278,6 +278,22 @@ async function fetchCandlesForSymbol(tvBridge, symbol, timeframe, limit = 10) {
         }
       });
   });
+}
+
+async function fetchCandlesForSymbol(tvBridge, symbol, timeframe, limit = 10) {
+  try {
+    const candles = await fetchCandlesDirect(tvBridge, symbol, timeframe, limit);
+    if (candles && candles.length > 0) return candles;
+  } catch (err) {
+    if (symbol && symbol.includes('1!')) {
+      const fallbackSym = symbol.replace('1!', '');
+      try {
+        const fallbackCandles = await fetchCandlesDirect(tvBridge, fallbackSym, timeframe, limit);
+        if (fallbackCandles && fallbackCandles.length > 0) return fallbackCandles;
+      } catch (e) {}
+    }
+  }
+  return [];
 }
 
 // Calculate Matrix levels and current close from candle history

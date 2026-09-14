@@ -174,6 +174,18 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
             setError(null);
             setLoading(false);
             return;
+          } else if (resolved.formattedSymbol.includes('1!')) {
+            const fallbackSym = resolved.formattedSymbol.replace('1!', '');
+            const fbRes = await fetch(`${backendHttp}/api/candles?symbol=${encodeURIComponent(fallbackSym)}&timeframe=${timeframe}&limit=${limit}`);
+            if (fbRes.ok) {
+              const fbData = await fbRes.json();
+              if (fbData.candles && fbData.candles.length > 0) {
+                setCandles(fbData.candles);
+                setError(null);
+                setLoading(false);
+                return;
+              }
+            }
           }
         }
       } catch (err: any) {
