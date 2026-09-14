@@ -33,7 +33,7 @@ export const SwingTradeContainer: React.FC<SwingTradeContainerProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const backendUrl = getBackendHttpUrl();
+      const backendUrl = await getBackendHttpUrl();
       const res = await fetch(`${backendUrl}/api/swing-scanner?timeframe=${timeframe}${forceScan ? '&scan=true' : ''}`);
       if (res.ok) {
         const data = await res.json();
@@ -67,7 +67,7 @@ export const SwingTradeContainer: React.FC<SwingTradeContainerProps> = ({
         { symbol: 'NSE:SUNPHARMA', name: 'Sun Pharma', category: 'Pharma' }
       ];
 
-      const backendUrl = getBackendHttpUrl();
+      const backendUrl = await getBackendHttpUrl();
       const computedResults: SwingStockResult[] = [];
 
       for (const item of fallbackSymbols) {

@@ -35,7 +35,7 @@ export function HourlyUpdatesContainer() {
     let isMounted = true;
     const fetchHourlyData = async () => {
       try {
-        const backendUrl = getBackendHttpUrl();
+        const backendUrl = await getBackendHttpUrl();
         const res = await fetch(`${backendUrl}/api/scanner/opening-bias?_t=${Date.now()}`, {
           cache: 'no-store',
           headers: { 'Pragma': 'no-cache', 'Cache-Control': 'no-cache' }

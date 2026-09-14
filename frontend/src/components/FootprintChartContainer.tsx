@@ -165,7 +165,7 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
     setLoading(true);
     setError(null);
     try {
-      const backendHttp = getBackendHttpUrl();
+      const backendHttp = await getBackendHttpUrl();
       const res = await fetch(`${backendHttp}/api/candles?symbol=${encodeURIComponent(sym)}&timeframe=${tf}&limit=120`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();

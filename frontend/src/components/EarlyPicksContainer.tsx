@@ -38,7 +38,7 @@ export const EarlyPicksContainer: React.FC<EarlyPicksContainerProps> = ({
     
     const fetchEarlyPicks = async () => {
       try {
-        const backendUrl = getBackendHttpUrl();
+        const backendUrl = await getBackendHttpUrl();
         const res = await fetch(`${backendUrl}/api/scanner/early-picks?threshold=${threshold}`);
         if (res.ok) {
           const data = await res.json();

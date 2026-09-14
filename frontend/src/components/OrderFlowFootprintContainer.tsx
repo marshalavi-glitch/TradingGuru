@@ -41,10 +41,10 @@ export const OrderFlowFootprintContainer: React.FC<OrderFlowFootprintContainerPr
   // Fetch initial candles for quick F&O symbols
   useEffect(() => {
     let isMounted = true;
-    const backendHttp = getBackendHttpUrl();
 
     const fetchAllCandles = async () => {
       setLoading(true);
+      const backendHttp = await getBackendHttpUrl();
       const newMap: Record<string, Candle[]> = {};
 
       const symbolsToFetch = [

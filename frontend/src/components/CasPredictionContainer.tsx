@@ -70,7 +70,7 @@ export const CasPredictionContainer: React.FC<CasPredictionContainerProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const backendHttp = getBackendHttpUrl();
+      const backendHttp = await getBackendHttpUrl();
       const res = await fetch(`${backendHttp}/api/candles?symbol=${encodeURIComponent(sym)}&timeframe=5&limit=3000`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();

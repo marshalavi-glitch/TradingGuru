@@ -57,26 +57,23 @@ export function OpeningBiasContainer() {
 
   useEffect(() => {
     let isMounted = true;
-    const backendUrl = getBackendHttpUrl();
     
-    const fetchBias = () => {
-      fetch(`${backendUrl}/api/scanner/opening-bias`)
-        .then((res) => {
-          if (!res.ok) throw new Error('Failed to fetch opening bias data');
-          return res.json();
-        })
-        .then((data) => {
-          if (isMounted) {
-            setData(data);
-            setLoading(false);
-          }
-        })
-        .catch((err) => {
-          if (isMounted) {
-            setError(err.message);
-            setLoading(false);
-          }
-        });
+    const fetchBias = async () => {
+      try {
+        const backendUrl = await getBackendHttpUrl();
+        const res = await fetch(`${backendUrl}/api/scanner/opening-bias`);
+        if (!res.ok) throw new Error('Failed to fetch opening bias data');
+        const data = await res.json();
+        if (isMounted) {
+          setData(data);
+          setLoading(false);
+        }
+      } catch (err: any) {
+        if (isMounted) {
+          setError(err.message);
+          setLoading(false);
+        }
+      }
     };
 
     fetchBias();

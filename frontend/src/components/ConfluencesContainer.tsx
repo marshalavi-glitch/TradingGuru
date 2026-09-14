@@ -38,7 +38,7 @@ export const ConfluencesContainer: React.FC<ConfluencesContainerProps> = ({
     
     const fetchConfluences = async () => {
       try {
-        const backendUrl = getBackendHttpUrl();
+        const backendUrl = await getBackendHttpUrl();
         const res = await fetch(`${backendUrl}/api/scanner/confluences?threshold=${threshold}`);
         if (res.ok) {
           const data = await res.json();

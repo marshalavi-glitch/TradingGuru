@@ -21,7 +21,7 @@ export const DadaThoughtsContainer: React.FC<DadaThoughtsProps> = ({ onSymbolSel
   const fetchLive200EmaStocks = async (force = false) => {
     setLoadingScanner(true);
     try {
-      const backendUrl = getBackendHttpUrl();
+      const backendUrl = await getBackendHttpUrl();
       const res = await fetch(`${backendUrl}/api/scanner/weekly-200-ema?force=${force ? 'true' : 'false'}`);
       if (res.ok) {
         const data = await res.json();

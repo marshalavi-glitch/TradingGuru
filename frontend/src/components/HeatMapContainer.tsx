@@ -209,7 +209,7 @@ export const HeatMapContainer: React.FC<HeatMapContainerProps> = ({ onSymbolSele
   // Fetch real-time market candles for symbols in selected sector
   const fetchHeatMapData = async () => {
     setLoading(true);
-    const backendHttp = getBackendHttpUrl();
+    const backendHttp = await getBackendHttpUrl();
     const activeSymbols = SECTOR_MAP[selectedSector]?.symbols || [];
     const results: StockHeatData[] = [];
 

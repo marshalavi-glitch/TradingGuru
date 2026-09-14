@@ -71,7 +71,7 @@ export const SignalsContainer: React.FC<SignalsContainerProps> = ({
     
     const fetchResults = async () => {
       try {
-        const backendUrl = getBackendHttpUrl();
+        const backendUrl = await getBackendHttpUrl();
         const res = await fetch(`${backendUrl}/api/scanner/results?timeframe=5`);
         if (res.ok) {
           const data = await res.json();

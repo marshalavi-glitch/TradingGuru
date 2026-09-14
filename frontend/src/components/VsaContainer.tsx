@@ -52,7 +52,7 @@ export const VsaContainer: React.FC<VsaContainerProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const backendHttp = getBackendHttpUrl();
+      const backendHttp = await getBackendHttpUrl();
       const resolved = resolveSymbol(symbol);
       const url = `${backendHttp}/api/candles?symbol=${encodeURIComponent(resolved)}&timeframe=${timeframe}&limit=300`;
       const res = await fetch(url);

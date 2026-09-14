@@ -49,7 +49,7 @@ export const CvdAdvContainer: React.FC<CvdAdvContainerProps> = ({ onSymbolSelect
     setLoading(true);
     setError(null);
     try {
-      const backendHttp = getBackendHttpUrl();
+      const backendHttp = await getBackendHttpUrl();
       const res = await fetch(`${backendHttp}/api/candles?symbol=${encodeURIComponent(sym)}&timeframe=${tf}&limit=300`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
@@ -73,7 +73,7 @@ export const CvdAdvContainer: React.FC<CvdAdvContainerProps> = ({ onSymbolSelect
   // Run scanner across top symbols
   const runCvdAdvScan = async () => {
     setIsScanning(true);
-    const backendHttp = getBackendHttpUrl();
+    const backendHttp = await getBackendHttpUrl();
     const results: SymbolCvdScanResult[] = [];
 
     for (const item of watchSymbols) {

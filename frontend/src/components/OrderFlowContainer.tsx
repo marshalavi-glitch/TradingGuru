@@ -91,7 +91,7 @@ export const OrderFlowContainer: React.FC<OrderFlowContainerProps> = ({
     // STEP 2: Fetch fresh OHLCV candles via REST API
     const fetchCandles = async () => {
       try {
-        const backendHttp = getBackendHttpUrl();
+        const backendHttp = await getBackendHttpUrl();
         const url = `${backendHttp}/api/candles?symbol=${encodeURIComponent(targetSymbol)}&timeframe=${timeframe}&limit=500`;
         const res = await fetch(url);
         

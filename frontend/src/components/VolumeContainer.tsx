@@ -47,7 +47,7 @@ export const VolumeContainer: React.FC<VolumeContainerProps> = ({
 
     const fetchVolumeBreakouts = async () => {
       try {
-        const backendUrl = getBackendHttpUrl();
+        const backendUrl = await getBackendHttpUrl();
         const res = await fetch(`${backendUrl}/api/volume-breakouts`);
         if (res.ok) {
           const payload = await res.json();

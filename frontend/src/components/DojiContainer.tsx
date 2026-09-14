@@ -56,7 +56,7 @@ export function DojiContainer({ onSymbolSelect, onSwitchToChart, noVolumeFilter 
     try {
       setLoading(true);
       setError(null);
-      const backendUrl = getBackendHttpUrl();
+      const backendUrl = await getBackendHttpUrl();
       const response = await fetch(`${backendUrl}/api/doji-signals?slot=${slot}&scan=${force ? 'true' : 'false'}`);
       if (!response.ok) {
         throw new Error('Failed to fetch Doji signals');

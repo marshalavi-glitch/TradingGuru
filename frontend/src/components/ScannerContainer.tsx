@@ -62,7 +62,7 @@ export const ScannerContainer: React.FC<ScannerContainerProps> = ({
     
     const fetchResults = async () => {
       try {
-        const backendUrl = getBackendHttpUrl();
+        const backendUrl = await getBackendHttpUrl();
         const res = await fetch(`${backendUrl}/api/scanner/results?timeframe=${activeTimeframe}`);
         if (res.ok) {
           const data = await res.json();

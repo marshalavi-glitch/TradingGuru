@@ -48,7 +48,7 @@ export const Nr7BreakoutContainer: React.FC<Nr7BreakoutContainerProps> = ({
 
     const fetchResults = async () => {
       try {
-        const backendUrl = getBackendHttpUrl();
+        const backendUrl = await getBackendHttpUrl();
         const scanParam = refreshKey > 0 ? '?scan=true' : '';
         const res = await fetch(`${backendUrl}/api/nr7-breakouts${scanParam}`);
         if (res.ok) {
