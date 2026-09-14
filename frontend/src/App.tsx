@@ -28,13 +28,14 @@ import { MarketProfileContainer } from './components/MarketProfileContainer';
 import { TrumpMoodContainer } from './components/TrumpMoodContainer';
 import { FootprintChartContainer } from './components/FootprintChartContainer';
 import { CasPredictionContainer } from './components/CasPredictionContainer';
+import { VsaContainer } from './components/VsaContainer';
 
 export type TabType = 
   | 'chart' | 'bhaichara' | 'dada_thoughts' | 'trump_mood' | 'fifteen_min' 
   | 'scanner' | 'options' | 'signals' | 'doji' | 'doji_novol' | 'volume' 
   | 'opening_bias' | 'hourly_updates' | 'backtest_results' | 'confluences' 
   | 'early_picks' | 'nr7_breakout' | 'order_flow' | 'order_flow_footprint' 
-  | 'cvd_adv' | 'heatmap' | 'market_profile' | 'footprint_chart' | 'cas_prediction';
+  | 'cvd_adv' | 'heatmap' | 'market_profile' | 'footprint_chart' | 'cas_prediction' | 'vsa';
 
 interface TabItem {
   id: TabType;
@@ -48,6 +49,7 @@ const TABS_LIST: TabItem[] = [
   { id: 'dada_thoughts', label: '🧠 Dada Thoughts', color: '#eab308' },
   { id: 'trump_mood', label: '🎺 Trump Mood', color: '#f87171' },
   { id: 'cas_prediction', label: '🎯 CAS Prediction', color: '#00f0ff' },
+  { id: 'vsa', label: '📊 Volume Spread (VSA)', color: '#a855f7' },
   { id: 'chart', label: '📈 Candlestick Chart', color: '#3b82f6' },
   { id: 'footprint_chart', label: '👣 Footprint Chart', color: '#34d399' },
   { id: 'market_profile', label: '🏛️ Market Profile', color: '#00f0ff' },
@@ -306,7 +308,14 @@ function App() {
 
       {/* Main Workspace */}
       <div style={{ flex: '1', display: 'flex', flexDirection: 'column', minHeight: '0' }}>
-        {activeTab === 'cas_prediction' ? (
+        {activeTab === 'vsa' ? (
+          <TabErrorBoundary tabName="Volume Spread (VSA)">
+            <VsaContainer
+              onSymbolSelect={setSymbol}
+              onSwitchToChart={() => setActiveTab('chart')}
+            />
+          </TabErrorBoundary>
+        ) : activeTab === 'cas_prediction' ? (
           <TabErrorBoundary tabName="CAS Prediction">
             <CasPredictionContainer
               onSymbolSelect={setSymbol}
