@@ -213,7 +213,7 @@ app.get('/api/candles', async (req, res) => {
       candles = scannerCache.candlesCache[timeframe][symbol];
     }
     
-    if (!candles || candles.length === 0) {
+    if (!candles || candles.length === 0 || candles.length < limit) {
       candles = await fetchCandlesForSymbol(tvBridge, symbol, timeframe, limit);
     }
     
