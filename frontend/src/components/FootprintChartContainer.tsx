@@ -541,38 +541,46 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
           const buyVol = bin.buyVolume;
 
           // LEFT COLUMN: Bid Volume (Selling Aggression - Red Fills)
-          if (sellVol > maxBinVol * 0.4) {
-            ctx.fillStyle = '#d32f2f'; // Solid Red
+          if (bin.isPoc) {
+            ctx.fillStyle = '#000000'; // TradingView Black POC Fill
+            ctx.fillRect(leftStartX, binY, leftWidth, rowHeight - 1);
+            ctx.fillStyle = '#ffffff';
+          } else if (sellVol > maxBinVol * 0.4) {
+            ctx.fillStyle = '#e23636'; // Solid Red
             ctx.fillRect(leftStartX, binY, leftWidth, rowHeight - 1);
             ctx.fillStyle = '#ffffff';
           } else if (sellVol > 0) {
-            ctx.fillStyle = '#ffebee'; // Light Red Tint
+            ctx.fillStyle = '#fde8e8'; // Light Red Tint
             ctx.fillRect(leftStartX, binY, leftWidth, rowHeight - 1);
-            ctx.fillStyle = '#000000';
+            ctx.fillStyle = '#1e293b';
           } else {
-            ctx.fillStyle = '#000000';
+            ctx.fillStyle = '#1e293b';
           }
 
           ctx.font = `bold ${fontPx}px "JetBrains Mono", monospace`;
           ctx.textAlign = 'center';
-          ctx.fillText(String(sellVol), leftStartX + leftWidth / 2, binY + rowHeight / 2 + fontPx * 0.35);
+          ctx.fillText(formatVolumeShort(sellVol), leftStartX + leftWidth / 2, binY + rowHeight / 2 + fontPx * 0.35);
 
           // RIGHT COLUMN: Ask Volume (Buying Aggression - Green Fills)
-          if (buyVol > maxBinVol * 0.4) {
-            ctx.fillStyle = '#2e7d32'; // Solid Green
+          if (bin.isPoc) {
+            ctx.fillStyle = '#000000'; // TradingView Black POC Fill
+            ctx.fillRect(rightStartX, binY, rightWidth, rowHeight - 1);
+            ctx.fillStyle = '#ffffff';
+          } else if (buyVol > maxBinVol * 0.4) {
+            ctx.fillStyle = '#089981'; // Solid Green
             ctx.fillRect(rightStartX, binY, rightWidth, rowHeight - 1);
             ctx.fillStyle = '#ffffff';
           } else if (buyVol > 0) {
-            ctx.fillStyle = '#e8f5e9'; // Light Green Tint
+            ctx.fillStyle = '#e6f4f1'; // Light Green Tint
             ctx.fillRect(rightStartX, binY, rightWidth, rowHeight - 1);
-            ctx.fillStyle = '#000000';
+            ctx.fillStyle = '#1e293b';
           } else {
-            ctx.fillStyle = '#000000';
+            ctx.fillStyle = '#1e293b';
           }
 
           ctx.font = `bold ${fontPx}px "JetBrains Mono", monospace`;
           ctx.textAlign = 'center';
-          ctx.fillText(String(buyVol), rightStartX + rightWidth / 2, binY + rowHeight / 2 + fontPx * 0.35);
+          ctx.fillText(formatVolumeShort(buyVol), rightStartX + rightWidth / 2, binY + rowHeight / 2 + fontPx * 0.35);
 
           // -----------------------------------------------------------
           // 4. UNIFIED ROW-WIDE IMBALANCE RED OUTLINE BOX (Matching media_1789363861826.png)
