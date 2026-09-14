@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { getBackendHttpUrl } from '../utils/tvStreamer';
 import { groupCandlesByDay, calculateDayProfile, Candle, DayProfile, TPOBin } from '../utils/profileCalculator';
 import { resolveSymbol } from '../utils/symbolResolver';
-import { RefreshCw, Search, ZoomIn, ZoomOut, Move, BarChart2, TrendingUp, TrendingDown, ShieldAlert, Zap, Sliders } from 'lucide-react';
+import { RefreshCw, Search, ZoomIn, ZoomOut, Move, BarChart2, TrendingUp, TrendingDown, ShieldAlert, Zap, Sliders, ChevronLeft, ChevronRight, ArrowLeft, ArrowRight } from 'lucide-react';
 
 interface MarketProfileContainerProps {
   onSymbolSelect?: (symbol: string) => void;
@@ -205,11 +205,14 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
     setPanOffset({ x: 0, y: 0 });
   }, [symbol, timeframe, lookbackDays]);
 
-  // Handle Mouse Wheel Zooming
+  // Handle Mouse Wheel Zooming & Horizontal Pan
   const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
-    e.preventDefault();
-    const zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
-    setZoomLevel((prev) => Math.min(5.0, Math.max(0.4, prev * zoomFactor)));
+    if (e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+      setPanOffset((prev) => ({ ...prev, x: prev.x - (e.deltaX || e.deltaY) * 0.8 }));
+    } else {
+      const zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
+      setZoomLevel((prev) => Math.min(5.0, Math.max(0.4, prev * zoomFactor)));
+    }
   };
 
   // Handle Drag & Pan
@@ -1054,6 +1057,31 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
             </button>
           </div>
 
+          {/* Scroll & Pan Navigation */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(0,0,0,0.4)', padding: '3px 6px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <button
+              onClick={() => setPanOffset(prev => ({ ...prev, x: prev.x + 220 }))}
+              style={{ background: 'transparent', border: 'none', color: '#60a5fa', cursor: 'pointer', padding: '3px 6px', display: 'flex', alignItems: 'center', gap: '2px', fontSize: '11px', fontWeight: '700' }}
+              title="Scroll Left (View Older Sessions)"
+            >
+              <ChevronLeft size={16} /> Older
+            </button>
+            <button
+              onClick={handleDoubleClick}
+              style={{ background: 'rgba(0, 240, 255, 0.15)', border: '1px solid rgba(0, 240, 255, 0.4)', color: '#00f0ff', cursor: 'pointer', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: '800' }}
+              title="Reset to Latest Session"
+            >
+              Latest 🎯
+            </button>
+            <button
+              onClick={() => setPanOffset(prev => ({ ...prev, x: prev.x - 220 }))}
+              style={{ background: 'transparent', border: 'none', color: '#60a5fa', cursor: 'pointer', padding: '3px 6px', display: 'flex', alignItems: 'center', gap: '2px', fontSize: '11px', fontWeight: '700' }}
+              title="Scroll Right (View Newer Sessions)"
+            >
+              Newer <ChevronRight size={16} />
+            </button>
+          </div>
+
           {/* Timeframe */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(0,0,0,0.3)', padding: '2px', borderRadius: '6px' }}>
             {['5', '15', '30'].map((tf) => (
@@ -1238,6 +1266,60 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
           style={{ cursor: isDragging ? 'grabbing' : 'grab', display: 'block', touchAction: 'none' }}
         />
 
+        {/* Floating Left Scroll Arrow (View Older Sessions) */}
+        <button
+          onClick={() => setPanOffset(prev => ({ ...prev, x: prev.x + 240 }))}
+          style={{
+            position: 'absolute',
+            left: '12px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            zIndex: 25,
+            background: 'rgba(15, 23, 42, 0.85)',
+            border: '1px solid rgba(0, 240, 255, 0.4)',
+            color: '#00f0ff',
+            padding: '12px 8px',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 14px rgba(0,0,0,0.6)',
+            backdropFilter: 'blur(6px)',
+            transition: 'all 0.15s'
+          }}
+          title="Scroll Left (View Older Sessions)"
+        >
+          <ChevronLeft size={24} />
+        </button>
+
+        {/* Floating Right Scroll Arrow (View Newer Sessions) */}
+        <button
+          onClick={() => setPanOffset(prev => ({ ...prev, x: prev.x - 240 }))}
+          style={{
+            position: 'absolute',
+            right: '12px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            zIndex: 25,
+            background: 'rgba(15, 23, 42, 0.85)',
+            border: '1px solid rgba(0, 240, 255, 0.4)',
+            color: '#00f0ff',
+            padding: '12px 8px',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 14px rgba(0,0,0,0.6)',
+            backdropFilter: 'blur(6px)',
+            transition: 'all 0.15s'
+          }}
+          title="Scroll Right (View Newer Sessions)"
+        >
+          <ChevronRight size={24} />
+        </button>
+
         {/* Hover Tooltip */}
         {hoverInfo && !isDragging && (
           <div
@@ -1295,6 +1377,33 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
             )}
           </div>
         )}
+      </div>
+
+      {/* Bottom Horizontal Quick Scroll Bar Track */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(15, 23, 42, 0.6)', padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--border-color)', gap: '10px' }}>
+        <button
+          onClick={() => setPanOffset(prev => ({ ...prev, x: prev.x + 280 }))}
+          style={{ background: '#1e293b', border: '1px solid rgba(0, 240, 255, 0.3)', color: '#60a5fa', padding: '8px 16px', borderRadius: '6px', fontSize: '12px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+          title="Scroll chart to the left to view older daily sessions"
+        >
+          <ChevronLeft size={18} /> ◀ SCROLL LEFT (OLDER SESSIONS)
+        </button>
+
+        <button
+          onClick={handleDoubleClick}
+          style={{ background: 'rgba(0, 240, 255, 0.15)', border: '1px solid #00f0ff', color: '#00f0ff', padding: '8px 18px', borderRadius: '6px', fontSize: '12px', fontWeight: '800', cursor: 'pointer' }}
+          title="Reset zoom & return to the latest session"
+        >
+          🎯 RESET TO LATEST SESSION
+        </button>
+
+        <button
+          onClick={() => setPanOffset(prev => ({ ...prev, x: prev.x - 280 }))}
+          style={{ background: '#1e293b', border: '1px solid rgba(0, 240, 255, 0.3)', color: '#60a5fa', padding: '8px 16px', borderRadius: '6px', fontSize: '12px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+          title="Scroll chart to the right to view recent daily sessions"
+        >
+          SCROLL RIGHT (RECENT) ▶ <ChevronRight size={18} />
+        </button>
       </div>
 
       {/* Analytics & Session Statistics Table */}
