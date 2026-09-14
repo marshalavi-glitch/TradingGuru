@@ -436,9 +436,9 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
 
     // Render Candlestick Footprint Columns (Matching exact visual design from media_1789363533493.png)
     const candleCount = footprintCandles.length;
-    const colGap = Math.max(8, 14 * zoomLevel);
+    const colGap = Math.max(16, 22 * zoomLevel);
     const availWidth = chartWidth - (candleCount - 1) * colGap;
-    const colWidth = Math.max(75, (availWidth / candleCount) * zoomLevel);
+    const colWidth = Math.max(125, (availWidth / candleCount) * zoomLevel);
 
     ctx.save();
     ctx.beginPath();
@@ -454,7 +454,7 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
 
       const highY = getPriceY(c.high);
       const lowY = getPriceY(c.low);
-      const candleHeight = Math.max(40, lowY - highY);
+      const candleHeight = Math.max(50, lowY - highY);
 
       const rangePts = Math.round(Math.abs(c.high - c.low) * 10) / 10;
 
@@ -463,21 +463,21 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
       // -----------------------------------------------------------
       // Green Cap Top Bar
       ctx.fillStyle = '#388e3c';
-      ctx.fillRect(colStartX - 2, highY - 26, colWidth + 4, 3);
+      ctx.fillRect(colStartX - 2, highY - 32, colWidth + 4, 4);
 
       // Top Red Pill 1: CR Range (e.g. CR 323)
       ctx.fillStyle = '#d32f2f';
-      ctx.fillRect(colStartX + 4, highY - 22, colWidth - 8, 12);
+      ctx.fillRect(colStartX + 4, highY - 27, colWidth - 8, 14);
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 9px "JetBrains Mono", monospace';
+      ctx.font = 'bold 11px "JetBrains Mono", monospace';
       ctx.textAlign = 'center';
-      ctx.fillText(`CR ${Math.round(rangePts * 10)}`, colCenterX, highY - 13);
+      ctx.fillText(`CR ${Math.round(rangePts * 10)}`, colCenterX, highY - 16);
 
       // Top Red Pill 2: Volume / Delta metric (e.g. 14)
       ctx.fillStyle = '#ff5252';
-      ctx.fillRect(colStartX + 10, highY - 9, colWidth - 20, 9);
+      ctx.fillRect(colStartX + 12, highY - 11, colWidth - 24, 11);
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 8px "JetBrains Mono", monospace';
+      ctx.font = 'bold 10px "JetBrains Mono", monospace';
       ctx.fillText(`${c.topWickVol || 14}`, colCenterX, highY - 2);
 
       // -----------------------------------------------------------
@@ -489,12 +489,12 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
 
       // Outer Dark Border Frame
       ctx.strokeStyle = '#121212';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 2.5;
       ctx.strokeRect(colStartX, highY, colWidth, candleHeight);
 
       // Center Vertical Spine (Solid Black Divider Line)
       ctx.strokeStyle = '#000000';
-      ctx.lineWidth = 2.5;
+      ctx.lineWidth = 3.0;
       ctx.beginPath();
       ctx.moveTo(colCenterX, highY);
       ctx.lineTo(colCenterX, lowY);
@@ -506,13 +506,13 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
       const bins = c.bins;
       if (bins.length > 0) {
         const binStep = bins.length > 1 ? Math.abs(bins[0].price - bins[1].price) : 5;
-        const rowHeight = Math.max(14, ((binStep / priceRange) * chartHeight));
+        const rowHeight = Math.max(20, ((binStep / priceRange) * chartHeight));
         const maxBinVol = Math.max(...bins.map(b => b.totalVolume), 1);
 
-        const leftWidth = (colWidth / 2) - 1;
-        const rightWidth = (colWidth / 2) - 1;
+        const leftWidth = (colWidth / 2) - 1.5;
+        const rightWidth = (colWidth / 2) - 1.5;
         const leftStartX = colStartX + 1;
-        const rightStartX = colCenterX + 1;
+        const rightStartX = colCenterX + 1.5;
 
         bins.forEach((bin) => {
           const binY = getPriceY(bin.price) - rowHeight / 2;
@@ -534,9 +534,9 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
             ctx.fillStyle = '#000000';
           }
 
-          ctx.font = 'bold 9px "JetBrains Mono", monospace';
+          ctx.font = 'bold 11px "JetBrains Mono", monospace';
           ctx.textAlign = 'center';
-          ctx.fillText(String(sellVol), leftStartX + leftWidth / 2, binY + rowHeight / 2 + 3);
+          ctx.fillText(String(sellVol), leftStartX + leftWidth / 2, binY + rowHeight / 2 + 4);
 
           // RIGHT COLUMN: Ask Volume (Buying Aggression - Green Fills)
           if (buyVol > maxBinVol * 0.4) {
@@ -551,16 +551,16 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
             ctx.fillStyle = '#000000';
           }
 
-          ctx.font = 'bold 9px "JetBrains Mono", monospace';
+          ctx.font = 'bold 11px "JetBrains Mono", monospace';
           ctx.textAlign = 'center';
-          ctx.fillText(String(buyVol), rightStartX + rightWidth / 2, binY + rowHeight / 2 + 3);
+          ctx.fillText(String(buyVol), rightStartX + rightWidth / 2, binY + rowHeight / 2 + 4);
 
           // -----------------------------------------------------------
           // 4. IMBALANCE RED OUTLINE BOX (Matching media_1789363533493.png)
           // -----------------------------------------------------------
           if (bin.isImbalanceBuy || bin.isImbalanceSell) {
             ctx.strokeStyle = '#e53935';
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 2.5;
             if (bin.isImbalanceSell) {
               ctx.strokeRect(leftStartX + 1, binY, leftWidth - 2, rowHeight - 1);
             }
@@ -575,9 +575,9 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
           if (bin.isPoc) {
             // Outer Left Blue Tab
             ctx.fillStyle = '#1976d2';
-            ctx.fillRect(colStartX - 5, binY + 1, 5, Math.max(8, rowHeight - 2));
+            ctx.fillRect(colStartX - 7, binY + 1, 7, Math.max(10, rowHeight - 2));
             // Outer Right Blue Tab
-            ctx.fillRect(colStartX + colWidth, binY + 1, 5, Math.max(8, rowHeight - 2));
+            ctx.fillRect(colStartX + colWidth, binY + 1, 7, Math.max(10, rowHeight - 2));
           }
         });
       }
@@ -587,22 +587,22 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
       // -----------------------------------------------------------
       // Bottom Green Line Cap
       ctx.fillStyle = '#388e3c';
-      ctx.fillRect(colStartX - 2, lowY + 2, colWidth + 4, 3);
+      ctx.fillRect(colStartX - 2, lowY + 2, colWidth + 4, 4);
 
       // Bottom Pill 1: Volume Pill
       ctx.fillStyle = '#81c784';
-      ctx.fillRect(colStartX + 6, lowY + 7, colWidth - 12, 12);
+      ctx.fillRect(colStartX + 8, lowY + 8, colWidth - 16, 14);
       ctx.fillStyle = '#000000';
-      ctx.font = 'bold 8px "JetBrains Mono", monospace';
+      ctx.font = 'bold 10px "JetBrains Mono", monospace';
       ctx.textAlign = 'center';
-      ctx.fillText(`${c.bottomWickVol || 343}`, colCenterX, lowY + 16);
+      ctx.fillText(`${c.bottomWickVol || 343}`, colCenterX, lowY + 19);
 
       // Bottom Pill 2: CR Summary Pill (e.g. CR 367)
       ctx.fillStyle = '#a5d6a7';
-      ctx.fillRect(colStartX + 4, lowY + 21, colWidth - 8, 12);
+      ctx.fillRect(colStartX + 4, lowY + 24, colWidth - 8, 14);
       ctx.fillStyle = '#000000';
-      ctx.font = 'bold 8px "JetBrains Mono", monospace';
-      ctx.fillText(`CR ${Math.round(c.sessionCvd / 20) || 367}`, colCenterX, lowY + 30);
+      ctx.font = 'bold 10px "JetBrains Mono", monospace';
+      ctx.fillText(`CR ${Math.round(c.sessionCvd / 20) || 367}`, colCenterX, lowY + 35);
     });
 
     // Orderflow Levels Badge
