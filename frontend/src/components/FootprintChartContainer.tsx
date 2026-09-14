@@ -92,7 +92,7 @@ const DEFAULT_SETTINGS: FootprintSettings = {
   summaryDisplay: 'Table',
   summaryMetrics: 'Volume, Delta, Min Delta, Max Delta, Session CVD',
 
-  imbalancePercent: 300,
+  imbalancePercent: 150,
   imbalanceHighlighting: true,
   imbalanceColors: ['#089981', '#e23636'],
   stackedLevelsEnabled: false,
@@ -247,13 +247,16 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
       }
 
       // Build final FootprintBins with POC, Value Area, Imbalance, and Unfinished Auction flags
-      const imbalanceRatio = settings.imbalancePercent / 100;
+      const ratio = Math.max(1.2, (settings.imbalancePercent || 150) / 100);
       const bins: FootprintBin[] = rawBins.map((rb, idx) => {
         const isPoc = rb.price === pocPrice;
         const isValueArea = vaPrices.has(rb.price);
 
-        const isImbalanceBuy = rb.buyVol >= rb.sellVol * imbalanceRatio && rb.buyVol >= settings.minimalVolume;
-        const isImbalanceSell = rb.sellVol >= rb.buyVol * imbalanceRatio && rb.sellVol >= settings.minimalVolume;
+        const diagSellVol = rawBins[idx + 1] ? rawBins[idx + 1].sellVol : rb.sellVol;
+        const diagBuyVol = rawBins[idx - 1] ? rawBins[idx - 1].buyVol : rb.buyVol;
+
+        const isImbalanceBuy = (rb.buyVol >= Math.max(1, diagSellVol) * ratio || rb.buyVol >= Math.max(1, rb.sellVol) * ratio) && rb.buyVol >= (settings.minimalVolume || 0);
+        const isImbalanceSell = (rb.sellVol >= Math.max(1, diagBuyVol) * ratio || rb.sellVol >= Math.max(1, rb.buyVol) * ratio) && rb.sellVol >= (settings.minimalVolume || 0);
 
         const isUnfinishedHigh = idx === 0 && rb.buyVol > 0;
         const isUnfinishedLow = idx === rawBins.length - 1 && rb.sellVol > 0;
@@ -558,14 +561,14 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
           // -----------------------------------------------------------
           // 4. IMBALANCE RED OUTLINE BOX (Matching media_1789363533493.png)
           // -----------------------------------------------------------
-          if (bin.isImbalanceBuy || bin.isImbalanceSell) {
-            ctx.strokeStyle = '#e53935';
-            ctx.lineWidth = 2.5;
+          if (settings.imbalanceHighlighting && (bin.isImbalanceBuy || bin.isImbalanceSell)) {
+            ctx.strokeStyle = '#d32f2f';
+            ctx.lineWidth = 3.0;
             if (bin.isImbalanceSell) {
-              ctx.strokeRect(leftStartX + 1, binY, leftWidth - 2, rowHeight - 1);
+              ctx.strokeRect(leftStartX + 1, binY + 0.5, leftWidth - 2, rowHeight - 1);
             }
             if (bin.isImbalanceBuy) {
-              ctx.strokeRect(rightStartX + 1, binY, rightWidth - 2, rowHeight - 1);
+              ctx.strokeRect(rightStartX + 1, binY + 0.5, rightWidth - 2, rowHeight - 1);
             }
           }
 
