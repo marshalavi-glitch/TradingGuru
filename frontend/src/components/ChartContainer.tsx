@@ -4,7 +4,6 @@ import type { IChartApi, ISeriesApi, Time } from 'lightweight-charts';
 import type { Candle } from '../utils/profileCalculator';
 import type { MatrixSeriesData } from '../utils/matrixCalculator';
 import { AdvIndicatorPanel } from './AdvIndicatorPanel';
-import { MacdRsiSubChart } from './MacdRsiSubChart';
 
 interface ChartContainerProps {
   candles: Candle[];
@@ -83,7 +82,6 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
 }) => {
   const [candleStyle, setCandleStyle] = useState<'japanese' | 'heikin-ashi'>('japanese');
   const [showAdvPanel, setShowAdvPanel] = useState<boolean>(false);
-  const [showMacdRsi, setShowMacdRsi] = useState<boolean>(true);
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const candlestickSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
@@ -962,23 +960,6 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
               Heikin Ashi
             </button>
             <button 
-              onClick={() => setShowMacdRsi(!showMacdRsi)}
-              style={{
-                fontSize: '10px',
-                fontWeight: '600',
-                padding: '3px 8px',
-                borderRadius: '4px',
-                border: 'none',
-                cursor: 'pointer',
-                backgroundColor: showMacdRsi ? 'rgba(0, 240, 255, 0.2)' : 'transparent',
-                color: showMacdRsi ? '#00f0ff' : 'var(--text-secondary)',
-                borderLeft: '1px solid rgba(255,255,255,0.08)',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              📊 MACD {`{26,12,9}`} & RSI {`{14,20}`}
-            </button>
-            <button 
               onClick={() => setShowAdvPanel(!showAdvPanel)}
               style={{
                 fontSize: '10px',
@@ -1011,12 +992,6 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
         ref={chartContainerRef} 
         style={{ flex: '1', minHeight: '320px', width: '100%', position: 'relative' }} 
       />
-
-      {showMacdRsi && (
-        <div style={{ padding: '8px 16px', background: '#070d19', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
-          <MacdRsiSubChart candles={candles} symbol={symbol} height={240} />
-        </div>
-      )}
 
       {showAdvPanel && (
         <div style={{ padding: '0 16px 16px 16px', overflowY: 'auto' }}>
