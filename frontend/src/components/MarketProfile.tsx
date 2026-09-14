@@ -313,8 +313,8 @@ export const MarketProfile: React.FC<MarketProfileProps> = ({
         }
       };
 
-      if (profile.vahPrice) drawPriceLine(profile.vahPrice, isPrior ? 'rgba(236, 72, 153, 0.3)' : 'rgba(236, 72, 153, 0.5)', false, 1.2);
-      if (profile.valPrice) drawPriceLine(profile.valPrice, isPrior ? 'rgba(168, 85, 247, 0.3)' : 'rgba(168, 85, 247, 0.5)', false, 1.2);
+      if (profile.vahPrice) drawPriceLine(profile.vahPrice, isPrior ? 'rgba(236, 72, 153, 0.55)' : '#ec4899', false, 1.5);
+      if (profile.valPrice) drawPriceLine(profile.valPrice, isPrior ? 'rgba(168, 85, 247, 0.55)' : '#a855f7', false, 1.5);
       if (profile.pocPrice) drawPriceLine(profile.pocPrice, isPrior ? 'rgba(0, 240, 255, 0.45)' : '#00f0ff', true, isPrior ? 1.5 : 2.5);
 
       // Draw Initial Balance (IB) Indicator

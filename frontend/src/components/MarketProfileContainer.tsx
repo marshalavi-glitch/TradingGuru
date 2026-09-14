@@ -619,17 +619,17 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
         }
       }
 
-      // VAH & VAL Reference Lines
+      // VAH & VAL Reference Lines (Vibrant Pink & Purple)
       const drawLocalMarkerLine = (price: number, label: string, color: string) => {
         const lineY = getPriceY(price);
         if (lineY < padding.top || lineY > height - padding.bottom) return;
 
         ctx.strokeStyle = color;
-        ctx.lineWidth = 1.2;
+        ctx.lineWidth = 1.5;
         ctx.setLineDash([3, 3]);
         ctx.beginPath();
         ctx.moveTo(colStartX, lineY);
-        ctx.lineTo(width - padding.right, lineY);
+        ctx.lineTo(colStartX + colWidth, lineY);
         ctx.stroke();
         ctx.setLineDash([]);
 
@@ -637,16 +637,26 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
         ctx.font = 'bold 9px "JetBrains Mono", monospace';
         const txtWidth = ctx.measureText(labelText).width;
 
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
         ctx.fillRect(colStartX - txtWidth - 4, lineY - 6, txtWidth + 4, 12);
 
         ctx.fillStyle = color;
         ctx.textAlign = 'right';
         ctx.fillText(labelText, colStartX - 2, lineY + 3);
+
+        // Also draw price tag on right Y-axis for the latest session profile
+        if (sIdx === dayProfiles.length - 1) {
+          ctx.fillStyle = color;
+          ctx.fillRect(width - padding.right + 2, lineY - 8, padding.right - 4, 16);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 9px "JetBrains Mono", monospace';
+          ctx.textAlign = 'left';
+          ctx.fillText(`${label} ${price.toFixed(1)}`, width - padding.right + 5, lineY + 3);
+        }
       };
 
-      if (profile.vahPrice) drawLocalMarkerLine(profile.vahPrice, 'VAH', '#000000');
-      if (profile.valPrice) drawLocalMarkerLine(profile.valPrice, 'VAL', '#000000');
+      if (profile.vahPrice) drawLocalMarkerLine(profile.vahPrice, 'VAH', '#ec4899');
+      if (profile.valPrice) drawLocalMarkerLine(profile.valPrice, 'VAL', '#a855f7');
     });
 
     // 5. TESTED vs UNTESTED (NAKED) POC EXTENSION ENGINE
