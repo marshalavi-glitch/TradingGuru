@@ -25,6 +25,7 @@ import { OrderFlowFootprintContainer } from './components/OrderFlowFootprintCont
 import { CvdAdvContainer } from './components/CvdAdvContainer';
 import { HeatMapContainer } from './components/HeatMapContainer';
 import { MarketProfileContainer } from './components/MarketProfileContainer';
+import { ProMarketProfileContainer } from './components/ProMarketProfileContainer';
 import { TrumpMoodContainer } from './components/TrumpMoodContainer';
 import { FootprintChartContainer } from './components/FootprintChartContainer';
 import { CasPredictionContainer } from './components/CasPredictionContainer';
@@ -35,7 +36,7 @@ export type TabType =
   | 'scanner' | 'options' | 'signals' | 'doji' | 'doji_novol' | 'volume' 
   | 'opening_bias' | 'hourly_updates' | 'backtest_results' | 'confluences' 
   | 'early_picks' | 'nr7_breakout' | 'order_flow' | 'order_flow_footprint' 
-  | 'cvd_adv' | 'heatmap' | 'market_profile' | 'footprint_chart' | 'cas_prediction' | 'vsa';
+  | 'cvd_adv' | 'heatmap' | 'market_profile' | 'pro_market_profile' | 'footprint_chart' | 'cas_prediction' | 'vsa';
 
 interface TabItem {
   id: TabType;
@@ -53,6 +54,7 @@ const TABS_LIST: TabItem[] = [
   { id: 'chart', label: '📈 Candlestick Chart', color: '#3b82f6' },
   { id: 'footprint_chart', label: '👣 Footprint Chart', color: '#34d399' },
   { id: 'market_profile', label: '🏛️ Market Profile', color: '#00f0ff' },
+  { id: 'pro_market_profile', label: '🏛️ Pro TPO Profile', color: '#60a5fa' },
   { id: 'order_flow', label: '🍀 Lucky Flow', color: '#10b981' },
   { id: 'order_flow_footprint', label: '📊 Order Flow', color: '#60a5fa' },
   { id: 'cvd_adv', label: '📊 CVD / ADV', color: '#60a5fa' },
@@ -332,6 +334,13 @@ function App() {
         ) : activeTab === 'market_profile' ? (
           <TabErrorBoundary tabName="Market Profile">
             <MarketProfileContainer
+              onSymbolSelect={setSymbol}
+              onSwitchToChart={() => setActiveTab('chart')}
+            />
+          </TabErrorBoundary>
+        ) : activeTab === 'pro_market_profile' ? (
+          <TabErrorBoundary tabName="Pro TPO Profile">
+            <ProMarketProfileContainer
               onSymbolSelect={setSymbol}
               onSwitchToChart={() => setActiveTab('chart')}
             />
