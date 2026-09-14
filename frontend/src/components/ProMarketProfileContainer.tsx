@@ -152,32 +152,40 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
     { symbol: 'NSE:ICICIBANK', name: 'ICICI BANK' }
   ];
 
-  // Fetch candles
+  // Fetch candles with auto-retry
   const fetchCandles = async () => {
     setLoading(true);
     setError(null);
-    try {
-      const backendHttp = getBackendHttpUrl();
-      const resolved = resolveSymbol(symbol);
-      const limit = 2000;
-      const url = `${backendHttp}/api/candles?symbol=${encodeURIComponent(resolved.formattedSymbol)}&timeframe=${timeframe}&limit=${limit}`;
-      const res = await fetch(url);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.candles && data.candles.length > 0) {
-          setCandles(data.candles);
-        } else {
-          setError('No candles found for this symbol.');
+    let attempts = 0;
+    const maxAttempts = 2;
+
+    while (attempts < maxAttempts) {
+      try {
+        attempts++;
+        const backendHttp = getBackendHttpUrl();
+        const resolved = resolveSymbol(symbol);
+        const limit = 2000;
+        const url = `${backendHttp}/api/candles?symbol=${encodeURIComponent(resolved.formattedSymbol)}&timeframe=${timeframe}&limit=${limit}`;
+        const res = await fetch(url);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.candles && data.candles.length > 0) {
+            setCandles(data.candles);
+            setError(null);
+            setLoading(false);
+            return;
+          }
         }
-      } else {
-        setError(`Failed to fetch candles (HTTP ${res.status})`);
+      } catch (err: any) {
+        console.warn(`[ProMarketProfileContainer] Fetch attempt ${attempts} failed:`, err);
       }
-    } catch (err: any) {
-      console.error('Error fetching candles:', err);
-      setError(err.message || 'Error connecting to backend API');
-    } finally {
-      setLoading(false);
+      if (attempts < maxAttempts) {
+        await new Promise(r => setTimeout(r, 600));
+      }
     }
+
+    setError('Connecting to market feed...');
+    setLoading(false);
   };
 
   useEffect(() => {

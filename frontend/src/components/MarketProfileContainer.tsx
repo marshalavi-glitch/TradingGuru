@@ -103,27 +103,37 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
     return resolveSymbol(symbol);
   }, [symbol]);
 
-  // Fetch candles
+  // Fetch candles with auto-retry
   const fetchCandles = async (sym: string, tf: string) => {
     setLoading(true);
     setError(null);
-    try {
-      const backendHttp = getBackendHttpUrl();
-      const res = await fetch(`${backendHttp}/api/candles?symbol=${encodeURIComponent(sym)}&timeframe=${tf}&limit=2000`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      if (data.candles && data.candles.length > 0) {
-        setCandles(data.candles);
-      } else {
-        setCandles([]);
-        setError('No candle data available for this contract.');
+    let attempts = 0;
+    const maxAttempts = 2;
+    
+    while (attempts < maxAttempts) {
+      try {
+        attempts++;
+        const backendHttp = getBackendHttpUrl();
+        const res = await fetch(`${backendHttp}/api/candles?symbol=${encodeURIComponent(sym)}&timeframe=${tf}&limit=2000`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.candles && data.candles.length > 0) {
+            setCandles(data.candles);
+            setError(null);
+            setLoading(false);
+            return;
+          }
+        }
+      } catch (err: any) {
+        console.warn(`[MarketProfileContainer] Fetch attempt ${attempts} failed:`, err);
       }
-    } catch (err: any) {
-      console.error('[MarketProfileContainer] Fetch error:', err);
-      setError(err.message || 'Failed to fetch historical market profile data.');
-    } finally {
-      setLoading(false);
+      if (attempts < maxAttempts) {
+        await new Promise(r => setTimeout(r, 600));
+      }
     }
+    
+    setError('Connecting to market feed...');
+    setLoading(false);
   };
 
   useEffect(() => {
