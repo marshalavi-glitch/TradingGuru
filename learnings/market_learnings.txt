@@ -33780,3 +33780,119 @@ B. BEARISH RESISTANCE REJECTIONS (Tested VAH Resistance and Pullback)
 * Lunchtime Theta vs IV Filter: Period G consolidation successfully filtered false breakouts between 12:15 - 12:45 PM.
 * Hero Reversal Traps: Failed morning expansions (C/D/E periods) respected the opposite extreme target.
 ================================================================================
+
+================================================================================
+SESSION REPORT: 14/9/2026
+================================================================================
+
+1. MACRO SUMMARY
+--------------------------------------------------------------------------------
+* Nifty 50: 23398.10 (-0.34%)
+* Bank Nifty: 56606.55 (0.24%)
+
+1B. INDEX LEVEL INTERACTIONS:
+--------------------------------------------------------------------------------
+  - Nifty triggered a Monthly S4 (VAL Breakdown Trigger) Breakdown (close: 23398.10, excess: 0.1%)
+  - Bank Nifty touched Monthly R3 (VAH Reversion) (56566.36) at 01:55 pm | Candle = Neutral Candle | Rejected (high: 56645.85, close: 56606.55)
+  - Bank Nifty touched Monthly R4 (VAH Breakout Trigger) (56660.76) at 02:00 pm | Candle = Neutral Candle | Rejected (high: 56645.85, close: 56606.55)
+
+2. HIGH-PROBABILITY MATRIX REVERSALS (BOUNCES & REJECTIONS)
+--------------------------------------------------------------------------------
+
+A. BULLISH SUPPORT BOUNCES (Tested VAL Support and Reverted)
+
+* NSE:HDFCBANK (+3.86% Bounce) | Candle = SSL Sweep Reversal (Low swept 686.2, close 708.3)
+  - The Setup: Price traded down to a session low of 681.90, testing the Target (S5) Matrix line at 686.57 (within 0.68% proximity).
+  - The Action: Bounced +3.86% off the level to close at 708.25.
+
+* NSE:BAJFINANCE (+1.91% Bounce) | Candle = Hammer (Bullish Rejection)
+  - The Setup: Price traded down to a session low of 1015.10, testing the Support (S2) Matrix line at 1041.26 (within 2.51% proximity).
+  - The Action: Bounced +1.91% off the level to close at 1034.50.
+
+* NSE:BAJFINANCE (+1.91% Bounce) | Candle = Hammer (Bullish Rejection)
+  - The Setup: Price traded down to a session low of 1015.10, testing the Buy Reversal (S3) Matrix line at 1040.14 (within 2.41% proximity).
+  - The Action: Bounced +1.91% off the level to close at 1034.50.
+
+* NSE:BAJFINANCE (+1.91% Bounce) | Candle = Hammer (Bullish Rejection)
+  - The Setup: Price traded down to a session low of 1015.10, testing the Break Down (S4) Matrix line at 1036.79 (within 2.09% proximity).
+  - The Action: Bounced +1.91% off the level to close at 1034.50.
+
+* NSE:BAJFINANCE (+1.91% Bounce) | Candle = Hammer (Bullish Rejection)
+  - The Setup: Price traded down to a session low of 1015.10, testing the Target (S5) Matrix line at 1032.87 (within 1.72% proximity).
+  - The Action: Bounced +1.91% off the level to close at 1034.50.
+
+B. BEARISH RESISTANCE REJECTIONS (Tested VAH Resistance and Pullback)
+
+* NSE:TCS (-1.42% Rejection) | Candle = Inverted Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 2190.6, close 2200.8) | Double Top Breakdown
+  - The Setup: Price traded up to a session high of 2232.60, testing the Breakout (R4) Matrix line at 2226.87 (within 0.26% proximity).
+  - The Action: Rejected -1.42% off the level to close at 2200.80.
+
+* NSE:TCS (-1.42% Rejection) | Candle = Inverted Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 2190.6, close 2200.8) | Double Top Breakdown
+  - The Setup: Price traded up to a session high of 2232.60, testing the Sell reversal (R3) Matrix line at 2215.49 (within 0.77% proximity).
+  - The Action: Rejected -1.42% off the level to close at 2200.80.
+
+* NSE:TCS (-1.42% Rejection) | Candle = Inverted Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 2190.6, close 2200.8) | Double Top Breakdown
+  - The Setup: Price traded up to a session high of 2232.60, testing the Resistance (R2) Matrix line at 2211.69 (within 0.95% proximity).
+  - The Action: Rejected -1.42% off the level to close at 2200.80.
+
+* NSE:BHARTIARTL (-1.13% Rejection) | Candle = Gravestone Doji (Bearish Rejection) | Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 1849.0, close 1831.1)
+  - The Setup: Price traded up to a session high of 1852.00, testing the Sell reversal (R3) Matrix line at 1848.63 (within 0.18% proximity).
+  - The Action: Rejected -1.13% off the level to close at 1831.10.
+
+* NSE:BHARTIARTL (-1.13% Rejection) | Candle = Gravestone Doji (Bearish Rejection) | Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 1849.0, close 1831.1)
+  - The Setup: Price traded up to a session high of 1852.00, testing the Resistance (R2) Matrix line at 1845.42 (within 0.36% proximity).
+  - The Action: Rejected -1.13% off the level to close at 1831.10.
+
+3. LEVEL BREAKDOWNS (Closed Below S4)
+--------------------------------------------------------------------------------
+* NSE:SBIN: Closed at 995.70, breaking below Monthly S4 (1003.71) by -0.80%.
+* NSE:RELIANCE: Closed at 1257.50, breaking below Monthly S4 (1263.55) by -0.48%.
+* NSE:BAJFINANCE: Closed at 1034.50, breaking below Monthly S4 (1036.79) by -0.22%.
+* NSE:NIFTY: Closed at 23398.10, breaking below Monthly S4 (23414.63) by -0.07%.
+
+4. DETECTED PRICE ACTION & CANDLESTICK PATTERNS
+--------------------------------------------------------------------------------
+* NSE:BANKNIFTY: SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown
+* NSE:ICICIBANK: SSL Sweep Reversal (Low swept 1373.9, close 1379.3)
+* NSE:NIFTY: SSL Sweep Reversal (Low swept 23380.1, close 23398.1)
+* NSE:RELIANCE: Double Top Breakdown
+* NSE:HDFCBANK: SSL Sweep Reversal (Low swept 686.2, close 708.3)
+* NSE:INFY: BSL Sweep Reversal (High swept 1046.6, close 1037.7) | Double Top Breakdown
+* NSE:TCS: Inverted Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 2190.6, close 2200.8) | Double Top Breakdown
+* NSE:ITC: SSL Sweep Reversal (Low swept 259.1, close 259.9)
+* NSE:BHARTIARTL: Gravestone Doji (Bearish Rejection) | Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 1849.0, close 1831.1)
+* NSE:BAJFINANCE: Hammer (Bullish Rejection)
+* NSE:AXISBANK: SSL Sweep Reversal (Low swept 1240.4, close 1246.0) | Double Top Breakdown
+* NSE:LT: SSL Sweep Reversal (Low swept 3910.0, close 3930.7)
+
+5. INTRADAY 5-MIN OPTION PREMIUM BACKTEST & LEARNINGS
+--------------------------------------------------------------------------------
+No option trades triggered today.
+
+================================================================================
+6. OPENING BIAS & BHAICHARA INSTITUTIONAL VALIDATION
+================================================================================
+
+
+8. OPENING BIAS VALIDATION (Did the market follow the 2-Year Opening Bias?):
+-----------------------------------------
+* NIFTY: SUCCESS
+  - Zone: Open Below S6 (Extreme Gap Down)
+  - Prediction: Expected GREEN Close (Probability: 66.7%)
+  - Actual: Closed GREEN (Open: 23270.30 | Close: 23398.10 | Move: 127.80 pts)
+  - Analysis: The index behaved exactly as predicted by the 2-year backtest for Open Below S6 (Extreme Gap Down).
+
+* BANKNIFTY: SUCCESS
+  - Zone: Open Below S6 (Extreme Gap Down)
+  - Prediction: Expected GREEN Close (Probability: 62.5%)
+  - Actual: Closed GREEN (Open: 55970.15 | Close: 56606.55 | Move: 636.40 pts)
+  - Analysis: The index behaved exactly as predicted by the 2-year backtest for Open Below S6 (Extreme Gap Down).
+
+================================================================================
+7. BHAICHARA WORK AUTO-LEARNED INSTITUTIONAL LESSONS
+================================================================================
+* ATM Straddle Skew Asymmetry: SKEW > +15% correctly predicted bullish call accumulation on winning sessions.
+* Gamma Crossover Ratio (Γ): Institutional volume accumulation (>2.0x) confirmed late-day drives after 2:15 PM.
+* Lunchtime Theta vs IV Filter: Period G consolidation successfully filtered false breakouts between 12:15 - 12:45 PM.
+* Hero Reversal Traps: Failed morning expansions (C/D/E periods) respected the opposite extreme target.
+================================================================================

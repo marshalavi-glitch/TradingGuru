@@ -1,5 +1,5 @@
 {
-  "date": "11/9/2026",
+  "date": "14/9/2026",
   "niftyClose": {
     "close": 23398.1,
     "open": 23270.3,
@@ -151,8 +151,8 @@
       "close": 708.25,
       "bounceStrengthPct": 3.8642029623111926,
       "pattern": "SSL Sweep Reversal (Low swept 686.2, close 708.3)",
-      "touchTime": "01:51 pm",
-      "optionPremium": 13.1,
+      "touchTime": "09:19 am",
+      "optionPremium": 13.25,
       "isFno": true
     },
     {
@@ -163,8 +163,8 @@
       "close": 56606.55,
       "bounceStrengthPct": 1.6285618619214477,
       "pattern": "SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown",
-      "touchTime": "01:51 pm",
-      "optionPremium": 542.15,
+      "touchTime": "09:19 am",
+      "optionPremium": 493.9,
       "isFno": true
     },
     {
@@ -175,44 +175,8 @@
       "close": 56606.55,
       "bounceStrengthPct": 1.6285618619214477,
       "pattern": "SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown",
-      "touchTime": "01:51 pm",
-      "optionPremium": 786.5,
-      "isFno": true
-    },
-    {
-      "symbol": "NSE:BANKNIFTY",
-      "levelName": "Break Down (S4)",
-      "levelVal": 56283.134999999995,
-      "low": 55699.45,
-      "close": 56606.55,
-      "bounceStrengthPct": 1.6285618619214477,
-      "pattern": "SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown",
-      "touchTime": "01:52 pm",
-      "optionPremium": 786.5,
-      "isFno": true
-    },
-    {
-      "symbol": "NSE:BANKNIFTY",
-      "levelName": "Target (S5)",
-      "levelVal": 56172.86703999999,
-      "low": 55699.45,
-      "close": 56606.55,
-      "bounceStrengthPct": 1.6285618619214477,
-      "pattern": "SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown",
-      "touchTime": "01:52 pm",
-      "optionPremium": 786.5,
-      "isFno": true
-    },
-    {
-      "symbol": "NSE:BANKNIFTY",
-      "levelName": "Target (S6)",
-      "levelVal": 56127.18417004775,
-      "low": 55699.45,
-      "close": 56606.55,
-      "bounceStrengthPct": 1.6285618619214477,
-      "pattern": "SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown",
-      "touchTime": "01:52 pm",
-      "optionPremium": 786.5,
+      "touchTime": "09:19 am",
+      "optionPremium": 818.9,
       "isFno": true
     },
     {
@@ -232,8 +196,8 @@
       "close": 1037.7,
       "bounceStrengthPct": 0.776925318053802,
       "pattern": "BSL Sweep Reversal (High swept 1046.6, close 1037.7) | Double Top Breakdown",
-      "touchTime": "01:52 pm",
-      "optionPremium": 26.1,
+      "touchTime": "09:19 am",
+      "optionPremium": 26.05,
       "isFno": true
     },
     {
@@ -244,8 +208,8 @@
       "close": 1037.7,
       "bounceStrengthPct": 0.776925318053802,
       "pattern": "BSL Sweep Reversal (High swept 1046.6, close 1037.7) | Double Top Breakdown",
-      "touchTime": "01:52 pm",
-      "optionPremium": 26.1,
+      "touchTime": "09:19 am",
+      "optionPremium": 26.05,
       "isFno": true
     },
     {
@@ -265,8 +229,8 @@
       "close": 1246,
       "bounceStrengthPct": 1.3172873637989955,
       "pattern": "SSL Sweep Reversal (Low swept 1240.4, close 1246.0) | Double Top Breakdown",
-      "touchTime": "01:52 pm",
-      "optionPremium": 15.75,
+      "touchTime": "09:19 am",
+      "optionPremium": 12.4,
       "isFno": true
     },
     {
@@ -277,8 +241,8 @@
       "close": 1246,
       "bounceStrengthPct": 1.3172873637989955,
       "pattern": "SSL Sweep Reversal (Low swept 1240.4, close 1246.0) | Double Top Breakdown",
-      "touchTime": "01:52 pm",
-      "optionPremium": 22.75,
+      "touchTime": "09:19 am",
+      "optionPremium": 26.5,
       "isFno": true
     },
     {
@@ -298,8 +262,8 @@
       "close": 2200.8,
       "bounceStrengthPct": 0.7000686341798299,
       "pattern": "Inverted Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 2190.6, close 2200.8) | Double Top Breakdown",
-      "touchTime": "01:52 pm",
-      "optionPremium": 55.7,
+      "touchTime": "09:19 am",
+      "optionPremium": 57.6,
       "isFno": true
     },
     {
@@ -310,8 +274,8 @@
       "close": 2200.8,
       "bounceStrengthPct": 0.7000686341798299,
       "pattern": "Inverted Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 2190.6, close 2200.8) | Double Top Breakdown",
-      "touchTime": "01:52 pm",
-      "optionPremium": 55.7,
+      "touchTime": "09:19 am",
+      "optionPremium": 57.6,
       "isFno": true
     },
     {
@@ -322,8 +286,8 @@
       "close": 23398.1,
       "bounceStrengthPct": 0.7175632979501755,
       "pattern": "SSL Sweep Reversal (Low swept 23380.1, close 23398.1)",
-      "touchTime": "01:51 pm",
-      "optionPremium": 96.3,
+      "touchTime": "09:19 am",
+      "optionPremium": 72.45,
       "isFno": true
     },
     {
@@ -334,8 +298,8 @@
       "close": 23398.1,
       "bounceStrengthPct": 0.7175632979501755,
       "pattern": "SSL Sweep Reversal (Low swept 23380.1, close 23398.1)",
-      "touchTime": "01:51 pm",
-      "optionPremium": 106,
+      "touchTime": "09:19 am",
+      "optionPremium": 133.45,
       "isFno": true
     },
     {
@@ -346,8 +310,8 @@
       "close": 23398.1,
       "bounceStrengthPct": 0.7175632979501755,
       "pattern": "SSL Sweep Reversal (Low swept 23380.1, close 23398.1)",
-      "touchTime": "01:51 pm",
-      "optionPremium": 106,
+      "touchTime": "09:19 am",
+      "optionPremium": 133.45,
       "isFno": true
     },
     {
@@ -358,8 +322,8 @@
       "close": 23398.1,
       "bounceStrengthPct": 0.7175632979501755,
       "pattern": "SSL Sweep Reversal (Low swept 23380.1, close 23398.1)",
-      "touchTime": "01:51 pm",
-      "optionPremium": 106,
+      "touchTime": "09:19 am",
+      "optionPremium": 133.45,
       "isFno": true
     },
     {
@@ -370,8 +334,8 @@
       "close": 23398.1,
       "bounceStrengthPct": 0.7175632979501755,
       "pattern": "SSL Sweep Reversal (Low swept 23380.1, close 23398.1)",
-      "touchTime": "01:51 pm",
-      "optionPremium": 105.75,
+      "touchTime": "09:19 am",
+      "optionPremium": 133.45,
       "isFno": true
     },
     {
@@ -382,8 +346,8 @@
       "close": 1379.3,
       "bounceStrengthPct": 0.8555133079847942,
       "pattern": "SSL Sweep Reversal (Low swept 1373.9, close 1379.3)",
-      "touchTime": "01:51 pm",
-      "optionPremium": 24.1,
+      "touchTime": "09:19 am",
+      "optionPremium": 24.25,
       "isFno": true
     },
     {
@@ -394,8 +358,8 @@
       "close": 1379.3,
       "bounceStrengthPct": 0.8555133079847942,
       "pattern": "SSL Sweep Reversal (Low swept 1373.9, close 1379.3)",
-      "touchTime": "01:51 pm",
-      "optionPremium": 24.1,
+      "touchTime": "09:19 am",
+      "optionPremium": 24.25,
       "isFno": true
     },
     {
@@ -406,8 +370,8 @@
       "close": 1379.3,
       "bounceStrengthPct": 0.8555133079847942,
       "pattern": "SSL Sweep Reversal (Low swept 1373.9, close 1379.3)",
-      "touchTime": "01:51 pm",
-      "optionPremium": 24.1,
+      "touchTime": "09:19 am",
+      "optionPremium": 24.25,
       "isFno": true
     },
     {
@@ -427,8 +391,8 @@
       "close": 1831.1,
       "bounceStrengthPct": 0.03277792952744655,
       "pattern": "Gravestone Doji (Bearish Rejection) | Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 1849.0, close 1831.1)",
-      "touchTime": "01:52 pm",
-      "optionPremium": 23.2,
+      "touchTime": "09:19 am",
+      "optionPremium": 23.15,
       "isFno": true
     },
     {
@@ -439,8 +403,8 @@
       "close": 1831.1,
       "bounceStrengthPct": 0.03277792952744655,
       "pattern": "Gravestone Doji (Bearish Rejection) | Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 1849.0, close 1831.1)",
-      "touchTime": "03:07 pm",
-      "optionPremium": 25,
+      "touchTime": "09:19 am",
+      "optionPremium": 25.2,
       "isFno": true
     },
     {
@@ -460,8 +424,8 @@
       "close": 3930.7,
       "bounceStrengthPct": 1.2884273455819826,
       "pattern": "SSL Sweep Reversal (Low swept 3910.0, close 3930.7)",
-      "touchTime": "01:52 pm",
-      "optionPremium": 70.45,
+      "touchTime": "09:19 am",
+      "optionPremium": 52.5,
       "isFno": true
     },
     {
@@ -472,8 +436,8 @@
       "close": 3930.7,
       "bounceStrengthPct": 1.2884273455819826,
       "pattern": "SSL Sweep Reversal (Low swept 3910.0, close 3930.7)",
-      "touchTime": "01:52 pm",
-      "optionPremium": 70.45,
+      "touchTime": "09:19 am",
+      "optionPremium": 52.5,
       "isFno": true
     },
     {
@@ -484,32 +448,8 @@
       "close": 3930.7,
       "bounceStrengthPct": 1.2884273455819826,
       "pattern": "SSL Sweep Reversal (Low swept 3910.0, close 3930.7)",
-      "touchTime": "01:52 pm",
-      "optionPremium": 70.45,
-      "isFno": true
-    },
-    {
-      "symbol": "NSE:LT",
-      "levelName": "Target (S5)",
-      "levelVal": 3906.6483999999996,
-      "low": 3880.7,
-      "close": 3930.7,
-      "bounceStrengthPct": 1.2884273455819826,
-      "pattern": "SSL Sweep Reversal (Low swept 3910.0, close 3930.7)",
-      "touchTime": "01:52 pm",
-      "optionPremium": 70.45,
-      "isFno": true
-    },
-    {
-      "symbol": "NSE:LT",
-      "levelName": "Target (S6)",
-      "levelVal": 3898.8612531969306,
-      "low": 3880.7,
-      "close": 3930.7,
-      "bounceStrengthPct": 1.2884273455819826,
-      "pattern": "SSL Sweep Reversal (Low swept 3910.0, close 3930.7)",
-      "touchTime": "01:52 pm",
-      "optionPremium": 70.45,
+      "touchTime": "09:19 am",
+      "optionPremium": 52.5,
       "isFno": true
     },
     {
@@ -520,8 +460,8 @@
       "close": 1034.5,
       "bounceStrengthPct": 1.911141759432566,
       "pattern": "Hammer (Bullish Rejection)",
-      "touchTime": "01:52 pm",
-      "optionPremium": 22.85,
+      "touchTime": "09:19 am",
+      "optionPremium": 25.75,
       "isFno": true
     },
     {
@@ -532,8 +472,8 @@
       "close": 1034.5,
       "bounceStrengthPct": 1.911141759432566,
       "pattern": "Hammer (Bullish Rejection)",
-      "touchTime": "01:52 pm",
-      "optionPremium": 22.85,
+      "touchTime": "09:19 am",
+      "optionPremium": 25.75,
       "isFno": true
     },
     {
@@ -544,8 +484,8 @@
       "close": 1034.5,
       "bounceStrengthPct": 1.911141759432566,
       "pattern": "Hammer (Bullish Rejection)",
-      "touchTime": "01:52 pm",
-      "optionPremium": 22.85,
+      "touchTime": "09:19 am",
+      "optionPremium": 25.75,
       "isFno": true
     },
     {
@@ -556,8 +496,8 @@
       "close": 1034.5,
       "bounceStrengthPct": 1.911141759432566,
       "pattern": "Hammer (Bullish Rejection)",
-      "touchTime": "01:52 pm",
-      "optionPremium": 22.85,
+      "touchTime": "09:19 am",
+      "optionPremium": 25.75,
       "isFno": true
     },
     {
@@ -568,8 +508,8 @@
       "close": 1034.5,
       "bounceStrengthPct": 1.911141759432566,
       "pattern": "Hammer (Bullish Rejection)",
-      "touchTime": "01:52 pm",
-      "optionPremium": 22.85,
+      "touchTime": "09:19 am",
+      "optionPremium": 25.75,
       "isFno": true
     },
     {
@@ -580,8 +520,8 @@
       "close": 1257.5,
       "bounceStrengthPct": 0.3591380686352753,
       "pattern": "Double Top Breakdown",
-      "touchTime": "01:51 pm",
-      "optionPremium": 20.55,
+      "touchTime": "09:19 am",
+      "optionPremium": 23.5,
       "isFno": true
     },
     {
@@ -592,32 +532,8 @@
       "close": 1257.5,
       "bounceStrengthPct": 0.3591380686352753,
       "pattern": "Double Top Breakdown",
-      "touchTime": "01:51 pm",
-      "optionPremium": 20.55,
-      "isFno": true
-    },
-    {
-      "symbol": "NSE:RELIANCE",
-      "levelName": "Target (S5)",
-      "levelVal": 1257.4471999999998,
-      "low": 1253,
-      "close": 1257.5,
-      "bounceStrengthPct": 0.3591380686352753,
-      "pattern": "Double Top Breakdown",
-      "touchTime": "01:51 pm",
-      "optionPremium": 20.55,
-      "isFno": true
-    },
-    {
-      "symbol": "NSE:RELIANCE",
-      "levelName": "Target (S6)",
-      "levelVal": 1254.8844665561082,
-      "low": 1253,
-      "close": 1257.5,
-      "bounceStrengthPct": 0.3591380686352753,
-      "pattern": "Double Top Breakdown",
-      "touchTime": "01:51 pm",
-      "optionPremium": 20.55,
+      "touchTime": "09:19 am",
+      "optionPremium": 23.5,
       "isFno": true
     },
     {
@@ -628,20 +544,32 @@
       "close": 1257.5,
       "bounceStrengthPct": 0.3591380686352753,
       "pattern": "Double Top Breakdown",
-      "touchTime": "01:56 pm",
-      "optionPremium": 21.7,
+      "touchTime": "09:19 am",
+      "optionPremium": 23.5,
       "isFno": true
     },
     {
-      "symbol": "NSE:SBIN",
+      "symbol": "NSE:RELIANCE",
+      "levelName": "Target (S5)",
+      "levelVal": 1257.4471999999998,
+      "low": 1253,
+      "close": 1257.5,
+      "bounceStrengthPct": 0.3591380686352753,
+      "pattern": "Double Top Breakdown",
+      "touchTime": "09:19 am",
+      "optionPremium": 23.5,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:RELIANCE",
       "levelName": "Target (S6)",
-      "levelVal": 998.7052647352648,
-      "low": 993,
-      "close": 995.7,
-      "bounceStrengthPct": 0.2719033232628445,
-      "pattern": "Neutral Candle",
-      "touchTime": "01:52 pm",
-      "optionPremium": 21.1,
+      "levelVal": 1254.8844665561082,
+      "low": 1253,
+      "close": 1257.5,
+      "bounceStrengthPct": 0.3591380686352753,
+      "pattern": "Double Top Breakdown",
+      "touchTime": "09:19 am",
+      "optionPremium": 23.5,
       "isFno": true
     },
     {
@@ -652,108 +580,24 @@
       "close": 995.7,
       "bounceStrengthPct": 0.2719033232628445,
       "pattern": "Neutral Candle",
-      "touchTime": "02:02 pm",
-      "optionPremium": 16.85,
+      "touchTime": "09:19 am",
+      "optionPremium": 17,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:SBIN",
+      "levelName": "Target (S6)",
+      "levelVal": 998.7052647352648,
+      "low": 993,
+      "close": 995.7,
+      "bounceStrengthPct": 0.2719033232628445,
+      "pattern": "Neutral Candle",
+      "touchTime": "09:19 am",
+      "optionPremium": 17,
       "isFno": true
     }
   ],
   "rejectionsResistance": [
-    {
-      "symbol": "NSE:HDFCBANK",
-      "levelName": "Breakout (R4)",
-      "levelVal": 698.3649999999999,
-      "high": 709,
-      "close": 708.25,
-      "rejectStrengthPct": 0.10578279266572638,
-      "pattern": "SSL Sweep Reversal (Low swept 686.2, close 708.3)",
-      "touchTime": "01:51 pm",
-      "optionPremium": 12.75,
-      "isFno": true
-    },
-    {
-      "symbol": "NSE:HDFCBANK",
-      "levelName": "Sell reversal (R3)",
-      "levelVal": 696.0825,
-      "high": 709,
-      "close": 708.25,
-      "rejectStrengthPct": 0.10578279266572638,
-      "pattern": "SSL Sweep Reversal (Low swept 686.2, close 708.3)",
-      "touchTime": "01:51 pm",
-      "optionPremium": 12.75,
-      "isFno": true
-    },
-    {
-      "symbol": "NSE:HDFCBANK",
-      "levelName": "Resistance (R2)",
-      "levelVal": 695.3216666666666,
-      "high": 709,
-      "close": 708.25,
-      "rejectStrengthPct": 0.10578279266572638,
-      "pattern": "SSL Sweep Reversal (Low swept 686.2, close 708.3)",
-      "touchTime": "01:51 pm",
-      "optionPremium": 12.6,
-      "isFno": true
-    },
-    {
-      "symbol": "NSE:HDFCBANK",
-      "levelName": "Target (R5)",
-      "levelVal": 701.0309599999998,
-      "high": 709,
-      "close": 708.25,
-      "rejectStrengthPct": 0.10578279266572638,
-      "pattern": "SSL Sweep Reversal (Low swept 686.2, close 708.3)",
-      "touchTime": "01:56 pm",
-      "optionPremium": 11.95,
-      "isFno": true
-    },
-    {
-      "symbol": "NSE:HDFCBANK",
-      "levelName": "Target (R6)",
-      "levelVal": 702.1919265520256,
-      "high": 709,
-      "close": 708.25,
-      "rejectStrengthPct": 0.10578279266572638,
-      "pattern": "SSL Sweep Reversal (Low swept 686.2, close 708.3)",
-      "touchTime": "02:07 pm",
-      "optionPremium": 10.05,
-      "isFno": true
-    },
-    {
-      "symbol": "NSE:BANKNIFTY",
-      "levelName": "Breakout (R4)",
-      "levelVal": 56660.765,
-      "high": 56645.85,
-      "close": 56606.55,
-      "rejectStrengthPct": 0.06937842754587606,
-      "pattern": "SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown",
-      "touchTime": "01:51 pm",
-      "optionPremium": 542.15,
-      "isFno": true
-    },
-    {
-      "symbol": "NSE:BANKNIFTY",
-      "levelName": "Sell reversal (R3)",
-      "levelVal": 56566.3575,
-      "high": 56645.85,
-      "close": 56606.55,
-      "rejectStrengthPct": 0.06937842754587606,
-      "pattern": "SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown",
-      "touchTime": "01:51 pm",
-      "optionPremium": 542.15,
-      "isFno": true
-    },
-    {
-      "symbol": "NSE:BANKNIFTY",
-      "levelName": "Resistance (R2)",
-      "levelVal": 56534.88833333333,
-      "high": 56645.85,
-      "close": 56606.55,
-      "rejectStrengthPct": 0.06937842754587606,
-      "pattern": "SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown",
-      "touchTime": "01:51 pm",
-      "optionPremium": 542.15,
-      "isFno": true
-    },
     {
       "symbol": "NSE:BANKNIFTY",
       "levelName": "Target (R6)",
@@ -762,8 +606,8 @@
       "close": 56606.55,
       "rejectStrengthPct": 0.06937842754587606,
       "pattern": "SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown",
-      "touchTime": "02:06 pm",
-      "optionPremium": 523.9,
+      "touchTime": "09:19 am",
+      "optionPremium": 493.9,
       "isFno": true
     },
     {
@@ -774,8 +618,44 @@
       "close": 56606.55,
       "rejectStrengthPct": 0.06937842754587606,
       "pattern": "SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown",
-      "touchTime": "02:07 pm",
-      "optionPremium": 523.9,
+      "touchTime": "09:19 am",
+      "optionPremium": 493.9,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:BANKNIFTY",
+      "levelName": "Breakout (R4)",
+      "levelVal": 56660.765,
+      "high": 56645.85,
+      "close": 56606.55,
+      "rejectStrengthPct": 0.06937842754587606,
+      "pattern": "SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown",
+      "touchTime": "09:19 am",
+      "optionPremium": 493.9,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:BANKNIFTY",
+      "levelName": "Sell reversal (R3)",
+      "levelVal": 56566.3575,
+      "high": 56645.85,
+      "close": 56606.55,
+      "rejectStrengthPct": 0.06937842754587606,
+      "pattern": "SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown",
+      "touchTime": "09:19 am",
+      "optionPremium": 493.9,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:BANKNIFTY",
+      "levelName": "Resistance (R2)",
+      "levelVal": 56534.88833333333,
+      "high": 56645.85,
+      "close": 56606.55,
+      "rejectStrengthPct": 0.06937842754587606,
+      "pattern": "SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown",
+      "touchTime": "09:19 am",
+      "optionPremium": 493.9,
       "isFno": true
     },
     {
@@ -795,8 +675,8 @@
       "close": 259.85,
       "rejectStrengthPct": 0.6879419071278252,
       "pattern": "SSL Sweep Reversal (Low swept 259.1, close 259.9)",
-      "touchTime": "01:52 pm",
-      "optionPremium": 3.15,
+      "touchTime": "09:19 am",
+      "optionPremium": 2.8,
       "isFno": true
     },
     {
@@ -807,8 +687,8 @@
       "close": 259.85,
       "rejectStrengthPct": 0.6879419071278252,
       "pattern": "SSL Sweep Reversal (Low swept 259.1, close 259.9)",
-      "touchTime": "01:52 pm",
-      "optionPremium": 3.15,
+      "touchTime": "09:19 am",
+      "optionPremium": 2.8,
       "isFno": true
     },
     {
@@ -819,8 +699,8 @@
       "close": 259.85,
       "rejectStrengthPct": 0.6879419071278252,
       "pattern": "SSL Sweep Reversal (Low swept 259.1, close 259.9)",
-      "touchTime": "01:52 pm",
-      "optionPremium": 3.15,
+      "touchTime": "09:19 am",
+      "optionPremium": 2.8,
       "isFno": true
     },
     {
@@ -831,8 +711,8 @@
       "close": 259.85,
       "rejectStrengthPct": 0.6879419071278252,
       "pattern": "SSL Sweep Reversal (Low swept 259.1, close 259.9)",
-      "touchTime": "01:52 pm",
-      "optionPremium": 3.15,
+      "touchTime": "09:19 am",
+      "optionPremium": 2.8,
       "isFno": true
     },
     {
@@ -852,8 +732,8 @@
       "close": 1037.7,
       "rejectStrengthPct": 0.9166427957605184,
       "pattern": "BSL Sweep Reversal (High swept 1046.6, close 1037.7) | Double Top Breakdown",
-      "touchTime": "01:52 pm",
-      "optionPremium": 23.65,
+      "touchTime": "09:19 am",
+      "optionPremium": 22.1,
       "isFno": true
     },
     {
@@ -864,8 +744,8 @@
       "close": 1037.7,
       "rejectStrengthPct": 0.9166427957605184,
       "pattern": "BSL Sweep Reversal (High swept 1046.6, close 1037.7) | Double Top Breakdown",
-      "touchTime": "01:52 pm",
-      "optionPremium": 23.65,
+      "touchTime": "09:19 am",
+      "optionPremium": 22.1,
       "isFno": true
     },
     {
@@ -885,8 +765,8 @@
       "close": 1246,
       "rejectStrengthPct": 0.542784163473815,
       "pattern": "SSL Sweep Reversal (Low swept 1240.4, close 1246.0) | Double Top Breakdown",
-      "touchTime": "01:52 pm",
-      "optionPremium": 15.75,
+      "touchTime": "09:19 am",
+      "optionPremium": 12.4,
       "isFno": true
     },
     {
@@ -897,8 +777,8 @@
       "close": 1246,
       "rejectStrengthPct": 0.542784163473815,
       "pattern": "SSL Sweep Reversal (Low swept 1240.4, close 1246.0) | Double Top Breakdown",
-      "touchTime": "01:52 pm",
-      "optionPremium": 15.75,
+      "touchTime": "09:19 am",
+      "optionPremium": 12.4,
       "isFno": true
     },
     {
@@ -909,8 +789,8 @@
       "close": 1246,
       "rejectStrengthPct": 0.542784163473815,
       "pattern": "SSL Sweep Reversal (Low swept 1240.4, close 1246.0) | Double Top Breakdown",
-      "touchTime": "01:52 pm",
-      "optionPremium": 15.75,
+      "touchTime": "09:19 am",
+      "optionPremium": 12.4,
       "isFno": true
     },
     {
@@ -930,8 +810,8 @@
       "close": 2200.8,
       "rejectStrengthPct": 1.4243482934694853,
       "pattern": "Inverted Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 2190.6, close 2200.8) | Double Top Breakdown",
-      "touchTime": "01:52 pm",
-      "optionPremium": 41.5,
+      "touchTime": "09:19 am",
+      "optionPremium": 38.05,
       "isFno": true
     },
     {
@@ -942,8 +822,8 @@
       "close": 2200.8,
       "rejectStrengthPct": 1.4243482934694853,
       "pattern": "Inverted Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 2190.6, close 2200.8) | Double Top Breakdown",
-      "touchTime": "01:52 pm",
-      "optionPremium": 41.5,
+      "touchTime": "09:19 am",
+      "optionPremium": 38.05,
       "isFno": true
     },
     {
@@ -954,8 +834,8 @@
       "close": 2200.8,
       "rejectStrengthPct": 1.4243482934694853,
       "pattern": "Inverted Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 2190.6, close 2200.8) | Double Top Breakdown",
-      "touchTime": "01:52 pm",
-      "optionPremium": 41.5,
+      "touchTime": "09:19 am",
+      "optionPremium": 38.05,
       "isFno": true
     },
     {
@@ -966,8 +846,8 @@
       "close": 23398.1,
       "rejectStrengthPct": 0.21323689339434754,
       "pattern": "SSL Sweep Reversal (Low swept 23380.1, close 23398.1)",
-      "touchTime": "02:06 pm",
-      "optionPremium": 88.55,
+      "touchTime": "09:19 am",
+      "optionPremium": 72.45,
       "isFno": true
     },
     {
@@ -978,20 +858,8 @@
       "close": 23398.1,
       "rejectStrengthPct": 0.21323689339434754,
       "pattern": "SSL Sweep Reversal (Low swept 23380.1, close 23398.1)",
-      "touchTime": "02:07 pm",
-      "optionPremium": 88.55,
-      "isFno": true
-    },
-    {
-      "symbol": "NSE:NIFTY",
-      "levelName": "Breakout (R4)",
-      "levelVal": 23540.9675,
-      "high": 23448.1,
-      "close": 23398.1,
-      "rejectStrengthPct": 0.21323689339434754,
-      "pattern": "SSL Sweep Reversal (Low swept 23380.1, close 23398.1)",
-      "touchTime": "02:31 pm",
-      "optionPremium": 100.5,
+      "touchTime": "09:19 am",
+      "optionPremium": 72.45,
       "isFno": true
     },
     {
@@ -1002,8 +870,8 @@
       "close": 1379.3,
       "rejectStrengthPct": 0.6983441324694057,
       "pattern": "SSL Sweep Reversal (Low swept 1373.9, close 1379.3)",
-      "touchTime": "01:51 pm",
-      "optionPremium": 17.05,
+      "touchTime": "09:19 am",
+      "optionPremium": 15.4,
       "isFno": true
     },
     {
@@ -1014,8 +882,8 @@
       "close": 1379.3,
       "rejectStrengthPct": 0.6983441324694057,
       "pattern": "SSL Sweep Reversal (Low swept 1373.9, close 1379.3)",
-      "touchTime": "01:51 pm",
-      "optionPremium": 17.05,
+      "touchTime": "09:19 am",
+      "optionPremium": 15.4,
       "isFno": true
     },
     {
@@ -1035,8 +903,8 @@
       "close": 1831.1,
       "rejectStrengthPct": 1.1285097192224671,
       "pattern": "Gravestone Doji (Bearish Rejection) | Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 1849.0, close 1831.1)",
-      "touchTime": "01:52 pm",
-      "optionPremium": 23.2,
+      "touchTime": "09:19 am",
+      "optionPremium": 23.15,
       "isFno": true
     },
     {
@@ -1047,8 +915,8 @@
       "close": 1831.1,
       "rejectStrengthPct": 1.1285097192224671,
       "pattern": "Gravestone Doji (Bearish Rejection) | Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 1849.0, close 1831.1)",
-      "touchTime": "01:52 pm",
-      "optionPremium": 23.2,
+      "touchTime": "09:19 am",
+      "optionPremium": 23.15,
       "isFno": true
     },
     {
@@ -1059,8 +927,8 @@
       "close": 3930.7,
       "rejectStrengthPct": 0.43819655521783646,
       "pattern": "SSL Sweep Reversal (Low swept 3910.0, close 3930.7)",
-      "touchTime": "01:52 pm",
-      "optionPremium": 53.9,
+      "touchTime": "09:19 am",
+      "optionPremium": 68.1,
       "isFno": true
     },
     {
@@ -1071,8 +939,8 @@
       "close": 1034.5,
       "rejectStrengthPct": 0.04830917874396135,
       "pattern": "Hammer (Bullish Rejection)",
-      "touchTime": "01:52 pm",
-      "optionPremium": 19.25,
+      "touchTime": "09:19 am",
+      "optionPremium": 17.15,
       "isFno": true
     },
     {
@@ -1083,8 +951,8 @@
       "close": 1034.5,
       "rejectStrengthPct": 0.04830917874396135,
       "pattern": "Hammer (Bullish Rejection)",
-      "touchTime": "01:52 pm",
-      "optionPremium": 19.25,
+      "touchTime": "09:19 am",
+      "optionPremium": 17.15,
       "isFno": true
     },
     {
@@ -1095,8 +963,8 @@
       "close": 1257.5,
       "rejectStrengthPct": 0.7811267161117319,
       "pattern": "Double Top Breakdown",
-      "touchTime": "01:51 pm",
-      "optionPremium": 21.9,
+      "touchTime": "09:19 am",
+      "optionPremium": 18.05,
       "isFno": true
     },
     {
@@ -1107,8 +975,8 @@
       "close": 1257.5,
       "rejectStrengthPct": 0.7811267161117319,
       "pattern": "Double Top Breakdown",
-      "touchTime": "01:51 pm",
-      "optionPremium": 21.9,
+      "touchTime": "09:19 am",
+      "optionPremium": 18.05,
       "isFno": true
     },
     {
@@ -1119,8 +987,8 @@
       "close": 995.7,
       "rejectStrengthPct": 0.6188242339554778,
       "pattern": "Neutral Candle",
-      "touchTime": "01:52 pm",
-      "optionPremium": 13.4,
+      "touchTime": "09:19 am",
+      "optionPremium": 15.85,
       "isFno": true
     }
   ],
@@ -1191,22 +1059,10 @@
   ],
   "detectedPatterns": [
     {
-      "symbol": "NSE:NIFTY",
-      "patterns": [
-        "SSL Sweep Reversal (Low swept 23380.1, close 23398.1)"
-      ]
-    },
-    {
       "symbol": "NSE:BANKNIFTY",
       "patterns": [
         "SSL Sweep Reversal (Low swept 56231.8, close 56606.6)",
         "Double Top Breakdown"
-      ]
-    },
-    {
-      "symbol": "NSE:HDFCBANK",
-      "patterns": [
-        "SSL Sweep Reversal (Low swept 686.2, close 708.3)"
       ]
     },
     {
@@ -1216,23 +1072,21 @@
       ]
     },
     {
+      "symbol": "NSE:NIFTY",
+      "patterns": [
+        "SSL Sweep Reversal (Low swept 23380.1, close 23398.1)"
+      ]
+    },
+    {
       "symbol": "NSE:RELIANCE",
       "patterns": [
         "Double Top Breakdown"
       ]
     },
     {
-      "symbol": "NSE:BHARTIARTL",
+      "symbol": "NSE:HDFCBANK",
       "patterns": [
-        "Gravestone Doji (Bearish Rejection)",
-        "Inverted Hammer (Bullish Rejection)",
-        "BSL Sweep Reversal (High swept 1849.0, close 1831.1)"
-      ]
-    },
-    {
-      "symbol": "NSE:ITC",
-      "patterns": [
-        "SSL Sweep Reversal (Low swept 259.1, close 259.9)"
+        "SSL Sweep Reversal (Low swept 686.2, close 708.3)"
       ]
     },
     {
@@ -1248,6 +1102,20 @@
         "Inverted Hammer (Bullish Rejection)",
         "SSL Sweep Reversal (Low swept 2190.6, close 2200.8)",
         "Double Top Breakdown"
+      ]
+    },
+    {
+      "symbol": "NSE:ITC",
+      "patterns": [
+        "SSL Sweep Reversal (Low swept 259.1, close 259.9)"
+      ]
+    },
+    {
+      "symbol": "NSE:BHARTIARTL",
+      "patterns": [
+        "Gravestone Doji (Bearish Rejection)",
+        "Inverted Hammer (Bullish Rejection)",
+        "BSL Sweep Reversal (High swept 1849.0, close 1831.1)"
       ]
     },
     {
@@ -1274,6 +1142,10 @@
     "NIFTY_ATM_23400_EXP_260915": {
       "CE": 133.45,
       "PE": 72.45
+    },
+    "NIFTY_ATM_23400_EXP_260922": {
+      "CE": 223.6,
+      "PE": 147.4
     }
   }
 }

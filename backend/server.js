@@ -12,6 +12,8 @@ import { startScanner, scannerCache, findClosestValidOptionSymbol, fetchCandlesF
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const tvBridge = new TradingViewBridge();
+
 const liveOptionCandlesCache = {};
 const liveOptionLtpCache = {};
 const liveOptionCandlesCacheTime = {};
@@ -268,7 +270,6 @@ wss.on('error', (err) => {
   console.error('[Node Backend] WebSocket Server error:', err);
 });
 
-const tvBridge = new TradingViewBridge();
 startScanner(tvBridge);
 startDojiScanner(tvBridge);
 startVolumeScanner(tvBridge);

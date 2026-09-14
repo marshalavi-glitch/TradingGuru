@@ -1,0 +1,169 @@
+=========================================
+MARKET ANALYSIS REPORT - 14/9/2026
+=========================================
+
+1. INDEX CLOSES:
+-----------------------------------------
+NIFTY 50  : 23398.10 (-0.34%)
+BANK NIFTY: 56606.55 (0.24%)
+
+1B. INDEX LEVEL INTERACTIONS (NIFTY & BANK NIFTY):
+-----------------------------------------
+NIFTY Level Interactions:
+  - Breakdown of Monthly S4 (VAL Breakdown Trigger) (23414.63) | Close = 23398.10 | Excess = 0.07%
+BANK NIFTY Level Interactions:
+  - Resistance Touch at Monthly R3 (VAH Reversion) (56566.36) at 01:55 pm | Candle = Neutral Candle | Session High = 56645.85 | Close = 56606.55 | Result = Broke above
+  - Resistance Touch at Monthly R4 (VAH Breakout Trigger) (56660.76) at 02:00 pm | Candle = Neutral Candle | Session High = 56645.85 | Close = 56606.55 | Result = Rejected
+
+2. TOP GAINERS:
+-----------------------------------------
+HDFCBANK    : ₹708.25     (+2.08%)
+BANKNIFTY   : ₹56606.55   (+0.24%)
+ITC         : ₹259.85     (+0.21%)
+INFY        : ₹1037.70    (+0.12%)
+AXISBANK    : ₹1246.00    (+0.00%)
+TCS         : ₹2200.80    (+-0.15%)
+NIFTY       : ₹23398.10   (+-0.34%)
+ICICIBANK   : ₹1379.30    (+-0.38%)
+BHARTIARTL  : ₹1831.10    (+-0.43%)
+LT          : ₹3930.70    (+-0.61%)
+
+3. TOP LOSERS:
+-----------------------------------------
+SBIN        : ₹995.70     (-1.39%)
+RELIANCE    : ₹1257.50    (-1.30%)
+BAJFINANCE  : ₹1034.50    (-0.86%)
+LT          : ₹3930.70    (-0.61%)
+BHARTIARTL  : ₹1831.10    (-0.43%)
+ICICIBANK   : ₹1379.30    (-0.38%)
+NIFTY       : ₹23398.10   (-0.34%)
+TCS         : ₹2200.80    (-0.15%)
+AXISBANK    : ₹1246.00    (0.00%)
+INFY        : ₹1037.70    (0.12%)
+
+4. SUPPORT BOUNCES (Within Proximity):
+-----------------------------------------
+HDFCBANK    : Level = Target (S5)               | Value = 686.57     | Low = 681.90     | Close = 708.25     | Bounce = +3.86% | Candle = SSL Sweep Reversal (Low swept 686.2, close 708.3)
+BAJFINANCE  : Level = Support (S2)              | Value = 1041.26    | Low = 1015.10    | Close = 1034.50    | Bounce = +1.91% | Candle = Hammer (Bullish Rejection)
+BAJFINANCE  : Level = Buy Reversal (S3)         | Value = 1040.14    | Low = 1015.10    | Close = 1034.50    | Bounce = +1.91% | Candle = Hammer (Bullish Rejection)
+BAJFINANCE  : Level = Break Down (S4)           | Value = 1036.79    | Low = 1015.10    | Close = 1034.50    | Bounce = +1.91% | Candle = Hammer (Bullish Rejection)
+BAJFINANCE  : Level = Target (S5)               | Value = 1032.87    | Low = 1015.10    | Close = 1034.50    | Bounce = +1.91% | Candle = Hammer (Bullish Rejection)
+BAJFINANCE  : Level = Target (S6)               | Value = 1031.22    | Low = 1015.10    | Close = 1034.50    | Bounce = +1.91% | Candle = Hammer (Bullish Rejection)
+BANKNIFTY   : Level = Support (S2)              | Value = 56409.01   | Low = 55699.45   | Close = 56606.55   | Bounce = +1.63% | Candle = SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown
+BANKNIFTY   : Level = Buy Reversal (S3)         | Value = 56377.54   | Low = 55699.45   | Close = 56606.55   | Bounce = +1.63% | Candle = SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown
+AXISBANK    : Level = Support (S2)              | Value = 1243.29    | Low = 1229.80    | Close = 1246.00    | Bounce = +1.32% | Candle = SSL Sweep Reversal (Low swept 1240.4, close 1246.0) | Double Top Breakdown
+AXISBANK    : Level = Buy Reversal (S3)         | Value = 1241.93    | Low = 1229.80    | Close = 1246.00    | Bounce = +1.32% | Candle = SSL Sweep Reversal (Low swept 1240.4, close 1246.0) | Double Top Breakdown
+AXISBANK    : Level = S6 (VAL Capitulation)     | Value = 1231.13    | Low = 1229.80    | Close = 1246.00    | Bounce = +1.32% | Candle = SSL Sweep Reversal (Low swept 1240.4, close 1246.0) | Double Top Breakdown
+LT          : Level = Support (S2)              | Value = 3944.82    | Low = 3880.70    | Close = 3930.70    | Bounce = +1.29% | Candle = SSL Sweep Reversal (Low swept 3910.0, close 3930.7)
+LT          : Level = Buy Reversal (S3)         | Value = 3939.74    | Low = 3880.70    | Close = 3930.70    | Bounce = +1.29% | Candle = SSL Sweep Reversal (Low swept 3910.0, close 3930.7)
+LT          : Level = Break Down (S4)           | Value = 3924.47    | Low = 3880.70    | Close = 3930.70    | Bounce = +1.29% | Candle = SSL Sweep Reversal (Low swept 3910.0, close 3930.7)
+ICICIBANK   : Level = Support (S2)              | Value = 1381.00    | Low = 1367.60    | Close = 1379.30    | Bounce = +0.86% | Candle = SSL Sweep Reversal (Low swept 1373.9, close 1379.3)
+ICICIBANK   : Level = Buy Reversal (S3)         | Value = 1379.25    | Low = 1367.60    | Close = 1379.30    | Bounce = +0.86% | Candle = SSL Sweep Reversal (Low swept 1373.9, close 1379.3)
+ICICIBANK   : Level = Break Down (S4)           | Value = 1374.00    | Low = 1367.60    | Close = 1379.30    | Bounce = +0.86% | Candle = SSL Sweep Reversal (Low swept 1373.9, close 1379.3)
+ICICIBANK   : Level = S5 (VAL Extreme)          | Value = 1367.86    | Low = 1367.60    | Close = 1379.30    | Bounce = +0.86% | Candle = SSL Sweep Reversal (Low swept 1373.9, close 1379.3)
+ITC         : Level = S3 (VAL Reversion)        | Value = 257.98     | Low = 257.70     | Close = 259.85     | Bounce = +0.83% | Candle = SSL Sweep Reversal (Low swept 259.1, close 259.9)
+INFY        : Level = Support (S2)              | Value = 1032.96    | Low = 1029.70    | Close = 1037.70    | Bounce = +0.78% | Candle = BSL Sweep Reversal (High swept 1046.6, close 1037.7) | Double Top Breakdown
+INFY        : Level = Buy Reversal (S3)         | Value = 1031.19    | Low = 1029.70    | Close = 1037.70    | Bounce = +0.78% | Candle = BSL Sweep Reversal (High swept 1046.6, close 1037.7) | Double Top Breakdown
+INFY        : Level = S3 (VAL Reversion)        | Value = 1031.19    | Low = 1029.70    | Close = 1037.70    | Bounce = +0.78% | Candle = BSL Sweep Reversal (High swept 1046.6, close 1037.7) | Double Top Breakdown
+NIFTY       : Level = Support (S2)              | Value = 23456.74   | Low = 23231.40   | Close = 23398.10   | Bounce = +0.72% | Candle = SSL Sweep Reversal (Low swept 23380.1, close 23398.1)
+NIFTY       : Level = Buy Reversal (S3)         | Value = 23446.22   | Low = 23231.40   | Close = 23398.10   | Bounce = +0.72% | Candle = SSL Sweep Reversal (Low swept 23380.1, close 23398.1)
+NIFTY       : Level = Break Down (S4)           | Value = 23414.63   | Low = 23231.40   | Close = 23398.10   | Bounce = +0.72% | Candle = SSL Sweep Reversal (Low swept 23380.1, close 23398.1)
+NIFTY       : Level = Target (S5)               | Value = 23377.74   | Low = 23231.40   | Close = 23398.10   | Bounce = +0.72% | Candle = SSL Sweep Reversal (Low swept 23380.1, close 23398.1)
+NIFTY       : Level = Target (S6)               | Value = 23362.47   | Low = 23231.40   | Close = 23398.10   | Bounce = +0.72% | Candle = SSL Sweep Reversal (Low swept 23380.1, close 23398.1)
+TCS         : Level = Support (S2)              | Value = 2196.51    | Low = 2185.50    | Close = 2200.80    | Bounce = +0.70% | Candle = Inverted Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 2190.6, close 2200.8) | Double Top Breakdown
+TCS         : Level = Buy Reversal (S3)         | Value = 2192.71    | Low = 2185.50    | Close = 2200.80    | Bounce = +0.70% | Candle = Inverted Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 2190.6, close 2200.8) | Double Top Breakdown
+RELIANCE    : Level = Support (S2)              | Value = 1270.52    | Low = 1253.00    | Close = 1257.50    | Bounce = +0.36% | Candle = Double Top Breakdown
+RELIANCE    : Level = Buy Reversal (S3)         | Value = 1268.78    | Low = 1253.00    | Close = 1257.50    | Bounce = +0.36% | Candle = Double Top Breakdown
+RELIANCE    : Level = Break Down (S4)           | Value = 1263.55    | Low = 1253.00    | Close = 1257.50    | Bounce = +0.36% | Candle = Double Top Breakdown
+RELIANCE    : Level = Target (S5)               | Value = 1257.45    | Low = 1253.00    | Close = 1257.50    | Bounce = +0.36% | Candle = Double Top Breakdown
+RELIANCE    : Level = Target (S6)               | Value = 1254.88    | Low = 1253.00    | Close = 1257.50    | Bounce = +0.36% | Candle = Double Top Breakdown
+SBIN        : Level = Target (S5)               | Value = 1000.20    | Low = 993.00     | Close = 995.70     | Bounce = +0.27% | Candle = Neutral Candle
+SBIN        : Level = Target (S6)               | Value = 998.71     | Low = 993.00     | Close = 995.70     | Bounce = +0.27% | Candle = Neutral Candle
+BHARTIARTL  : Level = Support (S2)              | Value = 1832.58    | Low = 1830.50    | Close = 1831.10    | Bounce = +0.03% | Candle = Gravestone Doji (Bearish Rejection) | Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 1849.0, close 1831.1)
+BHARTIARTL  : Level = Buy Reversal (S3)         | Value = 1829.38    | Low = 1830.50    | Close = 1831.10    | Bounce = +0.03% | Candle = Gravestone Doji (Bearish Rejection) | Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 1849.0, close 1831.1)
+BHARTIARTL  : Level = S3 (VAL Reversion)        | Value = 1829.38    | Low = 1830.50    | Close = 1831.10    | Bounce = +0.03% | Candle = Gravestone Doji (Bearish Rejection) | Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 1849.0, close 1831.1)
+
+4B. RESISTANCE REJECTIONS (Within Proximity):
+-----------------------------------------
+TCS         : Level = Breakout (R4)             | Value = 2226.87    | High = 2232.60    | Close = 2200.80    | Rejection = -1.42% | Candle = Inverted Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 2190.6, close 2200.8) | Double Top Breakdown
+TCS         : Level = Sell reversal (R3)        | Value = 2215.49    | High = 2232.60    | Close = 2200.80    | Rejection = -1.42% | Candle = Inverted Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 2190.6, close 2200.8) | Double Top Breakdown
+TCS         : Level = Resistance (R2)           | Value = 2211.69    | High = 2232.60    | Close = 2200.80    | Rejection = -1.42% | Candle = Inverted Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 2190.6, close 2200.8) | Double Top Breakdown
+BHARTIARTL  : Level = Sell reversal (R3)        | Value = 1848.63    | High = 1852.00    | Close = 1831.10    | Rejection = -1.13% | Candle = Gravestone Doji (Bearish Rejection) | Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 1849.0, close 1831.1)
+BHARTIARTL  : Level = Resistance (R2)           | Value = 1845.42    | High = 1852.00    | Close = 1831.10    | Rejection = -1.13% | Candle = Gravestone Doji (Bearish Rejection) | Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 1849.0, close 1831.1)
+INFY        : Level = Sell reversal (R3)        | Value = 1041.81    | High = 1047.30    | Close = 1037.70    | Rejection = -0.92% | Candle = BSL Sweep Reversal (High swept 1046.6, close 1037.7) | Double Top Breakdown
+INFY        : Level = Resistance (R2)           | Value = 1040.04    | High = 1047.30    | Close = 1037.70    | Rejection = -0.92% | Candle = BSL Sweep Reversal (High swept 1046.6, close 1037.7) | Double Top Breakdown
+INFY        : Level = R4 (VAH Breakout Trigger) | Value = 1047.12    | High = 1047.30    | Close = 1037.70    | Rejection = -0.92% | Candle = BSL Sweep Reversal (High swept 1046.6, close 1037.7) | Double Top Breakdown
+RELIANCE    : Level = Breakout (R4)             | Value = 1284.45    | High = 1267.40    | Close = 1257.50    | Rejection = -0.78% | Candle = Double Top Breakdown
+RELIANCE    : Level = Sell reversal (R3)        | Value = 1279.22    | High = 1267.40    | Close = 1257.50    | Rejection = -0.78% | Candle = Double Top Breakdown
+ICICIBANK   : Level = Sell reversal (R3)        | Value = 1389.75    | High = 1389.00    | Close = 1379.30    | Rejection = -0.70% | Candle = SSL Sweep Reversal (Low swept 1373.9, close 1379.3)
+ICICIBANK   : Level = Resistance (R2)           | Value = 1388.00    | High = 1389.00    | Close = 1379.30    | Rejection = -0.70% | Candle = SSL Sweep Reversal (Low swept 1373.9, close 1379.3)
+ICICIBANK   : Level = R3 (VAH Reversion)        | Value = 1389.75    | High = 1389.00    | Close = 1379.30    | Rejection = -0.70% | Candle = SSL Sweep Reversal (Low swept 1373.9, close 1379.3)
+ITC         : Level = Target (R5)               | Value = 263.48     | High = 261.65     | Close = 259.85     | Rejection = -0.69% | Candle = SSL Sweep Reversal (Low swept 259.1, close 259.9)
+ITC         : Level = Breakout (R4)             | Value = 261.94     | High = 261.65     | Close = 259.85     | Rejection = -0.69% | Candle = SSL Sweep Reversal (Low swept 259.1, close 259.9)
+ITC         : Level = Sell reversal (R3)        | Value = 260.62     | High = 261.65     | Close = 259.85     | Rejection = -0.69% | Candle = SSL Sweep Reversal (Low swept 259.1, close 259.9)
+ITC         : Level = Resistance (R2)           | Value = 260.18     | High = 261.65     | Close = 259.85     | Rejection = -0.69% | Candle = SSL Sweep Reversal (Low swept 259.1, close 259.9)
+ITC         : Level = R4 (VAH Breakout Trigger) | Value = 261.94     | High = 261.65     | Close = 259.85     | Rejection = -0.69% | Candle = SSL Sweep Reversal (Low swept 259.1, close 259.9)
+SBIN        : Level = Resistance (R2)           | Value = 1011.70    | High = 1001.90    | Close = 995.70     | Rejection = -0.62% | Candle = Neutral Candle
+AXISBANK    : Level = Breakout (R4)             | Value = 1254.14    | High = 1252.80    | Close = 1246.00    | Rejection = -0.54% | Candle = SSL Sweep Reversal (Low swept 1240.4, close 1246.0) | Double Top Breakdown
+AXISBANK    : Level = Sell reversal (R3)        | Value = 1250.07    | High = 1252.80    | Close = 1246.00    | Rejection = -0.54% | Candle = SSL Sweep Reversal (Low swept 1240.4, close 1246.0) | Double Top Breakdown
+AXISBANK    : Level = Resistance (R2)           | Value = 1248.71    | High = 1252.80    | Close = 1246.00    | Rejection = -0.54% | Candle = SSL Sweep Reversal (Low swept 1240.4, close 1246.0) | Double Top Breakdown
+AXISBANK    : Level = R4 (VAH Breakout Trigger) | Value = 1254.14    | High = 1252.80    | Close = 1246.00    | Rejection = -0.54% | Candle = SSL Sweep Reversal (Low swept 1240.4, close 1246.0) | Double Top Breakdown
+LT          : Level = Resistance (R2)           | Value = 3965.18    | High = 3948.00    | Close = 3930.70    | Rejection = -0.44% | Candle = SSL Sweep Reversal (Low swept 3910.0, close 3930.7)
+NIFTY       : Level = Sell reversal (R3)        | Value = 23509.38   | High = 23448.10   | Close = 23398.10   | Rejection = -0.21% | Candle = SSL Sweep Reversal (Low swept 23380.1, close 23398.1)
+NIFTY       : Level = Resistance (R2)           | Value = 23498.86   | High = 23448.10   | Close = 23398.10   | Rejection = -0.21% | Candle = SSL Sweep Reversal (Low swept 23380.1, close 23398.1)
+BANKNIFTY   : Level = Target (R6)               | Value = 56816.72   | High = 56645.85   | Close = 56606.55   | Rejection = -0.07% | Candle = SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown
+BANKNIFTY   : Level = Target (R5)               | Value = 56771.03   | High = 56645.85   | Close = 56606.55   | Rejection = -0.07% | Candle = SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown
+BANKNIFTY   : Level = Breakout (R4)             | Value = 56660.76   | High = 56645.85   | Close = 56606.55   | Rejection = -0.07% | Candle = SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown
+BANKNIFTY   : Level = Sell reversal (R3)        | Value = 56566.36   | High = 56645.85   | Close = 56606.55   | Rejection = -0.07% | Candle = SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown
+BANKNIFTY   : Level = Resistance (R2)           | Value = 56534.89   | High = 56645.85   | Close = 56606.55   | Rejection = -0.07% | Candle = SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown
+BANKNIFTY   : Level = R4 (VAH Breakout Trigger) | Value = 56660.76   | High = 56645.85   | Close = 56606.55   | Rejection = -0.07% | Candle = SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown
+BAJFINANCE  : Level = Sell reversal (R3)        | Value = 1046.86    | High = 1035.00    | Close = 1034.50    | Rejection = -0.05% | Candle = Hammer (Bullish Rejection)
+BAJFINANCE  : Level = Resistance (R2)           | Value = 1045.74    | High = 1035.00    | Close = 1034.50    | Rejection = -0.05% | Candle = Hammer (Bullish Rejection)
+
+5. LEVEL BREAKDOWNS (Closed Below S4):
+-----------------------------------------
+SBIN        : S4 Value = 1003.71    | Close = 995.70     | Excess = -0.80%
+RELIANCE    : S4 Value = 1263.55    | Close = 1257.50    | Excess = -0.48%
+BAJFINANCE  : S4 Value = 1036.79    | Close = 1034.50    | Excess = -0.22%
+NIFTY       : S4 Value = 23414.63   | Close = 23398.10   | Excess = -0.07%
+
+5B. DETECTED PRICE ACTION & CANDLESTICK PATTERNS:
+-----------------------------------------
+BANKNIFTY   : SSL Sweep Reversal (Low swept 56231.8, close 56606.6) | Double Top Breakdown
+ICICIBANK   : SSL Sweep Reversal (Low swept 1373.9, close 1379.3)
+NIFTY       : SSL Sweep Reversal (Low swept 23380.1, close 23398.1)
+RELIANCE    : Double Top Breakdown
+HDFCBANK    : SSL Sweep Reversal (Low swept 686.2, close 708.3)
+INFY        : BSL Sweep Reversal (High swept 1046.6, close 1037.7) | Double Top Breakdown
+TCS         : Inverted Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 2190.6, close 2200.8) | Double Top Breakdown
+ITC         : SSL Sweep Reversal (Low swept 259.1, close 259.9)
+BHARTIARTL  : Gravestone Doji (Bearish Rejection) | Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 1849.0, close 1831.1)
+BAJFINANCE  : Hammer (Bullish Rejection)
+AXISBANK    : SSL Sweep Reversal (Low swept 1240.4, close 1246.0) | Double Top Breakdown
+LT          : SSL Sweep Reversal (Low swept 3910.0, close 3930.7)
+
+6. ATM OPTIONS PREMIUMS:
+-----------------------------------------
+NIFTY_ATM_23400_EXP_260915         : CE = ₹133.45 | PE = ₹72.45
+NIFTY_ATM_23400_EXP_260922         : CE = ₹223.60 | PE = ₹147.40
+
+=========================================
+7. INTRADAY 5-MIN OPTION PREMIUM BACKTEST & LEARNINGS:
+-----------------------------------------
+No option trades triggered today.
+
+8. OPENING BIAS VALIDATION (Did the market follow the 2-Year Opening Bias?):
+-----------------------------------------
+* NIFTY: SUCCESS
+  - Zone: Open Below S6 (Extreme Gap Down)
+  - Prediction: Expected GREEN Close (Probability: 66.7%)
+  - Actual: Closed GREEN (Open: 23270.30 | Close: 23398.10 | Move: 127.80 pts)
+  - Analysis: The index behaved exactly as predicted by the 2-year backtest for Open Below S6 (Extreme Gap Down).
+
+* BANKNIFTY: SUCCESS
+  - Zone: Open Below S6 (Extreme Gap Down)
+  - Prediction: Expected GREEN Close (Probability: 62.5%)
+  - Actual: Closed GREEN (Open: 55970.15 | Close: 56606.55 | Move: 636.40 pts)
+  - Analysis: The index behaved exactly as predicted by the 2-year backtest for Open Below S6 (Extreme Gap Down).
+
+=========================================
