@@ -13,12 +13,90 @@ interface ProMarketProfileContainerProps {
 }
 
 function formatDateHeader(dateStr: string): string {
+  if (dateStr.startsWith('W:')) {
+    const parts = dateStr.replace('W:', '').split('-');
+    if (parts.length === 3) {
+      return `Wk ${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+  }
+  if (dateStr.startsWith('M:')) {
+    const parts = dateStr.replace('M:', '').split('-');
+    if (parts.length === 2) {
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const mIdx = parseInt(parts[1], 10) - 1;
+      return `${monthNames[mIdx]} ${parts[0]}`;
+    }
+  }
+  if (dateStr.startsWith('Y:')) {
+    return `Yr ${dateStr.replace('Y:', '')}`;
+  }
   // Converts YYYY-MM-DD to DD-MM-YYYY format
   const parts = dateStr.split('-');
   if (parts.length === 3) {
     return `${parts[2]}-${parts[1]}-${parts[0]}`;
   }
   return dateStr;
+}
+
+function groupCandlesBySessionPeriod(
+  candles: Candle[],
+  period: 'D' | 'W' | 'W_S' | 'M_S' | 'Y'
+): { keys: string[]; grouped: Record<string, Candle[]>; sessionPeriodType: 'daily' | 'weekly' | 'monthly' } {
+  const grouped: Record<string, Candle[]> = {};
+  
+  if (period === 'D') {
+    for (const c of candles) {
+      const date = new Date(c.time * 1000);
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      const dateStr = `${y}-${m}-${d}`;
+      if (!grouped[dateStr]) grouped[dateStr] = [];
+      grouped[dateStr].push(c);
+    }
+    return { keys: Object.keys(grouped).sort(), grouped, sessionPeriodType: 'daily' };
+  }
+  
+  if (period === 'W' || period === 'W_S') {
+    for (const c of candles) {
+      const d = new Date(c.time * 1000);
+      const dayOfWeek = d.getDay(); // 0 is Sun, 1 is Mon...
+      const diffToMon = (dayOfWeek === 0 ? -6 : 1 - dayOfWeek);
+      const monDate = new Date(d);
+      monDate.setDate(d.getDate() + diffToMon);
+      const y = monDate.getFullYear();
+      const m = String(monDate.getMonth() + 1).padStart(2, '0');
+      const day = String(monDate.getDate()).padStart(2, '0');
+      const weekStr = `W:${y}-${m}-${day}`;
+      if (!grouped[weekStr]) grouped[weekStr] = [];
+      grouped[weekStr].push(c);
+    }
+    return { keys: Object.keys(grouped).sort(), grouped, sessionPeriodType: 'weekly' };
+  }
+  
+  if (period === 'M_S') {
+    for (const c of candles) {
+      const d = new Date(c.time * 1000);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const monthStr = `M:${y}-${m}`;
+      if (!grouped[monthStr]) grouped[monthStr] = [];
+      grouped[monthStr].push(c);
+    }
+    return { keys: Object.keys(grouped).sort(), grouped, sessionPeriodType: 'monthly' };
+  }
+  
+  if (period === 'Y') {
+    for (const c of candles) {
+      const d = new Date(c.time * 1000);
+      const yearStr = `Y:${d.getFullYear()}`;
+      if (!grouped[yearStr]) grouped[yearStr] = [];
+      grouped[yearStr].push(c);
+    }
+    return { keys: Object.keys(grouped).sort(), grouped, sessionPeriodType: 'monthly' };
+  }
+  
+  return { keys: [], grouped: {}, sessionPeriodType: 'daily' };
 }
 
 function getLetterColor(letter: string): string {
@@ -81,7 +159,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
     try {
       const backendHttp = getBackendHttpUrl();
       const resolved = resolveSymbol(symbol);
-      const limit = lookbackDays * 80;
+      const limit = 2000;
       const url = `${backendHttp}/api/candles?symbol=${encodeURIComponent(resolved.formattedSymbol)}&timeframe=${timeframe}&limit=${limit}`;
       const res = await fetch(url);
       if (res.ok) {
@@ -104,19 +182,29 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
 
   useEffect(() => {
     fetchCandles();
-  }, [symbol, timeframe, lookbackDays]);
+  }, [symbol, timeframe]);
 
   // Group candles and build profiles
   const dayProfiles: DayProfile[] = useMemo(() => {
     if (!candles || candles.length === 0) return [];
-    const grouped = groupCandlesByDay(candles);
-    const sortedDates = Object.keys(grouped).sort();
-    const activeDates = sortedDates.slice(Math.max(0, sortedDates.length - lookbackDays));
+    const { keys, grouped, sessionPeriodType } = groupCandlesBySessionPeriod(candles, sessionPeriod);
     
-    return activeDates.map(dStr => {
-      return calculateDayProfile(dStr, grouped[dStr], 40, 'daily', undefined, tpoStep, symbol);
+    // Slice keys based on session period
+    let lookbackLimit = lookbackDays;
+    if (sessionPeriod === 'W' || sessionPeriod === 'W_S') {
+      lookbackLimit = Math.max(4, Math.ceil(lookbackDays / 3));
+    } else if (sessionPeriod === 'M_S') {
+      lookbackLimit = Math.max(3, Math.ceil(lookbackDays / 10));
+    } else if (sessionPeriod === 'Y') {
+      lookbackLimit = Math.max(2, Math.ceil(lookbackDays / 50));
+    }
+    
+    const activeKeys = keys.slice(Math.max(0, keys.length - lookbackLimit));
+    
+    return activeKeys.map(kStr => {
+      return calculateDayProfile(kStr, grouped[kStr], 40, sessionPeriodType, undefined, tpoStep, symbol);
     });
-  }, [candles, lookbackDays, tpoStep, symbol]);
+  }, [candles, lookbackDays, sessionPeriod, tpoStep, symbol]);
 
   // Compute composite global volume histogram across all loaded sessions for the left side
   const globalVolumeProfile = useMemo(() => {
@@ -511,27 +599,30 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           </button>
 
-          {/* TPO Tick Step Selector */}
+          {/* TPO Tick Step Dropdown */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#071326', padding: '2px 6px', borderRadius: '4px', border: '1px solid #1e3a8a' }}>
             <span style={{ fontSize: '10px', fontWeight: '800', color: '#94a3b8' }}>TPO</span>
-            {[2, 4, 5, 10, 20].map(stepVal => (
-              <button
-                key={stepVal}
-                onClick={() => setTpoStep(stepVal)}
-                style={{
-                  background: tpoStep === stepVal ? '#1d4ed8' : 'transparent',
-                  color: tpoStep === stepVal ? '#ffffff' : '#94a3b8',
-                  border: 'none',
-                  padding: '2px 6px',
-                  borderRadius: '3px',
-                  fontSize: '10px',
-                  fontWeight: '800',
-                  cursor: 'pointer'
-                }}
-              >
-                {stepVal}
-              </button>
-            ))}
+            <select
+              value={tpoStep}
+              onChange={(e) => setTpoStep(Number(e.target.value))}
+              style={{
+                background: '#0b192e',
+                color: '#60a5fa',
+                border: '1px solid #1e3a8a',
+                borderRadius: '3px',
+                padding: '2px 6px',
+                fontSize: '11px',
+                fontWeight: '800',
+                outline: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16, 18, 24, 30, 36, 40, 48].map((stepVal) => (
+                <option key={stepVal} value={stepVal} style={{ background: '#0b192e', color: '#ffffff' }}>
+                  {stepVal}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Zoom Buttons */}
