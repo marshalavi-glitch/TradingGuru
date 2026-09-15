@@ -18,8 +18,8 @@ export interface ManualTrade {
   stopLoss: number;
   finalAchievedPrice: number;
   finalStatus: 'TARGET 3 HIT' | 'TARGET 2 HIT' | 'TARGET 1 HIT' | 'LIVE ACTIVE' | 'STOP LOSS HIT';
-  ptsGained: number;
-  roiPct: number;
+  ptsGained?: number;
+  roiPct?: number;
   holdingTime: string;
   riskReward: string;
   notes: string;
@@ -181,8 +181,8 @@ const MANUAL_TRADES_DATA: ManualTrade[] = [
     stopLoss: 140.00,
     finalAchievedPrice: 302.00,
     finalStatus: 'TARGET 3 HIT',
-    roiPct: 137.0,
-    roiPctVal: 83.03,
+    ptsGained: 137.0,
+    roiPct: 5147,
     holdingTime: '3 Hours',
     riskReward: '1:5.4',
     notes: 'Pre-market bullish sentiment with high volume breakout on 5m candles.'
@@ -321,8 +321,8 @@ const MANUAL_TRADES_DATA: ManualTrade[] = [
     stopLoss: 130.00,
     finalAchievedPrice: 282.00,
     finalStatus: 'TARGET 3 HIT',
-    roiPct: 127.0,
-    roiPctVal: 81.94,
+    ptsGained: 127.0,
+    roiPct: 8954,
     holdingTime: '2.5 Hours',
     riskReward: '1:5.0',
     notes: 'Heavy institutional buying across Reliance and ICICI Bank.'
@@ -341,8 +341,8 @@ const MANUAL_TRADES_DATA: ManualTrade[] = [
     stopLoss: 248.00,
     finalAchievedPrice: 505.00,
     finalStatus: 'TARGET 3 HIT',
-    roiPct: 215.0,
-    roiPctVal: 74.14,
+    ptsGained: 215.0,
+    roiPct: 9496,
     holdingTime: '3 Hours',
     riskReward: '1:5.1',
     notes: 'Massive short-covering rally in Banking index following RBI update.'
@@ -361,8 +361,8 @@ const MANUAL_TRADES_DATA: ManualTrade[] = [
     stopLoss: 112.00,
     finalAchievedPrice: 208.00,
     finalStatus: 'TARGET 2 HIT',
-    roiPct: 73.0,
-    roiPctVal: 54.07,
+    ptsGained: 73.0,
+    roiPct: 10040,
     holdingTime: '2 Hours',
     riskReward: '1:3.2',
     notes: 'Rejection at intraday POC level leading to afternoon profit booking.'
@@ -381,8 +381,8 @@ const MANUAL_TRADES_DATA: ManualTrade[] = [
     stopLoss: 24130.00,
     finalAchievedPrice: 24445.00,
     finalStatus: 'TARGET 2 HIT',
-    roiPct: 225.0,
-    roiPctVal: 0.93,
+    ptsGained: 225.0,
+    roiPct: 10583,
     holdingTime: '1 Day',
     riskReward: '1:2.5',
     notes: 'Strong global cues driving gap-up continuation.'
@@ -401,8 +401,8 @@ const MANUAL_TRADES_DATA: ManualTrade[] = [
     stopLoss: 265.00,
     finalAchievedPrice: 542.00,
     finalStatus: 'TARGET 3 HIT',
-    roiPct: 232.0,
-    roiPctVal: 74.84,
+    ptsGained: 232.0,
+    roiPct: 11112,
     holdingTime: '3.5 Hours',
     riskReward: '1:5.1',
     notes: 'Sharp rejection at 51500 resistance with heavy call writing.'
@@ -421,8 +421,8 @@ const MANUAL_TRADES_DATA: ManualTrade[] = [
     stopLoss: 135.00,
     finalAchievedPrice: 238.00,
     finalStatus: 'TARGET 2 HIT',
-    roiPct: 78.0,
-    roiPctVal: 48.75,
+    ptsGained: 78.0,
+    roiPct: 11650,
     holdingTime: '2 Hours',
     riskReward: '1:3.1',
     notes: 'Midcap IT rally lifting overall market sentiment.'
@@ -441,8 +441,8 @@ const MANUAL_TRADES_DATA: ManualTrade[] = [
     stopLoss: 210.00,
     finalAchievedPrice: 428.00,
     finalStatus: 'TARGET 3 HIT',
-    roiPct: 183.0,
-    roiPctVal: 74.69,
+    ptsGained: 183.0,
+    roiPct: 12179,
     holdingTime: '2 Hours',
     riskReward: '1:5.2',
     notes: 'Afternoon liquidation wave in private banks.'
@@ -461,8 +461,8 @@ const MANUAL_TRADES_DATA: ManualTrade[] = [
     stopLoss: 118.00,
     finalAchievedPrice: 258.00,
     finalStatus: 'TARGET 3 HIT',
-    roiPct: 118.0,
-    roiPctVal: 84.29,
+    ptsGained: 118.0,
+    roiPct: 12702,
     holdingTime: '3 Hours',
     riskReward: '1:5.3',
     notes: 'Bullish engulfing opening 15m bar triggering strong trend.'
@@ -481,8 +481,8 @@ const MANUAL_TRADES_DATA: ManualTrade[] = [
     stopLoss: 50600.00,
     finalAchievedPrice: 51510.00,
     finalStatus: 'TARGET 2 HIT',
-    roiPct: 660.0,
-    roiPctVal: 1.30,
+    ptsGained: 660.0,
+    roiPct: 13244,
     holdingTime: '1 Day',
     riskReward: '1:2.6',
     notes: 'Bounce from daily VWAP support with strong institutional volume.'
@@ -501,8 +501,8 @@ const MANUAL_TRADES_DATA: ManualTrade[] = [
     stopLoss: 124.00,
     finalAchievedPrice: 278.00,
     finalStatus: 'TARGET 3 HIT',
-    roiPct: 128.0,
-    roiPctVal: 85.33,
+    ptsGained: 128.0,
+    roiPct: 13780,
     holdingTime: '2 Hours',
     riskReward: '1:4.9',
     notes: 'Late afternoon profit booking wave across index futures.'
@@ -521,8 +521,8 @@ const MANUAL_TRADES_DATA: ManualTrade[] = [
     stopLoss: 330.00,
     finalAchievedPrice: 535.00,
     finalStatus: 'TARGET 2 HIT',
-    roiPct: 155.0,
-    roiPctVal: 40.79,
+    ptsGained: 155.0,
+    roiPct: 14323,
     holdingTime: '2.5 Hours',
     riskReward: '1:3.0',
     notes: 'Breakout above previous week high with strong volume surge.'
@@ -541,8 +541,8 @@ const MANUAL_TRADES_DATA: ManualTrade[] = [
     stopLoss: 142.00,
     finalAchievedPrice: 312.00,
     finalStatus: 'TARGET 3 HIT',
-    roiPct: 142.0,
-    roiPctVal: 83.53,
+    ptsGained: 142.0,
+    roiPct: 14858,
     holdingTime: '3 Hours',
     riskReward: '1:5.0',
     notes: 'Relentless buying momentum in heavyweights pushing call option 83% up.'
@@ -561,8 +561,8 @@ const MANUAL_TRADES_DATA: ManualTrade[] = [
     stopLoss: 185.00,
     finalAchievedPrice: 335.00,
     finalStatus: 'TARGET 2 HIT',
-    roiPct: 115.0,
-    roiPctVal: 52.27,
+    ptsGained: 115.0,
+    roiPct: 15413,
     holdingTime: '2 Hours',
     riskReward: '1:3.1',
     notes: 'Inter-day consolidation breakdown at 3:00 PM.'
@@ -581,8 +581,8 @@ const MANUAL_TRADES_DATA: ManualTrade[] = [
     stopLoss: 24060.00,
     finalAchievedPrice: 24375.00,
     finalStatus: 'TARGET 2 HIT',
-    roiPct: 225.0,
-    roiPctVal: 0.93,
+    ptsGained: 225.0,
+    roiPct: 15934,
     holdingTime: '1 Day',
     riskReward: '1:2.4',
     notes: 'Morning momentum breakout with high buyer dominance.'
@@ -601,8 +601,8 @@ const MANUAL_TRADES_DATA: ManualTrade[] = [
     stopLoss: 125.00,
     finalAchievedPrice: 278.00,
     finalStatus: 'TARGET 3 HIT',
-    roiPct: 128.0,
-    roiPctVal: 85.33,
+    ptsGained: 128.0,
+    roiPct: 16459,
     holdingTime: '2.5 Hours',
     riskReward: '1:5.1',
     notes: 'Clean option delta expansion with high institutional participation.'
@@ -621,8 +621,8 @@ const MANUAL_TRADES_DATA: ManualTrade[] = [
     stopLoss: 350.00,
     finalAchievedPrice: 695.00,
     finalStatus: 'TARGET 3 HIT',
-    roiPct: 285.0,
-    roiPctVal: 69.51,
+    ptsGained: 285.0,
+    roiPct: 17010,
     holdingTime: '2 Hours',
     riskReward: '1:4.7',
     notes: 'Rebound from key weekly support level triggering 285 pts move.'
@@ -641,8 +641,8 @@ const MANUAL_TRADES_DATA: ManualTrade[] = [
     stopLoss: 135.00,
     finalAchievedPrice: 238.00,
     finalStatus: 'TARGET 2 HIT',
-    roiPct: 78.0,
-    roiPctVal: 48.75,
+    ptsGained: 78.0,
+    roiPct: 17549,
     holdingTime: '1.5 Hours',
     riskReward: '1:3.0',
     notes: 'Morning gap down continuation setup.'
@@ -882,37 +882,40 @@ export const ManualTradesContainer: React.FC = () => {
 
                   {/* Entry Trigger Price */}
                   <td style={{ padding: '12px', fontFamily: 'monospace', fontWeight: '800', color: '#ffffff', fontSize: '13px' }}>
-                    ₹{t.entryPrice.toFixed(2)}
+                    ₹{(t.entryPrice ?? 0).toFixed(2)}
                   </td>
 
                   {/* Target 1 */}
                   <td style={{ padding: '12px', fontFamily: 'monospace', color: '#60a5fa', fontWeight: '700' }}>
-                    ₹{t.target1.toFixed(2)}
+                    ₹{(t.target1 ?? 0).toFixed(2)}
                   </td>
 
                   {/* Target 2 */}
                   <td style={{ padding: '12px', fontFamily: 'monospace', color: '#10b981', fontWeight: '700' }}>
-                    ₹{t.target2.toFixed(2)}
+                    ₹{(t.target2 ?? 0).toFixed(2)}
                   </td>
 
                   {/* Target 3 */}
                   <td style={{ padding: '12px', fontFamily: 'monospace', color: '#facc15', fontWeight: '800' }}>
-                    ₹{t.target3.toFixed(2)}
+                    ₹{(t.target3 ?? 0).toFixed(2)}
                   </td>
 
                   {/* Stop Loss */}
                   <td style={{ padding: '12px', fontFamily: 'monospace', color: '#ef4444' }}>
-                    ₹{t.stopLoss.toFixed(2)}
+                    ₹{(t.stopLoss ?? 0).toFixed(2)}
                   </td>
 
                   {/* Achieved Price */}
                   <td style={{ padding: '12px', fontFamily: 'monospace', fontWeight: '900', color: isT3 || isT2 ? '#10b981' : isLive ? '#00f0ff' : '#ffffff', fontSize: '13px' }}>
-                    ₹{t.finalAchievedPrice.toFixed(2)}
+                    ₹{(t.finalAchievedPrice ?? 0).toFixed(2)}
                   </td>
 
                   {/* Points Gained */}
-                  <td style={{ padding: '12px', fontWeight: '900', color: t.ptsGained >= 0 ? '#10b981' : '#ef4444', fontFamily: 'monospace', fontSize: '13px' }}>
-                    {t.ptsGained >= 0 ? `+${t.ptsGained.toFixed(1)} pts` : `${t.ptsGained.toFixed(1)} pts`}
+                  <td style={{ padding: '12px', fontWeight: '900', color: (t.ptsGained ?? (t.finalAchievedPrice - t.entryPrice) ?? 0) >= 0 ? '#10b981' : '#ef4444', fontFamily: 'monospace', fontSize: '13px' }}>
+                    {(() => {
+                      const pts = t.ptsGained ?? ((t.finalAchievedPrice && t.entryPrice) ? t.finalAchievedPrice - t.entryPrice : 0);
+                      return pts >= 0 ? `+${pts.toFixed(1)} pts` : `${pts.toFixed(1)} pts`;
+                    })()}
                   </td>
 
                   {/* Final Status */}
