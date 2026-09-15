@@ -497,9 +497,12 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
     // ----------------------------------------------------
     // 1. RENDER SESSION PROFILE PANEL ON LEFT AXIS
     // ----------------------------------------------------
+    // ----------------------------------------------------
+    // 1. RENDER SESSION PROFILE PANEL ON LEFT AXIS
+    // ----------------------------------------------------
     if (showProfile && sessionProfileData.maxVol > 0) {
-      const pWidth = 80;
-      ctx.fillStyle = isLight ? '#f8fafc' : '#0b0f19';
+      const pWidth = 85;
+      ctx.fillStyle = isLight ? '#f8fafc' : '#06080e';
       ctx.fillRect(0, padding.top, pWidth, chartHeight);
       ctx.strokeStyle = isLight ? '#cbd5e1' : 'rgba(255, 255, 255, 0.1)';
       ctx.lineWidth = 1;
@@ -515,26 +518,53 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
         const y = getPriceY(price);
         if (y < padding.top || y > height - padding.bottom) return;
 
-        const barW = (vol / sessionProfileData.maxVol) * (pWidth - 26);
+        const barW = (vol / sessionProfileData.maxVol) * (pWidth - 36);
         const isPoc = price === sessionProfileData.pocPrice;
 
-        ctx.fillStyle = isPoc ? '#d97706' : 'rgba(100, 116, 139, 0.4)';
-        ctx.fillRect(2, y - 6, barW, 11);
+        ctx.fillStyle = isPoc ? '#eab308' : 'rgba(100, 116, 139, 0.35)';
+        ctx.fillRect(2, y - 5, barW, 10);
 
-        ctx.fillStyle = isPoc ? '#fef08a' : '#cbd5e1';
-        ctx.font = 'bold 9px "JetBrains Mono", monospace';
-        ctx.textAlign = 'left';
-        const label = formatVolumeShort(vol);
-        ctx.fillText(isPoc ? `${label} POC` : label, barW + 4, y + 3);
+        if (isPoc) {
+          // Gold POC Badge matching media_1789457266863.png
+          ctx.fillStyle = '#eab308';
+          ctx.fillRect(barW + 2, y - 6, 26, 12);
+          ctx.fillStyle = '#000000';
+          ctx.font = 'bold 8px "JetBrains Mono", monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('POC', barW + 15, y + 3);
+
+          ctx.fillStyle = '#eab308';
+          ctx.font = 'bold 9px "JetBrains Mono", monospace';
+          ctx.textAlign = 'left';
+          ctx.fillText(formatVolumeShort(vol), 2, y - 7);
+        } else {
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '8px "JetBrains Mono", monospace';
+          ctx.textAlign = 'left';
+          ctx.fillText(formatVolumeShort(vol), 4, y + 3);
+        }
       });
     }
 
     // ----------------------------------------------------
     // 2. RIGHT Y-AXIS PRICE SCALE & GRID LINES
     // ----------------------------------------------------
-    const step = tickSize || 2.5;
+    const step = tickSize || 1.0;
     const startTick = Math.floor(minPrice / step) * step;
     const endTick = Math.ceil(maxPrice / step) * step;
+
+    // Header at top right: PRICE : [F]
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = 'bold 10px "JetBrains Mono", monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('PRICE :', width - padding.right + 4, padding.top - 12);
+
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.strokeRect(width - 22, padding.top - 20, 16, 14);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 9px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('F', width - 14, padding.top - 9);
 
     ctx.font = '10px "JetBrains Mono", monospace';
     ctx.textAlign = 'left';
@@ -564,15 +594,15 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
     ctx.lineTo(width - padding.right, height - padding.bottom);
     ctx.stroke();
 
-    // Live Price Cyan Badge on Y-Axis
+    // Live Price Solid Cyan Badge filling full cell width matching media_1789457266863.png
     if (footprintCandles.length > 0) {
       const lastClose = footprintCandles[footprintCandles.length - 1].close;
       const lastY = getPriceY(lastClose);
       if (lastY >= padding.top && lastY <= height - padding.bottom) {
-        ctx.fillStyle = '#0284c7'; // Cyan/Blue Badge matching media_1789457008779.png
-        ctx.fillRect(width - padding.right + 1, lastY - 9, padding.right - 2, 18);
+        ctx.fillStyle = '#00a8e8'; // Solid Cyan Block
+        ctx.fillRect(width - padding.right + 1, lastY - 8, padding.right - 2, 16);
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 11px "JetBrains Mono", monospace';
+        ctx.font = 'bold 10px "JetBrains Mono", monospace';
         ctx.textAlign = 'left';
         ctx.fillText(lastClose.toFixed(1), width - padding.right + 6, lastY + 4);
       }
@@ -619,23 +649,7 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
       const candleHeight = Math.max(30, lowY - highY);
 
       // -----------------------------------------------------------
-      // COT HIGH TRAP BADGE ABOVE CANDLE HIGH
-      // -----------------------------------------------------------
-      if (showCot && (c.cotTopDelta !== 0)) {
-        const text = `COT: ${c.cotTopDelta > 0 ? '+' : ''}${c.cotTopDelta}${c.cotTopTrap ? ' | TRAP' : ''}`;
-        const badgeW = Math.max(68, text.length * 6);
-        const badgeY = highY - 26;
-
-        ctx.fillStyle = c.cotTopTrap ? '#d97706' : '#854d0e';
-        ctx.fillRect(colCenterX - badgeW / 2, badgeY, badgeW, 14);
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 9px "JetBrains Mono", monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(text, colCenterX, badgeY + 10);
-      }
-
-      // -----------------------------------------------------------
-      // BEARISH DIVERGENCE BADGE ABOVE HIGH
+      // BEARISH DIVERGENCE BADGE ABOVE HIGH (Topmost)
       // -----------------------------------------------------------
       if (c.isBearDivergence) {
         const text = `▼ BEAR DIV (${c.delta})`;
@@ -649,10 +663,26 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
       }
 
       // -----------------------------------------------------------
-      // CANDLE BODY & VERICAL SPINE
+      // COT HIGH TRAP BADGE ABOVE CANDLE HIGH (Gold Pill)
+      // -----------------------------------------------------------
+      if (showCot && (c.cotTopDelta !== 0)) {
+        const text = `COT: ${c.cotTopDelta > 0 ? '+' : ''}${c.cotTopDelta}${c.cotTopTrap ? ' | TRAP' : ''}`;
+        const badgeW = Math.max(72, text.length * 6.5);
+        const badgeY = highY - 24;
+
+        ctx.fillStyle = c.cotTopTrap ? '#eab308' : '#ca8a04'; // Bright Yellow/Gold matching screenshot
+        ctx.fillRect(colCenterX - badgeW / 2, badgeY, badgeW, 15);
+        ctx.fillStyle = '#000000'; // Black text on Gold badge
+        ctx.font = 'bold 9px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(text, colCenterX, badgeY + 11);
+      }
+
+      // -----------------------------------------------------------
+      // CANDLE BODY & VERTICAL SPINE
       // -----------------------------------------------------------
       const isBull = c.close >= c.open;
-      ctx.fillStyle = isBull ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)';
+      ctx.fillStyle = isBull ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)';
       ctx.fillRect(colStartX, highY, colWidth, candleHeight);
 
       ctx.strokeStyle = isBull ? '#10b981' : '#ef4444';
@@ -694,7 +724,7 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
 
           // LEFT COLUMN: Bid Volume (Red Fills)
           if (bin.isPoc) {
-            ctx.fillStyle = '#000000'; // TradingView Black POC Fill
+            ctx.fillStyle = '#000000'; // Black POC Fill
             ctx.fillRect(leftStartX, binY, leftWidth, rowHeight - 1);
             ctx.fillStyle = '#ffffff';
           } else if (sellVol > maxBinVol * 0.4) {
@@ -702,7 +732,7 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
             ctx.fillRect(leftStartX, binY, leftWidth, rowHeight - 1);
             ctx.fillStyle = '#ffffff';
           } else if (sellVol > 0) {
-            ctx.fillStyle = 'rgba(239, 68, 68, 0.25)'; // Light Red Tint
+            ctx.fillStyle = 'rgba(239, 68, 68, 0.2)'; // Light Red Tint
             ctx.fillRect(leftStartX, binY, leftWidth, rowHeight - 1);
             ctx.fillStyle = '#ffffff';
           } else {
@@ -715,7 +745,7 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
 
           // RIGHT COLUMN: Ask Volume (Green Fills)
           if (bin.isPoc) {
-            ctx.fillStyle = '#000000'; // TradingView Black POC Fill
+            ctx.fillStyle = '#000000'; // Black POC Fill
             ctx.fillRect(rightStartX, binY, rightWidth, rowHeight - 1);
             ctx.fillStyle = '#ffffff';
           } else if (buyVol > maxBinVol * 0.4) {
@@ -723,7 +753,7 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
             ctx.fillRect(rightStartX, binY, rightWidth, rowHeight - 1);
             ctx.fillStyle = '#ffffff';
           } else if (buyVol > 0) {
-            ctx.fillStyle = 'rgba(16, 185, 129, 0.25)'; // Light Green Tint
+            ctx.fillStyle = 'rgba(16, 185, 129, 0.2)'; // Light Green Tint
             ctx.fillRect(rightStartX, binY, rightWidth, rowHeight - 1);
             ctx.fillStyle = '#ffffff';
           } else {
@@ -734,37 +764,37 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
           ctx.textAlign = 'center';
           ctx.fillText(formatVolumeShort(buyVol), rightStartX + rightWidth / 2, binY + rowHeight / 2 + fontPx * 0.35);
 
-          // IMBALANCE BOX OUTLINE
+          // IMBALANCE BOX OUTLINE (Red rectangle outline around bid-ask row pair matching screenshot)
           if (bin.isImbalanceBuy || bin.isImbalanceSell) {
-            ctx.strokeStyle = '#ef4444'; // Red Border
+            ctx.strokeStyle = '#ef4444'; // Red Border Outline
             ctx.lineWidth = 2.0;
-            ctx.strokeRect(colStartX + 2, binY + 0.5, colWidth - 4, rowHeight - 1);
+            ctx.strokeRect(colStartX + 1, binY, colWidth - 2, rowHeight);
           }
         });
       }
 
       // -----------------------------------------------------------
-      // COT LOW TRAP BADGE BELOW CANDLE LOW
+      // COT LOW TRAP BADGE BELOW CANDLE LOW (Dark Green Pill)
       // -----------------------------------------------------------
       if (showCot && (c.cotBottomDelta !== 0)) {
-        const text = `COT: ${c.cotBottomDelta > 0 ? '+' : ''}${c.cotBottomDelta}${c.cotBottomTrap ? ' | TRAP' : ''}`;
-        const badgeW = Math.max(68, text.length * 6);
-        const badgeY = lowY + 12;
+        const text = `COT: ${c.cotBottomDelta > 0 ? '+' : ''}${c.cotBottomDelta}${c.cotBottomTrap ? ' | ▲ TRAP' : ''}`;
+        const badgeW = Math.max(72, text.length * 6.5);
+        const badgeY = lowY + 10;
 
-        ctx.fillStyle = c.cotBottomTrap ? '#15803d' : '#065f46';
-        ctx.fillRect(colCenterX - badgeW / 2, badgeY, badgeW, 14);
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = c.cotBottomTrap ? '#047857' : '#065f46'; // Dark Green Badge matching screenshot
+        ctx.fillRect(colCenterX - badgeW / 2, badgeY, badgeW, 15);
+        ctx.fillStyle = c.cotBottomTrap ? '#fef08a' : '#10b981';
         ctx.font = 'bold 9px "JetBrains Mono", monospace';
         ctx.textAlign = 'center';
-        ctx.fillText(text, colCenterX, badgeY + 10);
+        ctx.fillText(text, colCenterX, badgeY + 11);
       }
 
       // -----------------------------------------------------------
-      // BULLISH DIVERGENCE BADGE BELOW LOW
+      // BULLISH DIVERGENCE BADGE BELOW LOW (Bright Green Pill)
       // -----------------------------------------------------------
       if (c.isBullDivergence) {
         const text = `▲ BULL DIV (+${c.delta})`;
-        const badgeY = lowY + 30;
+        const badgeY = lowY + 28;
         ctx.fillStyle = '#10b981';
         ctx.fillRect(colCenterX - 48, badgeY, 96, 16);
         ctx.fillStyle = '#ffffff';
