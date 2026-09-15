@@ -30,13 +30,14 @@ import { TrumpMoodContainer } from './components/TrumpMoodContainer';
 import { FootprintChartContainer } from './components/FootprintChartContainer';
 import { CasPredictionContainer } from './components/CasPredictionContainer';
 import { VsaContainer } from './components/VsaContainer';
+import { HighBetaTradesContainer } from './components/HighBetaTradesContainer';
 
 export type TabType = 
   | 'chart' | 'bhaichara' | 'dada_thoughts' | 'trump_mood' | 'fifteen_min' 
   | 'scanner' | 'options' | 'signals' | 'doji' | 'doji_novol' | 'volume' 
   | 'opening_bias' | 'hourly_updates' | 'backtest_results' | 'confluences' 
   | 'early_picks' | 'nr7_breakout' | 'order_flow' | 'order_flow_footprint' 
-  | 'cvd_adv' | 'heatmap' | 'market_profile' | 'pro_market_profile' | 'footprint_chart' | 'cas_prediction' | 'vsa';
+  | 'cvd_adv' | 'heatmap' | 'market_profile' | 'pro_market_profile' | 'footprint_chart' | 'cas_prediction' | 'vsa' | 'high_beta';
 
 interface TabItem {
   id: TabType;
@@ -47,6 +48,7 @@ interface TabItem {
 
 const TABS_LIST: TabItem[] = [
   { id: 'bhaichara', label: '🤝 Bhaichara Work', color: '#60a5fa' },
+  { id: 'high_beta', label: '🚀 High Beta Trades', color: '#f97316' },
   { id: 'dada_thoughts', label: '🧠 Dada Thoughts', color: '#eab308' },
   { id: 'trump_mood', label: '🎺 Trump Mood', color: '#f87171' },
   { id: 'cas_prediction', label: '🎯 CAS Prediction', color: '#00f0ff' },
@@ -310,7 +312,11 @@ function App() {
 
       {/* Main Workspace */}
       <div style={{ flex: '1', display: 'flex', flexDirection: 'column', minHeight: '0' }}>
-        {activeTab === 'vsa' ? (
+        {activeTab === 'high_beta' ? (
+          <TabErrorBoundary tabName="High Beta Trades">
+            <HighBetaTradesContainer />
+          </TabErrorBoundary>
+        ) : activeTab === 'vsa' ? (
           <TabErrorBoundary tabName="Volume Spread (VSA)">
             <VsaContainer
               onSymbolSelect={setSymbol}
