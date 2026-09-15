@@ -980,6 +980,76 @@
       "sweepType": null,
       "sweepHigh": null,
       "sweepLow": null
+    },
+    {
+      "symbol": "NSE:NIFTY",
+      "levelKey": "level10",
+      "levelValue": 23179.845040333345,
+      "price": 23293.45,
+      "touchTime": "01:19 pm",
+      "date": "9/15/2026",
+      "optionPremium": 42.3,
+      "isFno": true,
+      "signalType": "touch",
+      "sweepType": null,
+      "sweepHigh": null,
+      "sweepLow": null
+    },
+    {
+      "symbol": "NSE:RELIANCE",
+      "levelKey": "level9",
+      "levelValue": 1244.95472,
+      "price": 1251.1,
+      "touchTime": "01:24 pm",
+      "date": "9/15/2026",
+      "optionPremium": 21.75,
+      "isFno": true,
+      "signalType": "touch",
+      "sweepType": null,
+      "sweepHigh": null,
+      "sweepLow": null
+    },
+    {
+      "symbol": "NSE:AXISBANK",
+      "levelKey": "level9",
+      "levelValue": 1225.9624,
+      "price": 1230.7,
+      "touchTime": "01:24 pm",
+      "date": "9/15/2026",
+      "optionPremium": 14.4,
+      "isFno": true,
+      "signalType": "touch",
+      "sweepType": null,
+      "sweepHigh": null,
+      "sweepLow": null
+    },
+    {
+      "symbol": "NSE:ITC",
+      "levelKey": "level6",
+      "levelValue": 259.12583333333333,
+      "price": 260.4,
+      "touchTime": "01:39 pm",
+      "date": "9/15/2026",
+      "optionPremium": 3.1,
+      "isFno": true,
+      "signalType": "touch",
+      "sweepType": null,
+      "sweepHigh": null,
+      "sweepLow": null
+    },
+    {
+      "symbol": "NSE:RELIANCE",
+      "levelKey": "level10",
+      "levelValue": 1243.0482841181163,
+      "price": 1248.7,
+      "touchTime": "01:59 pm",
+      "date": "9/15/2026",
+      "optionPremium": 21,
+      "isFno": true,
+      "signalType": "touch",
+      "sweepType": null,
+      "sweepHigh": null,
+      "sweepLow": null
     }
   ]
 }
