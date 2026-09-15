@@ -26,20 +26,47 @@ export interface ManualTrade {
   notes?: string;
 }
 
-const STORAGE_KEY = 'tradingguru_manual_trades';
+const STORAGE_KEY = 'tradingguru_manual_trades_v2';
+
+// DEFAULT MANUAL TRADE DATASET FOR 2026-09-15
+const DEFAULT_MANUAL_TRADES: ManualTrade[] = [
+  {
+    id: 'MT-20260915-01',
+    date: '2026-09-15 09:16',
+    symbol: 'NSE:NIFTY26SEP23550PE',
+    displayName: 'NIFTY 23550 PE',
+    tradeType: 'PUT BUY',
+    setupName: 'Hero or Zero',
+    entryPrice: 75.00,
+    target1: 92.00,
+    target2: 130.00,
+    target3: 200.00,
+    stopLoss: 40.00,
+    finalAchievedPrice: 200.00,
+    finalStatus: 'TARGET 3 HIT',
+    ptsGained: 125.0,
+    roiPct: 166.67,
+    holdingTime: 'Intraday',
+    riskReward: '1:3.57',
+    notes: 'Hero or Zero setup triggered at 09:16 AM. Targets: 92, 130, 200+. Target 3 Achieved!'
+  }
+];
 
 export const ManualTradesContainer: React.FC = () => {
-  // Load trades from localStorage (default to empty list)
+  // Load trades from localStorage (default to DEFAULT_MANUAL_TRADES)
   const [trades, setTrades] = useState<ManualTrade[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
       }
     } catch (e) {
       console.error('Failed to parse saved manual trades:', e);
     }
-    return [];
+    return DEFAULT_MANUAL_TRADES;
   });
 
   // Save to localStorage whenever trades change
@@ -77,7 +104,7 @@ export const ManualTradesContainer: React.FC = () => {
     displayName: '',
     symbol: '',
     tradeType: 'CALL BUY',
-    setupName: 'Opening Range Breakout',
+    setupName: 'Hero or Zero',
     entryPrice: '',
     stopLoss: '',
     target1: '',
@@ -95,7 +122,7 @@ export const ManualTradesContainer: React.FC = () => {
       displayName: '',
       symbol: '',
       tradeType: 'CALL BUY',
-      setupName: 'Opening Range Breakout',
+      setupName: 'Hero or Zero',
       entryPrice: '',
       stopLoss: '',
       target1: '',
@@ -120,7 +147,7 @@ export const ManualTradesContainer: React.FC = () => {
       displayName: t.displayName || '',
       symbol: t.symbol || '',
       tradeType: t.tradeType || 'CALL BUY',
-      setupName: t.setupName || 'Opening Range Breakout',
+      setupName: t.setupName || 'Hero or Zero',
       entryPrice: t.entryPrice !== undefined ? String(t.entryPrice) : '',
       stopLoss: t.stopLoss !== undefined ? String(t.stopLoss) : '',
       target1: t.target1 !== undefined ? String(t.target1) : '',
@@ -141,8 +168,14 @@ export const ManualTradesContainer: React.FC = () => {
   };
 
   const handleClearAll = () => {
-    if (window.confirm('Are you sure you want to clear ALL manual trades? This cannot be undone.')) {
+    if (window.confirm('Are you sure you want to clear ALL manual trades?')) {
       setTrades([]);
+    }
+  };
+
+  const handleResetDefault = () => {
+    if (window.confirm('Reset manual trades list to default trade?')) {
+      setTrades(DEFAULT_MANUAL_TRADES);
     }
   };
 
@@ -157,9 +190,6 @@ export const ManualTradesContainer: React.FC = () => {
     const achieved = parseFloat(formData.finalAchievedPrice) || entry;
 
     let pts = achieved - entry;
-    if (formData.tradeType === 'PUT BUY' || formData.tradeType === 'FUT SHORT') {
-      pts = achieved - entry;
-    }
 
     const roi = entry > 0 ? (pts / entry) * 100 : 0;
     const formattedSymbol = formData.symbol.trim() || `NSE:${formData.displayName.replace(/\s+/g, '')}`;
@@ -223,7 +253,7 @@ export const ManualTradesContainer: React.FC = () => {
     const target3Hits = trades.filter(t => t.finalStatus === 'TARGET 3 HIT').length;
     const liveActive = trades.filter(t => t.finalStatus === 'LIVE ACTIVE').length;
     const denominator = total - liveActive;
-    const winRate = denominator > 0 ? Math.round((targetHits / denominator) * 1000) / 10 : 0;
+    const winRate = denominator > 0 ? Math.round((targetHits / denominator) * 1000) / 10 : (targetHits > 0 ? 100 : 0);
     
     const totalPts = trades.reduce((acc, t) => {
       const pts = t.ptsGained ?? (t.finalAchievedPrice && t.entryPrice ? t.finalAchievedPrice - t.entryPrice : 0);
@@ -305,6 +335,27 @@ export const ManualTradesContainer: React.FC = () => {
           >
             <Plus size={16} />
             <span>+ Add New Trade</span>
+          </button>
+
+          <button
+            onClick={handleResetDefault}
+            title="Reset to default trade"
+            style={{
+              background: 'rgba(59, 130, 246, 0.15)',
+              color: '#60a5fa',
+              border: '1px solid rgba(59, 130, 246, 0.3)',
+              padding: '8px 12px',
+              borderRadius: '8px',
+              fontWeight: '700',
+              fontSize: '12px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            <RotateCcw size={14} />
+            <span>Reset</span>
           </button>
 
           {trades.length > 0 && (
@@ -463,7 +514,7 @@ export const ManualTradesContainer: React.FC = () => {
                     required
                     value={formData.displayName}
                     onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
-                    placeholder="e.g. NIFTY 23400 CE"
+                    placeholder="e.g. NIFTY 23550 PE"
                     style={{
                       width: '100%',
                       background: '#0b0f19',
@@ -512,7 +563,7 @@ export const ManualTradesContainer: React.FC = () => {
                     type="text"
                     value={formData.setupName}
                     onChange={(e) => setFormData({ ...formData, setupName: e.target.value })}
-                    placeholder="e.g. Opening Range Breakout"
+                    placeholder="e.g. Hero or Zero"
                     style={{
                       width: '100%',
                       background: '#0b0f19',
@@ -569,7 +620,7 @@ export const ManualTradesContainer: React.FC = () => {
                     required
                     value={formData.entryPrice}
                     onChange={(e) => setFormData({ ...formData, entryPrice: e.target.value })}
-                    placeholder="145.00"
+                    placeholder="75.00"
                     style={{
                       width: '100%',
                       background: '#0b0f19',
@@ -594,7 +645,7 @@ export const ManualTradesContainer: React.FC = () => {
                     required
                     value={formData.stopLoss}
                     onChange={(e) => setFormData({ ...formData, stopLoss: e.target.value })}
-                    placeholder="125.00"
+                    placeholder="40.00"
                     style={{
                       width: '100%',
                       background: '#0b0f19',
@@ -619,7 +670,7 @@ export const ManualTradesContainer: React.FC = () => {
                     required
                     value={formData.target1}
                     onChange={(e) => setFormData({ ...formData, target1: e.target.value })}
-                    placeholder="175.00"
+                    placeholder="92.00"
                     style={{
                       width: '100%',
                       background: '#0b0f19',
@@ -643,7 +694,7 @@ export const ManualTradesContainer: React.FC = () => {
                     step="0.05"
                     value={formData.target2}
                     onChange={(e) => setFormData({ ...formData, target2: e.target.value })}
-                    placeholder="210.00"
+                    placeholder="130.00"
                     style={{
                       width: '100%',
                       background: '#0b0f19',
@@ -667,7 +718,7 @@ export const ManualTradesContainer: React.FC = () => {
                     step="0.05"
                     value={formData.target3}
                     onChange={(e) => setFormData({ ...formData, target3: e.target.value })}
-                    placeholder="250.00"
+                    placeholder="200.00"
                     style={{
                       width: '100%',
                       background: '#0b0f19',
@@ -691,7 +742,7 @@ export const ManualTradesContainer: React.FC = () => {
                     step="0.05"
                     value={formData.finalAchievedPrice}
                     onChange={(e) => setFormData({ ...formData, finalAchievedPrice: e.target.value })}
-                    placeholder="185.00"
+                    placeholder="200.00"
                     style={{
                       width: '100%',
                       background: '#0b0f19',
@@ -742,7 +793,7 @@ export const ManualTradesContainer: React.FC = () => {
                     type="text"
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    placeholder="e.g. Bullish momentum above VWAP with high buyer volume"
+                    placeholder="e.g. Hero or Zero setup posted at 09:16 AM"
                     style={{
                       width: '100%',
                       background: '#0b0f19',
