@@ -40,6 +40,12 @@ interface FootprintCandleData {
   bins: FootprintBin[];
   topWickVol: number;
   bottomWickVol: number;
+  cotTopDelta: number;
+  cotTopTrap: boolean;
+  cotBottomDelta: number;
+  cotBottomTrap: boolean;
+  isBullDivergence: boolean;
+  isBearDivergence: boolean;
 }
 
 export interface FootprintSettings {
@@ -103,11 +109,12 @@ const DEFAULT_SETTINGS: FootprintSettings = {
 
 function formatVolumeShort(vol: number): string {
   if (!vol || vol === 0) return '0';
-  if (vol >= 1000000) {
-    return `${(vol / 1000000).toFixed(2)} M`;
+  const abs = Math.abs(vol);
+  if (abs >= 1000000) {
+    return `${(vol / 1000000).toFixed(2)}M`;
   }
-  if (vol >= 1000) {
-    return `${(vol / 1000).toFixed(2)} K`;
+  if (abs >= 1000) {
+    return `${(vol / 1000).toFixed(1)}k`;
   }
   return vol.toFixed(0);
 }
@@ -127,7 +134,18 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
   const [searchInput, setSearchInput] = useState<string>('NSE:NIFTY');
   const [timeframe, setTimeframe] = useState<string>('5');
   const [unitMode, setUnitMode] = useState<'point' | 'ticks'>('point');
-  const [theme, setTheme] = useState<'light' | 'dark'>('light'); // TradingView Light theme default
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark'); // Dark theme default matching media_1789457008779.png
+  
+  // Advanced Toolbar States matching media_1789457008779.png
+  const [displayMode, setDisplayMode] = useState<'Candle + Orders (L/R)' | 'Split Grid'>('Candle + Orders (L/R)');
+  const [imbalanceRatio, setImbalanceRatio] = useState<number>(3.0);
+  const [showPocLine, setShowPocLine] = useState<boolean>(true);
+  const [showCot, setShowCot] = useState<boolean>(true);
+  const [showCrCaps, setShowCrCaps] = useState<boolean>(true);
+  const [showProfile, setShowProfile] = useState<boolean>(true);
+  const [tickSize, setTickSize] = useState<number>(2.5);
+  const [yZoom, setYZoom] = useState<number>(22);
+  const [xZoom, setXZoom] = useState<number>(140);
   
   // Footprint Settings State
   const [settings, setSettings] = useState<FootprintSettings>(DEFAULT_SETTINGS);
@@ -293,6 +311,32 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
 
       cumDelta += candleDelta;
 
+      // COT High / Low Trap Calculations
+      const top3Bins = rawBins.slice(0, 3);
+      const topBuyVol = top3Bins.reduce((acc, b) => acc + b.buyVol, 0);
+      const topSellVol = top3Bins.reduce((acc, b) => acc + b.sellVol, 0);
+      const cotTopDelta = topBuyVol - topSellVol;
+      const cotTopTrap = cotTopDelta > 300 && !isBull;
+
+      const bottom3Bins = rawBins.slice(-3);
+      const bottomBuyVol = bottom3Bins.reduce((acc, b) => acc + b.buyVol, 0);
+      const bottomSellVol = bottom3Bins.reduce((acc, b) => acc + b.sellVol, 0);
+      const cotBottomDelta = bottomBuyVol - bottomSellVol;
+      const cotBottomTrap = cotBottomDelta < -300 && isBull;
+
+      // Bullish / Bearish Divergence Flags against previous candle
+      let isBullDivergence = false;
+      let isBearDivergence = false;
+      if (idx > 0) {
+        const prevC = candles[idx - 1];
+        if (c.high > prevC.high && candleDelta < -1000) {
+          isBearDivergence = true;
+        }
+        if (c.low < prevC.low && candleDelta > 1000) {
+          isBullDivergence = true;
+        }
+      }
+
       const d = new Date(c.time * 1000);
       const timeLabel = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 
@@ -310,10 +354,38 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
         sessionCvd: cumDelta,
         bins,
         topWickVol: Math.round(c.volume * 0.05),
-        bottomWickVol: Math.round(c.volume * 0.04)
+        bottomWickVol: Math.round(c.volume * 0.04),
+        cotTopDelta,
+        cotTopTrap,
+        cotBottomDelta,
+        cotBottomTrap,
+        isBullDivergence,
+        isBearDivergence
       };
     });
   }, [candles, settings]);
+
+  // Session Profile volume distribution by price level
+  const sessionProfileData = useMemo(() => {
+    if (!footprintCandles || footprintCandles.length === 0) return { profileMap: {}, pocPrice: 0, maxVol: 1 };
+    
+    const profileMap: Record<number, number> = {};
+    let maxVol = 0;
+    let pocPrice = 0;
+
+    footprintCandles.forEach((fc) => {
+      fc.bins.forEach((b) => {
+        const p = Math.round(b.price * 10) / 10;
+        profileMap[p] = (profileMap[p] || 0) + b.totalVolume;
+        if (profileMap[p] > maxVol) {
+          maxVol = profileMap[p];
+          pocPrice = p;
+        }
+      });
+    });
+
+    return { profileMap, pocPrice, maxVol };
+  }, [footprintCandles]);
 
   // Resize canvas container listener
   useEffect(() => {
@@ -356,7 +428,7 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
     setPanOffset({ x: 0, y: 0 });
   };
 
-  // Canvas Renderer respecting Footprint Settings
+  // Canvas Renderer respecting Footprint Settings & Advanced Toolbar Controls
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || footprintCandles.length === 0 || dimensions.width === 0) return;
@@ -375,16 +447,23 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
     ctx.scale(dpr, dpr);
 
     const isLight = theme === 'light';
-    const bgColor = isLight ? '#ffffff' : '#181c27';
-    const gridLineColor = isLight ? '#e2e8f0' : 'rgba(255, 255, 255, 0.05)';
+    const bgColor = isLight ? '#ffffff' : '#080c14';
+    const gridLineColor = isLight ? '#e2e8f0' : 'rgba(255, 255, 255, 0.04)';
     const textColor = isLight ? '#334155' : '#94a3b8';
 
     ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, width, height);
 
+    // Subtle Watermark Text in Chart Background
+    ctx.fillStyle = isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.03)';
+    ctx.font = '900 64px "Outfit", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText((activeSymbolInfo.displayName || symbol).toUpperCase(), width / 2, height / 2);
+
     // Reserved bottom space for summary table
     const tableHeight = settings.showSummaryInfo ? 150 : 30;
-    const padding = { top: 40, bottom: tableHeight + 35, left: 15, right: 85 };
+    const profilePanelWidth = showProfile ? 85 : 0;
+    const padding = { top: 40, bottom: tableHeight + 35, left: profilePanelWidth + 15, right: 85 };
     const chartWidth = width - padding.left - padding.right;
     const chartHeight = height - padding.top - padding.bottom;
 
@@ -415,8 +494,45 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
       return padding.top + ((maxPrice - price) / priceRange) * chartHeight;
     };
 
-    // Right Y-Axis Price Scale & Grid Lines
-    const step = 10;
+    // ----------------------------------------------------
+    // 1. RENDER SESSION PROFILE PANEL ON LEFT AXIS
+    // ----------------------------------------------------
+    if (showProfile && sessionProfileData.maxVol > 0) {
+      const pWidth = 80;
+      ctx.fillStyle = isLight ? '#f8fafc' : '#0b0f19';
+      ctx.fillRect(0, padding.top, pWidth, chartHeight);
+      ctx.strokeStyle = isLight ? '#cbd5e1' : 'rgba(255, 255, 255, 0.1)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(0, padding.top, pWidth, chartHeight);
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = 'bold 9px "JetBrains Mono", monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText('SESSION PROFILE', 4, padding.top - 8);
+
+      Object.entries(sessionProfileData.profileMap).forEach(([pStr, vol]) => {
+        const price = Number(pStr);
+        const y = getPriceY(price);
+        if (y < padding.top || y > height - padding.bottom) return;
+
+        const barW = (vol / sessionProfileData.maxVol) * (pWidth - 26);
+        const isPoc = price === sessionProfileData.pocPrice;
+
+        ctx.fillStyle = isPoc ? '#d97706' : 'rgba(100, 116, 139, 0.4)';
+        ctx.fillRect(2, y - 6, barW, 11);
+
+        ctx.fillStyle = isPoc ? '#fef08a' : '#cbd5e1';
+        ctx.font = 'bold 9px "JetBrains Mono", monospace';
+        ctx.textAlign = 'left';
+        const label = formatVolumeShort(vol);
+        ctx.fillText(isPoc ? `${label} POC` : label, barW + 4, y + 3);
+      });
+    }
+
+    // ----------------------------------------------------
+    // 2. RIGHT Y-AXIS PRICE SCALE & GRID LINES
+    // ----------------------------------------------------
+    const step = tickSize || 2.5;
     const startTick = Math.floor(minPrice / step) * step;
     const endTick = Math.ceil(maxPrice / step) * step;
 
@@ -437,22 +553,54 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
         ctx.setLineDash([]);
 
         ctx.fillStyle = textColor;
-        ctx.fillText(priceTick.toFixed(2), width - padding.right + 8, y + 3.5);
+        ctx.fillText(priceTick.toFixed(1), width - padding.right + 8, y + 3.5);
       }
     }
 
-    // Right Y-Axis Border
+    // Right Y-Axis Border Line
     ctx.strokeStyle = isLight ? '#cbd5e1' : 'rgba(255, 255, 255, 0.1)';
     ctx.beginPath();
     ctx.moveTo(width - padding.right, padding.top);
     ctx.lineTo(width - padding.right, height - padding.bottom);
     ctx.stroke();
 
-    // Render Candlestick Footprint Columns (Matching exact visual design from media_1789363533493.png)
+    // Live Price Cyan Badge on Y-Axis
+    if (footprintCandles.length > 0) {
+      const lastClose = footprintCandles[footprintCandles.length - 1].close;
+      const lastY = getPriceY(lastClose);
+      if (lastY >= padding.top && lastY <= height - padding.bottom) {
+        ctx.fillStyle = '#0284c7'; // Cyan/Blue Badge matching media_1789457008779.png
+        ctx.fillRect(width - padding.right + 1, lastY - 9, padding.right - 2, 18);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 11px "JetBrains Mono", monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText(lastClose.toFixed(1), width - padding.right + 6, lastY + 4);
+      }
+    }
+
+    // ----------------------------------------------------
+    // 3. POC LINE ACROSS CHART CANVAS
+    // ----------------------------------------------------
+    if (showPocLine && sessionProfileData.pocPrice > 0) {
+      const pocY = getPriceY(sessionProfileData.pocPrice);
+      if (pocY >= padding.top && pocY <= height - padding.bottom) {
+        ctx.strokeStyle = '#f59e0b'; // Gold POC Line
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(padding.left, pocY);
+        ctx.lineTo(width - padding.right, pocY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    }
+
+    // ----------------------------------------------------
+    // 4. CANDLESTICK FOOTPRINT COLUMNS & BADGES
+    // ----------------------------------------------------
     const candleCount = footprintCandles.length;
-    const colGap = Math.max(16, 22 * zoomLevel);
-    const availWidth = chartWidth - (candleCount - 1) * colGap;
-    const colWidth = Math.max(125, (availWidth / candleCount) * zoomLevel);
+    const colGap = Math.max(16, (xZoom / 6) * zoomLevel);
+    const colWidth = Math.max(110, xZoom * zoomLevel);
 
     ctx.save();
     ctx.beginPath();
@@ -468,54 +616,58 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
 
       const highY = getPriceY(c.high);
       const lowY = getPriceY(c.low);
-      const candleHeight = Math.max(50, lowY - highY);
-
-      const rangePts = Math.round(Math.abs(c.high - c.low) * 10) / 10;
+      const candleHeight = Math.max(30, lowY - highY);
 
       // -----------------------------------------------------------
-      // 1. TOP HEADER CAPS (Matching media_1789363533493.png)
+      // COT HIGH TRAP BADGE ABOVE CANDLE HIGH
       // -----------------------------------------------------------
-      // Green Cap Top Bar
-      ctx.fillStyle = '#388e3c';
-      ctx.fillRect(colStartX - 2, highY - 32, colWidth + 4, 4);
+      if (showCot && (c.cotTopDelta !== 0)) {
+        const text = `COT: ${c.cotTopDelta > 0 ? '+' : ''}${c.cotTopDelta}${c.cotTopTrap ? ' | TRAP' : ''}`;
+        const badgeW = Math.max(68, text.length * 6);
+        const badgeY = highY - 26;
 
-      // Top Red Pill 1: CR Range (e.g. CR 323)
-      ctx.fillStyle = '#d32f2f';
-      ctx.fillRect(colStartX + 4, highY - 27, colWidth - 8, 14);
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 11px "JetBrains Mono", monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText(`CR ${Math.round(rangePts * 10)}`, colCenterX, highY - 16);
-
-      // Top Red Pill 2: Volume / Delta metric (e.g. 14)
-      ctx.fillStyle = '#ff5252';
-      ctx.fillRect(colStartX + 12, highY - 11, colWidth - 24, 11);
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 10px "JetBrains Mono", monospace';
-      ctx.fillText(`${c.topWickVol || 14}`, colCenterX, highY - 2);
+        ctx.fillStyle = c.cotTopTrap ? '#d97706' : '#854d0e';
+        ctx.fillRect(colCenterX - badgeW / 2, badgeY, badgeW, 14);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 9px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(text, colCenterX, badgeY + 10);
+      }
 
       // -----------------------------------------------------------
-      // 2. MAIN WHITE FOOTPRINT CONTAINER WITH DARK FRAME & CENTER SPINE
+      // BEARISH DIVERGENCE BADGE ABOVE HIGH
       // -----------------------------------------------------------
-      // White Rectangle Body Container
-      ctx.fillStyle = '#ffffff';
+      if (c.isBearDivergence) {
+        const text = `▼ BEAR DIV (${c.delta})`;
+        const badgeY = highY - 44;
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(colCenterX - 48, badgeY, 96, 16);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 10px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(text, colCenterX, badgeY + 12);
+      }
+
+      // -----------------------------------------------------------
+      // CANDLE BODY & VERICAL SPINE
+      // -----------------------------------------------------------
+      const isBull = c.close >= c.open;
+      ctx.fillStyle = isBull ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)';
       ctx.fillRect(colStartX, highY, colWidth, candleHeight);
 
-      // Outer Dark Border Frame
-      ctx.strokeStyle = '#121212';
-      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = isBull ? '#10b981' : '#ef4444';
+      ctx.lineWidth = 1.5;
       ctx.strokeRect(colStartX, highY, colWidth, candleHeight);
 
-      // Center Vertical Spine (Solid Black Divider Line)
-      ctx.strokeStyle = '#000000';
-      ctx.lineWidth = 3.0;
+      ctx.strokeStyle = isBull ? '#10b981' : '#ef4444';
+      ctx.lineWidth = 2.0;
       ctx.beginPath();
       ctx.moveTo(colCenterX, highY);
       ctx.lineTo(colCenterX, lowY);
       ctx.stroke();
 
       // -----------------------------------------------------------
-      // 3. RENDER TWIN BID / ASK COLUMNS INSIDE CANDLE
+      // TWIN BID / ASK ORDER COLUMNS INSIDE CANDLE
       // -----------------------------------------------------------
       const bins = c.bins;
       if (bins.length > 0) {
@@ -540,107 +692,96 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
           const sellVol = bin.sellVolume;
           const buyVol = bin.buyVolume;
 
-          // LEFT COLUMN: Bid Volume (Selling Aggression - Red Fills)
+          // LEFT COLUMN: Bid Volume (Red Fills)
           if (bin.isPoc) {
             ctx.fillStyle = '#000000'; // TradingView Black POC Fill
             ctx.fillRect(leftStartX, binY, leftWidth, rowHeight - 1);
             ctx.fillStyle = '#ffffff';
           } else if (sellVol > maxBinVol * 0.4) {
-            ctx.fillStyle = '#e23636'; // Solid Red
+            ctx.fillStyle = '#ef4444'; // Solid Red
             ctx.fillRect(leftStartX, binY, leftWidth, rowHeight - 1);
             ctx.fillStyle = '#ffffff';
           } else if (sellVol > 0) {
-            ctx.fillStyle = '#fde8e8'; // Light Red Tint
+            ctx.fillStyle = 'rgba(239, 68, 68, 0.25)'; // Light Red Tint
             ctx.fillRect(leftStartX, binY, leftWidth, rowHeight - 1);
-            ctx.fillStyle = '#1e293b';
+            ctx.fillStyle = '#ffffff';
           } else {
-            ctx.fillStyle = '#1e293b';
+            ctx.fillStyle = '#94a3b8';
           }
 
           ctx.font = `bold ${fontPx}px "JetBrains Mono", monospace`;
           ctx.textAlign = 'center';
           ctx.fillText(formatVolumeShort(sellVol), leftStartX + leftWidth / 2, binY + rowHeight / 2 + fontPx * 0.35);
 
-          // RIGHT COLUMN: Ask Volume (Buying Aggression - Green Fills)
+          // RIGHT COLUMN: Ask Volume (Green Fills)
           if (bin.isPoc) {
             ctx.fillStyle = '#000000'; // TradingView Black POC Fill
             ctx.fillRect(rightStartX, binY, rightWidth, rowHeight - 1);
             ctx.fillStyle = '#ffffff';
           } else if (buyVol > maxBinVol * 0.4) {
-            ctx.fillStyle = '#089981'; // Solid Green
+            ctx.fillStyle = '#10b981'; // Solid Green
             ctx.fillRect(rightStartX, binY, rightWidth, rowHeight - 1);
             ctx.fillStyle = '#ffffff';
           } else if (buyVol > 0) {
-            ctx.fillStyle = '#e6f4f1'; // Light Green Tint
+            ctx.fillStyle = 'rgba(16, 185, 129, 0.25)'; // Light Green Tint
             ctx.fillRect(rightStartX, binY, rightWidth, rowHeight - 1);
-            ctx.fillStyle = '#1e293b';
+            ctx.fillStyle = '#ffffff';
           } else {
-            ctx.fillStyle = '#1e293b';
+            ctx.fillStyle = '#94a3b8';
           }
 
           ctx.font = `bold ${fontPx}px "JetBrains Mono", monospace`;
           ctx.textAlign = 'center';
           ctx.fillText(formatVolumeShort(buyVol), rightStartX + rightWidth / 2, binY + rowHeight / 2 + fontPx * 0.35);
 
-          // -----------------------------------------------------------
-          // 4. UNIFIED ROW-WIDE IMBALANCE RED OUTLINE BOX (Matching media_1789363861826.png)
-          // -----------------------------------------------------------
-          if (settings.imbalanceHighlighting && (bin.isImbalanceBuy || bin.isImbalanceSell)) {
-            ctx.strokeStyle = '#d32f2f'; // Bold Red Border
-            ctx.lineWidth = 3.0;
+          // IMBALANCE BOX OUTLINE
+          if (bin.isImbalanceBuy || bin.isImbalanceSell) {
+            ctx.strokeStyle = '#ef4444'; // Red Border
+            ctx.lineWidth = 2.0;
             ctx.strokeRect(colStartX + 2, binY + 0.5, colWidth - 4, rowHeight - 1);
-          }
-
-          // -----------------------------------------------------------
-          // 5. BLUE SIDE TABS FOR POC LEVEL (Matching media_1789363533493.png)
-          // -----------------------------------------------------------
-          if (bin.isPoc) {
-            // Outer Left Blue Tab
-            ctx.fillStyle = '#1976d2';
-            ctx.fillRect(colStartX - 7, binY + 1, 7, Math.max(10, rowHeight - 2));
-            // Outer Right Blue Tab
-            ctx.fillRect(colStartX + colWidth, binY + 1, 7, Math.max(10, rowHeight - 2));
           }
         });
       }
 
       // -----------------------------------------------------------
-      // 6. BOTTOM SUMMARY PILLS (Matching media_1789363533493.png)
+      // COT LOW TRAP BADGE BELOW CANDLE LOW
       // -----------------------------------------------------------
-      // Bottom Green Line Cap
-      ctx.fillStyle = '#388e3c';
-      ctx.fillRect(colStartX - 2, lowY + 2, colWidth + 4, 4);
+      if (showCot && (c.cotBottomDelta !== 0)) {
+        const text = `COT: ${c.cotBottomDelta > 0 ? '+' : ''}${c.cotBottomDelta}${c.cotBottomTrap ? ' | TRAP' : ''}`;
+        const badgeW = Math.max(68, text.length * 6);
+        const badgeY = lowY + 12;
 
-      // Bottom Pill 1: Volume Pill
-      ctx.fillStyle = '#81c784';
-      ctx.fillRect(colStartX + 8, lowY + 8, colWidth - 16, 14);
-      ctx.fillStyle = '#000000';
-      ctx.font = 'bold 10px "JetBrains Mono", monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText(`${c.bottomWickVol || 343}`, colCenterX, lowY + 19);
+        ctx.fillStyle = c.cotBottomTrap ? '#15803d' : '#065f46';
+        ctx.fillRect(colCenterX - badgeW / 2, badgeY, badgeW, 14);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 9px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(text, colCenterX, badgeY + 10);
+      }
 
-      // Bottom Pill 2: CR Summary Pill (e.g. CR 367)
-      ctx.fillStyle = '#a5d6a7';
-      ctx.fillRect(colStartX + 4, lowY + 24, colWidth - 8, 14);
-      ctx.fillStyle = '#000000';
-      ctx.font = 'bold 10px "JetBrains Mono", monospace';
-      ctx.fillText(`CR ${Math.round(c.sessionCvd / 20) || 367}`, colCenterX, lowY + 35);
+      // -----------------------------------------------------------
+      // BULLISH DIVERGENCE BADGE BELOW LOW
+      // -----------------------------------------------------------
+      if (c.isBullDivergence) {
+        const text = `▲ BULL DIV (+${c.delta})`;
+        const badgeY = lowY + 30;
+        ctx.fillStyle = '#10b981';
+        ctx.fillRect(colCenterX - 48, badgeY, 96, 16);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 10px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(text, colCenterX, badgeY + 12);
+      }
     });
-
-    // Orderflow Levels Badge
-    ctx.fillStyle = '#f59e0b';
-    ctx.font = 'bold 10px "JetBrains Mono", monospace';
-    ctx.textAlign = 'right';
-    ctx.fillText('ORDERFLOW LEVELS - MARSHALL', width - padding.right - 12, height - padding.bottom - 16);
 
     ctx.restore();
 
     // ----------------------------------------------------
-    // RENDER CANDLE SUMMARY STATISTICS TABLE (IF ENABLED)
+    // RENDER CANDLE SUMMARY STATISTICS TABLE AT BOTTOM
     // ----------------------------------------------------
     if (settings.showSummaryInfo) {
       const tableStartY = height - padding.bottom + 10;
-      const rowHeight = 22;
+      const rowH = 22;
 
       const labels = [
         { key: 'volume', title: 'Volume' },
@@ -654,7 +795,7 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
       ctx.font = 'bold 10px "JetBrains Mono", monospace';
       ctx.textAlign = 'left';
       labels.forEach((lbl, rIdx) => {
-        const y = tableStartY + rIdx * rowHeight + 14;
+        const y = tableStartY + rIdx * rowH + 14;
         ctx.fillStyle = isLight ? '#475569' : '#94a3b8';
         ctx.fillText(lbl.title, width - padding.right + 8, y);
       });
@@ -670,48 +811,48 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
         ctx.fillStyle = isLight ? '#334155' : '#cbd5e1';
         ctx.font = 'bold 10px "JetBrains Mono", monospace';
         ctx.textAlign = 'center';
-        ctx.fillText(c.timeLabel, colCenterX, tableStartY + 5 * rowHeight + 16);
+        ctx.fillText(c.timeLabel, colCenterX, tableStartY + 5 * rowH + 16);
 
         // Row 1: Volume
-        const r1Y = tableStartY + 0 * rowHeight;
+        const r1Y = tableStartY + 0 * rowH;
         ctx.fillStyle = isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.04)';
-        ctx.fillRect(colStartX, r1Y, colWidth, rowHeight - 2);
+        ctx.fillRect(colStartX, r1Y, colWidth, rowH - 2);
         ctx.fillStyle = isLight ? '#0f172a' : '#ffffff';
         ctx.font = 'bold 10px "JetBrains Mono", monospace';
         ctx.fillText(formatVolumeShort(c.totalVolume), colCenterX, r1Y + 14);
 
         // Row 2: Delta
-        const r2Y = tableStartY + 1 * rowHeight;
+        const r2Y = tableStartY + 1 * rowH;
         const isPosDelta = c.delta >= 0;
-        ctx.fillStyle = isPosDelta ? '#089981' : '#e23636';
-        ctx.fillRect(colStartX, r2Y, colWidth, rowHeight - 2);
+        ctx.fillStyle = isPosDelta ? '#10b981' : '#ef4444';
+        ctx.fillRect(colStartX, r2Y, colWidth, rowH - 2);
         ctx.fillStyle = '#ffffff';
         ctx.fillText(formatDelta(c.delta), colCenterX, r2Y + 14);
 
         // Row 3: Min Delta
-        const r3Y = tableStartY + 2 * rowHeight;
-        ctx.fillStyle = '#e23636';
-        ctx.fillRect(colStartX, r3Y, colWidth, rowHeight - 2);
+        const r3Y = tableStartY + 2 * rowH;
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(colStartX, r3Y, colWidth, rowH - 2);
         ctx.fillStyle = '#ffffff';
         ctx.fillText(formatDelta(c.minDelta), colCenterX, r3Y + 14);
 
         // Row 4: Max Delta
-        const r4Y = tableStartY + 3 * rowHeight;
-        ctx.fillStyle = '#089981';
-        ctx.fillRect(colStartX, r4Y, colWidth, rowHeight - 2);
+        const r4Y = tableStartY + 3 * rowH;
+        ctx.fillStyle = '#10b981';
+        ctx.fillRect(colStartX, r4Y, colWidth, rowH - 2);
         ctx.fillStyle = '#ffffff';
         ctx.fillText(formatDelta(c.maxDelta), colCenterX, r4Y + 14);
 
         // Row 5: Session CVD
-        const r5Y = tableStartY + 4 * rowHeight;
+        const r5Y = tableStartY + 4 * rowH;
         ctx.fillStyle = isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.04)';
-        ctx.fillRect(colStartX, r5Y, colWidth, rowHeight - 2);
+        ctx.fillRect(colStartX, r5Y, colWidth, rowH - 2);
         ctx.fillStyle = isLight ? '#0f172a' : '#ffffff';
         ctx.fillText(formatVolumeShort(c.sessionCvd), colCenterX, r5Y + 14);
       });
     }
 
-  }, [footprintCandles, dimensions, theme, zoomLevel, panOffset, settings]);
+  }, [footprintCandles, sessionProfileData, dimensions, theme, zoomLevel, panOffset, settings, showPocLine, showCot, showCrCaps, showProfile, tickSize, xZoom, yZoom]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -732,239 +873,329 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
   return (
     <div className="glass-panel animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%', padding: '16px', boxSizing: 'border-box' }}>
       
-      {/* Controls Toolbar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', background: 'rgba(15, 23, 42, 0.6)', padding: '12px 16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+      {/* Dual Institutional Controls Toolbar (Matching media_1789457008779.png) */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: '#0b0f19', padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
         
-        {/* Preset Symbols & Search */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: '13px', fontWeight: '900', color: 'white' }}>
-              {activeSymbolInfo.displayName || symbol} · {timeframe}m · Volume footprint [{settings.display}]
-            </span>
-          </div>
-
-          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-            {watchSymbols.map((item) => (
+        {/* ROW 1: Main Control Toolbar */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+          
+          {/* Left Group: Chart Tab, Symbol, Timeframe, Display Mode */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            {/* Chart Switch Tab */}
+            {onSwitchToChart && (
               <button
-                key={item.symbol}
-                onClick={() => handleSelectSymbol(item.symbol)}
+                onClick={onSwitchToChart}
                 style={{
-                  background: symbol === item.symbol ? 'rgba(59, 130, 246, 0.25)' : 'rgba(255, 255, 255, 0.04)',
-                  border: symbol === item.symbol ? '1px solid #3b82f6' : '1px solid transparent',
-                  color: symbol === item.symbol ? '#60a5fa' : 'var(--text-secondary)',
-                  padding: '4px 8px',
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  color: '#ffffff',
+                  padding: '5px 10px',
                   borderRadius: '4px',
-                  fontSize: '11px',
+                  fontSize: '12px',
                   fontWeight: '700',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+              >
+                Chart
+              </button>
+            )}
+
+            {/* Symbol Badge / Selector */}
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <select
+                value={symbol}
+                onChange={(e) => handleSelectSymbol(e.target.value)}
+                style={{
+                  background: '#161b26',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  color: '#ffffff',
+                  padding: '5px 10px',
+                  borderRadius: '4px',
+                  fontSize: '12px',
+                  fontWeight: '800',
                   cursor: 'pointer'
                 }}
               >
-                {item.name}
-              </button>
-            ))}
-          </div>
-
-          <form onSubmit={handleSearchSubmit} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <Search size={14} style={{ position: 'absolute', left: '10px', color: 'var(--text-secondary)' }} />
-              <input
-                type="text"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Search symbol..."
-                style={{
-                  background: 'rgba(0, 0, 0, 0.4)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '6px',
-                  padding: '6px 12px 6px 30px',
-                  color: 'white',
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  width: '140px'
-                }}
-              />
+                {watchSymbols.map((item) => (
+                  <option key={item.symbol} value={item.symbol}>
+                    {item.name} ({tickSize} pts)
+                  </option>
+                ))}
+              </select>
             </div>
-            <button
-              type="submit"
+
+            {/* Timeframe Dropdown */}
+            <select
+              value={timeframe}
+              onChange={(e) => setTimeframe(e.target.value)}
               style={{
-                background: '#3b82f6',
-                color: 'white',
-                border: 'none',
-                padding: '6px 12px',
-                borderRadius: '6px',
+                background: '#161b26',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                color: '#ffffff',
+                padding: '5px 8px',
+                borderRadius: '4px',
                 fontSize: '12px',
-                fontWeight: '600',
+                fontWeight: '700',
                 cursor: 'pointer'
               }}
             >
-              Go
+              <option value="1">1 Minute</option>
+              <option value="3">3 Minute</option>
+              <option value="5">5 Minute</option>
+              <option value="15">15 Minute</option>
+              <option value="30">30 Minute</option>
+            </select>
+
+            {/* Display Mode Dropdown */}
+            <select
+              value={displayMode}
+              onChange={(e) => setDisplayMode(e.target.value as any)}
+              style={{
+                background: '#161b26',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                color: '#ffffff',
+                padding: '5px 8px',
+                borderRadius: '4px',
+                fontSize: '12px',
+                fontWeight: '700',
+                cursor: 'pointer'
+              }}
+            >
+              <option value="Candle + Orders (L/R)">Candle + Orders (L/R)</option>
+              <option value="Split Grid">Split Grid</option>
+            </select>
+
+            {/* Imbalance Ratio Selector */}
+            <select
+              value={imbalanceRatio}
+              onChange={(e) => setImbalanceRatio(parseFloat(e.target.value))}
+              style={{
+                background: '#161b26',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                color: '#38bdf8',
+                padding: '5px 8px',
+                borderRadius: '4px',
+                fontSize: '12px',
+                fontWeight: '700',
+                cursor: 'pointer'
+              }}
+            >
+              <option value={1.5}>Imbalance: 1.5x</option>
+              <option value={2.0}>Imbalance: 2.0x</option>
+              <option value={3.0}>Imbalance: 3.0x</option>
+              <option value={4.0}>Imbalance: 4.0x</option>
+            </select>
+          </div>
+
+          {/* Right Group: Feature Toggles, Tick Size & Actions */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            {/* Checkbox Toggles */}
+            <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#cbd5e1', cursor: 'pointer', fontWeight: '700' }}>
+              <input
+                type="checkbox"
+                checked={showPocLine}
+                onChange={(e) => setShowPocLine(e.target.checked)}
+                style={{ accentColor: '#eab308' }}
+              />
+              POC Line
+            </label>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#cbd5e1', cursor: 'pointer', fontWeight: '700' }}>
+              <input
+                type="checkbox"
+                checked={showCot}
+                onChange={(e) => setShowCot(e.target.checked)}
+                style={{ accentColor: '#10b981' }}
+              />
+              COT
+            </label>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#cbd5e1', cursor: 'pointer', fontWeight: '700' }}>
+              <input
+                type="checkbox"
+                checked={showCrCaps}
+                onChange={(e) => setShowCrCaps(e.target.checked)}
+                style={{ accentColor: '#3b82f6' }}
+              />
+              CR Caps
+            </label>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#cbd5e1', cursor: 'pointer', fontWeight: '700' }}>
+              <input
+                type="checkbox"
+                checked={showProfile}
+                onChange={(e) => setShowProfile(e.target.checked)}
+                style={{ accentColor: '#a855f7' }}
+              />
+              Profile
+            </label>
+
+            {/* Tick Size Dropdown */}
+            <select
+              value={tickSize}
+              onChange={(e) => setTickSize(parseFloat(e.target.value))}
+              style={{
+                background: '#161b26',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                color: '#ffffff',
+                padding: '5px 8px',
+                borderRadius: '4px',
+                fontSize: '12px',
+                fontWeight: '700',
+                cursor: 'pointer'
+              }}
+            >
+              <option value={1.0}>Tick: 1.0 pt</option>
+              <option value={2.5}>Tick: 2.5 pts</option>
+              <option value={5.0}>Tick: 5.0 pts</option>
+              <option value={10.0}>Tick: 10.0 pts</option>
+            </select>
+
+            {/* Settings Button */}
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              style={{
+                background: 'rgba(59, 130, 246, 0.2)',
+                border: '1px solid #3b82f6',
+                color: '#60a5fa',
+                padding: '5px 8px',
+                borderRadius: '4px',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+              title="Footprint Settings"
+            >
+              <Settings size={13} />
             </button>
-          </form>
+
+            {/* Refresh Button */}
+            <button
+              onClick={() => fetchCandles(symbol, timeframe)}
+              style={{
+                background: 'rgba(255, 255, 255, 0.06)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                color: '#ffffff',
+                padding: '5px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center'
+              }}
+              title="Refresh Data"
+            >
+              <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
+            </button>
+          </div>
         </div>
 
-        {/* Controls (Timeframe, Point/Ticks, Theme, Settings, Refresh) */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+        {/* ROW 2: Sub-header Status Bar & Canvas Navigation Controls */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', borderTop: '1px dashed rgba(255, 255, 255, 0.1)', paddingTop: '6px' }}>
           
-          {/* Unit Toggle: Point / Ticks */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(0,0,0,0.3)', padding: '2px', borderRadius: '6px' }}>
+          {/* Status Indicators */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {/* Live WS Pill */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.4)', padding: '2px 8px', borderRadius: '4px' }}>
+              <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981' }} className="animate-pulse" />
+              <span style={{ fontSize: '10px', color: '#10b981', fontWeight: '900', letterSpacing: '0.5px' }}>LIVE WS</span>
+            </div>
+
+            {/* Symbol & LTP */}
+            <div style={{ fontSize: '12px', color: '#ffffff', fontWeight: '800' }}>
+              FUT ₹{(candles.length > 0 ? candles[candles.length - 1].close : 23377.0).toLocaleString('en-IN', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+            </div>
+
+            {/* Cumulative Delta Badge */}
+            <div style={{ fontSize: '11px', fontWeight: '800', color: (footprintCandles.length > 0 && footprintCandles[footprintCandles.length - 1].sessionCvd >= 0) ? '#10b981' : '#ef4444', background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '4px' }}>
+              CVD {footprintCandles.length > 0 ? formatDelta(footprintCandles[footprintCandles.length - 1].sessionCvd) : '-3,722'}
+            </div>
+          </div>
+
+          {/* Canvas Navigation & Quick Zoom Controls */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {/* Recenter Button */}
             <button
-              onClick={() => setUnitMode(unitMode === 'point' ? 'ticks' : 'point')}
+              onClick={() => setPanOffset({ x: 0, y: 0 })}
               style={{
-                background: '#3b82f6',
-                color: 'white',
-                border: 'none',
-                padding: '4px 10px',
+                background: '#161b26',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                color: '#cbd5e1',
+                padding: '2px 8px',
                 borderRadius: '4px',
                 fontSize: '11px',
-                fontWeight: '800',
+                fontWeight: '700',
                 cursor: 'pointer'
               }}
             >
-              {unitMode}
+              Recenter
             </button>
-          </div>
 
-          {/* Timeframe */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(0,0,0,0.3)', padding: '2px', borderRadius: '6px' }}>
-            {['1', '3', '5', '15', '30'].map((tf) => (
-              <button
-                key={tf}
-                onClick={() => setTimeframe(tf)}
-                style={{
-                  background: timeframe === tf ? '#3b82f6' : 'transparent',
-                  color: timeframe === tf ? 'white' : 'var(--text-secondary)',
-                  border: 'none',
-                  padding: '4px 8px',
-                  borderRadius: '4px',
-                  fontSize: '11px',
-                  fontWeight: '700',
-                  cursor: 'pointer'
-                }}
-              >
-                {tf}m
-              </button>
-            ))}
-          </div>
-
-          {/* Zoom In & Zoom Out Controls */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(0,0,0,0.3)', padding: '2px', borderRadius: '6px' }}>
-            <button
-              onClick={() => setZoomLevel((prev) => Math.min(5.0, prev * 1.25))}
-              style={{
-                background: 'rgba(255, 255, 255, 0.08)',
-                color: '#ffffff',
-                border: 'none',
-                padding: '4px 8px',
-                borderRadius: '4px',
-                fontSize: '11px',
-                fontWeight: '800',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '2px'
-              }}
-              title="Zoom In (+)"
-            >
-              <ZoomIn size={13} />
-              <span>+</span>
-            </button>
-            <button
-              onClick={() => setZoomLevel((prev) => Math.max(0.3, prev * 0.75))}
-              style={{
-                background: 'rgba(255, 255, 255, 0.08)',
-                color: '#ffffff',
-                border: 'none',
-                padding: '4px 8px',
-                borderRadius: '4px',
-                fontSize: '11px',
-                fontWeight: '800',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '2px'
-              }}
-              title="Zoom Out (-)"
-            >
-              <ZoomOut size={13} />
-              <span>-</span>
-            </button>
+            {/* Fit Screen Button */}
             <button
               onClick={() => {
                 setZoomLevel(1.0);
                 setPanOffset({ x: 0, y: 0 });
               }}
               style={{
-                background: 'rgba(0, 240, 255, 0.15)',
-                color: '#00f0ff',
-                border: '1px solid rgba(0, 240, 255, 0.3)',
-                padding: '4px 8px',
+                background: '#161b26',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                color: '#cbd5e1',
+                padding: '2px 8px',
                 borderRadius: '4px',
                 fontSize: '11px',
                 fontWeight: '800',
                 cursor: 'pointer'
               }}
+              title="Fit to Screen"
+            >
+              F
+            </button>
+
+            {/* Y Zoom Control */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: '#161b26', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '4px', padding: '1px 4px' }}>
+              <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: '700', paddingRight: '2px' }}>Y:</span>
+              <button onClick={() => setYZoom((prev) => Math.max(10, prev - 2))} style={{ background: 'none', border: 'none', color: '#ffffff', cursor: 'pointer', fontSize: '11px', fontWeight: '900', padding: '0 4px' }}>-</button>
+              <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: '800' }}>{yZoom}</span>
+              <button onClick={() => setYZoom((prev) => Math.min(50, prev + 2))} style={{ background: 'none', border: 'none', color: '#ffffff', cursor: 'pointer', fontSize: '11px', fontWeight: '900', padding: '0 4px' }}>+</button>
+            </div>
+
+            {/* X Zoom Control */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: '#161b26', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '4px', padding: '1px 4px' }}>
+              <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: '700', paddingRight: '2px' }}>X:</span>
+              <button onClick={() => setXZoom((prev) => Math.max(60, prev - 10))} style={{ background: 'none', border: 'none', color: '#ffffff', cursor: 'pointer', fontSize: '11px', fontWeight: '900', padding: '0 4px' }}>-</button>
+              <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: '800' }}>{xZoom}</span>
+              <button onClick={() => setXZoom((prev) => Math.min(300, prev + 10))} style={{ background: 'none', border: 'none', color: '#ffffff', cursor: 'pointer', fontSize: '11px', fontWeight: '900', padding: '0 4px' }}>+</button>
+            </div>
+
+            {/* Reset Button */}
+            <button
+              onClick={() => {
+                setZoomLevel(1.0);
+                setPanOffset({ x: 0, y: 0 });
+                setXZoom(140);
+                setYZoom(22);
+              }}
+              style={{
+                background: 'rgba(59, 130, 246, 0.2)',
+                border: '1px solid rgba(59, 130, 246, 0.4)',
+                color: '#60a5fa',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                fontSize: '12px',
+                fontWeight: '800',
+                cursor: 'pointer'
+              }}
               title="Reset Zoom & Pan"
             >
-              100%
+              ↺
             </button>
           </div>
-
-          {/* Theme Toggle */}
-          <button
-            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-            style={{
-              background: 'rgba(255, 255, 255, 0.08)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              color: 'white',
-              padding: '4px 10px',
-              borderRadius: '6px',
-              fontSize: '11px',
-              fontWeight: '700',
-              cursor: 'pointer'
-            }}
-          >
-            🎨 {theme === 'light' ? 'TradingView White' : 'Dark Slate'}
-          </button>
-
-          {/* Settings Modal Toggle Gear Button */}
-          <button
-            onClick={() => setIsSettingsOpen(true)}
-            style={{
-              background: 'rgba(59, 130, 246, 0.2)',
-              border: '1px solid #3b82f6',
-              color: '#60a5fa',
-              padding: '4px 10px',
-              borderRadius: '6px',
-              fontSize: '11px',
-              fontWeight: '700',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}
-            title="Footprint Settings"
-          >
-            <Settings size={14} />
-            <span>Settings</span>
-          </button>
-
-          {/* Refresh */}
-          <button
-            onClick={() => fetchCandles(symbol, timeframe)}
-            style={{
-              background: 'rgba(255, 255, 255, 0.06)',
-              border: 'none',
-              color: 'var(--text-primary)',
-              padding: '6px',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center'
-            }}
-            title="Refresh Chart"
-          >
-            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-          </button>
         </div>
       </div>
 
