@@ -226,17 +226,19 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               style={{ 
                 display: 'flex', 
                 alignItems: 'center', 
-                gap: '5px', 
-                background: 'rgba(16, 185, 129, 0.12)', 
-                border: '1px solid rgba(16, 185, 129, 0.35)', 
+                gap: '6px', 
+                background: 'rgba(16, 185, 129, 0.15)', 
+                border: '1px solid rgba(16, 185, 129, 0.4)', 
                 padding: '4px 10px', 
-                borderRadius: '6px' 
+                borderRadius: '6px',
+                boxShadow: '0 0 10px rgba(16, 185, 129, 0.2)'
               }} 
-              title="Current Active Users Connected to Dashboard"
+              title="Current Active Users Connected to Dashboard Right Now"
             >
+              <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981' }} className="animate-pulse" />
               <Users size={13} color="#10b981" />
-              <span style={{ fontSize: '11px', fontWeight: '800', color: '#10b981' }}>
-                {onlineUsers} Online
+              <span style={{ fontSize: '11px', fontWeight: '800', color: '#10b981', letterSpacing: '0.2px' }}>
+                {onlineUsers} {onlineUsers === 1 ? 'User Active' : 'Users Active Right Now'}
               </span>
             </div>
 
