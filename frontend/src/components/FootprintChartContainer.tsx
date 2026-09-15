@@ -211,7 +211,7 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
 
     let cumDelta = 0;
 
-    return candles.map((c) => {
+    return candles.map((c, idx) => {
       const isBull = c.close >= c.open;
       const range = Math.max(0.5, c.high - c.low);
       

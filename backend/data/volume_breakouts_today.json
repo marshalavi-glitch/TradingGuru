@@ -2,6 +2,30 @@
   "date": "9/15/2026",
   "results": [
     {
+      "symbol": "NIFTY260915C23050",
+      "time": "13:00:00",
+      "currentVolume": 40755,
+      "prevMaxVolume": 40235,
+      "ratio": 1,
+      "close": 259.8,
+      "direction": "DOWN",
+      "type": "option",
+      "optionType": "CE",
+      "strike": 23050
+    },
+    {
+      "symbol": "NIFTY260915C23150",
+      "time": "12:55:00",
+      "currentVolume": 372320,
+      "prevMaxVolume": 358930,
+      "ratio": 1,
+      "close": 169.35,
+      "direction": "DOWN",
+      "type": "option",
+      "optionType": "CE",
+      "strike": 23150
+    },
+    {
       "symbol": "AXISBANK1!",
       "time": "12:45:00",
       "currentVolume": 900000,
@@ -690,5 +714,5 @@
       "type": "stock"
     }
   ],
-  "lastScanTime": "2026-09-15T07:28:10.434Z"
+  "lastScanTime": "2026-09-15T07:34:10.450Z"
 }
