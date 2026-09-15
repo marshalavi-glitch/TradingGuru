@@ -207,14 +207,29 @@ app.get('/api/candles', async (req, res) => {
     const symbol = req.query.symbol || 'NSE:NIFTY';
     const timeframe = req.query.timeframe || '5';
     const limit = parseInt(req.query.limit || '500', 10);
+    const force = req.query.force === 'true';
     
     let candles = [];
-    if (scannerCache && scannerCache.candlesCache && scannerCache.candlesCache[timeframe] && scannerCache.candlesCache[timeframe][symbol]) {
-      candles = scannerCache.candlesCache[timeframe][symbol];
+    const isFresh = (list) => {
+      if (!list || list.length === 0) return false;
+      const last = list[list.length - 1];
+      const nowSec = Math.floor(Date.now() / 1000);
+      return (nowSec - last.time) < 180;
+    };
+
+    if (!force && scannerCache && scannerCache.candlesCache && scannerCache.candlesCache[timeframe] && scannerCache.candlesCache[timeframe][symbol]) {
+      const cached = scannerCache.candlesCache[timeframe][symbol];
+      if (isFresh(cached) && cached.length >= limit) {
+        candles = cached;
+      }
     }
     
-    if (!candles || candles.length === 0 || candles.length < limit) {
+    if (!candles || candles.length === 0 || candles.length < limit || force) {
       candles = await fetchCandlesForSymbol(tvBridge, symbol, timeframe, limit);
+      if (candles && candles.length > 0 && scannerCache && scannerCache.candlesCache) {
+        if (!scannerCache.candlesCache[timeframe]) scannerCache.candlesCache[timeframe] = {};
+        scannerCache.candlesCache[timeframe][symbol] = candles;
+      }
     }
     
     if (candles && candles.length > limit) {

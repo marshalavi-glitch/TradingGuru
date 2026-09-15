@@ -1,5 +1,16 @@
 {
-  "date": "9/14/2026",
-  "results": [],
-  "lastScanTime": "2026-09-14T10:51:05.105Z"
+  "date": "9/15/2026",
+  "results": [
+    {
+      "symbol": "ICICIBANK",
+      "time": "09:20:00",
+      "currentVolume": 454146,
+      "prevMaxVolume": 448919,
+      "ratio": 1,
+      "close": 1369.4,
+      "direction": "DOWN",
+      "type": "stock"
+    }
+  ],
+  "lastScanTime": "2026-09-15T03:55:09.940Z"
 }

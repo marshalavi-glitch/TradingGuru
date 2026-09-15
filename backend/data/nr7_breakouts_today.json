@@ -1,38 +1,5 @@
 {
-  "date": "9/14/2026",
-  "results": [
-    {
-      "symbol": "NSE:63MOONS",
-      "close": 908.9,
-      "open": 880,
-      "prevHigh": 912,
-      "prevLow": 871,
-      "prevRange": 41,
-      "todayRange": 83.70000000000005,
-      "changePts": 22.549999999999955,
-      "changePct": 2.5441417047441703,
-      "volume": 1336886,
-      "sma20": 813.1975,
-      "sma40": 810.0162499999999,
-      "sma60": 768.2983333333334,
-      "time": "23:07:43"
-    },
-    {
-      "symbol": "BSE:63MOONS",
-      "close": 908,
-      "open": 873.2,
-      "prevHigh": 911,
-      "prevLow": 872.9,
-      "prevRange": 38.10000000000002,
-      "todayRange": 82.10000000000002,
-      "changePts": 22,
-      "changePct": 2.4830699774266365,
-      "volume": 108210,
-      "sma20": 812.3650000000001,
-      "sma40": 809.26375,
-      "sma60": 767.4633333333334,
-      "time": "23:07:41"
-    }
-  ],
-  "lastScanTime": "2026-09-14T17:38:46.465Z"
+  "date": "9/15/2026",
+  "results": [],
+  "lastScanTime": "2026-09-15T03:55:46.722Z"
 }
