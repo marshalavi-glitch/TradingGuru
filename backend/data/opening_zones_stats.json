@@ -18,11 +18,11 @@
     },
     "z3_r4_r5": {
       "name": "Open Between R4 and R5",
-      "recommendation": "Gap Resistance zone. Rejections here favor Puts (PE).",
-      "count": 30,
-      "greenPct": 50,
-      "avgRange": 203.6,
-      "avgMove": 19.7
+      "recommendation": "Rotational Balanced Day (48.4% green close rate). Range consolidation likely. Fade extremes (Sell Calls at VAH, Puts at VAL).",
+      "count": 31,
+      "greenPct": 48.4,
+      "avgRange": 212.3,
+      "avgMove": 4.3
     },
     "z4_r3_r4": {
       "name": "Open Between R3 and R4",
@@ -116,11 +116,11 @@
     },
     "z4_r3_r4": {
       "name": "Open Between R3 and R4",
-      "recommendation": "Bearish Gap Acceptance zone. Pullbacks to R3 favor Puts (PE).",
-      "count": 66,
-      "greenPct": 47,
-      "avgRange": 583.7,
-      "avgMove": 1
+      "recommendation": "Rotational Balanced Day (46.3% green close rate). Range consolidation likely. Fade extremes (Sell Calls at VAH, Puts at VAL).",
+      "count": 67,
+      "greenPct": 46.3,
+      "avgRange": 592.9,
+      "avgMove": -15.3
     },
     "z5_r2_r3": {
       "name": "Open Between R2 and R3",
