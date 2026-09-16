@@ -2,6 +2,16 @@
   "date": "9/16/2026",
   "results": [
     {
+      "symbol": "BAJFINANCE",
+      "time": "12:20:00",
+      "currentVolume": 183013,
+      "prevMaxVolume": 164048,
+      "ratio": 1.1,
+      "close": 1014.8,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
       "symbol": "ICICIBANK",
       "time": "11:25:00",
       "currentVolume": 312118,
@@ -384,5 +394,5 @@
       "type": "futures"
     }
   ],
-  "lastScanTime": "2026-09-16T07:03:29.339Z"
+  "lastScanTime": "2026-09-16T07:06:29.349Z"
 }

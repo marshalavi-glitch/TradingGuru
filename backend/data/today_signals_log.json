@@ -1498,6 +1498,20 @@
       "sweepType": null,
       "sweepHigh": null,
       "sweepLow": null
+    },
+    {
+      "symbol": "NSE:ITC",
+      "levelKey": "level1",
+      "levelValue": 264.2,
+      "price": 263.5,
+      "touchTime": "12:36 pm",
+      "date": "9/16/2026",
+      "optionPremium": 3.8,
+      "isFno": true,
+      "signalType": "touch",
+      "sweepType": null,
+      "sweepHigh": null,
+      "sweepLow": null
     }
   ]
 }
