@@ -27,10 +27,31 @@ export interface ManualTrade {
   notes?: string;
 }
 
-const STORAGE_KEY = 'tradingguru_manual_trades_v5';
+const STORAGE_KEY = 'tradingguru_manual_trades_v6';
 
 // DEFAULT MANUAL TRADE DATASET FOR 2026-09-15
 const DEFAULT_MANUAL_TRADES: ManualTrade[] = [
+  {
+    id: 'MT-20260916-03',
+    date: '2026-09-16 09:40',
+    symbol: 'NSE:VEDL26SEP255PE',
+    displayName: 'VEDL 255 PE',
+    tradeType: 'PUT BUY',
+    setupName: 'Positional 1-Week',
+    entryPrice: 6.50,
+    currentPrice: 11.50,
+    target1: 9.50,
+    target2: 11.50,
+    target3: 14.00,
+    stopLoss: 5.30,
+    finalAchievedPrice: 11.50,
+    finalStatus: 'TARGET 2 HIT',
+    ptsGained: 5.00,
+    roiPct: 76.92,
+    holdingTime: '1 Week Trade',
+    riskReward: '1:4.17',
+    notes: 'Buy VEDL 29 Sep 2026 PE 255 near 6-7. SL 5.3. TGT 9.5-11.5. 1 Week Positional Trade. Posted at 09:40 AM.'
+  },
   {
     id: 'MT-20260916-02',
     date: '2026-09-16 09:26',
