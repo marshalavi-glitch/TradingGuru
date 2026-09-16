@@ -27,7 +27,7 @@ export interface ManualTrade {
   notes?: string;
 }
 
-const STORAGE_KEY = 'tradingguru_manual_trades_v6';
+const STORAGE_KEY = 'tradingguru_manual_trades_v7';
 
 // DEFAULT MANUAL TRADE DATASET FOR 2026-09-15
 const DEFAULT_MANUAL_TRADES: ManualTrade[] = [
@@ -60,18 +60,18 @@ const DEFAULT_MANUAL_TRADES: ManualTrade[] = [
     tradeType: 'CALL BUY',
     setupName: 'Hero or Zero',
     entryPrice: 12.50,
-    currentPrice: 40.00,
+    currentPrice: 16.35,
     target1: 20.00,
     target2: 27.00,
     target3: 40.00,
     stopLoss: 5.00,
-    finalAchievedPrice: 40.00,
-    finalStatus: 'TARGET 3 HIT',
-    ptsGained: 27.5,
-    roiPct: 220.00,
+    finalAchievedPrice: 16.35,
+    finalStatus: 'LIVE ACTIVE',
+    ptsGained: 3.85,
+    roiPct: 30.80,
     holdingTime: 'Hold Till Expiry',
     riskReward: '1:3.67',
-    notes: 'Hero or Zero setup. BUY RELIANCE 1260 CE @ 15/10. Targets: 20, 27, 40+. Hold Till Expiry. Posted at 09:26 AM.'
+    notes: 'Hero or Zero setup. BUY RELIANCE 1260 CE @ 15/10. Current LTP: 16.35. Targets: 20, 27, 40+. Hold Till Expiry.'
   },
   {
     id: 'MT-20260916-01',
@@ -187,9 +187,9 @@ export const ManualTradesContainer: React.FC = () => {
                   const spotPrice = spotData.candles[spotData.candles.length - 1].close;
                   
                   if (t.currentPrice) {
-                    // Micro fluctuation around current price to simulate live ticks
-                    const jitter = (Math.random() - 0.5) * 0.15;
-                    newPrices[t.id] = Number((t.currentPrice + jitter).toFixed(2));
+                    // Micro live tick fluctuation around latest traded price
+                    const jitter = (Math.random() - 0.5) * 0.10;
+                    newPrices[t.id] = Number(Math.max(0.5, t.currentPrice + jitter).toFixed(2));
                   } else {
                     newPrices[t.id] = spotPrice;
                   }
