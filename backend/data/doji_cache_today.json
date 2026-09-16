@@ -1,32 +1,32 @@
 {
   "date": "9/16/2026",
-  "lastScanTime": "2026-09-16T07:29:07.877Z",
+  "lastScanTime": "2026-09-16T15:14:17.690Z",
   "slotData": {
     "first_5min": {
       "slot": "first_5min",
       "stocks": [
         {
-          "symbol": "LUPIN",
-          "bodyPct": 14,
-          "volumeRatio": 1.9,
-          "ltp": 2062.9,
-          "high": 2074.1,
-          "low": 2059.1,
-          "volume": 42496,
-          "avgVolume": 22584,
+          "symbol": "BAJAJFINSV",
+          "bodyPct": 1.2,
+          "volumeRatio": 1.5,
+          "ltp": 1864.2,
+          "high": 1874.8,
+          "low": 1858.2,
+          "volume": 27751,
+          "avgVolume": 18796,
           "isHighVolume": true,
           "dojiType": "Gravestone Doji",
           "slot": "first_5min"
         },
         {
-          "symbol": "BAJAJFINSV",
-          "bodyPct": 1.2,
-          "volumeRatio": 1.4,
-          "ltp": 1864.2,
-          "high": 1874.8,
-          "low": 1858.2,
-          "volume": 27751,
-          "avgVolume": 20499,
+          "symbol": "LUPIN",
+          "bodyPct": 14,
+          "volumeRatio": 1.3,
+          "ltp": 2062.9,
+          "high": 2074.1,
+          "low": 2059.1,
+          "volume": 42496,
+          "avgVolume": 32641,
           "isHighVolume": true,
           "dojiType": "Gravestone Doji",
           "slot": "first_5min"
@@ -36,12 +36,12 @@
         {
           "symbol": "TATASTEEL",
           "bodyPct": 4.7,
-          "volumeRatio": 0.8,
+          "volumeRatio": 0.9,
           "ltp": 183.33,
           "high": 183.75,
           "low": 182.26,
           "volume": 1455243,
-          "avgVolume": 1811381,
+          "avgVolume": 1584375,
           "isHighVolume": false,
           "dojiType": "Dragonfly Doji",
           "slot": "first_5min"
@@ -54,7 +54,7 @@
           "high": 717.7,
           "low": 710.85,
           "volume": 1133109,
-          "avgVolume": 3492939,
+          "avgVolume": 3516142,
           "isHighVolume": false,
           "dojiType": "Long-Legged Doji",
           "slot": "first_5min"
@@ -67,7 +67,7 @@
           "high": 236.13,
           "low": 234.59,
           "volume": 491921,
-          "avgVolume": 1378805,
+          "avgVolume": 1392051,
           "isHighVolume": false,
           "dojiType": "Long-Legged Doji",
           "slot": "first_5min"
@@ -75,12 +75,12 @@
         {
           "symbol": "BANDHANBNK",
           "bodyPct": 12.4,
-          "volumeRatio": 0.8,
+          "volumeRatio": 0.9,
           "ltp": 173.2,
           "high": 173.5,
           "low": 171.81,
           "volume": 461260,
-          "avgVolume": 547013,
+          "avgVolume": 487447,
           "isHighVolume": false,
           "dojiType": "Dragonfly Doji",
           "slot": "first_5min"
@@ -88,12 +88,12 @@
         {
           "symbol": "COFORGE",
           "bodyPct": 1.4,
-          "volumeRatio": 0.8,
+          "volumeRatio": 0.7,
           "ltp": 1776,
           "high": 1784.4,
           "low": 1770.1,
           "volume": 153063,
-          "avgVolume": 191551,
+          "avgVolume": 234838,
           "isHighVolume": false,
           "dojiType": "Long-Legged Doji",
           "slot": "first_5min"
@@ -101,12 +101,12 @@
         {
           "symbol": "LUPIN",
           "bodyPct": 14,
-          "volumeRatio": 1.9,
+          "volumeRatio": 1.3,
           "ltp": 2062.9,
           "high": 2074.1,
           "low": 2059.1,
           "volume": 42496,
-          "avgVolume": 22584,
+          "avgVolume": 32641,
           "isHighVolume": true,
           "dojiType": "Gravestone Doji",
           "slot": "first_5min"
@@ -114,12 +114,12 @@
         {
           "symbol": "BAJAJFINSV",
           "bodyPct": 1.2,
-          "volumeRatio": 1.4,
+          "volumeRatio": 1.5,
           "ltp": 1864.2,
           "high": 1874.8,
           "low": 1858.2,
           "volume": 27751,
-          "avgVolume": 20499,
+          "avgVolume": 18796,
           "isHighVolume": true,
           "dojiType": "Gravestone Doji",
           "slot": "first_5min"
@@ -127,12 +127,12 @@
         {
           "symbol": "LTIM",
           "bodyPct": 0.9,
-          "volumeRatio": 0.6,
+          "volumeRatio": 0.5,
           "ltp": 4349.6,
           "high": 4370,
           "low": 4314.7,
           "volume": 12923,
-          "avgVolume": 21644,
+          "avgVolume": 27150,
           "isHighVolume": false,
           "dojiType": "Dragonfly Doji",
           "slot": "first_5min"
@@ -145,13 +145,13 @@
           "high": 1032.1,
           "low": 1026.6,
           "volume": 10492,
-          "avgVolume": 37996,
+          "avgVolume": 41639,
           "isHighVolume": false,
           "dojiType": "Dragonfly Doji",
           "slot": "first_5min"
         }
       ],
-      "lastScanTime": "2026-09-16T07:29:15.412Z"
+      "lastScanTime": "2026-09-16T15:14:25.561Z"
     }
   }
 }

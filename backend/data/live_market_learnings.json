@@ -1,22 +1,5 @@
 [
   {
-    "time": "19:14:31",
-    "date": "10/9/2026",
-    "niftySpot": 23477.8,
-    "niftySkew": -23.008849557522126,
-    "niftyGamma": 1.32,
-    "niftyStraddle": 203.39999999999998,
-    "niftyLtpCe": 78.3,
-    "niftyLtpPe": 125.1,
-    "bankniftySpot": 56471.95,
-    "bankniftySkew": 8.300395256916996,
-    "bankniftyGamma": 0.81,
-    "bankniftyStraddle": 1265,
-    "bankniftyLtpCe": 685,
-    "bankniftyLtpPe": 580,
-    "actionableTakeaway": "Bearish PE Bloat"
-  },
-  {
     "time": "19:15:27",
     "date": "10/9/2026",
     "niftySpot": 23477.8,
@@ -169984,6 +169967,23 @@
   },
   {
     "time": "19:49:19",
+    "date": "16/9/2026",
+    "niftySpot": 23217.6,
+    "niftySkew": 17.085834820704203,
+    "niftyGamma": 0.6,
+    "niftyStraddle": 308.15,
+    "niftyLtpCe": 180.4,
+    "niftyLtpPe": 127.75,
+    "bankniftySpot": 56292.45,
+    "bankniftySkew": 7.583054444535138,
+    "bankniftyGamma": 0.76,
+    "bankniftyStraddle": 1225.1,
+    "bankniftyLtpCe": 659,
+    "bankniftyLtpPe": 566.1,
+    "actionableTakeaway": "Bullish CE Bloat"
+  },
+  {
+    "time": "20:27:23",
     "date": "16/9/2026",
     "niftySpot": 23217.6,
     "niftySkew": 17.085834820704203,

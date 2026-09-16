@@ -4,6 +4,7 @@ import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
 import cors from 'cors';
 import { TradingViewBridge } from './tradingview.js';
+import { AngelOneBridge } from './angel_one.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import compression from 'compression';
@@ -13,6 +14,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const tvBridge = new TradingViewBridge();
+const angelBridge = new AngelOneBridge();
+angelBridge.login();
 
 const liveOptionCandlesCache = {};
 const liveOptionLtpCache = {};
@@ -2011,6 +2014,52 @@ app.get('/api/volume-breakouts', (req, res) => {
     scanVolumeBreakouts(tvBridge);
   }
   res.json(volumeCache);
+});
+
+// Endpoint to retrieve Angel One SmartAPI status and credentials info
+app.get('/api/angel-one/status', (req, res) => {
+  res.json(angelBridge.getStatus());
+});
+
+// Endpoint to fetch candles via Angel One SmartAPI
+app.get('/api/angel-one/candles', async (req, res) => {
+  try {
+    const symbol = req.query.symbol || 'NSE:NIFTY';
+    const timeframe = req.query.timeframe || '5';
+    const limit = parseInt(req.query.limit) || 150;
+
+    const candles = await angelBridge.fetchCandles(symbol, timeframe, limit);
+    const scrip = angelBridge.getScripInfo(symbol);
+
+    res.json({
+      provider: 'Angel One SmartAPI',
+      symbol,
+      timeframe,
+      scrip,
+      count: candles.length,
+      candles
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Angel One candle fetch failed' });
+  }
+});
+
+// Endpoint to fetch LTP via Angel One SmartAPI
+app.get('/api/angel-one/ltp', async (req, res) => {
+  try {
+    const symbol = req.query.symbol || 'NSE:RELIANCE';
+    const ltp = await angelBridge.fetchLTP(symbol);
+    const scrip = angelBridge.getScripInfo(symbol);
+
+    res.json({
+      provider: 'Angel One SmartAPI',
+      symbol,
+      scrip,
+      ltp
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Angel One LTP fetch failed' });
+  }
 });
 
 // Endpoint to retrieve NR7 expansion breakouts
