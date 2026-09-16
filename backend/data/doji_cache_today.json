@@ -1,0 +1,144 @@
+{
+  "date": "9/16/2026",
+  "lastScanTime": "2026-09-16T07:22:12.240Z",
+  "slotData": {
+    "first_5min": {
+      "slot": "first_5min",
+      "stocks": [
+        {
+          "symbol": "LUPIN",
+          "bodyPct": 14,
+          "volumeRatio": 1.8,
+          "ltp": 2062.9,
+          "high": 2074.1,
+          "low": 2059.1,
+          "volume": 42496,
+          "avgVolume": 23797,
+          "isHighVolume": true,
+          "dojiType": "Gravestone Doji",
+          "slot": "first_5min"
+        }
+      ],
+      "allDojiStocks": [
+        {
+          "symbol": "TATASTEEL",
+          "bodyPct": 4.7,
+          "volumeRatio": 0.9,
+          "ltp": 183.33,
+          "high": 183.75,
+          "low": 182.26,
+          "volume": 1455243,
+          "avgVolume": 1611828,
+          "isHighVolume": false,
+          "dojiType": "Dragonfly Doji",
+          "slot": "first_5min"
+        },
+        {
+          "symbol": "HDFCBANK",
+          "bodyPct": 14.6,
+          "volumeRatio": 0.3,
+          "ltp": 715,
+          "high": 717.7,
+          "low": 710.85,
+          "volume": 1133109,
+          "avgVolume": 3495244,
+          "isHighVolume": false,
+          "dojiType": "Long-Legged Doji",
+          "slot": "first_5min"
+        },
+        {
+          "symbol": "ONGC",
+          "bodyPct": 10.4,
+          "volumeRatio": 0.4,
+          "ltp": 235.48,
+          "high": 236.13,
+          "low": 234.59,
+          "volume": 491921,
+          "avgVolume": 1360596,
+          "isHighVolume": false,
+          "dojiType": "Long-Legged Doji",
+          "slot": "first_5min"
+        },
+        {
+          "symbol": "BANDHANBNK",
+          "bodyPct": 12.4,
+          "volumeRatio": 0.9,
+          "ltp": 173.2,
+          "high": 173.5,
+          "low": 171.81,
+          "volume": 461260,
+          "avgVolume": 506898,
+          "isHighVolume": false,
+          "dojiType": "Dragonfly Doji",
+          "slot": "first_5min"
+        },
+        {
+          "symbol": "COFORGE",
+          "bodyPct": 1.4,
+          "volumeRatio": 0.7,
+          "ltp": 1776,
+          "high": 1784.4,
+          "low": 1770.1,
+          "volume": 153063,
+          "avgVolume": 218125,
+          "isHighVolume": false,
+          "dojiType": "Long-Legged Doji",
+          "slot": "first_5min"
+        },
+        {
+          "symbol": "LUPIN",
+          "bodyPct": 14,
+          "volumeRatio": 1.8,
+          "ltp": 2062.9,
+          "high": 2074.1,
+          "low": 2059.1,
+          "volume": 42496,
+          "avgVolume": 23797,
+          "isHighVolume": true,
+          "dojiType": "Gravestone Doji",
+          "slot": "first_5min"
+        },
+        {
+          "symbol": "BAJAJFINSV",
+          "bodyPct": 1.2,
+          "volumeRatio": 0.9,
+          "ltp": 1864.2,
+          "high": 1874.8,
+          "low": 1858.2,
+          "volume": 27751,
+          "avgVolume": 30663,
+          "isHighVolume": false,
+          "dojiType": "Gravestone Doji",
+          "slot": "first_5min"
+        },
+        {
+          "symbol": "LTIM",
+          "bodyPct": 0.9,
+          "volumeRatio": 0.6,
+          "ltp": 4349.6,
+          "high": 4370,
+          "low": 4314.7,
+          "volume": 12923,
+          "avgVolume": 21795,
+          "isHighVolume": false,
+          "dojiType": "Dragonfly Doji",
+          "slot": "first_5min"
+        },
+        {
+          "symbol": "AUBANK",
+          "bodyPct": 10.9,
+          "volumeRatio": 0.3,
+          "ltp": 1030.6,
+          "high": 1032.1,
+          "low": 1026.6,
+          "volume": 10492,
+          "avgVolume": 37932,
+          "isHighVolume": false,
+          "dojiType": "Dragonfly Doji",
+          "slot": "first_5min"
+        }
+      ],
+      "lastScanTime": "2026-09-16T07:22:19.991Z"
+    }
+  }
+}

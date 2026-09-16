@@ -1978,13 +1978,13 @@ app.get('/api/scanner/opening-bias', async (req, res) => {
 
 // Endpoint to retrieve Doji signals with slot support (Daily or 30-min time slots)
 app.get('/api/doji-signals', async (req, res) => {
-  const slot = req.query.slot || 'D';
+  const slot = req.query.slot || 'first_5min';
   const force = req.query.scan === 'true';
 
   if (force || !dojiCache.slotData[slot]) {
     console.log(`[Node Backend] API hit triggered scan for Doji Slot ${slot}...`);
-    // Run scan if not available
-    scanDojiForSlot(tvBridge, slot);
+    // Run scan if not available or forced
+    await scanDojiForSlot(tvBridge, slot);
   }
 
   const slotData = dojiCache.slotData[slot] || {
