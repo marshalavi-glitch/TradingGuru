@@ -26,10 +26,30 @@ export interface ManualTrade {
   notes?: string;
 }
 
-const STORAGE_KEY = 'tradingguru_manual_trades_v3';
+const STORAGE_KEY = 'tradingguru_manual_trades_v4';
 
 // DEFAULT MANUAL TRADE DATASET FOR 2026-09-15
 const DEFAULT_MANUAL_TRADES: ManualTrade[] = [
+  {
+    id: 'MT-20260916-02',
+    date: '2026-09-16 09:26',
+    symbol: 'NSE:RELIANCE26SEP1260CE',
+    displayName: 'RELIANCE 1260 CE',
+    tradeType: 'CALL BUY',
+    setupName: 'Hero or Zero',
+    entryPrice: 12.50,
+    target1: 20.00,
+    target2: 27.00,
+    target3: 40.00,
+    stopLoss: 5.00,
+    finalAchievedPrice: 40.00,
+    finalStatus: 'TARGET 3 HIT',
+    ptsGained: 27.5,
+    roiPct: 220.00,
+    holdingTime: 'Hold Till Expiry',
+    riskReward: '1:3.67',
+    notes: 'Hero or Zero setup. BUY RELIANCE 1260 CE @ 15/10. Targets: 20, 27, 40+. Hold Till Expiry. Posted at 09:26 AM.'
+  },
   {
     id: 'MT-20260916-01',
     date: '2026-09-16 09:15',
