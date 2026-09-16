@@ -3,7 +3,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { 
   FileText, Search, Target, ShieldAlert, Award, TrendingUp, TrendingDown, 
   Activity, CheckCircle2, RefreshCw, BarChart2, Zap, ArrowUpRight, Flame, Layers, Clock,
-  Plus, Edit2, Trash2, X, Save, RotateCcw
+  Plus, Edit2, Trash2, X, Save, RotateCcw, Lock, Unlock
 } from 'lucide-react';
 
 export interface ManualTrade {
@@ -21,6 +21,7 @@ export interface ManualTrade {
   finalAchievedPrice: number;
   finalStatus: 'TARGET 3 HIT' | 'TARGET 2 HIT' | 'TARGET 1 HIT' | 'LIVE ACTIVE' | 'STOP LOSS HIT';
   currentPrice?: number;
+  isPriceFrozen?: boolean;
   ptsGained?: number;
   roiPct?: number;
   holdingTime?: string;
@@ -47,6 +48,7 @@ const DEFAULT_MANUAL_TRADES: ManualTrade[] = [
     stopLoss: 5.30,
     finalAchievedPrice: 11.50,
     finalStatus: 'TARGET 2 HIT',
+    isPriceFrozen: false,
     ptsGained: 5.00,
     roiPct: 76.92,
     holdingTime: '1 Week Trade',
@@ -68,6 +70,7 @@ const DEFAULT_MANUAL_TRADES: ManualTrade[] = [
     stopLoss: 5.00,
     finalAchievedPrice: 16.35,
     finalStatus: 'LIVE ACTIVE',
+    isPriceFrozen: false,
     ptsGained: 3.85,
     roiPct: 30.80,
     holdingTime: 'Hold Till Expiry',
@@ -89,6 +92,7 @@ const DEFAULT_MANUAL_TRADES: ManualTrade[] = [
     stopLoss: 210.00,
     finalAchievedPrice: 320.00,
     finalStatus: 'TARGET 3 HIT',
+    isPriceFrozen: true,
     ptsGained: 60.0,
     roiPct: 23.08,
     holdingTime: 'Intraday',
@@ -110,6 +114,7 @@ const DEFAULT_MANUAL_TRADES: ManualTrade[] = [
     stopLoss: 40.00,
     finalAchievedPrice: 200.00,
     finalStatus: 'TARGET 3 HIT',
+    isPriceFrozen: true,
     ptsGained: 125.0,
     roiPct: 166.67,
     holdingTime: 'Intraday',
@@ -117,7 +122,6 @@ const DEFAULT_MANUAL_TRADES: ManualTrade[] = [
     notes: 'Hero or Zero setup triggered at 09:16 AM. Targets: 92, 130, 200+. Target 3 Achieved!'
   }
 ];
-
 
 function getUnderlyingSymbol(raw: string): string {
   const upper = raw.toUpperCase();
@@ -157,7 +161,7 @@ export const ManualTradesContainer: React.FC = () => {
     }
   }, [trades]);
 
-    const [livePrices, setLivePrices] = useState<Record<string, number>>({});
+  const [livePrices, setLivePrices] = useState<Record<string, number>>({});
 
   useEffect(() => {
     let isMounted = true;
@@ -169,6 +173,12 @@ export const ManualTradesContainer: React.FC = () => {
         await Promise.all(
           trades.map(async (t) => {
             try {
+              // If trade price update is stopped/frozen by radio button, preserve existing price
+              if (t.isPriceFrozen) {
+                newPrices[t.id] = t.currentPrice ?? t.finalAchievedPrice ?? t.entryPrice ?? 0;
+                return;
+              }
+
               // 1. Try contract symbol directly first
               const res = await fetch(`${backendHttp}/api/candles?symbol=${encodeURIComponent(t.symbol)}&timeframe=5&limit=1`);
               if (res.ok) {
@@ -259,6 +269,33 @@ export const ManualTradesContainer: React.FC = () => {
     });
   }, []);
 
+  // Radio button toggle function to stop/freeze price updates per trade
+  const handleTogglePriceFreeze = (tradeId: string, freeze: boolean) => {
+    setTrades((prev) =>
+      prev.map((t) => {
+        if (t.id === tradeId) {
+          const frozenPrice = livePrices[t.id] ?? t.currentPrice ?? t.finalAchievedPrice ?? t.entryPrice ?? 0;
+          const updatedTrade: ManualTrade = {
+            ...t,
+            isPriceFrozen: freeze,
+            currentPrice: Number(frozenPrice.toFixed(2)),
+            finalAchievedPrice: freeze ? Number(frozenPrice.toFixed(2)) : t.finalAchievedPrice
+          };
+          // Post to backend REST API to sync freeze state across all connected users
+          getBackendHttpUrl().then((backendHttp) => {
+            fetch(`${backendHttp}/api/manual-trades`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(updatedTrade)
+            }).catch((err) => console.error('Failed to sync price freeze to backend:', err));
+          });
+          return updatedTrade;
+        }
+        return t;
+      })
+    );
+  };
+
 
   const [filterStatus, setFilterStatus] = useState<'ALL' | 'NIFTY' | 'BANKNIFTY' | 'LIVE_ACTIVE' | 'TARGET_HIT'>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -281,6 +318,7 @@ export const ManualTradesContainer: React.FC = () => {
     target3: string;
     finalAchievedPrice: string;
     finalStatus: 'TARGET 3 HIT' | 'TARGET 2 HIT' | 'TARGET 1 HIT' | 'LIVE ACTIVE' | 'STOP LOSS HIT';
+    isPriceFrozen: boolean;
     notes: string;
     date: string;
   }>({
@@ -296,6 +334,7 @@ export const ManualTradesContainer: React.FC = () => {
     target3: '',
     finalAchievedPrice: '',
     finalStatus: 'LIVE ACTIVE',
+    isPriceFrozen: false,
     notes: '',
     date: new Date().toISOString().replace('T', ' ').substring(0, 16)
   });
@@ -315,6 +354,7 @@ export const ManualTradesContainer: React.FC = () => {
       target3: '',
       finalAchievedPrice: '',
       finalStatus: 'LIVE ACTIVE',
+      isPriceFrozen: false,
       notes: '',
       date: nowStr
     });
@@ -341,6 +381,7 @@ export const ManualTradesContainer: React.FC = () => {
       target3: t.target3 !== undefined ? String(t.target3) : '',
       finalAchievedPrice: t.finalAchievedPrice !== undefined ? String(t.finalAchievedPrice) : '',
       finalStatus: t.finalStatus || 'LIVE ACTIVE',
+      isPriceFrozen: Boolean(t.isPriceFrozen),
       notes: t.notes || '',
       date: t.date || new Date().toISOString().replace('T', ' ').substring(0, 16)
     });
@@ -399,6 +440,7 @@ export const ManualTradesContainer: React.FC = () => {
       target3: t3,
       finalAchievedPrice: achieved,
       finalStatus: formData.finalStatus,
+      isPriceFrozen: formData.isPriceFrozen,
       ptsGained: Number(pts.toFixed(2)),
       roiPct: Number(roi.toFixed(2)),
       holdingTime: 'Intraday',
@@ -489,7 +531,7 @@ export const ManualTradesContainer: React.FC = () => {
               </span>
             </h2>
             <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#94a3b8' }}>
-              Record and track custom manual trade setups with Entry Range, Stop Loss, Targets 1–3, and Achieved Exit Price.
+              Record and track custom manual trade setups with Entry Range, Stop Loss, Targets 1–3, and Radio button to Freeze / Stop live price updating.
             </p>
           </div>
         </div>
@@ -796,6 +838,44 @@ export const ManualTradesContainer: React.FC = () => {
                       fontSize: '12px'
                     }}
                   />
+                </div>
+              </div>
+
+              {/* Price Mode Radio Selection */}
+              <div>
+                <label style={{ display: 'block', fontSize: '11px', color: '#cbd5e1', fontWeight: '700', marginBottom: '4px' }}>
+                  Price Live Stream Mode (Radio Selection)
+                </label>
+                <div style={{
+                  display: 'flex',
+                  gap: '16px',
+                  alignItems: 'center',
+                  background: '#0b0f19',
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  border: '1px solid rgba(255, 255, 255, 0.15)'
+                }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: !formData.isPriceFrozen ? '#00f0ff' : '#94a3b8', fontWeight: '700', fontSize: '12px' }}>
+                    <input
+                      type="radio"
+                      name="form_price_mode"
+                      checked={!formData.isPriceFrozen}
+                      onChange={() => setFormData({ ...formData, isPriceFrozen: false })}
+                      style={{ accentColor: '#00f0ff', width: '13px', height: '13px', cursor: 'pointer' }}
+                    />
+                    <span>🟢 Live Updating (Stream Ticks)</span>
+                  </label>
+
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: formData.isPriceFrozen ? '#f59e0b' : '#94a3b8', fontWeight: '700', fontSize: '12px' }}>
+                    <input
+                      type="radio"
+                      name="form_price_mode"
+                      checked={Boolean(formData.isPriceFrozen)}
+                      onChange={() => setFormData({ ...formData, isPriceFrozen: true })}
+                      style={{ accentColor: '#f59e0b', width: '13px', height: '13px', cursor: 'pointer' }}
+                    />
+                    <span>🔒 Stop / Freeze Price (Static Exit)</span>
+                  </label>
                 </div>
               </div>
 
@@ -1143,7 +1223,6 @@ export const ManualTradesContainer: React.FC = () => {
             <tbody>
               {filteredTrades.map((t) => {
                 const liveLtp = livePrices[t.id] ?? t.currentPrice ?? t.finalAchievedPrice ?? t.entryPrice ?? 0;
-                const isLiveStream = Boolean(livePrices[t.id]);
                 
                 // Determine dynamic status based on live price
                 const isT3 = t.finalStatus === 'TARGET 3 HIT' || (t.target3 > 0 && liveLtp >= t.target3);
@@ -1157,9 +1236,11 @@ export const ManualTradesContainer: React.FC = () => {
                     key={t.id}
                     style={{
                       borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
-                      background: isLive 
-                        ? 'rgba(0, 240, 255, 0.08)' 
-                        : isT3 ? 'rgba(16, 185, 129, 0.06)' : 'transparent'
+                      background: t.isPriceFrozen 
+                        ? 'rgba(245, 158, 11, 0.05)'
+                        : isLive 
+                          ? 'rgba(0, 240, 255, 0.08)' 
+                          : isT3 ? 'rgba(16, 185, 129, 0.06)' : 'transparent'
                     }}
                   >
                     {/* Symbol & Date */}
@@ -1200,12 +1281,96 @@ export const ManualTradesContainer: React.FC = () => {
                       ₹{(t.entryPrice ?? 0).toFixed(2)}
                     </td>
 
-                    {/* Current Price / LTP (Streaming Live) */}
-                    <td style={{ padding: '12px', fontFamily: 'monospace', fontWeight: '900', color: '#00f0ff', fontSize: '13px' }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#00f0ff', boxShadow: '0 0 8px #00f0ff' }} className="animate-pulse" />
-                        ₹{liveLtp.toFixed(2)}
-                      </span>
+                    {/* Current Price / LTP (Streaming Live or Frozen via Radio Toggle) */}
+                    <td style={{ padding: '12px 14px', textAlign: 'center' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                        {t.isPriceFrozen ? (
+                          <span style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            color: '#f59e0b',
+                            fontWeight: '900',
+                            fontFamily: 'monospace',
+                            fontSize: '13px',
+                            background: 'rgba(245, 158, 11, 0.15)',
+                            padding: '3px 8px',
+                            borderRadius: '6px',
+                            border: '1px solid rgba(245, 158, 11, 0.3)'
+                          }}>
+                            <Lock size={12} color="#f59e0b" />
+                            ₹{liveLtp.toFixed(2)}
+                          </span>
+                        ) : (
+                          <span style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            color: '#00f0ff',
+                            fontWeight: '900',
+                            fontFamily: 'monospace',
+                            fontSize: '13px',
+                            background: 'rgba(0, 240, 255, 0.1)',
+                            padding: '3px 8px',
+                            borderRadius: '6px',
+                            border: '1px solid rgba(0, 240, 255, 0.25)'
+                          }}>
+                            <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#00f0ff', boxShadow: '0 0 8px #00f0ff' }} className="animate-pulse" />
+                            ₹{liveLtp.toFixed(2)}
+                          </span>
+                        )}
+
+                        {/* Radio Buttons Pair to toggle Live vs Stop Price */}
+                        <div style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          background: 'rgba(0, 0, 0, 0.5)',
+                          padding: '2px 8px',
+                          borderRadius: '12px',
+                          border: '1px solid rgba(255, 255, 255, 0.1)'
+                        }}>
+                          <label style={{
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '3px',
+                            fontSize: '10px',
+                            fontWeight: '800',
+                            color: !t.isPriceFrozen ? '#00f0ff' : '#64748b'
+                          }}>
+                            <input
+                              type="radio"
+                              name={`price_mode_${t.id}`}
+                              checked={!t.isPriceFrozen}
+                              onChange={() => handleTogglePriceFreeze(t.id, false)}
+                              style={{ accentColor: '#00f0ff', cursor: 'pointer', margin: 0, width: '11px', height: '11px' }}
+                            />
+                            <span>Live</span>
+                          </label>
+
+                          <span style={{ color: '#475569', fontSize: '9px' }}>|</span>
+
+                          <label style={{
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '3px',
+                            fontSize: '10px',
+                            fontWeight: '800',
+                            color: t.isPriceFrozen ? '#f59e0b' : '#64748b'
+                          }}>
+                            <input
+                              type="radio"
+                              name={`price_mode_${t.id}`}
+                              checked={Boolean(t.isPriceFrozen)}
+                              onChange={() => handleTogglePriceFreeze(t.id, true)}
+                              style={{ accentColor: '#f59e0b', cursor: 'pointer', margin: 0, width: '11px', height: '11px' }}
+                            />
+                            <span>Stop</span>
+                          </label>
+                        </div>
+                      </div>
                     </td>
 
                     {/* Target 1 */}
@@ -1269,6 +1434,20 @@ export const ManualTradesContainer: React.FC = () => {
                     {/* Actions */}
                     <td style={{ padding: '12px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                        <button
+                          onClick={() => handleTogglePriceFreeze(t.id, !t.isPriceFrozen)}
+                          title={t.isPriceFrozen ? 'Resume Live Price Streaming' : 'Stop / Freeze Current Price'}
+                          style={{
+                            background: t.isPriceFrozen ? 'rgba(245, 158, 11, 0.2)' : 'rgba(0, 240, 255, 0.15)',
+                            border: t.isPriceFrozen ? '1px solid rgba(245, 158, 11, 0.4)' : '1px solid rgba(0, 240, 255, 0.3)',
+                            color: t.isPriceFrozen ? '#f59e0b' : '#00f0ff',
+                            padding: '4px 6px',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {t.isPriceFrozen ? <Lock size={13} /> : <Unlock size={13} />}
+                        </button>
                         <button
                           onClick={() => handleEditTrade(t)}
                           title="Edit Trade"

@@ -2,6 +2,36 @@
   "date": "9/16/2026",
   "results": [
     {
+      "symbol": "DRREDDY",
+      "time": "12:50:00",
+      "currentVolume": 59328,
+      "prevMaxVolume": 55303,
+      "ratio": 1.1,
+      "close": 1146.6,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "BANKBARODA",
+      "time": "12:50:00",
+      "currentVolume": 304766,
+      "prevMaxVolume": 294099,
+      "ratio": 1,
+      "close": 234.29,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "SBILIFE",
+      "time": "12:40:00",
+      "currentVolume": 44426,
+      "prevMaxVolume": 28716,
+      "ratio": 1.5,
+      "close": 1683,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
       "symbol": "HAVELLS",
       "time": "12:35:00",
       "currentVolume": 66985,
@@ -1214,5 +1244,5 @@
       "type": "stock"
     }
   ],
-  "lastScanTime": "2026-09-16T07:24:29.387Z"
+  "lastScanTime": "2026-09-16T07:46:55.885Z"
 }
