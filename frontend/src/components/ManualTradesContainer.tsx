@@ -19,6 +19,7 @@ export interface ManualTrade {
   stopLoss: number;
   finalAchievedPrice: number;
   finalStatus: 'TARGET 3 HIT' | 'TARGET 2 HIT' | 'TARGET 1 HIT' | 'LIVE ACTIVE' | 'STOP LOSS HIT';
+  currentPrice?: number;
   ptsGained?: number;
   roiPct?: number;
   holdingTime?: string;
@@ -26,7 +27,7 @@ export interface ManualTrade {
   notes?: string;
 }
 
-const STORAGE_KEY = 'tradingguru_manual_trades_v4';
+const STORAGE_KEY = 'tradingguru_manual_trades_v5';
 
 // DEFAULT MANUAL TRADE DATASET FOR 2026-09-15
 const DEFAULT_MANUAL_TRADES: ManualTrade[] = [
@@ -38,6 +39,7 @@ const DEFAULT_MANUAL_TRADES: ManualTrade[] = [
     tradeType: 'CALL BUY',
     setupName: 'Hero or Zero',
     entryPrice: 12.50,
+    currentPrice: 40.00,
     target1: 20.00,
     target2: 27.00,
     target3: 40.00,
@@ -58,6 +60,7 @@ const DEFAULT_MANUAL_TRADES: ManualTrade[] = [
     tradeType: 'PUT BUY',
     setupName: 'Breakout Surge',
     entryPrice: 260.00,
+    currentPrice: 320.00,
     target1: 280.00,
     target2: 300.00,
     target3: 320.00,
@@ -78,6 +81,7 @@ const DEFAULT_MANUAL_TRADES: ManualTrade[] = [
     tradeType: 'PUT BUY',
     setupName: 'Hero or Zero',
     entryPrice: 75.00,
+    currentPrice: 200.00,
     target1: 92.00,
     target2: 130.00,
     target3: 200.00,
@@ -132,6 +136,7 @@ export const ManualTradesContainer: React.FC = () => {
     tradeType: 'CALL BUY' | 'PUT BUY' | 'FUT LONG' | 'FUT SHORT';
     setupName: string;
     entryPrice: string;
+    currentPrice: string;
     stopLoss: string;
     target1: string;
     target2: string;
@@ -146,6 +151,7 @@ export const ManualTradesContainer: React.FC = () => {
     tradeType: 'CALL BUY',
     setupName: 'Hero or Zero',
     entryPrice: '',
+    currentPrice: '',
     stopLoss: '',
     target1: '',
     target2: '',
@@ -164,6 +170,7 @@ export const ManualTradesContainer: React.FC = () => {
       tradeType: 'CALL BUY',
       setupName: 'Hero or Zero',
       entryPrice: '',
+      currentPrice: '',
       stopLoss: '',
       target1: '',
       target2: '',
@@ -189,6 +196,7 @@ export const ManualTradesContainer: React.FC = () => {
       tradeType: t.tradeType || 'CALL BUY',
       setupName: t.setupName || 'Hero or Zero',
       entryPrice: t.entryPrice !== undefined ? String(t.entryPrice) : '',
+      currentPrice: t.currentPrice !== undefined ? String(t.currentPrice) : (t.finalAchievedPrice !== undefined ? String(t.finalAchievedPrice) : ''),
       stopLoss: t.stopLoss !== undefined ? String(t.stopLoss) : '',
       target1: t.target1 !== undefined ? String(t.target1) : '',
       target2: t.target2 !== undefined ? String(t.target2) : '',
@@ -223,6 +231,7 @@ export const ManualTradesContainer: React.FC = () => {
     e.preventDefault();
 
     const entry = parseFloat(formData.entryPrice) || 0;
+    const currPrice = parseFloat(formData.currentPrice) || parseFloat(formData.finalAchievedPrice) || entry;
     const sl = parseFloat(formData.stopLoss) || 0;
     const t1 = parseFloat(formData.target1) || 0;
     const t2 = parseFloat(formData.target2) || 0;
@@ -242,6 +251,7 @@ export const ManualTradesContainer: React.FC = () => {
       tradeType: formData.tradeType,
       setupName: formData.setupName.trim() || 'Manual Entry',
       entryPrice: entry,
+      currentPrice: currPrice,
       stopLoss: sl,
       target1: t1,
       target2: t2,
@@ -649,6 +659,30 @@ export const ManualTradesContainer: React.FC = () => {
                 gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))',
                 gap: '10px'
               }}>
+                {/* Current Price / LTP */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '10px', color: '#00f0ff', fontWeight: '900', marginBottom: '4px' }}>
+                    Current Price / LTP (₹)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.05"
+                    value={formData.currentPrice}
+                    onChange={(e) => setFormData({ ...formData, currentPrice: e.target.value })}
+                    placeholder="40.00"
+                    style={{
+                      width: '100%',
+                      background: '#0b0f19',
+                      border: '1px solid rgba(0, 240, 255, 0.6)',
+                      borderRadius: '6px',
+                      padding: '6px 8px',
+                      color: '#00f0ff',
+                      fontSize: '12px',
+                      fontWeight: '900'
+                    }}
+                  />
+                </div>
+
                 {/* Entry Price */}
                 <div>
                   <label style={{ display: 'block', fontSize: '10px', color: '#ffffff', fontWeight: '800', marginBottom: '4px' }}>
@@ -945,6 +979,7 @@ export const ManualTradesContainer: React.FC = () => {
                 <th style={{ padding: '12px' }}>Type</th>
                 <th style={{ padding: '12px' }}>Setup Pattern</th>
                 <th style={{ padding: '12px' }}>Entry Price</th>
+                <th style={{ padding: '12px', color: '#00f0ff' }}>Current Price (LTP)</th>
                 <th style={{ padding: '12px', color: '#60a5fa' }}>Target 1</th>
                 <th style={{ padding: '12px', color: '#34d399' }}>Target 2</th>
                 <th style={{ padding: '12px', color: '#facc15' }}>Target 3</th>
@@ -1008,6 +1043,11 @@ export const ManualTradesContainer: React.FC = () => {
                     {/* Entry Trigger Price */}
                     <td style={{ padding: '12px', fontFamily: 'monospace', fontWeight: '800', color: '#ffffff', fontSize: '13px' }}>
                       ₹{(t.entryPrice ?? 0).toFixed(2)}
+                    </td>
+
+                    {/* Current Price / LTP */}
+                    <td style={{ padding: '12px', fontFamily: 'monospace', fontWeight: '900', color: '#00f0ff', fontSize: '13px' }}>
+                      ₹{(t.currentPrice ?? t.finalAchievedPrice ?? t.entryPrice ?? 0).toFixed(2)}
                     </td>
 
                     {/* Target 1 */}
