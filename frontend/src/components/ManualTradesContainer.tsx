@@ -26,10 +26,30 @@ export interface ManualTrade {
   notes?: string;
 }
 
-const STORAGE_KEY = 'tradingguru_manual_trades_v2';
+const STORAGE_KEY = 'tradingguru_manual_trades_v3';
 
 // DEFAULT MANUAL TRADE DATASET FOR 2026-09-15
 const DEFAULT_MANUAL_TRADES: ManualTrade[] = [
+  {
+    id: 'MT-20260916-01',
+    date: '2026-09-16 09:15',
+    symbol: 'NSE:DIXON26SEP13000PE',
+    displayName: 'DIXON 13000 PE',
+    tradeType: 'PUT BUY',
+    setupName: 'Breakout Surge',
+    entryPrice: 260.00,
+    target1: 280.00,
+    target2: 300.00,
+    target3: 320.00,
+    stopLoss: 210.00,
+    finalAchievedPrice: 320.00,
+    finalStatus: 'TARGET 3 HIT',
+    ptsGained: 60.0,
+    roiPct: 23.08,
+    holdingTime: 'Intraday',
+    riskReward: '1:1.20',
+    notes: 'DIXON 13000 PE BUY ABOVE 260. SL 210. Targets: 280, 300, 320++. Target 3 Achieved!'
+  },
   {
     id: 'MT-20260915-01',
     date: '2026-09-15 09:16',
