@@ -217,6 +217,48 @@ export const ManualTradesContainer: React.FC = () => {
     };
   }, [trades]);
 
+  
+  // Sync manual trades with backend & listen for real-time broadcasts
+  useEffect(() => {
+    const syncBackendTrades = async () => {
+      try {
+        const backendHttp = await getBackendHttpUrl();
+        const res = await fetch(`${backendHttp}/api/manual-trades`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.trades && Array.isArray(data.trades) && data.trades.length > 0) {
+            setTrades(data.trades);
+          }
+        }
+      } catch (e) {}
+    };
+    syncBackendTrades();
+
+    tvStreamer.setManualTradeAddedListener((trade) => {
+      setTrades((prev) => {
+        const idx = prev.findIndex(t => t.id === trade.id);
+        if (idx !== -1) {
+          const updated = [...prev];
+          updated[idx] = trade;
+          return updated;
+        }
+        return [trade, ...prev];
+      });
+    });
+
+    tvStreamer.setManualTradeDeletedListener((id) => {
+      setTrades((prev) => prev.filter(t => t.id !== id));
+    });
+
+    tvStreamer.setManualTradesClearedListener(() => {
+      setTrades([]);
+      getBackendHttpUrl().then(backendHttp => {
+        fetch(`${backendHttp}/api/manual-trades`, { method: 'DELETE' }).catch(() => {});
+      });
+    });
+  }, []);
+
+
   const [filterStatus, setFilterStatus] = useState<'ALL' | 'NIFTY' | 'BANKNIFTY' | 'LIVE_ACTIVE' | 'TARGET_HIT'>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
@@ -307,6 +349,9 @@ export const ManualTradesContainer: React.FC = () => {
   const handleDeleteTrade = (id: string) => {
     if (window.confirm('Are you sure you want to delete this trade entry?')) {
       setTrades((prev) => prev.filter((t) => t.id !== id));
+      getBackendHttpUrl().then(backendHttp => {
+        fetch(`${backendHttp}/api/manual-trades/${id}`, { method: 'DELETE' }).catch(() => {});
+      });
     }
   };
 
@@ -365,6 +410,15 @@ export const ManualTradesContainer: React.FC = () => {
     } else {
       setTrades((prev) => [newTradeRecord, ...prev]);
     }
+
+    // Post to backend REST API to broadcast real-time alert to all connected users
+    getBackendHttpUrl().then(backendHttp => {
+      fetch(`${backendHttp}/api/manual-trades`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newTradeRecord)
+      }).catch(err => console.error('Failed to post manual trade to backend:', err));
+    });
 
     setIsFormOpen(false);
     resetForm();

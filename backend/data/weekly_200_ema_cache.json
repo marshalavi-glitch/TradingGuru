@@ -3,28 +3,28 @@
     "symbol": "NSE:RELIANCE",
     "cleanSymbol": "RELIANCE",
     "type": "fno",
-    "currentPrice": 1257.5,
-    "ema200Val": 1301.6,
-    "distancePct": -3.39,
-    "lowPrice": 1253,
-    "highPrice": 1324.2,
+    "currentPrice": 1252.1,
+    "ema200Val": 1300.92,
+    "distancePct": -3.75,
+    "lowPrice": 1235.3,
+    "highPrice": 1259.4,
     "status": "⚡ TESTING UNDER 200 EMA",
     "badge": "⚠️ RECLAIM WATCH",
-    "isDojiOrHammer": false,
-    "priorityScore": 116.61153801834226
+    "isDojiOrHammer": true,
+    "priorityScore": 116.2474343702865
   },
   {
     "symbol": "NSE:NIFTY",
     "cleanSymbol": "NIFTY",
     "type": "fno",
-    "currentPrice": 23398.1,
-    "ema200Val": 22286.68,
-    "distancePct": 4.99,
-    "lowPrice": 23231.4,
-    "highPrice": 23890,
+    "currentPrice": 23226.4,
+    "ema200Val": 22297.59,
+    "distancePct": 4.17,
+    "lowPrice": 23116.1,
+    "highPrice": 23592.85,
     "status": "NEAR 200 EMA SUPPORT",
     "badge": "⚖️ CONSOLIDATING AT 200 EMA",
     "isDojiOrHammer": false,
-    "priorityScore": 95.01307651870256
+    "priorityScore": 95.83449512917456
   }
 ]

@@ -19,6 +19,9 @@ type OnDataCallback = (data: TVDataMessage) => void;
 type OnErrorCallback = (error: string) => void;
 type OnStatusCallback = (status: 'connecting' | 'connected' | 'disconnected') => void;
 type OnOnlineUsersCallback = (count: number) => void;
+type OnManualTradeAddedCallback = (trade: any) => void;
+type OnManualTradeDeletedCallback = (id: string) => void;
+type OnManualTradesClearedCallback = () => void;
 
 class TVWebSocketStreamer {
   private ws: WebSocket | null = null;
@@ -27,7 +30,10 @@ class TVWebSocketStreamer {
   private onDataCallback: OnDataCallback | null = null;
   private onErrorCallback: OnErrorCallback | null = null;
   private onStatusCallback: OnStatusCallback | null = null;
-  private onOnlineUsersCallback: OnOnlineUsersCallback | null = null;
+    private onOnlineUsersCallback: OnOnlineUsersCallback | null = null;
+  private onManualTradeAddedCallback: OnManualTradeAddedCallback | null = null;
+  private onManualTradeDeletedCallback: OnManualTradeDeletedCallback | null = null;
+  private onManualTradesClearedCallback: OnManualTradesClearedCallback | null = null;
   private reconnectTimeout: number | null = null;
   private fallbackPollInterval: number | null = null;
   private statusTimer: number | null = null;
@@ -67,8 +73,20 @@ class TVWebSocketStreamer {
     callback(this.status);
   }
 
-  public setOnlineUsersListener(callback: OnOnlineUsersCallback) {
+    public setOnlineUsersListener(callback: OnOnlineUsersCallback) {
     this.onOnlineUsersCallback = callback;
+  }
+
+  public setManualTradeAddedListener(callback: OnManualTradeAddedCallback) {
+    this.onManualTradeAddedCallback = callback;
+  }
+
+  public setManualTradeDeletedListener(callback: OnManualTradeDeletedCallback) {
+    this.onManualTradeDeletedCallback = callback;
+  }
+
+  public setManualTradesClearedListener(callback: OnManualTradesClearedCallback) {
+    this.onManualTradesClearedCallback = callback;
   }
 
   private setStatus(newStatus: 'connecting' | 'connected' | 'disconnected') {
@@ -154,6 +172,18 @@ class TVWebSocketStreamer {
           } else if (payload.type === 'online_users') {
             if (this.onOnlineUsersCallback && typeof payload.count === 'number') {
               this.onOnlineUsersCallback(payload.count);
+            }
+          } else if (payload.type === 'manual_trade_added') {
+            if (this.onManualTradeAddedCallback && payload.trade) {
+              this.onManualTradeAddedCallback(payload.trade);
+            }
+          } else if (payload.type === 'manual_trade_deleted') {
+            if (this.onManualTradeDeletedCallback && payload.id) {
+              this.onManualTradeDeletedCallback(payload.id);
+            }
+          } else if (payload.type === 'manual_trades_cleared') {
+            if (this.onManualTradesClearedCallback) {
+              this.onManualTradesClearedCallback();
             }
           } else if (payload.type === 'error') {
             console.error('WebSocket error from server:', payload.message);

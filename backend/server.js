@@ -2038,6 +2038,111 @@ app.get('/api/symbols/presets', (req, res) => {
   res.json(presetsData);
 });
 
+
+// ==============================================================================
+// MANUAL TRADES REAL-TIME BROADCASTER & PERSISTENCE API
+// ==============================================================================
+const manualTradesFilePath = path.join(__dirname, 'data/manual_trades_log.json');
+
+function broadcastToAllClients(payload) {
+  const msg = JSON.stringify(payload);
+  if (wss && wss.clients) {
+    wss.clients.forEach(client => {
+      if (client.readyState === 1) {
+        try { client.send(msg); } catch (e) {}
+      }
+    });
+  }
+}
+
+function getManualTradesFromDisk() {
+  try {
+    if (fs.existsSync(manualTradesFilePath)) {
+      const text = fs.readFileSync(manualTradesFilePath, 'utf8');
+      return JSON.parse(text);
+    }
+  } catch (e) {
+    console.error('[Manual Trades API] Failed to read disk file:', e.message);
+  }
+  return [];
+}
+
+function saveManualTradesToDisk(trades) {
+  try {
+    const dir = path.dirname(manualTradesFilePath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(manualTradesFilePath, JSON.stringify(trades, null, 2), 'utf8');
+  } catch (e) {
+    console.error('[Manual Trades API] Failed to save disk file:', e.message);
+  }
+}
+
+app.get('/api/manual-trades', (req, res) => {
+  const trades = getManualTradesFromDisk();
+  res.json({ trades });
+});
+
+app.post('/api/manual-trades', (req, res) => {
+  try {
+    const trade = req.body;
+    if (!trade || !trade.displayName) {
+      return res.status(400).json({ error: 'Invalid trade record' });
+    }
+
+    let trades = getManualTradesFromDisk();
+    const existingIdx = trades.findIndex(t => t.id === trade.id);
+    if (existingIdx !== -1) {
+      trades[existingIdx] = trade;
+    } else {
+      trades.unshift(trade);
+    }
+    saveManualTradesToDisk(trades);
+
+    // Broadcast real-time alert to all connected users
+    broadcastToAllClients({
+      type: 'manual_trade_added',
+      trade
+    });
+
+    console.log(`[Manual Trades API] Broadcasted new manual trade: ${trade.displayName} (${trade.tradeType})`);
+    res.json({ success: true, trade });
+  } catch (err) {
+    console.error('[Manual Trades API] Error adding trade:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/manual-trades/:id', (req, res) => {
+  try {
+    const id = req.params.id;
+    let trades = getManualTradesFromDisk();
+    trades = trades.filter(t => t.id !== id);
+    saveManualTradesToDisk(trades);
+
+    broadcastToAllClients({
+      type: 'manual_trade_deleted',
+      id
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/manual-trades', (req, res) => {
+  try {
+    saveManualTradesToDisk([]);
+    broadcastToAllClients({
+      type: 'manual_trades_cleared'
+    });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // API 404 Guard: ensure unknown /api/* requests return JSON 404 instead of index.html
 app.all('/api/*', (req, res) => {
   res.status(404).json({ error: 'API endpoint not found', path: req.path });

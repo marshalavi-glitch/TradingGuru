@@ -2,6 +2,66 @@
   "date": "9/16/2026",
   "results": [
     {
+      "symbol": "ICICIBANK",
+      "time": "11:25:00",
+      "currentVolume": 312118,
+      "prevMaxVolume": 227451,
+      "ratio": 1.4,
+      "close": 1348.1,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "AXISBANK",
+      "time": "10:55:00",
+      "currentVolume": 374053,
+      "prevMaxVolume": 225673,
+      "ratio": 1.7,
+      "close": 1246.1,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "LT",
+      "time": "10:40:00",
+      "currentVolume": 75979,
+      "prevMaxVolume": 52431,
+      "ratio": 1.4,
+      "close": 3833.3,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "AXISBANK1!",
+      "time": "10:35:00",
+      "currentVolume": 194375,
+      "prevMaxVolume": 148750,
+      "ratio": 1.3,
+      "close": 1247.9,
+      "direction": "UP",
+      "type": "futures"
+    },
+    {
+      "symbol": "LT",
+      "time": "10:30:00",
+      "currentVolume": 52431,
+      "prevMaxVolume": 47800,
+      "ratio": 1.1,
+      "close": 3834.5,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "AXISBANK1!",
+      "time": "10:15:00",
+      "currentVolume": 148750,
+      "prevMaxVolume": 130000,
+      "ratio": 1.1,
+      "close": 1240,
+      "direction": "UP",
+      "type": "futures"
+    },
+    {
       "symbol": "LT",
       "time": "10:00:00",
       "currentVolume": 43441,
@@ -324,5 +384,5 @@
       "type": "futures"
     }
   ],
-  "lastScanTime": "2026-09-16T04:57:29.002Z"
+  "lastScanTime": "2026-09-16T06:54:29.321Z"
 }

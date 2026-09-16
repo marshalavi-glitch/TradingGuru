@@ -4,7 +4,7 @@ import { ChartContainer } from './components/ChartContainer';
 import { tvStreamer, getBackendHttpUrl } from './utils/tvStreamer';
 import type { Candle } from './utils/profileCalculator';
 import { calculateMatrixSeriesData } from './utils/matrixCalculator';
-import { AlertCircle, Loader2, Layers } from 'lucide-react';
+import { AlertCircle, Loader2, Layers, Zap, X } from 'lucide-react';
 import { TabErrorBoundary } from './components/TabErrorBoundary';
 import { ScannerContainer } from './components/ScannerContainer';
 import { OptionsChain } from './components/OptionsChain';
@@ -90,6 +90,57 @@ function App() {
   const [activeTab, setActiveTab] = useState<TabType>('bhaichara');
 
   const activeTabRef = useRef<HTMLButtonElement | null>(null);
+
+  const [liveTradeAlert, setLiveTradeAlert] = useState<{ trade: any; timestamp: number } | null>(null);
+
+  // Play pleasant dual-tone alert chime
+  const playAlertChime = () => {
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const now = audioCtx.currentTime;
+      
+      const osc1 = audioCtx.createOscillator();
+      const gain1 = audioCtx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(659.25, now);
+      gain1.gain.setValueAtTime(0.4, now);
+      gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+      osc1.connect(gain1);
+      gain1.connect(audioCtx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.3);
+
+      const osc2 = audioCtx.createOscillator();
+      const gain2 = audioCtx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(987.77, now + 0.12);
+      gain2.gain.setValueAtTime(0.5, now + 0.12);
+      gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+      osc2.connect(gain2);
+      gain2.connect(audioCtx.destination);
+      osc2.start(now + 0.12);
+      osc2.stop(now + 0.45);
+    } catch (e) {}
+  };
+
+  // Subscribe to real-time manual trade WebSocket alert broadcasts
+  useEffect(() => {
+    tvStreamer.setManualTradeAddedListener((trade) => {
+      playAlertChime();
+      setLiveTradeAlert({ trade, timestamp: Date.now() });
+    });
+  }, []);
+
+  // Auto dismiss alert toast after 9 seconds
+  useEffect(() => {
+    if (liveTradeAlert) {
+      const timer = setTimeout(() => {
+        setLiveTradeAlert(null);
+      }, 9000);
+      return () => clearTimeout(timer);
+    }
+  }, [liveTradeAlert]);
+
 
   // Subscribe to symbol data via TradingView WebSocket & REST fallback
   useEffect(() => {
