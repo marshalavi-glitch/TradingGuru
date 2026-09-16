@@ -2022,13 +2022,14 @@ app.get('/api/angel-one/status', (req, res) => {
 });
 
 // Endpoint to fetch candles via Angel One SmartAPI
+// Endpoint to fetch candles via Angel One SmartAPI (with automatic streaming fallback)
 app.get('/api/angel-one/candles', async (req, res) => {
   try {
     const symbol = req.query.symbol || 'NSE:NIFTY';
     const timeframe = req.query.timeframe || '5';
     const limit = parseInt(req.query.limit) || 150;
 
-    const candles = await angelBridge.fetchCandles(symbol, timeframe, limit);
+    const candles = await angelBridge.fetchCandles(symbol, timeframe, limit, tvBridge);
     const scrip = angelBridge.getScripInfo(symbol);
 
     res.json({
@@ -2044,11 +2045,11 @@ app.get('/api/angel-one/candles', async (req, res) => {
   }
 });
 
-// Endpoint to fetch LTP via Angel One SmartAPI
+// Endpoint to fetch LTP via Angel One SmartAPI (with automatic streaming fallback)
 app.get('/api/angel-one/ltp', async (req, res) => {
   try {
     const symbol = req.query.symbol || 'NSE:RELIANCE';
-    const ltp = await angelBridge.fetchLTP(symbol);
+    const ltp = await angelBridge.fetchLTP(symbol, tvBridge);
     const scrip = angelBridge.getScripInfo(symbol);
 
     res.json({

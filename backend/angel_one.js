@@ -222,7 +222,7 @@ export class AngelOneBridge {
     return 'FIVE_MINUTE';
   }
 
-  async fetchCandles(symbol, timeframe = '5', limit = 150) {
+  async fetchCandles(symbol, timeframe = '5', limit = 150, tvBridge = null) {
     const scrip = this.getScripInfo(symbol);
     const interval = this.mapTimeframe(timeframe);
 
@@ -266,7 +266,7 @@ export class AngelOneBridge {
         });
 
         const json = await res.json();
-        if (json.status && Array.isArray(json.data)) {
+        if (json.status && Array.isArray(json.data) && json.data.length > 0) {
           return json.data.map(c => ({
             time: Math.floor(new Date(c[0]).getTime() / 1000),
             open: parseFloat(c[1]),
@@ -281,11 +281,19 @@ export class AngelOneBridge {
       }
     }
 
-    // Fallback: return scrip info metadata with clean structure
+    // AUTOMATIC ZERO-CREDENTIAL FALLBACK: Stream live data seamlessly via tvBridge
+    if (tvBridge) {
+      try {
+        const { fetchCandlesForSymbol } = await import('./scanner.js');
+        const candles = await fetchCandlesForSymbol(tvBridge, symbol, timeframe, limit);
+        if (candles && candles.length > 0) return candles;
+      } catch (e) {}
+    }
+
     return [];
   }
 
-  async fetchLTP(symbol) {
+  async fetchLTP(symbol, tvBridge = null) {
     const scrip = this.getScripInfo(symbol);
 
     if (this.isLoggedIn && this.jwtToken) {
@@ -315,6 +323,17 @@ export class AngelOneBridge {
         const json = await res.json();
         if (json.status && json.data && json.data.ltp) {
           return parseFloat(json.data.ltp);
+        }
+      } catch (e) {}
+    }
+
+    // AUTOMATIC ZERO-CREDENTIAL FALLBACK: Stream LTP seamlessly via tvBridge
+    if (tvBridge) {
+      try {
+        const { fetchCandlesForSymbol } = await import('./scanner.js');
+        const candles = await fetchCandlesForSymbol(tvBridge, symbol, '5', 2);
+        if (candles && candles.length > 0) {
+          return candles[candles.length - 1].close;
         }
       } catch (e) {}
     }
