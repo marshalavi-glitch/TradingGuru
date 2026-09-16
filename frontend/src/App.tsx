@@ -48,8 +48,8 @@ interface TabItem {
 }
 
 const TABS_LIST: TabItem[] = [
-  { id: 'bhaichara', label: '🤝 Bhaichara Work', color: '#60a5fa' },
   { id: 'manual_trades', label: '📝 Manual Trades', color: '#10b981' },
+  { id: 'bhaichara', label: '🤝 Bhaichara Work', color: '#60a5fa' },
   { id: 'high_beta', label: '🚀 High Beta Trades', color: '#f97316' },
   { id: 'dada_thoughts', label: '🧠 Dada Thoughts', color: '#eab308' },
   { id: 'trump_mood', label: '🎺 Trump Mood', color: '#f87171' },
@@ -87,7 +87,7 @@ function App() {
   const [refreshKey, setRefreshKey] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<TabType>('bhaichara');
+  const [activeTab, setActiveTab] = useState<TabType>('manual_trades');
 
   const activeTabRef = useRef<HTMLButtonElement | null>(null);
 
