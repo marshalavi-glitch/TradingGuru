@@ -59,7 +59,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       setOnlineUsers(Math.max(1, count));
     });
 
-    const interval = setInterval(fetchUsers, 15000);
+    const interval = setInterval(fetchUsers, 5000);
     return () => clearInterval(interval);
   }, []);
 
@@ -221,24 +221,24 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               </span>
             </div>
 
-            {/* Active Users Badge */}
+            {/* Active Users Badge (Prominent Top Counter) */}
             <div 
               style={{ 
                 display: 'flex', 
                 alignItems: 'center', 
-                gap: '6px', 
-                background: 'rgba(16, 185, 129, 0.15)', 
-                border: '1px solid rgba(16, 185, 129, 0.4)', 
-                padding: '4px 10px', 
-                borderRadius: '6px',
-                boxShadow: '0 0 10px rgba(16, 185, 129, 0.2)'
+                gap: '7px', 
+                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(5, 150, 105, 0.15))', 
+                border: '1px solid #10b981', 
+                padding: '4px 12px', 
+                borderRadius: '8px',
+                boxShadow: '0 0 14px rgba(16, 185, 129, 0.35)'
               }} 
-              title="Current Active Users Connected to Dashboard Right Now"
+              title="Number of active users currently using this dashboard right now"
             >
-              <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981' }} className="animate-pulse" />
-              <Users size={13} color="#10b981" />
-              <span style={{ fontSize: '11px', fontWeight: '800', color: '#10b981', letterSpacing: '0.2px' }}>
-                {onlineUsers} {onlineUsers === 1 ? 'User Active' : 'Users Active Right Now'}
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981', boxShadow: '0 0 8px #10b981' }} className="animate-pulse" />
+              <Users size={14} color="#34d399" />
+              <span style={{ fontSize: '12px', fontWeight: '900', color: '#34d399', letterSpacing: '0.3px' }}>
+                {onlineUsers} {onlineUsers === 1 ? 'Person Active Now' : 'People Using Dashboard Right Now'}
               </span>
             </div>
 
