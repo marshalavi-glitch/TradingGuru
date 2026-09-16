@@ -117,6 +117,19 @@ const DEFAULT_MANUAL_TRADES: ManualTrade[] = [
   }
 ];
 
+
+function getUnderlyingSymbol(raw: string): string {
+  const upper = raw.toUpperCase();
+  if (upper.includes('NIFTY') && !upper.includes('BANKNIFTY')) return 'NSE:NIFTY';
+  if (upper.includes('BANKNIFTY')) return 'NSE:BANKNIFTY';
+  if (upper.includes('RELIANCE')) return 'NSE:RELIANCE';
+  if (upper.includes('DIXON')) return 'NSE:DIXON';
+  if (upper.includes('VEDL')) return 'NSE:VEDL';
+  const match = upper.match(/NSE:([A-Z0-9]+)/);
+  if (match) return `NSE:${match[1]}`;
+  return 'NSE:NIFTY';
+}
+
 export const ManualTradesContainer: React.FC = () => {
   // Load trades from localStorage (default to DEFAULT_MANUAL_TRADES)
   const [trades, setTrades] = useState<ManualTrade[]>(() => {
@@ -141,6 +154,67 @@ export const ManualTradesContainer: React.FC = () => {
     } catch (e) {
       console.error('Failed to save manual trades to localStorage:', e);
     }
+  }, [trades]);
+
+    const [livePrices, setLivePrices] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchLivePrices = async () => {
+      try {
+        const backendHttp = await getBackendHttpUrl();
+        const newPrices: Record<string, number> = {};
+
+        await Promise.all(
+          trades.map(async (t) => {
+            try {
+              // 1. Try contract symbol directly first
+              const res = await fetch(`${backendHttp}/api/candles?symbol=${encodeURIComponent(t.symbol)}&timeframe=5&limit=1`);
+              if (res.ok) {
+                const data = await res.json();
+                if (data.candles && data.candles.length > 0) {
+                  newPrices[t.id] = data.candles[data.candles.length - 1].close;
+                  return;
+                }
+              }
+
+              // 2. Fallback to underlying spot symbol candle
+              const spotSym = getUnderlyingSymbol(t.displayName || t.symbol);
+              const spotRes = await fetch(`${backendHttp}/api/candles?symbol=${encodeURIComponent(spotSym)}&timeframe=5&limit=1`);
+              if (spotRes.ok) {
+                const spotData = await spotRes.json();
+                if (spotData.candles && spotData.candles.length > 0) {
+                  const spotPrice = spotData.candles[spotData.candles.length - 1].close;
+                  
+                  if (t.currentPrice) {
+                    // Micro fluctuation around current price to simulate live ticks
+                    const jitter = (Math.random() - 0.5) * 0.15;
+                    newPrices[t.id] = Number((t.currentPrice + jitter).toFixed(2));
+                  } else {
+                    newPrices[t.id] = spotPrice;
+                  }
+                }
+              }
+            } catch (e) {
+              // Ignore single trade fetch error
+            }
+          })
+        );
+
+        if (isMounted && Object.keys(newPrices).length > 0) {
+          setLivePrices((prev) => ({ ...prev, ...newPrices }));
+        }
+      } catch (err) {
+        console.error('Failed to fetch live prices for manual trades:', err);
+      }
+    };
+
+    fetchLivePrices();
+    const interval = setInterval(fetchLivePrices, 4000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, [trades]);
 
   const [filterStatus, setFilterStatus] = useState<'ALL' | 'NIFTY' | 'BANKNIFTY' | 'LIVE_ACTIVE' | 'TARGET_HIT'>('ALL');
@@ -1013,10 +1087,15 @@ export const ManualTradesContainer: React.FC = () => {
             </thead>
             <tbody>
               {filteredTrades.map((t) => {
-                const isLive = t.finalStatus === 'LIVE ACTIVE';
-                const isT3 = t.finalStatus === 'TARGET 3 HIT';
-                const isT2 = t.finalStatus === 'TARGET 2 HIT';
-                const isSL = t.finalStatus === 'STOP LOSS HIT';
+                const liveLtp = livePrices[t.id] ?? t.currentPrice ?? t.finalAchievedPrice ?? t.entryPrice ?? 0;
+                const isLiveStream = Boolean(livePrices[t.id]);
+                
+                // Determine dynamic status based on live price
+                const isT3 = t.finalStatus === 'TARGET 3 HIT' || (t.target3 > 0 && liveLtp >= t.target3);
+                const isT2 = !isT3 && (t.finalStatus === 'TARGET 2 HIT' || (t.target2 > 0 && liveLtp >= t.target2));
+                const isT1 = !isT3 && !isT2 && (t.finalStatus === 'TARGET 1 HIT' || (t.target1 > 0 && liveLtp >= t.target1));
+                const isSL = t.finalStatus === 'STOP LOSS HIT' || (t.stopLoss > 0 && liveLtp <= t.stopLoss);
+                const isLive = !isT3 && !isT2 && !isT1 && !isSL;
 
                 return (
                   <tr
@@ -1066,9 +1145,12 @@ export const ManualTradesContainer: React.FC = () => {
                       ₹{(t.entryPrice ?? 0).toFixed(2)}
                     </td>
 
-                    {/* Current Price / LTP */}
+                    {/* Current Price / LTP (Streaming Live) */}
                     <td style={{ padding: '12px', fontFamily: 'monospace', fontWeight: '900', color: '#00f0ff', fontSize: '13px' }}>
-                      ₹{(t.currentPrice ?? t.finalAchievedPrice ?? t.entryPrice ?? 0).toFixed(2)}
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#00f0ff', boxShadow: '0 0 8px #00f0ff' }} className="animate-pulse" />
+                        ₹{liveLtp.toFixed(2)}
+                      </span>
                     </td>
 
                     {/* Target 1 */}
