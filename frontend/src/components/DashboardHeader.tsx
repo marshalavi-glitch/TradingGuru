@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, X, Activity, RefreshCw, Landmark, TrendingUp, Layers, Users } from 'lucide-react';
+import { Search, X, Activity, RefreshCw, Landmark, TrendingUp, Layers, Users, Volume2 } from 'lucide-react';
 import { tvStreamer, getBackendHttpUrl } from '../utils/tvStreamer';
 
 interface DashboardHeaderProps {
@@ -220,6 +220,39 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 {currentTime ? `${currentTime}` : '--:--:--'}
               </span>
             </div>
+
+            {/* Voice Test Button */}
+            <button
+              onClick={() => {
+                if ('speechSynthesis' in window) {
+                  window.speechSynthesis.cancel();
+                  const sampleUtterance = new SpeechSynthesisUtterance('Voice alerts active. Real-time AI announcements are enabled.');
+                  const voices = window.speechSynthesis.getVoices();
+                  const femaleVoice = voices.find(v => v.name.includes('Zira') || v.name.includes('Jenny') || v.name.includes('Aria') || v.name.includes('Google UK English Female') || (v.name.toLowerCase().includes('female') && v.lang.startsWith('en')));
+                  if (femaleVoice) sampleUtterance.voice = femaleVoice;
+                  sampleUtterance.pitch = 1.25;
+                  sampleUtterance.rate = 1.0;
+                  window.speechSynthesis.speak(sampleUtterance);
+                }
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                background: 'rgba(59, 130, 246, 0.15)',
+                border: '1px solid rgba(59, 130, 246, 0.4)',
+                padding: '4px 9px',
+                borderRadius: '6px',
+                color: '#60a5fa',
+                fontSize: '11px',
+                fontWeight: '800',
+                cursor: 'pointer'
+              }}
+              title="Click to test Female AI Voice alert speech"
+            >
+              <Volume2 size={13} color="#60a5fa" />
+              <span>AI Voice Alert</span>
+            </button>
 
             {/* Active Users Badge (Prominent Top Counter) */}
             <div 

@@ -93,8 +93,9 @@ function App() {
 
   const [liveTradeAlert, setLiveTradeAlert] = useState<{ trade: any; timestamp: number } | null>(null);
 
-  // Play pleasant dual-tone alert chime
-  const playAlertChime = () => {
+  // Melodic Chime + Natural Female AI Voice Speech Synthesizer
+  const announceLiveTradeAlert = (trade: any) => {
+    // 1. Melodic Chime
     try {
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
       const now = audioCtx.currentTime;
@@ -121,12 +122,66 @@ function App() {
       osc2.start(now + 0.12);
       osc2.stop(now + 0.45);
     } catch (e) {}
+
+    // 2. Natural Female AI Voice Announcement
+    setTimeout(() => {
+      try {
+        if (!('speechSynthesis' in window)) return;
+        window.speechSynthesis.cancel(); // Clear queued speech
+
+        const tradeTypeClean = (trade.tradeType || 'Call Buy').replace('BUY', 'Buy').replace('SHORT', 'Short').replace('LONG', 'Long');
+        const nameClean = trade.displayName || 'Contract';
+        const entryClean = Number(trade.entryPrice || 0).toFixed(2);
+        const slClean = Number(trade.stopLoss || 0).toFixed(2);
+        const t1Clean = Number(trade.target1 || 0).toFixed(2);
+        const t2Clean = Number(trade.target2 || 0).toFixed(2);
+        const t3Clean = Number(trade.target3 || 0).toFixed(2);
+
+        const speechText = `Attention traders! New trade alert: ${tradeTypeClean} ${nameClean} at ${entryClean} rupees. Stop Loss ${slClean}. Targets ${t1Clean}, ${t2Clean}, and ${t3Clean}.`;
+
+        const utterance = new SpeechSynthesisUtterance(speechText);
+
+        const selectAndSpeak = () => {
+          const voices = window.speechSynthesis.getVoices();
+          const femaleVoice = voices.find(v => 
+            v.name.includes('Zira') || 
+            v.name.includes('Jenny') || 
+            v.name.includes('Aria') || 
+            v.name.includes('Google UK English Female') || 
+            v.name.includes('Google US English') ||
+            v.name.includes('Samantha') || 
+            v.name.includes('Victoria') ||
+            (v.name.toLowerCase().includes('female') && v.lang.startsWith('en'))
+          ) || voices.find(v => v.lang === 'en-US' || v.lang.startsWith('en'));
+
+          if (femaleVoice) {
+            utterance.voice = femaleVoice;
+          }
+          
+          utterance.rate = 1.0;
+          utterance.pitch = 1.25; // Crisp female voice pitch
+          utterance.volume = 1.0;
+
+          window.speechSynthesis.speak(utterance);
+        };
+
+        if (window.speechSynthesis.getVoices().length > 0) {
+          setTimeout(selectAndSpeak, 150);
+        } else {
+          window.speechSynthesis.onvoiceschanged = () => {
+            setTimeout(selectAndSpeak, 150);
+          };
+        }
+      } catch (e) {
+        console.warn('Speech synthesis error:', e);
+      }
+    }, 300);
   };
 
   // Subscribe to real-time manual trade WebSocket alert broadcasts
   useEffect(() => {
     tvStreamer.setManualTradeAddedListener((trade) => {
-      playAlertChime();
+      announceLiveTradeAlert(trade);
       setLiveTradeAlert({ trade, timestamp: Date.now() });
     });
   }, []);
@@ -136,7 +191,7 @@ function App() {
     if (liveTradeAlert) {
       const timer = setTimeout(() => {
         setLiveTradeAlert(null);
-      }, 9000);
+      }, 12000);
       return () => clearTimeout(timer);
     }
   }, [liveTradeAlert]);
