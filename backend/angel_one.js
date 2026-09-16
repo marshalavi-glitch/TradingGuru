@@ -336,4 +336,38 @@ export class AngelOneBridge {
       supportedExchanges: ['NSE', 'NFO', 'BSE', 'MCX']
     };
   }
+
+  async updateCredentials({ apiKey, clientCode, password, totpSecret }) {
+    if (apiKey !== undefined) this.apiKey = apiKey.trim();
+    if (clientCode !== undefined) this.clientCode = clientCode.trim();
+    if (password !== undefined) this.password = password.trim();
+    if (totpSecret !== undefined) this.totpSecret = totpSecret.trim();
+
+    try {
+      const envPath = path.join(__dirname, '.env');
+      let envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf8') : '';
+
+      const updateEnvVar = (name, val) => {
+        const regex = new RegExp(`^${name}=.*`, 'm');
+        if (regex.test(envContent)) {
+          envContent = envContent.replace(regex, `${name}="${val}"`);
+        } else {
+          envContent += `\n${name}="${val}"`;
+        }
+      };
+
+      updateEnvVar('ANGEL_API_KEY', this.apiKey);
+      updateEnvVar('ANGEL_CLIENT_CODE', this.clientCode);
+      updateEnvVar('ANGEL_PASSWORD', this.password);
+      updateEnvVar('ANGEL_TOTP_SECRET', this.totpSecret);
+
+      fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf8');
+      console.log('[Angel One] Updated SmartAPI credentials in backend/.env');
+    } catch (err) {
+      console.error('[Angel One] Error updating .env file:', err.message);
+    }
+
+    const success = await this.login();
+    return { success, status: this.getStatus() };
+  }
 }

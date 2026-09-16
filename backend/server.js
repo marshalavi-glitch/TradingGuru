@@ -2062,6 +2062,17 @@ app.get('/api/angel-one/ltp', async (req, res) => {
   }
 });
 
+// Endpoint to update Angel One credentials & attempt login dynamically
+app.post('/api/angel-one/config', async (req, res) => {
+  try {
+    const { apiKey, clientCode, password, totpSecret } = req.body || {};
+    const result = await angelBridge.updateCredentials({ apiKey, clientCode, password, totpSecret });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Failed to update Angel One credentials' });
+  }
+});
+
 // Endpoint to retrieve NR7 expansion breakouts
 app.get('/api/nr7-breakouts', (req, res) => {
   if (req.query.scan === 'true' && !nr7Cache.isScanning) {

@@ -2,6 +2,16 @@
   "date": "9/16/2026",
   "results": [
     {
+      "symbol": "ICICIBANK1!",
+      "time": "15:25:00",
+      "currentVolume": 241500,
+      "prevMaxVolume": 191100,
+      "ratio": 1.3,
+      "close": 1362.5,
+      "direction": "UP",
+      "type": "futures"
+    },
+    {
       "symbol": "MUTHOOTFIN",
       "time": "15:10:00",
       "currentVolume": 42165,
@@ -160,6 +170,56 @@
       "close": 1834,
       "direction": "DOWN",
       "type": "futures"
+    },
+    {
+      "symbol": "TCS",
+      "time": "15:10:00",
+      "currentVolume": 169179,
+      "prevMaxVolume": 158150,
+      "ratio": 1.1,
+      "close": 2183,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "POWERGRID",
+      "time": "15:10:00",
+      "currentVolume": 444766,
+      "prevMaxVolume": 444388,
+      "ratio": 1,
+      "close": 264.1,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "BANKBARODA",
+      "time": "15:10:00",
+      "currentVolume": 312712,
+      "prevMaxVolume": 304766,
+      "ratio": 1,
+      "close": 234.29,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "CUMMINSIND",
+      "time": "15:10:00",
+      "currentVolume": 23012,
+      "prevMaxVolume": 19325,
+      "ratio": 1.2,
+      "close": 4950,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "NMDC",
+      "time": "15:10:00",
+      "currentVolume": 912566,
+      "prevMaxVolume": 866172,
+      "ratio": 1.1,
+      "close": 80.52,
+      "direction": "UP",
+      "type": "stock"
     },
     {
       "symbol": "NTPC",
@@ -1816,5 +1876,5 @@
       "type": "stock"
     }
   ],
-  "lastScanTime": "2026-09-16T09:58:56.207Z"
+  "lastScanTime": "2026-09-16T15:16:15.684Z"
 }

@@ -37,6 +37,13 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   const [onlineUsers, setOnlineUsers] = useState<number>(1);
   const modalInputRef = useRef<HTMLInputElement>(null);
 
+  // Angel One Setup Modal State
+  const [isAngelModalOpen, setIsAngelModalOpen] = useState(false);
+  const [angelForm, setAngelForm] = useState({ apiKey: '', clientCode: '', password: '', totpSecret: '' });
+  const [angelStatus, setAngelStatus] = useState<any>(null);
+  const [savingAngel, setSavingAngel] = useState(false);
+  const [angelMsg, setAngelMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
   // Live Active Online Users Counter
   useEffect(() => {
     const fetchUsers = async () => {
@@ -306,23 +313,16 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             {/* Angel One SmartAPI Provider Badge */}
             <div
               onClick={async () => {
+                setIsAngelModalOpen(true);
+                setAngelMsg(null);
                 try {
                   const backendUrl = await getBackendHttpUrl();
                   const res = await fetch(`${backendUrl}/api/angel-one/status`);
                   if (res.ok) {
                     const data = await res.json();
-                    alert(
-                      `👼 Angel One SmartAPI Integration Status:\n\n` +
-                      `• Status: ${data.isLoggedIn ? 'Authenticated & Active ✅' : 'Scrip Master Ready (29,996 Scrips Mapped) ⚡'}\n` +
-                      `• Supported Exchanges: ${data.supportedExchanges.join(', ')}\n` +
-                      `• API Key Set: ${data.credentials.apiKeySet ? 'YES' : 'NO (Add ANGEL_API_KEY in backend/.env)'}\n` +
-                      `• Client Code Set: ${data.credentials.clientCodeSet ? 'YES' : 'NO (Add ANGEL_CLIENT_CODE in backend/.env)'}\n\n` +
-                      `Angel One data integration is fully active in your backend!`
-                    );
+                    setAngelStatus(data);
                   }
-                } catch (e) {
-                  alert('Angel One SmartAPI Ready (29,996 Scrips Mapped).');
-                }
+                } catch (e) {}
               }}
               style={{
                 display: 'flex',
@@ -334,7 +334,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 borderRadius: '6px',
                 cursor: 'pointer'
               }}
-              title="Click to view Angel One SmartAPI integration status"
+              title="Click to configure Angel One SmartAPI credentials & status"
             >
               <span style={{ fontSize: '11px', fontWeight: '800', color: '#f59e0b' }}>
                 👼 Angel One
@@ -714,6 +714,266 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               <span>Tap outside or ESC to close</span>
             </div>
             
+          </div>
+        </div>
+      )}
+
+      {/* Angel One SmartAPI Setup Modal */}
+      {isAngelModalOpen && (
+        <div
+          onClick={() => setIsAngelModalOpen(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(4, 5, 8, 0.85)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 9999,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: '12px',
+            boxSizing: 'border-box'
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%',
+              maxWidth: '520px',
+              backgroundColor: '#0d1017',
+              border: '1px solid rgba(245, 158, 11, 0.4)',
+              borderRadius: '16px',
+              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.8)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+              padding: '24px',
+              boxSizing: 'border-box'
+            }}
+          >
+            {/* Modal Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '20px' }}>👼</span>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '900', color: '#ffffff' }}>
+                    Angel One SmartAPI Setup
+                  </h3>
+                  <p style={{ margin: '2px 0 0 0', fontSize: '11px', color: '#94a3b8' }}>
+                    Enter your SmartAPI Key & User credentials to authenticate and stream live Angel One market data.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsAngelModalOpen(false)}
+                style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Status Banner */}
+            <div style={{
+              background: angelStatus?.isLoggedIn ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+              border: angelStatus?.isLoggedIn ? '1px solid #10b981' : '1px solid #f59e0b',
+              borderRadius: '8px',
+              padding: '10px 14px',
+              fontSize: '12px',
+              color: '#ffffff',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '4px'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <strong style={{ color: angelStatus?.isLoggedIn ? '#10b981' : '#f59e0b', fontSize: '13px' }}>
+                  {angelStatus?.isLoggedIn ? '✅ SmartAPI Status: Authenticated & Connected' : '⚡ SmartAPI Status: Credentials Required'}
+                </strong>
+                <span style={{ fontSize: '10px', background: 'rgba(0,0,0,0.4)', padding: '2px 6px', borderRadius: '4px' }}>
+                  {angelStatus?.scripCount || 29996} Scrips Mapped
+                </span>
+              </div>
+              <span style={{ fontSize: '11px', color: '#cbd5e1' }}>
+                {angelStatus?.isLoggedIn 
+                  ? 'Live historical candles and LTP ticks are streaming directly from Angel Broking SmartAPI.' 
+                  : 'Enter your Angel One SmartAPI App Key, Client ID, Password & TOTP Secret below to authenticate.'}
+              </span>
+            </div>
+
+            {angelMsg && (
+              <div style={{
+                padding: '10px 14px',
+                borderRadius: '8px',
+                fontSize: '12px',
+                fontWeight: '700',
+                background: angelMsg.type === 'success' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+                border: angelMsg.type === 'success' ? '1px solid #10b981' : '1px solid #ef4444',
+                color: angelMsg.type === 'success' ? '#34d399' : '#f87171'
+              }}>
+                {angelMsg.text}
+              </div>
+            )}
+
+            {/* Credentials Form */}
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              setSavingAngel(true);
+              setAngelMsg(null);
+              try {
+                const backendUrl = await getBackendHttpUrl();
+                const res = await fetch(`${backendUrl}/api/angel-one/config`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(angelForm)
+                });
+                const data = await res.json();
+                setAngelStatus(data.status);
+                if (data.success) {
+                  setAngelMsg({ type: 'success', text: '✅ SmartAPI Login Successful! Credentials saved & live stream connected.' });
+                } else {
+                  setAngelMsg({ type: 'error', text: '❌ SmartAPI Authentication Failed. Please verify API Key, Client ID, Password & TOTP Secret.' });
+                }
+              } catch (err: any) {
+                setAngelMsg({ type: 'error', text: err.message || 'Failed to connect to backend server' });
+              } finally {
+                setSavingAngel(false);
+              }
+            }} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              
+              <div>
+                <label style={{ display: 'block', fontSize: '11px', color: '#cbd5e1', fontWeight: '700', marginBottom: '4px' }}>
+                  SmartAPI Key (API Key) *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={angelForm.apiKey}
+                  onChange={(e) => setAngelForm({ ...angelForm, apiKey: e.target.value })}
+                  placeholder="e.g. your_smartapi_key_here"
+                  style={{
+                    width: '100%',
+                    background: '#0b0f19',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    borderRadius: '6px',
+                    padding: '8px 10px',
+                    color: '#ffffff',
+                    fontSize: '12px',
+                    fontFamily: 'monospace'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#cbd5e1', fontWeight: '700', marginBottom: '4px' }}>
+                    Client Code / User ID *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={angelForm.clientCode}
+                    onChange={(e) => setAngelForm({ ...angelForm, clientCode: e.target.value })}
+                    placeholder="e.g. A123456"
+                    style={{
+                      width: '100%',
+                      background: '#0b0f19',
+                      border: '1px solid rgba(255, 255, 255, 0.15)',
+                      borderRadius: '6px',
+                      padding: '8px 10px',
+                      color: '#ffffff',
+                      fontSize: '12px'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', color: '#cbd5e1', fontWeight: '700', marginBottom: '4px' }}>
+                    PIN / Password *
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    value={angelForm.password}
+                    onChange={(e) => setAngelForm({ ...angelForm, password: e.target.value })}
+                    placeholder="••••••••"
+                    style={{
+                      width: '100%',
+                      background: '#0b0f19',
+                      border: '1px solid rgba(255, 255, 255, 0.15)',
+                      borderRadius: '6px',
+                      padding: '8px 10px',
+                      color: '#ffffff',
+                      fontSize: '12px'
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '11px', color: '#cbd5e1', fontWeight: '700', marginBottom: '4px' }}>
+                  TOTP Secret Key (from Authenticator Setup) *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={angelForm.totpSecret}
+                  onChange={(e) => setAngelForm({ ...angelForm, totpSecret: e.target.value })}
+                  placeholder="e.g. JBSWY3DPEHPK3PXP"
+                  style={{
+                    width: '100%',
+                    background: '#0b0f19',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    borderRadius: '6px',
+                    padding: '8px 10px',
+                    color: '#ffffff',
+                    fontSize: '12px',
+                    fontFamily: 'monospace'
+                  }}
+                />
+                <span style={{ fontSize: '10px', color: '#94a3b8', display: 'block', marginTop: '2px' }}>
+                  Angel One App Settings → Security → Enable TOTP to get your secret string.
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsAngelModalOpen(false)}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    color: '#cbd5e1',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingAngel}
+                  style={{
+                    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                    border: 'none',
+                    color: '#ffffff',
+                    padding: '8px 20px',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: '800',
+                    cursor: 'pointer',
+                    boxShadow: '0 0 14px rgba(245, 158, 11, 0.4)'
+                  }}
+                >
+                  {savingAngel ? 'Authenticating SmartAPI...' : 'Connect & Test SmartAPI'}
+                </button>
+              </div>
+            </form>
+
           </div>
         </div>
       )}
