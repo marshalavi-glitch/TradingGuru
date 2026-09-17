@@ -2,6 +2,36 @@
   "date": "9/17/2026",
   "results": [
     {
+      "symbol": "SUNPHARMA",
+      "time": "11:10:00",
+      "currentVolume": 51260,
+      "prevMaxVolume": 30965,
+      "ratio": 1.7,
+      "close": 1860.7,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "HINDALCO",
+      "time": "11:10:00",
+      "currentVolume": 127434,
+      "prevMaxVolume": 106112,
+      "ratio": 1.2,
+      "close": 979.8,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "TITAN",
+      "time": "11:10:00",
+      "currentVolume": 21040,
+      "prevMaxVolume": 16865,
+      "ratio": 1.2,
+      "close": 4875,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
       "symbol": "TATASTEEL",
       "time": "11:05:00",
       "currentVolume": 831444,
@@ -1088,5 +1118,5 @@
       "type": "stock"
     }
   ],
-  "lastScanTime": "2026-09-17T05:56:41.936Z"
+  "lastScanTime": "2026-09-17T06:00:47.369Z"
 }

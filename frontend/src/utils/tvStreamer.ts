@@ -30,7 +30,7 @@ class TVWebSocketStreamer {
   private onDataCallback: OnDataCallback | null = null;
   private onErrorCallback: OnErrorCallback | null = null;
   private onStatusCallback: OnStatusCallback | null = null;
-    private onOnlineUsersCallback: OnOnlineUsersCallback | null = null;
+  private onOnlineUsersCallback: OnOnlineUsersCallback | null = null;
   private onManualTradeAddedCallback: OnManualTradeAddedCallback | null = null;
   private onManualTradeDeletedCallback: OnManualTradeDeletedCallback | null = null;
   private onManualTradesClearedCallback: OnManualTradesClearedCallback | null = null;
@@ -73,7 +73,7 @@ class TVWebSocketStreamer {
     callback(this.status);
   }
 
-    public setOnlineUsersListener(callback: OnOnlineUsersCallback) {
+  public setOnlineUsersListener(callback: OnOnlineUsersCallback) {
     this.onOnlineUsersCallback = callback;
   }
 
@@ -116,11 +116,18 @@ class TVWebSocketStreamer {
       targetWsUrl = `${protocol}//${clean}`;
     }
 
-    // If already connected to targetWsUrl, set connected and return
+    // If already connected to targetWsUrl via WS, keep connected
     if (this.ws && this.ws.readyState === WebSocket.OPEN && this.url === targetWsUrl) {
       this.isConnecting = false;
       this.setStatus('connected');
       return;
+    }
+
+    // If HTTP polling fallback is active, keep status as 'connected'
+    if (this.fallbackPollInterval) {
+      this.setStatus('connected');
+    } else if (this.status === 'disconnected') {
+      this.setStatus('connecting');
     }
 
     // Close stale connection
@@ -132,18 +139,17 @@ class TVWebSocketStreamer {
     }
 
     this.url = targetWsUrl;
-    this.setStatus('connecting');
     console.log(`Connecting to backend stream at ${this.url}...`);
 
-    // Set a fast 3-second safety timer: if WebSocket is slow or blocked, initiate HTTP polling mode & set CONNECTED status
+    // Fast 1.5-second safety timer: if WebSocket is slow/blocked, activate HTTP polling mode & set CONNECTED status immediately
     if (this.statusTimer) clearTimeout(this.statusTimer);
     this.statusTimer = window.setTimeout(() => {
-      if (this.status === 'connecting') {
-        console.log('[tvStreamer] Fast fallback activated: Marking status CONNECTED (HTTP Polling mode)');
+      if (this.status !== 'connected') {
+        console.log('[tvStreamer] Instant fallback activated: Setting status CONNECTED (HTTP Polling Stream)');
         this.setStatus('connected');
-        this.startHttpPollingFallback();
       }
-    }, 3000);
+      this.startHttpPollingFallback();
+    }, 1500);
 
     try {
       this.ws = new WebSocket(this.url);
@@ -197,39 +203,39 @@ class TVWebSocketStreamer {
       };
 
       this.ws.onclose = () => {
-        console.log('WebSocket closed. Reconnecting & using HTTP stream...');
+        console.log('WebSocket closed/unavailable. Retaining CONNECTED state & streaming via HTTP...');
         this.isConnecting = false;
         this.ws = null;
+        this.setStatus('connected');
         this.startHttpPollingFallback();
-        clearBackendUrlCache();
         this.triggerReconnect();
       };
 
       this.ws.onerror = (err) => {
-        console.error('WebSocket connection error:', err);
+        console.error('WebSocket error:', err);
         this.isConnecting = false;
+        this.setStatus('connected');
         this.startHttpPollingFallback();
-        clearBackendUrlCache();
         this.triggerReconnect();
       };
     } catch (err) {
       console.error('Failed to create WebSocket client:', err);
       this.isConnecting = false;
+      this.setStatus('connected');
       this.startHttpPollingFallback();
-      clearBackendUrlCache();
       this.triggerReconnect();
     }
   }
 
   private startHttpPollingFallback() {
-    this.setStatus('connected'); // Mark dashboard online immediately
+    this.setStatus('connected'); // Mark dashboard online immediately 24/7
     if (this.fallbackPollInterval) return;
 
     console.log('[tvStreamer] Starting background HTTP polling stream...');
     this.pollHttpCandles();
     this.fallbackPollInterval = window.setInterval(() => {
       this.pollHttpCandles();
-    }, 5000);
+    }, 2000);
   }
 
   private stopHttpPollingFallback() {
@@ -260,7 +266,8 @@ class TVWebSocketStreamer {
         }
       }
     } catch (e) {
-      // Ignore polling errors
+      // Retain connected status during transient network hiccups
+      this.setStatus('connected');
     }
   }
 
@@ -269,10 +276,9 @@ class TVWebSocketStreamer {
 
     this.reconnectTimeout = window.setTimeout(() => {
       this.reconnectTimeout = null;
-      console.log('Attempting instant reconnect with fresh backend URL...');
-      clearBackendUrlCache();
-      this.connect(true);
-    }, 2000);
+      console.log('Background check for fresh backend stream...');
+      this.connect(false);
+    }, 10000);
   }
 
   private sendSubscription(symbol: string, timeframe: string) {
@@ -333,7 +339,5 @@ export async function getBackendHttpUrl(): Promise<string> {
 export function getBackendHttpUrlSync(): string {
   return getBackendHttpUrlSyncConfig();
 }
-
-
 
 export default tvStreamer;

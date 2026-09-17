@@ -6762,6 +6762,76 @@
       "sweepType": null,
       "sweepHigh": null,
       "sweepLow": null
+    },
+    {
+      "symbol": "NSE:SUNPHARMA",
+      "levelKey": "level2",
+      "levelValue": 1871.2724799999999,
+      "price": 1862.1,
+      "touchTime": "11:27 am",
+      "date": "9/17/2026",
+      "optionPremium": 17.85,
+      "isFno": true,
+      "signalType": "touch",
+      "sweepType": null,
+      "sweepHigh": null,
+      "sweepLow": null
+    },
+    {
+      "symbol": "NSE:BPCL",
+      "levelKey": "level7",
+      "levelValue": 301.7275,
+      "price": 303.2,
+      "touchTime": "11:28 am",
+      "date": "9/17/2026",
+      "optionPremium": 5.35,
+      "isFno": true,
+      "signalType": "touch",
+      "sweepType": null,
+      "sweepHigh": null,
+      "sweepLow": null
+    },
+    {
+      "symbol": "NSE:INDUSINDBK",
+      "levelKey": "level3",
+      "levelValue": 955.63,
+      "price": 960.4,
+      "touchTime": "11:28 am",
+      "date": "9/17/2026",
+      "optionPremium": 14.45,
+      "isFno": true,
+      "signalType": "touch",
+      "sweepType": null,
+      "sweepHigh": null,
+      "sweepLow": null
+    },
+    {
+      "symbol": "NSE:CONCOR",
+      "levelKey": "level7",
+      "levelValue": 485.885,
+      "price": 488.1,
+      "touchTime": "11:28 am",
+      "date": "9/17/2026",
+      "optionPremium": 8.35,
+      "isFno": true,
+      "signalType": "touch",
+      "sweepType": null,
+      "sweepHigh": null,
+      "sweepLow": null
+    },
+    {
+      "symbol": "NSE:METROPOLIS",
+      "levelKey": "level6",
+      "levelValue": 575.8633333333333,
+      "price": 578.2,
+      "touchTime": "11:28 am",
+      "date": "9/17/2026",
+      "optionPremium": null,
+      "isFno": false,
+      "signalType": "touch",
+      "sweepType": null,
+      "sweepHigh": null,
+      "sweepLow": null
     }
   ]
 }
