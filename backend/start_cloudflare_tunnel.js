@@ -88,7 +88,7 @@ async function publishToHuggingFace(tunnelUrl) {
 
 function startServeoTunnel() {
   console.log('[Tunnel Engine] Spawning Serveo.net SSH Tunnel...');
-  const child = spawn('ssh', ['-o', 'StrictHostKeyChecking=no', '-R', '80:localhost:3002', 'serveo.net']);
+  const child = spawn('ssh', ['-o', 'StrictHostKeyChecking=no', '-o', 'ServerAliveInterval=15', '-o', 'ServerAliveCountMax=3', '-R', '80:localhost:3002', 'serveo.net']);
   currentChildProcess = child;
   let buffer = '';
 

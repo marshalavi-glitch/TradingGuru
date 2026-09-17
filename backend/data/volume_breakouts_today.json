@@ -2,6 +2,36 @@
   "date": "9/17/2026",
   "results": [
     {
+      "symbol": "HINDALCO",
+      "time": "11:20:00",
+      "currentVolume": 152854,
+      "prevMaxVolume": 127837,
+      "ratio": 1.2,
+      "close": 982,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "DIVISLAB",
+      "time": "11:20:00",
+      "currentVolume": 21001,
+      "prevMaxVolume": 17526,
+      "ratio": 1.2,
+      "close": 9266.5,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "TATAPOWER",
+      "time": "11:15:00",
+      "currentVolume": 106855,
+      "prevMaxVolume": 89926,
+      "ratio": 1.2,
+      "close": 362.65,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
       "symbol": "SUNPHARMA",
       "time": "11:10:00",
       "currentVolume": 51260,
@@ -1118,5 +1148,5 @@
       "type": "stock"
     }
   ],
-  "lastScanTime": "2026-09-17T06:00:47.369Z"
+  "lastScanTime": "2026-09-17T06:09:53.178Z"
 }

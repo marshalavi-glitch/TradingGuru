@@ -6832,6 +6832,76 @@
       "sweepType": null,
       "sweepHigh": null,
       "sweepLow": null
+    },
+    {
+      "symbol": "NSE:HAL",
+      "levelKey": "level2",
+      "levelValue": 4777.318560000001,
+      "price": 4760,
+      "touchTime": "11:33 am",
+      "date": "9/17/2026",
+      "optionPremium": 69.6,
+      "isFno": true,
+      "signalType": "touch",
+      "sweepType": null,
+      "sweepHigh": null,
+      "sweepLow": null
+    },
+    {
+      "symbol": "NSE:CUMMINSIND",
+      "levelKey": "level3",
+      "levelValue": 5017.55,
+      "price": 5005.5,
+      "touchTime": "11:39 am",
+      "date": "9/17/2026",
+      "optionPremium": 75.6,
+      "isFno": true,
+      "signalType": "touch",
+      "sweepType": null,
+      "sweepHigh": null,
+      "sweepLow": null
+    },
+    {
+      "symbol": "NSE:ICICIPRULI",
+      "levelKey": "level1",
+      "levelValue": 487.5369296421928,
+      "price": 485.25,
+      "touchTime": "11:39 am",
+      "date": "9/17/2026",
+      "optionPremium": 8.4,
+      "isFno": true,
+      "signalType": "touch",
+      "sweepType": null,
+      "sweepHigh": null,
+      "sweepLow": null
+    },
+    {
+      "symbol": "NSE:SBILIFE",
+      "levelKey": "level1",
+      "levelValue": 1747.7176406665058,
+      "price": 1739.7,
+      "touchTime": "11:39 am",
+      "date": "9/17/2026",
+      "optionPremium": 27.5,
+      "isFno": true,
+      "signalType": "touch",
+      "sweepType": null,
+      "sweepHigh": null,
+      "sweepLow": null
+    },
+    {
+      "symbol": "NSE:SBILIFE",
+      "levelKey": "level2",
+      "levelValue": 1740.24032,
+      "price": 1739.7,
+      "touchTime": "11:39 am",
+      "date": "9/17/2026",
+      "optionPremium": 27.5,
+      "isFno": true,
+      "signalType": "touch",
+      "sweepType": null,
+      "sweepHigh": null,
+      "sweepLow": null
     }
   ]
 }

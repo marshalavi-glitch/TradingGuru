@@ -1,0 +1,10 @@
+{
+  "apiKey": "",
+  "clientCode": "",
+  "password": "",
+  "totpSecret": "",
+  "jwtToken": "",
+  "refreshToken": "",
+  "feedToken": "",
+  "lastLogin": null
+}

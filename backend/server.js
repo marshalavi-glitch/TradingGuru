@@ -4,6 +4,7 @@ import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
 import cors from 'cors';
 import { TradingViewBridge } from './tradingview.js';
+import { angelOneBridge } from './angelone_bridge.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import compression from 'compression';
@@ -13,6 +14,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const tvBridge = new TradingViewBridge();
+
+// Boot auto-login to Angel One SmartAPI if credentials exist
+angelOneBridge.login().catch(err => {
+  console.log('[Angel One Boot] Login deferred:', err.message);
+});
 
 const liveOptionCandlesCache = {};
 const liveOptionLtpCache = {};
@@ -241,6 +247,96 @@ app.get('/api/candles', async (req, res) => {
     console.error(`[API /api/candles] Error fetching candles for ${req.query.symbol}:`, err.message);
     res.status(500).json({ error: err.message, candles: [] });
   }
+});
+
+// ==============================================================================
+// ANGEL ONE SMARTAPI LIVE DATA BRIDGE ENDPOINTS
+// ==============================================================================
+
+export async function fetchLiveMarketIndices() {
+  let niftyLtp = null;
+  let bankNiftyLtp = null;
+  let source = 'TradingView';
+
+  // Primary 0ms live tick source via Angel One SmartAPI
+  if (angelOneBridge.isLoggedIn) {
+    try {
+      const angelData = await angelOneBridge.getNiftyBankNiftyLtp();
+      if (angelData.status && (angelData.nifty || angelData.banknifty)) {
+        niftyLtp = angelData.nifty;
+        bankNiftyLtp = angelData.banknifty;
+        source = 'Angel One SmartAPI';
+      }
+    } catch (e) {}
+  }
+
+  // Fallback to TradingView Bridge if Angel One LTP is unpopulated
+  if (!niftyLtp || !bankNiftyLtp) {
+    try {
+      const niftyCandles = scannerCache?.candlesCache?.['5']?.['NSE:NIFTY'];
+      const bankNiftyCandles = scannerCache?.candlesCache?.['5']?.['NSE:BANKNIFTY'];
+
+      if (niftyCandles && niftyCandles.length > 0) {
+        niftyLtp = niftyLtp || niftyCandles[niftyCandles.length - 1].close;
+      }
+      if (bankNiftyCandles && bankNiftyCandles.length > 0) {
+        bankNiftyLtp = bankNiftyLtp || bankNiftyCandles[bankNiftyCandles.length - 1].close;
+      }
+    } catch (e) {}
+  }
+
+  return {
+    nifty: niftyLtp,
+    banknifty: bankNiftyLtp,
+    source,
+    timestamp: new Date().toISOString()
+  };
+}
+
+// GET /api/angelone/status
+app.get('/api/angelone/status', (req, res) => {
+  res.json(angelOneBridge.getStatus());
+});
+
+// POST /api/angelone/connect
+app.post('/api/angelone/connect', async (req, res) => {
+  try {
+    const credentials = req.body || {};
+    const result = await angelOneBridge.login(credentials);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// GET /api/angelone/profile
+app.get('/api/angelone/profile', async (req, res) => {
+  try {
+    const profile = await angelOneBridge.getProfile();
+    res.json(profile);
+  } catch (err) {
+    res.status(500).json({ status: false, message: err.message });
+  }
+});
+
+// GET /api/angelone/candles
+app.get('/api/angelone/candles', async (req, res) => {
+  try {
+    const { exchange = 'NSE', symboltoken, interval = 'FIVE_MINUTE', fromdate, todate } = req.query;
+    if (!symboltoken) {
+      return res.status(400).json({ status: false, message: 'symboltoken query parameter is required.' });
+    }
+    const candlesData = await angelOneBridge.getCandles({ exchange, symboltoken, interval, fromdate, todate });
+    res.json(candlesData);
+  } catch (err) {
+    res.status(500).json({ status: false, message: err.message });
+  }
+});
+
+// GET /api/market-indices
+app.get('/api/market-indices', async (req, res) => {
+  const indices = await fetchLiveMarketIndices();
+  res.json(indices);
 });
 
 
