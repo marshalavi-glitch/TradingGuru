@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import localtunnel from 'localtunnel';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -10,23 +11,21 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 
 const hfToken = process.env.HF_TOKEN;
 const hfSpaceRepo = `https://marshalavi:${hfToken}@huggingface.co/spaces/marshalavi/TradingGuru`;
-const borePath = path.join(__dirname, 'bore.exe');
 const cloudflaredPath = path.join(__dirname, 'cloudflared.exe');
 const rootDir = path.join(__dirname, '..');
 
-console.log('🚀 Starting Bore & Cloudflare Multi-Engine Tunnel Daemon for http://localhost:3002...');
+console.log('🚀 Starting Cloudflare & HTTPS Multi-Engine Tunnel Daemon for http://localhost:3002...');
 
 let currentTunnelUrl = null;
 let currentChildProcess = null;
 let isPublishing = false;
+let consecutiveFailures = 0;
 
 function killExistingTunnelProcesses() {
   try {
     if (process.platform === 'win32') {
-      execSync('taskkill /F /IM bore.exe /T 2>nul', { stdio: 'ignore' });
       execSync('taskkill /F /IM cloudflared.exe /T 2>nul', { stdio: 'ignore' });
     } else {
-      execSync('pkill -f bore 2>/dev/null', { stdio: 'ignore' });
       execSync('pkill -f cloudflared 2>/dev/null', { stdio: 'ignore' });
     }
   } catch (e) {}
@@ -45,12 +44,12 @@ async function publishToHuggingFace(tunnelUrl) {
     fs.writeFileSync(jsonFilePath, jsonContent, 'utf8');
 
     console.log(`\n==================================================`);
-    console.log(`🎉 [Live Tunnel Engine] Active Public URL: ${tunnelUrl}`);
+    console.log(`🎉 [Live Tunnel Engine] Active Public HTTPS URL: ${tunnelUrl}`);
     console.log(`==================================================\n`);
     console.log(`[HF Auto-Publisher] Saved live_backend.json locally.`);
 
     if (hfToken) {
-      console.log('[HF Auto-Publisher] Uploading live_backend.json directly via HF API...');
+      console.log('[HF Auto-Publisher] Uploading live_backend.json to HF...');
       const commitUrl = 'https://huggingface.co/api/spaces/marshalavi/TradingGuru/commit/main';
       const payload = {
         summary: `Auto-publish active Tunnel URL: ${tunnelUrl}`,
@@ -63,22 +62,34 @@ async function publishToHuggingFace(tunnelUrl) {
         ]
       };
 
-      const res = await fetch(commitUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${hfToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
+      try {
+        const res = await fetch(commitUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${hfToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
 
-      if (res.ok) {
-        console.log('✅ [HF Auto-Publisher] Direct HF API Upload Succeeded in <200ms!');
-      } else {
-        console.warn(`⚠️ [HF Auto-Publisher] Direct API upload status: ${res.status}, falling back to git push...`);
-        execSync('git add live_backend.json', { cwd: rootDir, stdio: 'inherit' });
-        try { execSync(`git commit -m "Auto-publish active Tunnel URL: ${tunnelUrl}"`, { cwd: rootDir, stdio: 'inherit' }); } catch (e) {}
-        execSync(`git push -f ${hfSpaceRepo} main`, { cwd: rootDir, stdio: 'inherit' });
+        if (res.ok) {
+          console.log('✅ [HF Auto-Publisher] Direct HF API Upload Succeeded in <200ms!');
+          return;
+        } else {
+          console.warn(`⚠️ [HF Auto-Publisher] Direct API returned ${res.status}, falling back to git push...`);
+        }
+      } catch (e) {
+        console.warn('⚠️ [HF Auto-Publisher] Fetch error, falling back to git push:', e.message);
+      }
+
+      // Git push fallback
+      try {
+        execSync('git add live_backend.json', { cwd: rootDir, stdio: 'ignore' });
+        try { execSync(`git commit -m "Auto-publish active Tunnel URL: ${tunnelUrl}"`, { cwd: rootDir, stdio: 'ignore' }); } catch (e) {}
+        execSync(`git push -f ${hfSpaceRepo} main`, { cwd: rootDir, stdio: 'ignore' });
+        console.log('✅ [HF Auto-Publisher] Git push succeeded!');
+      } catch (gitErr) {
+        console.error('❌ [HF Auto-Publisher] Git push failed:', gitErr.message);
       }
     }
   } catch (err) {
@@ -88,53 +99,39 @@ async function publishToHuggingFace(tunnelUrl) {
   }
 }
 
-function startBoreTunnel() {
+async function startLocaltunnelFallback() {
+  console.log('[Localtunnel Fallback] Launching localtunnel over HTTPS on port 3002...');
+  try {
+    const tunnel = await localtunnel({ port: 3002, local_host: '127.0.0.1' });
+    const url = tunnel.url;
+    if (url && url.startsWith('http')) {
+      const httpsUrl = url.replace(/^http:\/\//, 'https://');
+      currentTunnelUrl = httpsUrl;
+      console.log(`[Localtunnel Fallback] Active HTTPS URL detected: ${httpsUrl}`);
+      await publishToHuggingFace(httpsUrl);
+      
+      tunnel.on('close', () => {
+        console.warn('⚠️ Localtunnel closed. Reconnecting to primary Cloudflare tunnel...');
+        currentTunnelUrl = null;
+        setTimeout(startCloudflareTunnel, 5000);
+      });
+      tunnel.on('error', (err) => {
+        console.warn('⚠️ Localtunnel error:', err.message);
+      });
+    }
+  } catch (ltErr) {
+    console.warn('⚠️ Localtunnel failed to start:', ltErr.message);
+    setTimeout(startCloudflareTunnel, 15000);
+  }
+}
+
+function startCloudflareTunnel() {
   killExistingTunnelProcesses();
   currentTunnelUrl = null;
 
-  if (!fs.existsSync(borePath)) {
-    console.warn('[Bore Engine] bore.exe binary missing, falling back to cloudflared...');
-    startCloudflareFallback();
-    return;
-  }
-
-  console.log(`[Bore Tunnel Engine] Spawning binary: ${borePath}`);
-  const child = spawn(borePath, ['local', '3002', '--to', 'bore.pub']);
-  currentChildProcess = child;
-  let buffer = '';
-
-  const handleData = (data) => {
-    const text = data.toString();
-    buffer += text;
-    console.log('[Bore log]', text.trim());
-
-    if (!currentTunnelUrl) {
-      const match = buffer.match(/listening at bore\.pub:(\d+)/i);
-      if (match && match[1]) {
-        const port = match[1];
-        const url = `http://bore.pub:${port}`;
-        currentTunnelUrl = url;
-        console.log(`[Bore Tunnel] Active URL detected: ${url}`);
-        publishToHuggingFace(url);
-      }
-    }
-  };
-
-  child.stdout.on('data', handleData);
-  child.stderr.on('data', handleData);
-
-  child.on('close', (code) => {
-    console.warn(`⚠️ Bore Tunnel exited with code ${code}. Reconnecting in 5s...`);
-    currentTunnelUrl = null;
-    currentChildProcess = null;
-    setTimeout(startBoreTunnel, 5000);
-  });
-}
-
-function startCloudflareFallback() {
   const binary = fs.existsSync(cloudflaredPath) ? cloudflaredPath : 'cloudflared';
-  console.log(`[Cloudflare Fallback] Spawning binary: ${binary}`);
-  
+  console.log(`[Cloudflare Engine] Spawning binary: ${binary}`);
+
   const child = spawn(binary, ['tunnel', '--url', 'http://localhost:3002']);
   currentChildProcess = child;
   let buffer = '';
@@ -148,7 +145,8 @@ function startCloudflareFallback() {
       if (match && match[1]) {
         const url = match[1];
         currentTunnelUrl = url;
-        console.log(`[Cloudflare Fallback] Active URL detected: ${url}`);
+        consecutiveFailures = 0;
+        console.log(`[Cloudflare Engine] Active HTTPS URL detected: ${url}`);
         publishToHuggingFace(url);
       }
     }
@@ -158,10 +156,19 @@ function startCloudflareFallback() {
   child.stderr.on('data', handleData);
 
   child.on('close', (code) => {
-    console.log(`⚠️ Cloudflare Tunnel exited with code ${code}. Reconnecting in 10s...`);
+    console.warn(`⚠️ Cloudflare Tunnel exited with code ${code}.`);
     currentTunnelUrl = null;
     currentChildProcess = null;
-    setTimeout(startBoreTunnel, 10000);
+    consecutiveFailures++;
+
+    if (consecutiveFailures >= 2) {
+      console.log('⚠️ Cloudflare repeated exit, switching to Localtunnel HTTPS fallback...');
+      startLocaltunnelFallback();
+    } else {
+      const delay = 15000;
+      console.log(`Reconnecting Cloudflare Tunnel in ${delay / 1000}s...`);
+      setTimeout(startCloudflareTunnel, delay);
+    }
   });
 }
 
@@ -177,4 +184,5 @@ setInterval(async () => {
   }
 }, 30000);
 
-startBoreTunnel();
+startCloudflareTunnel();
+
