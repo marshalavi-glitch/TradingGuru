@@ -1,4 +1,7 @@
 {
-  "backendUrl": "https://suppose-lots-browser-convergence.trycloudflare.com",
-  "timestamp": "2026-09-17T07:25:00.000Z"
+  "backendUrl": "https://salty-planes-sleep.loca.lt",
+  "backupUrl": "https://salty-planes-sleep.loca.lt",
+  "cloudflareUrl": null,
+  "localtunnelUrl": "https://salty-planes-sleep.loca.lt",
+  "timestamp": "2026-09-17T07:29:19.461Z"
 }
