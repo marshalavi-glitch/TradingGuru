@@ -252,7 +252,9 @@ class TVWebSocketStreamer {
     try {
       const httpUrl = getBackendHttpUrlSync();
       const url = `${httpUrl}/api/candles?symbol=${encodeURIComponent(symbol)}&timeframe=${timeframe}&limit=300`;
-      const res = await fetch(url);
+      const res = await fetch(url, {
+        headers: { 'bypass-tunnel-reminder': 'true' }
+      });
       if (res.ok) {
         const data = await res.json();
         if (data.candles && data.candles.length > 0 && this.onDataCallback) {

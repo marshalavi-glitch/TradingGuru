@@ -42,7 +42,9 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     const fetchUsers = async () => {
       try {
         const backendUrl = await getBackendHttpUrl();
-        const res = await fetch(`${backendUrl}/api/online-users`);
+        const res = await fetch(`${backendUrl}/api/online-users`, {
+          headers: { 'bypass-tunnel-reminder': 'true' }
+        });
         if (res.ok) {
           const data = await res.json();
           if (data && typeof data.count === 'number') {

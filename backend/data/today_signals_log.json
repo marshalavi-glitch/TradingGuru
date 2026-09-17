@@ -6902,6 +6902,48 @@
       "sweepType": null,
       "sweepHigh": null,
       "sweepLow": null
+    },
+    {
+      "symbol": "NSE:TECHM",
+      "levelKey": "level5",
+      "levelValue": 1565.5533333333333,
+      "price": 1559.9,
+      "touchTime": "11:47 am",
+      "date": "9/17/2026",
+      "optionPremium": 24.05,
+      "isFno": true,
+      "signalType": "touch",
+      "sweepType": null,
+      "sweepHigh": null,
+      "sweepLow": null
+    },
+    {
+      "symbol": "NSE:TATACONSUM",
+      "levelKey": "level3",
+      "levelValue": 1012.0350000000001,
+      "price": 1008.4,
+      "touchTime": "11:47 am",
+      "date": "9/17/2026",
+      "optionPremium": 12.9,
+      "isFno": true,
+      "signalType": "touch",
+      "sweepType": null,
+      "sweepHigh": null,
+      "sweepLow": null
+    },
+    {
+      "symbol": "NSE:COFORGE",
+      "levelKey": "level4",
+      "levelValue": 1785.2350000000001,
+      "price": 1776.4,
+      "touchTime": "11:47 am",
+      "date": "9/17/2026",
+      "optionPremium": 37.85,
+      "isFno": true,
+      "signalType": "touch",
+      "sweepType": null,
+      "sweepHigh": null,
+      "sweepLow": null
     }
   ]
 }

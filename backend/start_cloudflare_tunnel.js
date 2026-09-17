@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import localtunnel from 'localtunnel';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,12 +14,12 @@ const hfSpaceRepo = `https://marshalavi:${hfToken}@huggingface.co/spaces/marshal
 const cloudflaredPath = path.join(__dirname, 'cloudflared.exe');
 const rootDir = path.join(__dirname, '..');
 
-console.log('🚀 Starting Multi-Engine Tunnel Daemon (Cloudflare / Serveo) for http://localhost:3002...');
+console.log('🚀 Starting LocalTunnel & Cloudflare Engine Daemon for http://localhost:3002...');
 
 let currentTunnelUrl = null;
 let currentChildProcess = null;
+let activeTunnelInstance = null;
 let isPublishing = false;
-let failCount = 0;
 
 function killExistingTunnelProcesses() {
   try {
@@ -86,51 +87,43 @@ async function publishToHuggingFace(tunnelUrl) {
   }
 }
 
-function startServeoTunnel() {
-  console.log('[Tunnel Engine] Spawning Serveo.net SSH Tunnel...');
-  const child = spawn('ssh', ['-o', 'StrictHostKeyChecking=no', '-o', 'ServerAliveInterval=15', '-o', 'ServerAliveCountMax=3', '-R', '80:localhost:3002', 'serveo.net']);
-  currentChildProcess = child;
-  let buffer = '';
+async function startLocaltunnel() {
+  try {
+    console.log('[Tunnel Engine] Initializing LocalTunnel for port 3002...');
+    const tunnel = await localtunnel({ port: 3002 });
+    activeTunnelInstance = tunnel;
 
-  const handleData = (data) => {
-    const text = data.toString();
-    buffer += text;
-
-    if (!currentTunnelUrl) {
-      const match = buffer.match(/(https:\/\/[a-zA-Z0-9.-]+\.serveousercontent\.com)/);
-      if (match && match[1]) {
-        const url = match[1];
-        currentTunnelUrl = url;
-        console.log(`[Serveo Tunnel] Active URL detected: ${url}`);
-        publishToHuggingFace(url);
-      }
+    if (tunnel && tunnel.url) {
+      currentTunnelUrl = tunnel.url;
+      console.log(`[LocalTunnel] Connected! Public URL: ${tunnel.url}`);
+      await publishToHuggingFace(tunnel.url);
     }
-  };
 
-  child.stdout.on('data', handleData);
-  child.stderr.on('data', handleData);
+    tunnel.on('close', () => {
+      console.warn('⚠️ LocalTunnel connection closed. Reconnecting in 5s...');
+      currentTunnelUrl = null;
+      activeTunnelInstance = null;
+      setTimeout(startTunnelEngine, 5000);
+    });
 
-  child.on('close', (code) => {
-    console.log(`⚠️ Serveo Tunnel exited with code ${code}. Reconnecting in 10s...`);
-    currentTunnelUrl = null;
-    currentChildProcess = null;
-    setTimeout(startTunnel, 10000);
-  });
+    tunnel.on('error', (err) => {
+      console.error('⚠️ LocalTunnel error:', err.message);
+      currentTunnelUrl = null;
+      activeTunnelInstance = null;
+      setTimeout(startTunnelEngine, 5000);
+    });
+  } catch (err) {
+    console.error('⚠️ LocalTunnel initialization failed:', err.message, '- Falling back to Cloudflare quick tunnel...');
+    startCloudflareTunnelFallback();
+  }
 }
 
-function startTunnel() {
+function startCloudflareTunnelFallback() {
   killExistingTunnelProcesses();
   currentTunnelUrl = null;
 
-  // Use Cloudflare if available, fallback to Serveo if Cloudflare rate limited
-  if (failCount > 1) {
-    console.log('[Tunnel Engine] Cloudflare rate limited/unavailable. Switching to Serveo SSH fallback...');
-    startServeoTunnel();
-    return;
-  }
-
   const binary = fs.existsSync(cloudflaredPath) ? cloudflaredPath : 'cloudflared';
-  console.log(`[Cloudflare Tunnel] Spawning binary: ${binary}`);
+  console.log(`[Cloudflare Fallback] Spawning binary: ${binary}`);
   
   const child = spawn(binary, ['tunnel', '--url', 'http://localhost:3002']);
   currentChildProcess = child;
@@ -145,8 +138,7 @@ function startTunnel() {
       if (match && match[1]) {
         const url = match[1];
         currentTunnelUrl = url;
-        failCount = 0;
-        console.log(`[Cloudflare Tunnel] Active URL detected: ${url}`);
+        console.log(`[Cloudflare Fallback] Active URL detected: ${url}`);
         publishToHuggingFace(url);
       }
     }
@@ -156,18 +148,16 @@ function startTunnel() {
   child.stderr.on('data', handleData);
 
   child.on('close', (code) => {
-    failCount++;
-    console.log(`⚠️ Cloudflare Tunnel exited with code ${code} (failCount: ${failCount}).`);
+    console.log(`⚠️ Cloudflare Tunnel exited with code ${code}. Reconnecting in 10s...`);
     currentTunnelUrl = null;
     currentChildProcess = null;
-
-    if (failCount > 1) {
-      console.log('⚡ Switch to Serveo SSH Tunnel fallback immediately...');
-      startServeoTunnel();
-    } else {
-      setTimeout(startTunnel, 5000);
-    }
+    setTimeout(startTunnelEngine, 10000);
   });
+}
+
+function startTunnelEngine() {
+  killExistingTunnelProcesses();
+  startLocaltunnel();
 }
 
 // Local health monitor: verify localhost:3002 is alive
@@ -182,4 +172,4 @@ setInterval(async () => {
   }
 }, 30000);
 
-startTunnel();
+startTunnelEngine();

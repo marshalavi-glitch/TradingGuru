@@ -2,6 +2,56 @@
   "date": "9/17/2026",
   "results": [
     {
+      "symbol": "POWERGRID",
+      "time": "11:30:00",
+      "currentVolume": 328174,
+      "prevMaxVolume": 194490,
+      "ratio": 1.7,
+      "close": 264.75,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "TCS1!",
+      "time": "11:30:00",
+      "currentVolume": 70200,
+      "prevMaxVolume": 53550,
+      "ratio": 1.3,
+      "close": 2193,
+      "direction": "UP",
+      "type": "futures"
+    },
+    {
+      "symbol": "TATACONSUM",
+      "time": "11:25:00",
+      "currentVolume": 145723,
+      "prevMaxVolume": 26711,
+      "ratio": 5.5,
+      "close": 1010.7,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "JINDALSTEL",
+      "time": "11:25:00",
+      "currentVolume": 36982,
+      "prevMaxVolume": 31521,
+      "ratio": 1.2,
+      "close": 1125,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "FEDERALBNK",
+      "time": "11:25:00",
+      "currentVolume": 65072,
+      "prevMaxVolume": 58539,
+      "ratio": 1.1,
+      "close": 340.1,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
       "symbol": "HINDALCO",
       "time": "11:20:00",
       "currentVolume": 152854,
@@ -1148,5 +1198,5 @@
       "type": "stock"
     }
   ],
-  "lastScanTime": "2026-09-17T06:09:53.178Z"
+  "lastScanTime": "2026-09-17T06:18:20.229Z"
 }
