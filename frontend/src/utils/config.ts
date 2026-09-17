@@ -2,10 +2,69 @@ let cachedBackendUrl: string | null = null;
 let lastFetchTime = 0;
 let pendingResolvePromise: Promise<string> | null = null;
 
+// Global fetch interceptor: Automatically attaches 'bypass-tunnel-reminder: true'
+// so Localtunnel never serves the HTML landing page to ANY container
+if (typeof window !== 'undefined' && !(window as any).__fetchBypassInstalled) {
+  (window as any).__fetchBypassInstalled = true;
+  const originalFetch = window.fetch;
+  window.fetch = async function (input: RequestInfo | URL, init?: RequestInit) {
+    try {
+      const urlStr = typeof input === 'string'
+        ? input
+        : (input instanceof Request ? input.url : input.toString());
+
+      if (
+        urlStr.includes('/api/') ||
+        urlStr.includes('loca.lt') ||
+        urlStr.includes('trycloudflare.com') ||
+        urlStr.includes('tunnelmole')
+      ) {
+        const headers = new Headers(init?.headers || (input instanceof Request ? input.headers : {}));
+        if (!headers.has('bypass-tunnel-reminder')) {
+          headers.set('bypass-tunnel-reminder', 'true');
+        }
+        init = { ...init, headers };
+      }
+    } catch (e) {}
+    return originalFetch.call(this, input, init);
+  };
+}
+
 export function clearBackendUrlCache(): void {
   cachedBackendUrl = null;
   lastFetchTime = 0;
   pendingResolvePromise = null;
+}
+
+export async function pingHealth(url: string, timeoutMs = 2500): Promise<boolean> {
+  if (!url || typeof url !== 'string' || !url.startsWith('http')) return false;
+
+  // Never allow insecure HTTP on an HTTPS origin
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:' && url.startsWith('http://')) {
+    return false;
+  }
+
+  try {
+    const clean = url.replace(/\/+$/, '');
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+
+    const res = await fetch(`${clean}/health?_t=${Date.now()}`, {
+      signal: ctrl.signal,
+      headers: { 'bypass-tunnel-reminder': 'true' }
+    });
+    clearTimeout(timer);
+
+    if (res.ok) {
+      const data = await res.json().catch(() => null);
+      if (data && (data.status === 'OK' || data.project)) {
+        return true;
+      }
+    }
+    return false;
+  } catch (e) {
+    return false;
+  }
 }
 
 export async function resolveBackendUrl(forceRefresh = false): Promise<string> {
@@ -24,44 +83,101 @@ export async function resolveBackendUrl(forceRefresh = false): Promise<string> {
   pendingResolvePromise = (async () => {
     try {
       // 1. Check if user explicitly set a custom backend URL in localStorage
-      const saved = typeof window !== 'undefined' ? localStorage.getItem('TRADING_GURU_BACKEND_URL') : null;
-      if (saved && saved.trim()) {
-        let clean = saved.trim().replace(/^wss?:\/\//, '').replace(/^https?:\/\//, '').replace(/\/$/, '');
-        const proto = (typeof window !== 'undefined' && window.location.protocol === 'https:') ? 'https' : 'http';
-        cachedBackendUrl = `${proto}://${clean}`;
-        lastFetchTime = now;
-        return cachedBackendUrl;
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('TRADING_GURU_BACKEND_URL');
+        if (saved && saved.trim()) {
+          // Immediately purge old broken tunnels (like bore.pub)
+          if (saved.includes('bore.pub') || saved.includes('serveousercontent') || saved.includes('undefined')) {
+            localStorage.removeItem('TRADING_GURU_BACKEND_URL');
+          } else {
+            let clean = saved.trim().replace(/^wss?:\/\//, '').replace(/^https?:\/\//, '').replace(/\/$/, '');
+            const proto = window.location.protocol === 'https:' ? 'https' : 'http';
+            const candidate = `${proto}://${clean}`;
+            
+            // Verify it is actually responding
+            const isAlive = await pingHealth(candidate, 2000);
+            if (isAlive) {
+              cachedBackendUrl = candidate;
+              lastFetchTime = now;
+              return cachedBackendUrl;
+            } else {
+              console.warn(`[Config] Saved backend URL ${candidate} unreachable, clearing...`);
+              localStorage.removeItem('TRADING_GURU_BACKEND_URL');
+            }
+          }
+        }
       }
 
-      // 2. Try fetching live_backend.json from relative URL and HF Space raw URL
+      // 2. Fetch live_backend.json from high-priority accessible endpoints
       const fetchUrls = [
+        'https://marshalavi-tradingguru.static.hf.space/live_backend.json',
         typeof window !== 'undefined' ? `${window.location.origin}/live_backend.json` : null,
         'https://huggingface.co/spaces/marshalavi/TradingGuru/raw/main/live_backend.json'
       ].filter(Boolean) as string[];
 
+      let discoveredJson: any = null;
+
       for (const url of fetchUrls) {
         try {
-          const res = await fetch(`${url}?_t=${now}`, { cache: 'no-store' });
+          const res = await fetch(`${url}?_t=${now}`, {
+            cache: 'no-store',
+            headers: { 'bypass-tunnel-reminder': 'true' }
+          });
           if (res.ok) {
             const json = await res.json();
-            if (json && json.backendUrl) {
-              let clean = json.backendUrl.trim().replace(/^wss?:\/\//, '').replace(/^https?:\/\//, '').replace(/\/$/, '');
-              const proto = (typeof window !== 'undefined' && window.location.protocol === 'https:') ? 'https' : 'http';
-              cachedBackendUrl = `${proto}://${clean}`;
-              lastFetchTime = now;
-              console.log(`[Config] Resolved active live backend URL: ${cachedBackendUrl}`);
-              return cachedBackendUrl;
+            if (json && (json.backendUrl || json.backupUrl)) {
+              discoveredJson = json;
+              break;
             }
           }
         } catch (e) {
-          // Continue to next fetch attempt
+          // Continue to next URL
         }
       }
 
-      // 3. Fallback logic: check if localhost or window.location.origin
+      // 3. Test discovered candidates with pingHealth
+      if (discoveredJson) {
+        const rawCandidates = [
+          discoveredJson.backendUrl,
+          discoveredJson.backupUrl,
+          discoveredJson.cloudflareUrl,
+          discoveredJson.localtunnelUrl
+        ].filter(Boolean) as string[];
+
+        const isHttpsPage = typeof window !== 'undefined' && window.location.protocol === 'https:';
+
+        for (const raw of rawCandidates) {
+          let clean = raw.trim().replace(/^wss?:\/\//, '').replace(/^https?:\/\//, '').replace(/\/$/, '');
+          const proto = isHttpsPage ? 'https' : (raw.startsWith('http://') ? 'http' : 'https');
+          const candidate = `${proto}://${clean}`;
+
+          // Avoid plain HTTP on HTTPS pages
+          if (isHttpsPage && candidate.startsWith('http://')) continue;
+
+          console.log(`[Config] Testing candidate backend URL: ${candidate}...`);
+          const alive = await pingHealth(candidate, 2500);
+          if (alive) {
+            cachedBackendUrl = candidate;
+            lastFetchTime = now;
+            console.log(`✅ [Config] Connected to verified LIVE backend: ${cachedBackendUrl}`);
+            return cachedBackendUrl;
+          }
+        }
+
+        // If none responded to pingHealth (e.g. transient network latency), fallback to the first HTTPS candidate
+        for (const raw of rawCandidates) {
+          let clean = raw.trim().replace(/^wss?:\/\//, '').replace(/^https?:\/\//, '').replace(/\/$/, '');
+          const proto = isHttpsPage ? 'https' : 'http';
+          cachedBackendUrl = `${proto}://${clean}`;
+          lastFetchTime = now;
+          return cachedBackendUrl;
+        }
+      }
+
+      // 4. Localhost Fallback
       if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
         cachedBackendUrl = 'http://localhost:3002';
-      } else if (typeof window !== 'undefined' && window.location.origin) {
+      } else if (typeof window !== 'undefined' && window.location.origin && !window.location.origin.includes('hf.space')) {
         cachedBackendUrl = window.location.origin;
       } else {
         cachedBackendUrl = 'http://localhost:3002';
@@ -77,21 +193,25 @@ export async function resolveBackendUrl(forceRefresh = false): Promise<string> {
   return pendingResolvePromise;
 }
 
-// Eager execution on load
+// Background auto-healer: Periodically verifies active backend health
 if (typeof window !== 'undefined') {
   resolveBackendUrl().catch(() => {});
+  setInterval(async () => {
+    if (cachedBackendUrl) {
+      const alive = await pingHealth(cachedBackendUrl, 3000);
+      if (!alive) {
+        console.warn(`[Config Auto-Healer] Active backend ${cachedBackendUrl} unresponsive. Re-resolving...`);
+        resolveBackendUrl(true).catch(() => {});
+      }
+    }
+  }, 20000);
 }
 
 export function getBackendHttpUrlSync(): string {
   if (cachedBackendUrl) return cachedBackendUrl;
-  const saved = typeof window !== 'undefined' ? localStorage.getItem('TRADING_GURU_BACKEND_URL') : null;
-  if (saved && saved.trim()) {
-    let clean = saved.trim().replace(/^wss?:\/\//, '').replace(/^https?:\/\//, '').replace(/\/$/, '');
-    const proto = (typeof window !== 'undefined' && window.location.protocol === 'https:') ? 'https' : 'http';
-    return `${proto}://${clean}`;
-  }
+  const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
   if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
     return 'http://localhost:3002';
   }
-  return typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3002';
+  return isHttps ? 'https://localhost:3002' : 'http://localhost:3002';
 }

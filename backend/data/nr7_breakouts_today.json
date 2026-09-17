@@ -1,5 +1,22 @@
 {
   "date": "9/17/2026",
-  "results": [],
-  "lastScanTime": "2026-09-17T06:55:24.711Z"
+  "results": [
+    {
+      "symbol": "NSE:AARTISURF",
+      "close": 520,
+      "open": 501,
+      "prevHigh": 518,
+      "prevLow": 488.25,
+      "prevRange": 29.75,
+      "todayRange": 33,
+      "changePts": 19.55000000000001,
+      "changePct": 3.9064841642521753,
+      "volume": 11942,
+      "sma20": 532.0475000000001,
+      "sma40": 521.0024999999999,
+      "sma60": 474.96833333333336,
+      "time": "13:00:52"
+    }
+  ],
+  "lastScanTime": "2026-09-17T07:31:38.246Z"
 }

@@ -2,6 +2,126 @@
   "date": "9/17/2026",
   "results": [
     {
+      "symbol": "ICICIGI",
+      "time": "12:40:00",
+      "currentVolume": 124652,
+      "prevMaxVolume": 59281,
+      "ratio": 2.1,
+      "close": 1496,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "PIDILITIND",
+      "time": "12:40:00",
+      "currentVolume": 22117,
+      "prevMaxVolume": 6892,
+      "ratio": 3.2,
+      "close": 1554.5,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "AUBANK",
+      "time": "12:35:00",
+      "currentVolume": 31900,
+      "prevMaxVolume": 27494,
+      "ratio": 1.2,
+      "close": 1046.2,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "MARICO",
+      "time": "12:35:00",
+      "currentVolume": 211985,
+      "prevMaxVolume": 134457,
+      "ratio": 1.6,
+      "close": 825,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "TATACOMM",
+      "time": "12:35:00",
+      "currentVolume": 35672,
+      "prevMaxVolume": 16928,
+      "ratio": 2.1,
+      "close": 1782,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "TATACONSUM",
+      "time": "12:30:00",
+      "currentVolume": 179013,
+      "prevMaxVolume": 161798,
+      "ratio": 1.1,
+      "close": 1014.6,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "HAL",
+      "time": "12:25:00",
+      "currentVolume": 49242,
+      "prevMaxVolume": 48771,
+      "ratio": 1,
+      "close": 4787.8,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "HINDALCO",
+      "time": "12:20:00",
+      "currentVolume": 199957,
+      "prevMaxVolume": 153705,
+      "ratio": 1.3,
+      "close": 985.9,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "BAJAJFINSV",
+      "time": "12:15:00",
+      "currentVolume": 21450,
+      "prevMaxVolume": 16949,
+      "ratio": 1.3,
+      "close": 1846.2,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "PFC",
+      "time": "12:15:00",
+      "currentVolume": 294220,
+      "prevMaxVolume": 208464,
+      "ratio": 1.4,
+      "close": 347.05,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "TATACONSUM",
+      "time": "12:10:00",
+      "currentVolume": 155247,
+      "prevMaxVolume": 150997,
+      "ratio": 1,
+      "close": 1013.2,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "LT",
+      "time": "12:10:00",
+      "currentVolume": 95943,
+      "prevMaxVolume": 73945,
+      "ratio": 1.3,
+      "close": 3862.3,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
       "symbol": "TRENT",
       "time": "12:05:00",
       "currentVolume": 57439,
@@ -1668,5 +1788,5 @@
       "type": "stock"
     }
   ],
-  "lastScanTime": "2026-09-17T06:55:25.113Z"
+  "lastScanTime": "2026-09-17T07:31:12.553Z"
 }

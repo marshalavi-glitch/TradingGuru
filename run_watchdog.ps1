@@ -23,9 +23,16 @@ function Start-TunnelProcess {
     return (Start-Process -FilePath $nodeExe -ArgumentList "start_cloudflare_tunnel.js" -WorkingDirectory $backendDir -PassThru -WindowStyle Hidden)
 }
 
+function Start-AutoHealProcess {
+    Write-Host "[AUTO-HEALER] Launching 60s Tab & Endpoint Auto-Healer Daemon..." -ForegroundColor Cyan
+    return (Start-Process -FilePath $nodeExe -ArgumentList "auto_heal_tabs.js" -WorkingDirectory $backendDir -PassThru -WindowStyle Hidden)
+}
+
 $backendProc = Start-BackendProcess
 Start-Sleep -Seconds 4
 $tunnelProc = Start-TunnelProcess
+Start-Sleep -Seconds 2
+$autoHealProc = Start-AutoHealProcess
 
 while ($true) {
     Start-Sleep -Seconds 5
@@ -38,5 +45,10 @@ while ($true) {
     if ($null -eq $tunnelProc -or $tunnelProc.HasExited) {
         Write-Host "[Watchdog Alert] Cloudflare Tunnel Daemon exited. Restarting now..." -ForegroundColor Yellow
         $tunnelProc = Start-TunnelProcess
+    }
+
+    if ($null -eq $autoHealProc -or $autoHealProc.HasExited) {
+        Write-Host "[Watchdog Alert] Auto-Healer Daemon exited. Restarting now..." -ForegroundColor Yellow
+        $autoHealProc = Start-AutoHealProcess
     }
 }
