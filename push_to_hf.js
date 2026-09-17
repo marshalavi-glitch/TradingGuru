@@ -48,14 +48,15 @@ try {
     fs.copyFileSync(path.join(distAssetsDir, f), path.join(rootAssetsDir, f));
   }
 
-  console.log('Un-tracking cloudflared.exe...');
+  console.log('Un-tracking cloudflared.exe & bore.exe...');
   try { execSync('git rm --cached backend/cloudflared.exe', { stdio: 'ignore' }); } catch (e) {}
+  try { execSync('git rm --cached backend/bore.exe', { stdio: 'ignore' }); } catch (e) {}
   
-  // Ensure cloudflared.exe is in .gitignore
+  // Ensure cloudflared.exe and bore.exe are in .gitignore
   const gitignorePath = path.join(__dirname, '.gitignore');
   let gitignore = fs.existsSync(gitignorePath) ? fs.readFileSync(gitignorePath, 'utf8') : '';
-  if (!gitignore.includes('cloudflared.exe')) {
-    gitignore += '\ncloudflared.exe\nbackend/cloudflared.exe\n';
+  if (!gitignore.includes('cloudflared.exe') || !gitignore.includes('bore.exe')) {
+    gitignore += '\ncloudflared.exe\nbackend/cloudflared.exe\nbore.exe\nbackend/bore.exe\n';
     fs.writeFileSync(gitignorePath, gitignore, 'utf8');
   }
 

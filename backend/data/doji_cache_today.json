@@ -1,6 +1,6 @@
 {
   "date": "9/17/2026",
-  "lastScanTime": "2026-09-17T06:12:22.236Z",
+  "lastScanTime": "2026-09-17T06:21:08.675Z",
   "slotData": {
     "first_5min": {
       "slot": "first_5min",
@@ -13,7 +13,7 @@
           "high": 306,
           "low": 303.3,
           "volume": 188199,
-          "avgVolume": 147648,
+          "avgVolume": 146411,
           "isHighVolume": true,
           "dojiType": "Long-Legged Doji",
           "slot": "first_5min"
@@ -28,7 +28,7 @@
           "high": 1058.7,
           "low": 1050.9,
           "volume": 211657,
-          "avgVolume": 870313,
+          "avgVolume": 860563,
           "isHighVolume": false,
           "dojiType": "Long-Legged Doji",
           "slot": "first_5min"
@@ -41,7 +41,7 @@
           "high": 347.75,
           "low": 345.5,
           "volume": 195854,
-          "avgVolume": 189458,
+          "avgVolume": 191305,
           "isHighVolume": false,
           "dojiType": "Dragonfly Doji",
           "slot": "first_5min"
@@ -54,7 +54,7 @@
           "high": 306,
           "low": 303.3,
           "volume": 188199,
-          "avgVolume": 147648,
+          "avgVolume": 146411,
           "isHighVolume": true,
           "dojiType": "Long-Legged Doji",
           "slot": "first_5min"
@@ -67,7 +67,7 @@
           "high": 2186.2,
           "low": 2168.9,
           "volume": 115735,
-          "avgVolume": 232161,
+          "avgVolume": 233235,
           "isHighVolume": false,
           "dojiType": "Long-Legged Doji",
           "slot": "first_5min"
@@ -80,7 +80,7 @@
           "high": 314.6,
           "low": 312.7,
           "volume": 58335,
-          "avgVolume": 133727,
+          "avgVolume": 131996,
           "isHighVolume": false,
           "dojiType": "Dragonfly Doji",
           "slot": "first_5min"
@@ -93,7 +93,7 @@
           "high": 379.65,
           "low": 377.45,
           "volume": 42167,
-          "avgVolume": 203533,
+          "avgVolume": 197101,
           "isHighVolume": false,
           "dojiType": "Long-Legged Doji",
           "slot": "first_5min"
@@ -106,7 +106,7 @@
           "high": 2940,
           "low": 2916.4,
           "volume": 30985,
-          "avgVolume": 62413,
+          "avgVolume": 58888,
           "isHighVolume": false,
           "dojiType": "Dragonfly Doji",
           "slot": "first_5min"
@@ -119,7 +119,7 @@
           "high": 1260.4,
           "low": 1242.8,
           "volume": 29751,
-          "avgVolume": 54621,
+          "avgVolume": 55771,
           "isHighVolume": false,
           "dojiType": "Dragonfly Doji",
           "slot": "first_5min"
@@ -132,7 +132,7 @@
           "high": 553.75,
           "low": 550.85,
           "volume": 27919,
-          "avgVolume": 34202,
+          "avgVolume": 35344,
           "isHighVolume": false,
           "dojiType": "Gravestone Doji",
           "slot": "first_5min"
@@ -145,7 +145,7 @@
           "high": 1007.3,
           "low": 1001.7,
           "volume": 26711,
-          "avgVolume": 50985,
+          "avgVolume": 50803,
           "isHighVolume": false,
           "dojiType": "Dragonfly Doji",
           "slot": "first_5min"
@@ -158,7 +158,7 @@
           "high": 455.5,
           "low": 452.15,
           "volume": 24006,
-          "avgVolume": 48216,
+          "avgVolume": 47603,
           "isHighVolume": false,
           "dojiType": "Dragonfly Doji",
           "slot": "first_5min"
@@ -171,7 +171,7 @@
           "high": 2441.4,
           "low": 2423.5,
           "volume": 22746,
-          "avgVolume": 24753,
+          "avgVolume": 24238,
           "isHighVolume": false,
           "dojiType": "Dragonfly Doji",
           "slot": "first_5min"
@@ -179,12 +179,12 @@
         {
           "symbol": "HINDUNILVR",
           "bodyPct": 11.1,
-          "volumeRatio": 0.5,
+          "volumeRatio": 0.4,
           "ltp": 1963.7,
           "high": 1968.9,
           "low": 1955.4,
           "volume": 17854,
-          "avgVolume": 38834,
+          "avgVolume": 40102,
           "isHighVolume": false,
           "dojiType": "Long-Legged Doji",
           "slot": "first_5min"
@@ -192,12 +192,12 @@
         {
           "symbol": "LUPIN",
           "bodyPct": 13.9,
-          "volumeRatio": 0.4,
+          "volumeRatio": 0.5,
           "ltp": 2054.1,
           "high": 2057.1,
           "low": 2046.3,
           "volume": 12313,
-          "avgVolume": 27657,
+          "avgVolume": 27338,
           "isHighVolume": false,
           "dojiType": "Classic Neutral Doji",
           "slot": "first_5min"
@@ -210,7 +210,7 @@
           "high": 1364.7,
           "low": 1356.2,
           "volume": 8294,
-          "avgVolume": 19456,
+          "avgVolume": 19593,
           "isHighVolume": false,
           "dojiType": "Dragonfly Doji",
           "slot": "first_5min"
@@ -223,7 +223,7 @@
           "high": 11533,
           "low": 11432,
           "volume": 7384,
-          "avgVolume": 16332,
+          "avgVolume": 16174,
           "isHighVolume": false,
           "dojiType": "Gravestone Doji",
           "slot": "first_5min"
@@ -231,12 +231,12 @@
         {
           "symbol": "CUMMINSIND",
           "bodyPct": 0.9,
-          "volumeRatio": 0.3,
+          "volumeRatio": 0.4,
           "ltp": 4940.5,
           "high": 4974.5,
           "low": 4920,
           "volume": 5857,
-          "avgVolume": 20905,
+          "avgVolume": 16730,
           "isHighVolume": false,
           "dojiType": "Gravestone Doji",
           "slot": "first_5min"
@@ -249,7 +249,7 @@
           "high": 1711.3,
           "low": 1695.8,
           "volume": 5837,
-          "avgVolume": 12215,
+          "avgVolume": 12242,
           "isHighVolume": false,
           "dojiType": "Long-Legged Doji",
           "slot": "first_5min"
@@ -257,18 +257,18 @@
         {
           "symbol": "ESCORTS",
           "bodyPct": 8.5,
-          "volumeRatio": 0.7,
+          "volumeRatio": 0.6,
           "ltp": 2831.4,
           "high": 2833.8,
           "low": 2809,
           "volume": 1018,
-          "avgVolume": 1491,
+          "avgVolume": 1595,
           "isHighVolume": false,
           "dojiType": "Dragonfly Doji",
           "slot": "first_5min"
         }
       ],
-      "lastScanTime": "2026-09-17T06:12:30.649Z"
+      "lastScanTime": "2026-09-17T06:21:18.277Z"
     }
   }
 }

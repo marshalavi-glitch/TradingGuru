@@ -8,3 +8,7 @@ cloudflared.exe
 backend/cloudflared.exe
 .env
 backend/.env
+
+bore.exe
+backend/bore.exe
+

@@ -3,7 +3,6 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import localtunnel from 'localtunnel';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -11,21 +10,23 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 
 const hfToken = process.env.HF_TOKEN;
 const hfSpaceRepo = `https://marshalavi:${hfToken}@huggingface.co/spaces/marshalavi/TradingGuru`;
+const borePath = path.join(__dirname, 'bore.exe');
 const cloudflaredPath = path.join(__dirname, 'cloudflared.exe');
 const rootDir = path.join(__dirname, '..');
 
-console.log('🚀 Starting LocalTunnel & Cloudflare Engine Daemon for http://localhost:3002...');
+console.log('🚀 Starting Bore & Cloudflare Multi-Engine Tunnel Daemon for http://localhost:3002...');
 
 let currentTunnelUrl = null;
 let currentChildProcess = null;
-let activeTunnelInstance = null;
 let isPublishing = false;
 
 function killExistingTunnelProcesses() {
   try {
     if (process.platform === 'win32') {
+      execSync('taskkill /F /IM bore.exe /T 2>nul', { stdio: 'ignore' });
       execSync('taskkill /F /IM cloudflared.exe /T 2>nul', { stdio: 'ignore' });
     } else {
+      execSync('pkill -f bore 2>/dev/null', { stdio: 'ignore' });
       execSync('pkill -f cloudflared 2>/dev/null', { stdio: 'ignore' });
     }
   } catch (e) {}
@@ -87,41 +88,50 @@ async function publishToHuggingFace(tunnelUrl) {
   }
 }
 
-async function startLocaltunnel() {
-  try {
-    console.log('[Tunnel Engine] Initializing LocalTunnel for port 3002...');
-    const tunnel = await localtunnel({ port: 3002 });
-    activeTunnelInstance = tunnel;
-
-    if (tunnel && tunnel.url) {
-      currentTunnelUrl = tunnel.url;
-      console.log(`[LocalTunnel] Connected! Public URL: ${tunnel.url}`);
-      await publishToHuggingFace(tunnel.url);
-    }
-
-    tunnel.on('close', () => {
-      console.warn('⚠️ LocalTunnel connection closed. Reconnecting in 5s...');
-      currentTunnelUrl = null;
-      activeTunnelInstance = null;
-      setTimeout(startTunnelEngine, 5000);
-    });
-
-    tunnel.on('error', (err) => {
-      console.error('⚠️ LocalTunnel error:', err.message);
-      currentTunnelUrl = null;
-      activeTunnelInstance = null;
-      setTimeout(startTunnelEngine, 5000);
-    });
-  } catch (err) {
-    console.error('⚠️ LocalTunnel initialization failed:', err.message, '- Falling back to Cloudflare quick tunnel...');
-    startCloudflareTunnelFallback();
-  }
-}
-
-function startCloudflareTunnelFallback() {
+function startBoreTunnel() {
   killExistingTunnelProcesses();
   currentTunnelUrl = null;
 
+  if (!fs.existsSync(borePath)) {
+    console.warn('[Bore Engine] bore.exe binary missing, falling back to cloudflared...');
+    startCloudflareFallback();
+    return;
+  }
+
+  console.log(`[Bore Tunnel Engine] Spawning binary: ${borePath}`);
+  const child = spawn(borePath, ['local', '3002', '--to', 'bore.pub']);
+  currentChildProcess = child;
+  let buffer = '';
+
+  const handleData = (data) => {
+    const text = data.toString();
+    buffer += text;
+    console.log('[Bore log]', text.trim());
+
+    if (!currentTunnelUrl) {
+      const match = buffer.match(/listening at bore\.pub:(\d+)/i);
+      if (match && match[1]) {
+        const port = match[1];
+        const url = `http://bore.pub:${port}`;
+        currentTunnelUrl = url;
+        console.log(`[Bore Tunnel] Active URL detected: ${url}`);
+        publishToHuggingFace(url);
+      }
+    }
+  };
+
+  child.stdout.on('data', handleData);
+  child.stderr.on('data', handleData);
+
+  child.on('close', (code) => {
+    console.warn(`⚠️ Bore Tunnel exited with code ${code}. Reconnecting in 5s...`);
+    currentTunnelUrl = null;
+    currentChildProcess = null;
+    setTimeout(startBoreTunnel, 5000);
+  });
+}
+
+function startCloudflareFallback() {
   const binary = fs.existsSync(cloudflaredPath) ? cloudflaredPath : 'cloudflared';
   console.log(`[Cloudflare Fallback] Spawning binary: ${binary}`);
   
@@ -151,13 +161,8 @@ function startCloudflareTunnelFallback() {
     console.log(`⚠️ Cloudflare Tunnel exited with code ${code}. Reconnecting in 10s...`);
     currentTunnelUrl = null;
     currentChildProcess = null;
-    setTimeout(startTunnelEngine, 10000);
+    setTimeout(startBoreTunnel, 10000);
   });
-}
-
-function startTunnelEngine() {
-  killExistingTunnelProcesses();
-  startLocaltunnel();
 }
 
 // Local health monitor: verify localhost:3002 is alive
@@ -172,4 +177,4 @@ setInterval(async () => {
   }
 }, 30000);
 
-startTunnelEngine();
+startBoreTunnel();

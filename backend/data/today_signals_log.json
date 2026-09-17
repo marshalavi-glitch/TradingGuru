@@ -6944,6 +6944,62 @@
       "sweepType": null,
       "sweepHigh": null,
       "sweepLow": null
+    },
+    {
+      "symbol": "NSE:MARUTI",
+      "levelKey": "level1",
+      "levelValue": 12374.119746689694,
+      "price": 12321,
+      "touchTime": "11:50 am",
+      "date": "9/17/2026",
+      "optionPremium": 155.35,
+      "isFno": true,
+      "signalType": "touch",
+      "sweepType": null,
+      "sweepHigh": null,
+      "sweepLow": null
+    },
+    {
+      "symbol": "NSE:TECHM",
+      "levelKey": "level4",
+      "levelValue": 1569.33,
+      "price": 1562.1,
+      "touchTime": "11:50 am",
+      "date": "9/17/2026",
+      "optionPremium": null,
+      "isFno": true,
+      "signalType": "touch",
+      "sweepType": null,
+      "sweepHigh": null,
+      "sweepLow": null
+    },
+    {
+      "symbol": "NSE:NATIONALUM",
+      "levelKey": "level6",
+      "levelValue": 354.5975,
+      "price": 356.3,
+      "touchTime": "11:50 am",
+      "date": "9/17/2026",
+      "optionPremium": 10.45,
+      "isFno": true,
+      "signalType": "touch",
+      "sweepType": null,
+      "sweepHigh": null,
+      "sweepLow": null
+    },
+    {
+      "symbol": "NSE:TATACOMM",
+      "levelKey": "level6",
+      "levelValue": 1785.385,
+      "price": 1792,
+      "touchTime": "11:50 am",
+      "date": "9/17/2026",
+      "optionPremium": null,
+      "isFno": false,
+      "signalType": "touch",
+      "sweepType": null,
+      "sweepHigh": null,
+      "sweepLow": null
     }
   ]
 }

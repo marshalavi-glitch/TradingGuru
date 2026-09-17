@@ -2,6 +2,66 @@
   "date": "9/17/2026",
   "results": [
     {
+      "symbol": "SUNPHARMA",
+      "time": "11:35:00",
+      "currentVolume": 60667,
+      "prevMaxVolume": 52059,
+      "ratio": 1.2,
+      "close": 1857.3,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "DRREDDY",
+      "time": "11:35:00",
+      "currentVolume": 68681,
+      "prevMaxVolume": 31431,
+      "ratio": 2.2,
+      "close": 1160.4,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "BALKRISIND",
+      "time": "11:35:00",
+      "currentVolume": 55812,
+      "prevMaxVolume": 5091,
+      "ratio": 11,
+      "close": 2148.6,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "LICHSGFIN",
+      "time": "11:35:00",
+      "currentVolume": 141748,
+      "prevMaxVolume": 123136,
+      "ratio": 1.2,
+      "close": 545,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "SBIN1!",
+      "time": "11:35:00",
+      "currentVolume": 452250,
+      "prevMaxVolume": 386250,
+      "ratio": 1.2,
+      "close": 988.3,
+      "direction": "UP",
+      "type": "futures"
+    },
+    {
+      "symbol": "CIPLA",
+      "time": "11:35:00",
+      "currentVolume": 46525,
+      "prevMaxVolume": 30501,
+      "ratio": 1.5,
+      "close": 1365.8,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
       "symbol": "POWERGRID",
       "time": "11:30:00",
       "currentVolume": 328174,
@@ -20,6 +80,26 @@
       "close": 2193,
       "direction": "UP",
       "type": "futures"
+    },
+    {
+      "symbol": "NTPC",
+      "time": "11:30:00",
+      "currentVolume": 253392,
+      "prevMaxVolume": 164296,
+      "ratio": 1.5,
+      "close": 329.4,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "LICHSGFIN",
+      "time": "11:30:00",
+      "currentVolume": 123136,
+      "prevMaxVolume": 96823,
+      "ratio": 1.3,
+      "close": 544.95,
+      "direction": "DOWN",
+      "type": "stock"
     },
     {
       "symbol": "TATACONSUM",
@@ -1198,5 +1278,5 @@
       "type": "stock"
     }
   ],
-  "lastScanTime": "2026-09-17T06:18:20.229Z"
+  "lastScanTime": "2026-09-17T06:24:06.672Z"
 }
