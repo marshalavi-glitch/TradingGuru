@@ -37,13 +37,6 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   const [onlineUsers, setOnlineUsers] = useState<number>(1);
   const modalInputRef = useRef<HTMLInputElement>(null);
 
-  // Angel One Setup Modal State
-  const [isAngelModalOpen, setIsAngelModalOpen] = useState(false);
-  const [angelForm, setAngelForm] = useState({ apiKey: '', clientCode: '', password: '', totpSecret: '' });
-  const [angelStatus, setAngelStatus] = useState<any>(null);
-  const [savingAngel, setSavingAngel] = useState(false);
-  const [angelMsg, setAngelMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-
   // Live Active Online Users Counter
   useEffect(() => {
     const fetchUsers = async () => {
@@ -310,36 +303,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               </span>
             </div>
 
-            {/* Angel One SmartAPI Provider Badge */}
-            <div
-              onClick={async () => {
-                setIsAngelModalOpen(true);
-                setAngelMsg(null);
-                try {
-                  const backendUrl = await getBackendHttpUrl();
-                  const res = await fetch(`${backendUrl}/api/angel-one/status`);
-                  if (res.ok) {
-                    const data = await res.json();
-                    setAngelStatus(data);
-                  }
-                } catch (e) {}
-              }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: 'rgba(245, 158, 11, 0.15)',
-                border: '1px solid rgba(245, 158, 11, 0.4)',
-                padding: '4px 10px',
-                borderRadius: '6px',
-                cursor: 'pointer'
-              }}
-              title="Click to configure Angel One SmartAPI credentials & status"
-            >
-              <span style={{ fontSize: '11px', fontWeight: '800', color: '#f59e0b' }}>
-                👼 Angel One
-              </span>
-            </div>
+
 
             {/* Refresh */}
             <button
