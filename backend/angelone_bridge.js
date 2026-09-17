@@ -93,7 +93,9 @@ export class AngelOneBridge {
     this.baseUrl = 'https://apiconnect.angelone.in';
     this.isLoggedIn = false;
     this.profileData = null;
+    this.lastScheduledRunDate = null;
     this.config = this.loadConfig();
+    this.startDailyAutoLoginScheduler();
   }
 
   loadConfig() {
@@ -339,6 +341,44 @@ export class AngelOneBridge {
     }
   }
 
+  startDailyAutoLoginScheduler() {
+    console.log('[Angel One] ⏰ Daily Auto-Login & Session Keep-Alive Scheduler active.');
+
+    // 1. Proactive Heartbeat / Expired Session Check (every 10 minutes)
+    setInterval(async () => {
+      if (!this.config.apiKey || !this.config.clientCode) return;
+
+      const lastLogin = this.config.lastLogin ? new Date(this.config.lastLogin).getTime() : 0;
+      const now = Date.now();
+      const hoursSinceLogin = (now - lastLogin) / (1000 * 60 * 60);
+
+      // Refresh if token is older than 18 hours or if not logged in
+      if (!this.isLoggedIn || hoursSinceLogin >= 18) {
+        console.log(`[Angel One Scheduler] Session age: ${hoursSinceLogin.toFixed(1)}h. Executing automatic re-login...`);
+        await this.login();
+      }
+    }, 10 * 60 * 1000);
+
+    // 2. Pre-Market Daily Re-login at 8:30 AM IST (Asia/Kolkata)
+    setInterval(async () => {
+      if (!this.config.apiKey || !this.config.clientCode) return;
+
+      const now = new Date();
+      const istTimeStr = now.toLocaleTimeString('en-GB', { timeZone: 'Asia/Kolkata' }); // "HH:MM:SS"
+      const [hours, minutes] = istTimeStr.split(':').map(Number);
+
+      // Trigger every morning at 08:30 IST (8:30 AM)
+      if (hours === 8 && minutes === 30) {
+        const todayDate = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+        if (this.lastScheduledRunDate !== todayDate) {
+          this.lastScheduledRunDate = todayDate;
+          console.log(`[Angel One Scheduler] 🌅 Pre-market daily login trigger at ${istTimeStr} IST (${todayDate})...`);
+          await this.login();
+        }
+      }
+    }, 30 * 1000); // Check every 30s
+  }
+
   getStatus() {
     const hasCreds = Boolean(
       (this.config.apiKey || process.env.ANGEL_API_KEY) &&
@@ -351,7 +391,9 @@ export class AngelOneBridge {
       hasCredentials: hasCreds,
       clientCode: this.config.clientCode || null,
       lastLogin: this.config.lastLogin || null,
-      tokensMapped: Object.keys(ANGEL_SYMBOL_MAP).length
+      tokensMapped: Object.keys(ANGEL_SYMBOL_MAP).length,
+      autoLoginEnabled: true,
+      preMarketSchedule: '08:30 AM IST Daily'
     };
   }
 }
