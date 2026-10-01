@@ -54,6 +54,12 @@ async function uploadToHFDirect(filesToUpload) {
 
 async function run() {
   try {
+    const liveBackendPath = path.join(__dirname, 'live_backend.json');
+    const publicBackendPath = path.join(__dirname, 'frontend/public/live_backend.json');
+    if (fs.existsSync(liveBackendPath)) {
+      fs.copyFileSync(liveBackendPath, publicBackendPath);
+    }
+
     console.log('Building Vite frontend...');
     execSync('node node_modules/vite/bin/vite.js build', { cwd: path.join(__dirname, 'frontend'), stdio: 'inherit' });
 
@@ -62,6 +68,11 @@ async function run() {
     const rootIndexPath = path.join(__dirname, 'index.html');
     fs.copyFileSync(distIndexPath, rootIndexPath);
 
+    const distBackendPath = path.join(__dirname, 'frontend/dist/live_backend.json');
+    if (fs.existsSync(liveBackendPath)) {
+      fs.copyFileSync(liveBackendPath, distBackendPath);
+    }
+
     const rootAssetsDir = path.join(__dirname, 'assets');
     const distAssetsDir = path.join(__dirname, 'frontend/dist/assets');
     if (!fs.existsSync(rootAssetsDir)) {
@@ -69,13 +80,14 @@ async function run() {
     }
 
     // Clean old assets in root assets dir
-    const oldFiles = fs.readdirSync(rootAssetsDir);
-    for (const f of oldFiles) {
-      fs.unlinkSync(path.join(rootAssetsDir, f));
+    if (fs.existsSync(rootAssetsDir)) {
+      fs.rmSync(rootAssetsDir, { recursive: true, force: true });
     }
+    fs.mkdirSync(rootAssetsDir, { recursive: true });
 
     // Copy fresh dist assets
-    const distFiles = fs.readdirSync(distAssetsDir);
+    fs.cpSync(distAssetsDir, rootAssetsDir, { recursive: true });
+
     const filesToUpload = [];
 
     // Add index.html
@@ -84,18 +96,25 @@ async function run() {
       buffer: fs.readFileSync(rootIndexPath)
     });
 
-    for (const f of distFiles) {
-      const srcPath = path.join(distAssetsDir, f);
-      const destPath = path.join(rootAssetsDir, f);
-      fs.copyFileSync(srcPath, destPath);
-      filesToUpload.push({
-        path: `assets/${f}`,
-        buffer: fs.readFileSync(destPath)
-      });
+    // Recursively collect all files in assets directory
+    function collectFiles(dir, prefix = '') {
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        const relPath = prefix ? `${prefix}/${entry.name}` : entry.name;
+        if (entry.isDirectory()) {
+          collectFiles(fullPath, relPath);
+        } else if (entry.isFile()) {
+          filesToUpload.push({
+            path: `assets/${relPath.replace(/\\/g, '/')}`,
+            buffer: fs.readFileSync(fullPath)
+          });
+        }
+      }
     }
+    collectFiles(rootAssetsDir);
 
     // Add live_backend.json if exists
-    const liveBackendPath = path.join(__dirname, 'live_backend.json');
     if (fs.existsSync(liveBackendPath)) {
       filesToUpload.push({
         path: 'live_backend.json',
