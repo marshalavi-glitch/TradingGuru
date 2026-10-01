@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { getBackendHttpUrl } from '../utils/tvStreamer';
-import { ChevronDown, Check, Crosshair, Target, ZoomIn, ZoomOut, Maximize2, Minimize2, RotateCcw, MoveVertical, MoveHorizontal } from 'lucide-react';
+import { ChevronDown, Check, Crosshair, Target, ZoomIn, ZoomOut, Maximize2, Minimize2, RotateCcw, MoveVertical, MoveHorizontal, ExternalLink } from 'lucide-react';
 
 export interface FootprintChartContainerProps {
   onSymbolSelect?: (symbol: string) => void;
@@ -178,6 +178,17 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
   const [showTable, setShowTable] = useState<boolean>(true);
   const [showProfile, setShowProfile] = useState<boolean>(true);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  // Check if opened standalone via Pop Out
+  const isStandalone = useMemo(() => {
+    try {
+      const p = new URLSearchParams(window.location.search);
+      return p.get('standalone') === 'true';
+    } catch (e) {
+      return false;
+    }
+  }, []);
 
   // Layout scales - Bell OrderFlow Pro calibrated dimensions
   const [rungHeight, setRungHeight] = useState<number>(20);
@@ -215,18 +226,100 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
   const initialFitDoneRef = useRef<boolean>(false);
   const isAtRightEdgeRef = useRef<boolean>(true);
 
-  // Tick Size & Imbalance interactive configuration
-  const [customTick, setCustomTick] = useState<number | null>(null);
-  const [tickInput, setTickInput] = useState<string>('');
+  // Tick Size & Imbalance interactive configuration (initialized from URL if popped out)
+  const [customTick, setCustomTick] = useState<number | null>(() => {
+    try {
+      const p = new URLSearchParams(window.location.search);
+      const t = p.get('tick');
+      if (t && !isNaN(parseFloat(t)) && parseFloat(t) > 0) return parseFloat(t);
+    } catch (e) {}
+    return null;
+  });
+  const [tickInput, setTickInput] = useState<string>(() => {
+    try {
+      const p = new URLSearchParams(window.location.search);
+      const t = p.get('tick');
+      if (t) return t;
+    } catch (e) {}
+    return '';
+  });
   const [showTickDropdown, setShowTickDropdown] = useState<boolean>(false);
 
-  const [imbalanceRatio, setImbalanceRatio] = useState<number>(3.0);
-  const [imbalanceInput, setImbalanceInput] = useState<string>('3.0');
+  const [imbalanceRatio, setImbalanceRatio] = useState<number>(() => {
+    try {
+      const p = new URLSearchParams(window.location.search);
+      const im = p.get('imbalance');
+      if (im && !isNaN(parseFloat(im)) && parseFloat(im) > 0) return parseFloat(im);
+    } catch (e) {}
+    return 3.0;
+  });
+  const [imbalanceInput, setImbalanceInput] = useState<string>(() => {
+    try {
+      const p = new URLSearchParams(window.location.search);
+      const im = p.get('imbalance');
+      if (im) return im;
+    } catch (e) {}
+    return '3.0';
+  });
   const [showImbalanceDropdown, setShowImbalanceDropdown] = useState<boolean>(false);
 
   const activeInstrument = INSTRUMENTS.find((inst) => inst.symbol.toUpperCase() === symbol.toUpperCase());
   const baseTickSize = data?.tickSize || (activeInstrument ? activeInstrument.defaultTick : null) || 2.5;
   const tickSize = (customTick !== null && customTick > 0) ? customTick : baseTickSize;
+
+  // Toggle Fullscreen: covers dashboard with fixed overlay + native fullscreen
+  const toggleFullscreen = useCallback(() => {
+    setIsExpanded((prev) => {
+      const next = !prev;
+      if (next) {
+        if (containerRef.current && containerRef.current.requestFullscreen) {
+          containerRef.current.requestFullscreen().catch(() => {});
+        }
+      } else {
+        if (document.fullscreenElement && document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        }
+      }
+      return next;
+    });
+  }, []);
+
+  // Pop Out into new browser tab / window
+  const handlePopOut = useCallback(() => {
+    const origin = window.location.origin;
+    const pathname = window.location.pathname;
+    const params = new URLSearchParams();
+    params.set('tab', 'test');
+    params.set('symbol', symbol);
+    params.set('timeframe', String(timeframe));
+    if (customTick) params.set('tick', String(customTick));
+    if (imbalanceRatio) params.set('imbalance', String(imbalanceRatio));
+    params.set('standalone', 'true');
+    window.open(`${origin}${pathname}?${params.toString()}`, '_blank');
+  }, [symbol, timeframe, customTick, imbalanceRatio]);
+
+  // Sync with Escape key and fullscreenchange event
+  useEffect(() => {
+    const handleFsChange = () => {
+      if (!document.fullscreenElement && isExpanded) {
+        setIsExpanded(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isExpanded) {
+        setIsExpanded(false);
+        if (document.fullscreenElement && document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        }
+      }
+    };
+    document.addEventListener('fullscreenchange', handleFsChange);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFsChange);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isExpanded]);
 
   // Sync selectedSymbol if passed from parent
   useEffect(() => {
@@ -770,11 +863,18 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
 
   return (
     <div
+      ref={containerRef}
       style={{
         display: 'flex',
         flexDirection: 'column',
-        width: '100%',
-        height: isExpanded ? '100vh' : 'calc(100vh - 265px)',
+        position: isExpanded ? 'fixed' : 'relative',
+        top: isExpanded ? 0 : 'auto',
+        left: isExpanded ? 0 : 'auto',
+        right: isExpanded ? 0 : 'auto',
+        bottom: isExpanded ? 0 : 'auto',
+        zIndex: isExpanded ? 999999 : 'auto',
+        width: isExpanded ? '100vw' : '100%',
+        height: isExpanded || isStandalone ? '100vh' : 'calc(100vh - 265px)',
         backgroundColor: '#000000',
         color: '#ffffff',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -1399,24 +1499,46 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
             F
           </button>
 
-          {/* Expand Fullscreen Button */}
+          {/* Pop Out into New Browser Tab / Window Button */}
           <button
-            onClick={() => setIsExpanded(!isExpanded)}
+            onClick={handlePopOut}
             style={{
-              backgroundColor: '#333333',
-              color: '#cccccc',
-              border: '1px solid #555555',
+              backgroundColor: '#262626',
+              color: '#38bdf8',
+              border: '1px solid #444444',
               borderRadius: '2px',
-              width: '22px',
+              width: '24px',
               height: '22px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              transition: 'background-color 0.15s'
             }}
-            title={isExpanded ? 'Collapse' : 'Fullscreen'}
+            title="Pop out into new browser tab / window"
           >
-            {isExpanded ? <Minimize2 size={11} /> : <Maximize2 size={11} />}
+            <ExternalLink size={12} />
+          </button>
+
+          {/* Expand Fullscreen Button (Covers Entire Dashboard) */}
+          <button
+            onClick={toggleFullscreen}
+            style={{
+              backgroundColor: isExpanded ? '#1d4ed8' : '#262626',
+              color: isExpanded ? '#ffffff' : '#e2e8f0',
+              border: isExpanded ? '1px solid #3b82f6' : '1px solid #444444',
+              borderRadius: '2px',
+              width: '24px',
+              height: '22px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              transition: 'all 0.15s'
+            }}
+            title={isExpanded ? 'Exit Fullscreen (Esc)' : 'Fullscreen (Covers Dashboard)'}
+          >
+            {isExpanded ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
           </button>
         </div>
       </div>
