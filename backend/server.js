@@ -615,7 +615,7 @@ async function fetchFreshCandles(symbol, timeframe, limit) {
   }
 
   const promise = (async () => {
-    const safeLimit = Math.min(1500, Math.max(100, parseInt(limit, 10) || 500));
+    const safeLimit = Math.min(2500, Math.max(100, parseInt(limit, 10) || 500));
     let candles = [];
     let source = 'Angel One SmartAPI';
 
@@ -625,6 +625,14 @@ async function fetchFreshCandles(symbol, timeframe, limit) {
         const strippedSym = symbol.replace(/(1!|\.FUT|FUT|-FUT)$/i, '').trim();
         if (strippedSym && strippedSym !== symbol) {
           angelRes = await angelOneBridge.getNormalizedCandles({ symbol: strippedSym, timeframe, limit: safeLimit });
+        }
+        // If still empty and it was an NFO contract like NFO:RELIANCE27OCT26FUT, extract underlying equity stock
+        if (!angelRes || !angelRes.candles || angelRes.candles.length === 0) {
+          const underlyingMatch = symbol.match(/^([A-Z]+:)?([A-Z0-9]+?)(?:\d{2}[A-Z]{3}\d{2})/);
+          if (underlyingMatch && underlyingMatch[2]) {
+            const underlyingSym = `NSE:${underlyingMatch[2]}`;
+            angelRes = await angelOneBridge.getNormalizedCandles({ symbol: underlyingSym, timeframe, limit: safeLimit });
+          }
         }
         if ((!angelRes || !angelRes.candles || angelRes.candles.length === 0) && (symbol.includes('NIFTY') || symbol.includes('BANK'))) {
           const fallbackSym = symbol.includes('BANK') ? 'NSE:BANKNIFTY' : 'NSE:NIFTY';
@@ -1759,6 +1767,273 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date(), project: 'Angel One Trading Dashboard V2' });
 });
 
+// Authentication & User Management Endpoints
+const USERS_FILE_PATH = path.join(__dirname, 'data/users.json');
+
+function loadUsersFromDisk() {
+  try {
+    if (fs.existsSync(USERS_FILE_PATH)) {
+      return JSON.parse(fs.readFileSync(USERS_FILE_PATH, 'utf8'));
+    }
+  } catch (err) {
+    console.error('[Auth Engine] Error reading users file:', err.message);
+  }
+  return [
+    { username: 'admin', name: 'Admin', password: 'Melissa@123', role: 'admin' },
+    { username: 'sharath', name: 'Sharath SG', password: 'sharath@2026', role: 'trader' },
+    { username: 'sharathsg', name: 'Sharath SG', password: 'sharath@2026', role: 'trader' }
+  ];
+}
+
+const SESSION_CONTROL_FILE = path.join(__dirname, 'data', 'session_control.json');
+
+function loadSessionControl() {
+  try {
+    if (fs.existsSync(SESSION_CONTROL_FILE)) {
+      return JSON.parse(fs.readFileSync(SESSION_CONTROL_FILE, 'utf8'));
+    }
+  } catch (err) {}
+  return {
+    adminSessionEpoch: 1759600000000,
+    globalSessionEpoch: 1759600000000,
+    lastRevokedAt: new Date().toISOString()
+  };
+}
+
+function saveSessionControl(ctrl) {
+  try {
+    fs.writeFileSync(SESSION_CONTROL_FILE, JSON.stringify(ctrl, null, 2), 'utf8');
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
+function saveUsersToDisk(usersList) {
+  try {
+    fs.writeFileSync(USERS_FILE_PATH, JSON.stringify(usersList, null, 2), 'utf8');
+    return true;
+  } catch (err) {
+    console.error('[Auth Engine] Error saving users file:', err.message);
+    return false;
+  }
+}
+
+function isAuthorizedAdmin(req) {
+  const requester = (req.headers['x-auth-user'] || req.query.admin || req.body?.adminUser || '').toString().trim().toLowerCase();
+  return requester === 'admin';
+}
+
+app.get('/api/auth/users', (req, res) => {
+  try {
+    const users = loadUsersFromDisk();
+    res.json({ success: true, users });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/auth/users', (req, res) => {
+  try {
+    if (!isAuthorizedAdmin(req)) {
+      return res.status(403).json({ success: false, error: 'Unauthorized: Only administrator can add user access.' });
+    }
+    const { username, name, password, role } = req.body || {};
+    if (!username || !password) {
+      return res.status(400).json({ success: false, error: 'Username and password are required' });
+    }
+    const cleanUser = String(username).trim().toLowerCase();
+    const cleanPass = String(password).trim();
+    const cleanName = String(name || cleanUser).trim();
+    const cleanRole = String(role || 'trader').trim().toLowerCase();
+
+    const users = loadUsersFromDisk();
+    const existingIndex = users.findIndex(u => u.username.toLowerCase() === cleanUser);
+    const userObj = {
+      username: cleanUser,
+      name: cleanName,
+      password: cleanPass,
+      role: cleanRole,
+      updatedAt: new Date().toISOString()
+    };
+
+    if (existingIndex >= 0) {
+      users[existingIndex] = { ...users[existingIndex], ...userObj };
+    } else {
+      users.push(userObj);
+    }
+
+    saveUsersToDisk(users);
+    console.log(`[Auth Engine] User "${cleanUser}" (${cleanName}) saved successfully by Admin.`);
+    res.json({ success: true, user: userObj, message: `User "${cleanUser}" saved successfully.` });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.delete('/api/auth/users/:username', (req, res) => {
+  try {
+    if (!isAuthorizedAdmin(req)) {
+      return res.status(403).json({ success: false, error: 'Unauthorized: Only administrator can delete user access.' });
+    }
+    const targetUser = String(req.params.username || '').trim().toLowerCase();
+    if (targetUser === 'admin') {
+      return res.status(400).json({ success: false, error: 'Cannot delete primary admin account' });
+    }
+    let users = loadUsersFromDisk();
+    const prevCount = users.length;
+    users = users.filter(u => u.username.toLowerCase() !== targetUser);
+    if (users.length === prevCount) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    saveUsersToDisk(users);
+    console.log(`[Auth Engine] User "${targetUser}" removed by Admin.`);
+    res.json({ success: true, message: `User "${targetUser}" removed successfully.` });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/auth/record-login', (req, res) => {
+  try {
+    const { username, timestamp } = req.body || {};
+    if (!username) return res.status(400).json({ success: false, error: 'Username required' });
+    const clean = String(username).trim().toLowerCase();
+    const nowIso = timestamp || new Date().toISOString();
+
+    const users = loadUsersFromDisk();
+    const match = users.find(u => u.username.toLowerCase() === clean || (u.name && u.name.toLowerCase() === clean));
+    if (match) {
+      match.lastLogin = nowIso;
+      saveUsersToDisk(users);
+      console.log(`[Auth Engine] Recorded login for "${match.username}" at ${nowIso}`);
+      return res.json({ success: true, lastLogin: nowIso });
+    }
+    res.json({ success: true, message: 'User updated' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get('/api/auth/session-control', (req, res) => {
+  try {
+    const ctrl = loadSessionControl();
+    res.json({ success: true, ...ctrl });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/auth/logout-all', (req, res) => {
+  try {
+    const newEpoch = Date.now();
+    const ctrl = {
+      adminSessionEpoch: newEpoch,
+      globalSessionEpoch: newEpoch,
+      lastRevokedAt: new Date().toISOString()
+    };
+    saveSessionControl(ctrl);
+    console.log(`[Auth Engine] All sessions revoked across all active devices. New epoch: ${newEpoch}`);
+    res.json({ success: true, message: 'All active sessions invalidated successfully.', sessionEpoch: newEpoch });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/auth/verify', (req, res) => {
+  try {
+    const { username, password } = req.body || {};
+    const cleanUser = String(username || '').trim().toLowerCase();
+    const cleanPass = String(password || '').trim();
+
+    if (cleanUser === 'trader' || cleanUser === 'guest') {
+      return res.status(403).json({ success: false, error: 'Account is deactivated. Contact Administrator.' });
+    }
+
+    const users = loadUsersFromDisk();
+    const match = users.find(u => {
+      const uName = (u.username || '').toLowerCase();
+      const uDisp = (u.name || '').toLowerCase();
+      const isUserMatch = uName === cleanUser || uDisp === cleanUser || (cleanUser === 'sharath' && (uName === 'sharathsg' || uName === 'sharath'));
+      return isUserMatch && u.password === cleanPass;
+    });
+    if (match) {
+      match.lastLogin = new Date().toISOString();
+      saveUsersToDisk(users);
+      const userFavs = Array.isArray(match.favorites) ? match.favorites : ['Charts'];
+      const ctrl = loadSessionControl();
+      const currentNow = Date.now();
+      res.json({
+        success: true,
+        user: { username: match.username, name: match.name, role: match.role, lastLogin: match.lastLogin, favorites: userFavs },
+        sessionEpoch: Math.max(currentNow, ctrl.adminSessionEpoch || 0)
+      });
+    } else {
+      res.status(401).json({ success: false, error: 'Invalid credentials' });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// User Favorites Persistence Endpoints (Per-user section favorites)
+app.get('/api/user/favorites', (req, res) => {
+  try {
+    const rawUser = req.query.username || req.headers['x-auth-user'] || '';
+    const cleanUser = String(rawUser).trim().toLowerCase();
+    if (!cleanUser) {
+      return res.status(400).json({ success: false, error: 'Username required' });
+    }
+    const users = loadUsersFromDisk();
+    const match = users.find(u => u.username.toLowerCase() === cleanUser || (u.name && u.name.toLowerCase() === cleanUser));
+    if (match) {
+      const favorites = Array.isArray(match.favorites) ? match.favorites : ['Charts'];
+      return res.json({ success: true, username: match.username, favorites });
+    }
+    return res.json({ success: true, username: cleanUser, favorites: ['Charts'] });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/user/favorites', (req, res) => {
+  try {
+    const { username, favorites } = req.body || {};
+    const rawUser = username || req.headers['x-auth-user'] || '';
+    const cleanUser = String(rawUser).trim().toLowerCase();
+    if (!cleanUser) {
+      return res.status(400).json({ success: false, error: 'Username required' });
+    }
+    if (!Array.isArray(favorites)) {
+      return res.status(400).json({ success: false, error: 'Favorites must be an array of section names' });
+    }
+    const cleanFavs = favorites.map(s => String(s).trim()).filter(Boolean);
+    const users = loadUsersFromDisk();
+    const match = users.find(u => u.username.toLowerCase() === cleanUser || (u.name && u.name.toLowerCase() === cleanUser));
+    if (match) {
+      match.favorites = cleanFavs;
+      saveUsersToDisk(users);
+      console.log(`[Auth Engine] Saved favorites for "${match.username}":`, cleanFavs);
+      return res.json({ success: true, username: match.username, favorites: cleanFavs });
+    } else {
+      const newUser = {
+        username: cleanUser,
+        name: cleanUser,
+        role: 'trader',
+        favorites: cleanFavs,
+        updatedAt: new Date().toISOString()
+      };
+      users.push(newUser);
+      saveUsersToDisk(users);
+      console.log(`[Auth Engine] Created user record with favorites for "${cleanUser}":`, cleanFavs);
+      return res.json({ success: true, username: cleanUser, favorites: cleanFavs });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+
 const server = createServer(app);
 const wss = new WebSocketServer({ noServer: true });
 
@@ -1848,6 +2123,16 @@ async function fetchAnchorLevels(symbol, timeframe) {
         level1: r6, level2: r5, level3: r4, level4: r3, level5: r2,
         level6: s2, level7: s3, level8: s4, level9: s5, level10: s6
       };
+    }
+    
+    // Ensure today's session in IST is mapped with the latest calculated anchor levels
+    const historyKeys = Object.keys(matrixHistory).sort();
+    if (historyKeys.length > 0) {
+      const lastLvl = matrixHistory[historyKeys[historyKeys.length - 1]];
+      const todayIST = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+      if (!matrixHistory[todayIST]) {
+        matrixHistory[todayIST] = { ...lastLvl };
+      }
     }
     
     return matrixHistory;

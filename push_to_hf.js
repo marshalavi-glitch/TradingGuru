@@ -23,7 +23,7 @@ if (!token) {
 
 async function uploadToHFDirect(filesToUpload) {
   console.log(`[HF API Upload] Uploading ${filesToUpload.length} files via HF API...`);
-  const commitUrl = 'https://huggingface.co/api/spaces/marshalavi/TradingGuru/commit/main';
+  const commitUrl = 'https://huggingface.co/api/spaces/marshalavi/TradingGuru-Terminal/commit/main';
   const payload = {
     summary: 'Deploy fresh frontend dist assets & root index.html to HF Space',
     files: filesToUpload.map(f => ({
@@ -135,7 +135,7 @@ async function run() {
       try { execSync('git rm --cached backend/bore.exe', { stdio: 'ignore' }); } catch (e) {}
       execSync('git add .', { stdio: 'inherit' });
       try { execSync('git commit -m "Deploy fresh frontend dist assets & root index.html to HF Space"', { stdio: 'inherit' }); } catch (e) {}
-      const remoteUrl = `https://marshalavi:${token}@huggingface.co/spaces/marshalavi/TradingGuru`;
+      const remoteUrl = `https://marshalavi:${token}@huggingface.co/spaces/marshalavi/TradingGuru-Terminal`;
       execSync(`git push -f ${remoteUrl} main`, { stdio: 'inherit' });
     }
     console.log('🎉 Successfully deployed updated static assets to Hugging Face Space!');

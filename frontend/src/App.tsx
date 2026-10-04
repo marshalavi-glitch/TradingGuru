@@ -6,7 +6,7 @@ import { ChartContainer } from './components/ChartContainer';
 import { tvStreamer, getBackendHttpUrl } from './utils/tvStreamer';
 import type { Candle } from './utils/profileCalculator';
 import { calculateMatrixSeriesData } from './utils/matrixCalculator';
-import { AlertCircle, Loader2, Layers, Zap, X, Volume2 } from 'lucide-react';
+import { AlertCircle, Loader2, Layers, Zap, X, Volume2, Star } from 'lucide-react';
 import { TabErrorBoundary } from './components/TabErrorBoundary';
 import { useLevelAlerts, playCallingBellSound } from './utils/useLevelAlerts';
 import { RealtimeLevelAlertPopup } from './components/RealtimeLevelAlertPopup';
@@ -24,7 +24,6 @@ import { BacktestResultsContainer } from './components/BacktestResultsContainer'
 import { FifteenMinForensicContainer } from './components/FifteenMinForensicContainer';
 import { Nr7BreakoutContainer } from './components/Nr7BreakoutContainer';
 import { OrderFlowContainer } from './components/OrderFlowContainer';
-import { OrderFlowFootprintContainer } from './components/OrderFlowFootprintContainer';
 import { CvdAdvContainer } from './components/CvdAdvContainer';
 import { HeatMapContainer } from './components/HeatMapContainer';
 import { MarketProfileContainer } from './components/MarketProfileContainer';
@@ -36,14 +35,18 @@ import { ManualTradesContainer } from './components/ManualTradesContainer';
 import { ValueBreakoutContainer } from './components/ValueBreakoutContainer';
 import { SrBreakoutContainer } from './components/SrBreakoutContainer';
 import { TestContainer } from './components/TestContainer';
+import { Test2Container } from './components/Test2Container';
 import { Mp3DayPatternContainer } from './components/Mp3DayPatternContainer';
+import { LoginScreen, getStoredAuthUser, clearStoredAuthUser, AUTH_EPOCH_KEY, CURRENT_AUTH_EPOCH } from './components/LoginScreen';
+import { UserManagementModal } from './components/UserManagementModal';
+import { WATCHLIST_DATA } from './data/watchlistData';
 
 export type TabType = 
   | 'chart' | 'dada_thoughts' | 'fifteen_min' 
   | 'scanner' | 'options' | 'signals' | 'doji' | 'doji_novol' | 'volume' 
   | 'opening_bias' | 'hourly_updates' | 'backtest_results' 
-  | 'early_picks' | 'nr7_breakout' | 'order_flow' | 'order_flow_footprint' 
-  | 'cvd_adv' | 'heatmap' | 'market_profile' | 'pro_market_profile' | 'mp_3day_pattern' | 'value_breakout' | 'footprint_chart' | 'vsa' | 'high_beta' | 'manual_trades' | 'sr_breakout' | 'test';
+  | 'early_picks' | 'nr7_breakout' | 'order_flow' 
+  | 'cvd_adv' | 'heatmap' | 'market_profile' | 'pro_market_profile' | 'mp_3day_pattern' | 'value_breakout' | 'footprint_chart' | 'vsa' | 'high_beta' | 'manual_trades' | 'sr_breakout' | 'test' | 'test2';
 
 interface TabItem {
   id: TabType;
@@ -52,9 +55,72 @@ interface TabItem {
   badge?: string;
 }
 
+
+interface ToolGroup {
+  name: string;
+  items: { id: TabType; label: string }[];
+}
+
+const TOOL_GROUPS: ToolGroup[] = [
+  {
+    name: 'Charts',
+    items: [
+      { id: 'chart', label: 'Candlestick' },
+      { id: 'market_profile', label: 'Market Profile' },
+      { id: 'pro_market_profile', label: 'Pro TPO' },
+      { id: 'test', label: 'Orderflow Chart' }
+    ]
+  },
+  {
+    name: 'Signals',
+    items: [
+      { id: 'scanner', label: 'Scanner' },
+      { id: 'mp_3day_pattern', label: 'MP 3-Day Pattern' },
+      { id: 'backtest_results', label: 'Live Math' },
+      { id: 'options', label: 'Options Chain' },
+      { id: 'signals', label: 'Signals' },
+      { id: 'fifteen_min', label: '15 Mins Forensic' },
+      { id: 'hourly_updates', label: 'Hourly Updates' }
+    ]
+  },
+  {
+    name: 'Breakouts',
+    items: [
+      { id: 'sr_breakout', label: 'SR Breakout' },
+      { id: 'volume', label: 'Volume' },
+      { id: 'value_breakout', label: 'Value' },
+      { id: 'high_beta', label: 'High Beta Trades' },
+      { id: 'early_picks', label: 'Early Picks' },
+      { id: 'nr7_breakout', label: '20% UC Potential' }
+    ]
+  },
+  {
+    name: 'Flow',
+    items: [
+      { id: 'footprint_chart', label: 'Footprint' },
+      { id: 'vsa', label: 'VSA' },
+      { id: 'order_flow', label: 'Lucky Flow' }
+    ]
+  },
+  {
+    name: 'Others',
+    items: [
+      { id: 'manual_trades', label: 'Manual Trades' },
+      { id: 'test2', label: 'Test 2' },
+      { id: 'cvd_adv', label: 'CVD / ADV' },
+      { id: 'heatmap', label: 'Heat Map' },
+      { id: 'doji', label: 'First Doji' },
+      { id: 'doji_novol', label: 'Doji (No Vol)' },
+      { id: 'opening_bias', label: 'Opening Bias' },
+      { id: 'dada_thoughts', label: 'Dada Thoughts' }
+    ]
+  }
+];
+
 const TABS_LIST: TabItem[] = [
   { id: 'manual_trades', label: '📝 Manual Trades', color: '#10b981' },
-  { id: 'test', label: '🧪 Test', color: '#8b5cf6' },
+  { id: 'test', label: '📊 Orderflow Chart', color: '#38bdf8' },
+  { id: 'test2', label: '🧪 Test 2', color: '#8b5cf6' },
   { id: 'sr_breakout', label: '🎯 SR Breakout', color: '#06b6d4' },
   { id: 'chart', label: '📈 Candlestick Chart', color: '#3b82f6' },
   { id: 'market_profile', label: '🏛️ Market Profile', color: '#00f0ff' },
@@ -65,7 +131,6 @@ const TABS_LIST: TabItem[] = [
   { id: 'vsa', label: '📊 VSA', color: '#a855f7' },
   { id: 'footprint_chart', label: '👣 Footprint', color: '#34d399' },
   { id: 'order_flow', label: '🍀 Lucky Flow', color: '#10b981' },
-  { id: 'order_flow_footprint', label: '📊 Order Flow', color: '#60a5fa' },
   { id: 'cvd_adv', label: '📊 CVD / ADV', color: '#60a5fa' },
   { id: 'heatmap', label: '🔥 Heat Map', color: '#f87171' },
   { id: 'scanner', label: '🔍 Scanner', color: '#3b82f6' },
@@ -85,8 +150,81 @@ const TABS_LIST: TabItem[] = [
 
 function App() {
   const { isDark } = useTheme();
-  const [symbol, setSymbol] = useState('NSE:NIFTY');
-  const [timeframe, setTimeframe] = useState('5'); // Default 5-minute interval
+  const [authUser, setAuthUser] = useState<string | null>(() => getStoredAuthUser());
+  const [isUserManagementOpen, setIsUserManagementOpen] = useState(false);
+
+  const handleLogout = () => {
+    try {
+      const cleanUrl = new URL(window.location.href);
+      cleanUrl.searchParams.delete('auth');
+      window.history.replaceState({}, document.title, cleanUrl.toString());
+    } catch {}
+    clearStoredAuthUser();
+    setAuthUser(null);
+  };
+
+  // Multi-Device Session Invalidation Engine
+  useEffect(() => {
+    if (!authUser) return;
+
+    let isChecking = false;
+    const checkSessionValidity = async () => {
+      if (isChecking) return;
+      isChecking = true;
+      try {
+        const localEpoch = Number(localStorage.getItem(AUTH_EPOCH_KEY) || sessionStorage.getItem(AUTH_EPOCH_KEY) || 0);
+        if (!localEpoch) {
+          handleLogout();
+          return;
+        }
+
+        const backendHttp = await getBackendHttpUrl();
+        if (backendHttp) {
+          const res = await fetch(`${backendHttp}/api/auth/session-control`, {
+            headers: { 'bypass-tunnel-reminder': 'true' }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.adminSessionEpoch) {
+              if (localEpoch < data.adminSessionEpoch) {
+                console.warn('[Auth Engine] Active session has been revoked by Administrator.');
+                handleLogout();
+                return;
+              }
+            }
+          }
+        }
+      } catch (e) {} finally {
+        isChecking = false;
+      }
+    };
+
+    checkSessionValidity();
+    const interval = setInterval(checkSessionValidity, 15000);
+    window.addEventListener('focus', checkSessionValidity);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', checkSessionValidity);
+    };
+  }, [authUser]);
+
+  const [symbol, setSymbol] = useState(() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const sym = urlParams.get('symbol');
+      if (sym) return sym;
+    } catch (e) {}
+    return 'NSE:NIFTY';
+  });
+  const [timeframe, setTimeframe] = useState(() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tf = urlParams.get('timeframe');
+      if (tf) return tf;
+    } catch (e) {}
+    return '5';
+  });
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
   const [candles, setCandles] = useState<Candle[]>([]);
   const [matrixHistory, setMatrixHistory] = useState<Record<string, any> | null>(null);
@@ -116,7 +254,7 @@ function App() {
         return savedTab;
       }
     } catch (e) {}
-    return 'test';
+    return 'chart';
   });
 
   useEffect(() => {
@@ -420,8 +558,14 @@ function App() {
       if (groupKeys.length > 0) {
         const latestKey = groupKeys[groupKeys.length - 1];
         const latestCandles = groups[latestKey];
-        const levels = matrixHistory[latestKey];
-        if (levels && latestCandles) {
+        let levels = matrixHistory[latestKey];
+        if (!levels) {
+          const sortedHistoryKeys = Object.keys(matrixHistory).sort();
+          if (sortedHistoryKeys.length > 0) {
+            levels = matrixHistory[sortedHistoryKeys[sortedHistoryKeys.length - 1]];
+          }
+        }
+        if (levels && latestCandles && latestCandles.length > 0) {
           latestCandles.forEach(c => {
             seriesData.level1.push({ time: c.time as any, value: levels.level1 });
             seriesData.level2.push({ time: c.time as any, value: levels.level2 });
@@ -436,7 +580,9 @@ function App() {
           });
         }
       }
-      return seriesData;
+      if (seriesData.level1.length > 0) {
+        return seriesData;
+      }
     }
     return calculateMatrixSeriesData(candles, timeframe);
   }, [candles, timeframe, matrixHistory]);
@@ -458,7 +604,149 @@ function App() {
     timeframe
   });
 
+
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
+    Favorites: true,
+    Charts: true,
+    Signals: true,
+    Breakouts: true,
+    Flow: true,
+    Others: false
+  });
+
+  const [favoriteSections, setFavoriteSections] = useState<string[]>(() => {
+    const currentAuth = getStoredAuthUser();
+    if (currentAuth) {
+      try {
+        const cached = localStorage.getItem(`trading_guru_favorites_${currentAuth.toLowerCase()}`);
+        if (cached) return JSON.parse(cached);
+      } catch {}
+    }
+    return ['Charts'];
+  });
+
+  // Load and synchronize user's favorite sections from backend
+  useEffect(() => {
+    if (!authUser) return;
+    const cleanUser = authUser.toLowerCase();
+
+    // Load cached preferences first for instant responsiveness
+    try {
+      const cached = localStorage.getItem(`trading_guru_favorites_${cleanUser}`);
+      if (cached) {
+        setFavoriteSections(JSON.parse(cached));
+      }
+    } catch {}
+
+    let isMounted = true;
+    const fetchUserFavorites = async () => {
+      try {
+        const backendHttp = await getBackendHttpUrl();
+        const res = await fetch(`${backendHttp}/api/user/favorites?username=${encodeURIComponent(cleanUser)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && Array.isArray(data.favorites) && isMounted) {
+            setFavoriteSections(data.favorites);
+            localStorage.setItem(`trading_guru_favorites_${cleanUser}`, JSON.stringify(data.favorites));
+          }
+        }
+      } catch (err) {
+        console.warn('[Favorites] Error loading favorites from backend:', err);
+      }
+    };
+
+    fetchUserFavorites();
+    return () => { isMounted = false; };
+  }, [authUser]);
+
+  const toggleFavoriteSection = async (sectionName: string) => {
+    const isFav = favoriteSections.includes(sectionName);
+    const nextFavs = isFav
+      ? favoriteSections.filter(s => s !== sectionName)
+      : [...favoriteSections, sectionName];
+
+    setFavoriteSections(nextFavs);
+
+    if (authUser) {
+      const cleanUser = authUser.toLowerCase();
+      try {
+        localStorage.setItem(`trading_guru_favorites_${cleanUser}`, JSON.stringify(nextFavs));
+        const backendHttp = await getBackendHttpUrl();
+        await fetch(`${backendHttp}/api/user/favorites`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: cleanUser, favorites: nextFavs })
+        });
+      } catch (err) {
+        console.warn('[Favorites] Error saving favorites to backend:', err);
+      }
+    }
+  };
+
+  const [watchlistCategory, setWatchlistCategory] = useState<'Futures' | 'Stocks' | 'MCX' | 'Indices'>('Futures');
+  const [watchlistSearch, setWatchlistSearch] = useState('');
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
+  const [isWatchlistDrawerOpen, setIsWatchlistDrawerOpen] = useState(false);
+
+  const filteredWatchlist = useMemo(() => {
+    const list = WATCHLIST_DATA[watchlistCategory] || [];
+    if (!watchlistSearch.trim()) return list;
+    const q = watchlistSearch.toLowerCase().trim();
+    return list.filter(item => item.name.toLowerCase().includes(q) || item.symbol.toLowerCase().includes(q));
+  }, [watchlistCategory, watchlistSearch]);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    TOOL_GROUPS.forEach(g => {
+      if (g.items.some(item => item.id === activeTab)) {
+        setOpenGroups(prev => ({ ...prev, [g.name]: true }));
+      }
+    });
+  }, [activeTab]);
+
+  const toggleGroup = (groupName: string) => {
+    setOpenGroups(prev => ({ ...prev, [groupName]: !prev[groupName] }));
+  };
+
+  const symbolDisplayName = useMemo(() => {
+    if (!symbol || typeof symbol !== 'string') return 'NIFTY 50';
+    if (symbol.includes('NIFTY1!')) return 'NIFTY FUT';
+    if (symbol.includes('BANKNIFTY1!')) return 'BANK NIFTY FUT';
+    if (symbol.includes('FINNIFTY1!')) return 'FIN NIFTY FUT';
+    if (symbol.includes('MIDCPNIFTY1!')) return 'MIDCAP FUT';
+    if (symbol.includes('CRUDEOIL')) return 'CRUDE OIL FUT';
+    if (symbol === 'NSE:NIFTY') return 'NIFTY 50';
+    if (symbol === 'NSE:BANKNIFTY') return 'BANK NIFTY';
+    if (symbol === 'NSE:FINNIFTY') return 'FIN NIFTY';
+    if (symbol.endsWith('1!')) {
+      const clean = symbol.replace('NSE:', '').replace('MCX:', '').replace('BSE:', '').replace('1!', '');
+      return `${clean} FUT`;
+    }
+    return symbol.replace('NSE:', '').replace('MCX:', '').replace('BSE:', '');
+  }, [symbol]);
+
+  const { lastPrice, priceChange, priceChangePct } = useMemo(() => {
+    if (!candles || candles.length === 0) {
+      return { lastPrice: 22421.95, priceChange: -198.58, priceChangePct: -0.88 };
+    }
+    const last = candles[candles.length - 1];
+    const prev = candles.length > 1 ? candles[candles.length - 2].close : last.open;
+    const ltp = last.close;
+    const chg = ltp - prev;
+    const chgPct = prev ? (chg / prev) * 100 : 0;
+    return { lastPrice: ltp, priceChange: chg, priceChangePct: chgPct };
+  }, [candles]);
+
   const activeTabInfo = TABS_LIST.find((t) => t.id === activeTab) || TABS_LIST[0];
+
+  if (!authUser) {
+    return <LoginScreen onLoginSuccess={setAuthUser} />;
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: isStandalone ? '0' : '12px', width: '100%', minHeight: '100vh', height: isStandalone ? '100vh' : 'auto', boxSizing: 'border-box', overflowY: isStandalone ? 'hidden' : 'auto' }}>
@@ -602,83 +890,298 @@ function App() {
           />
 
           {/* Responsive Header */}
-          <DashboardHeader
-            currentSymbol={symbol}
-            currentTimeframe={timeframe}
-            connectionStatus={connectionStatus}
-            onSymbolChange={setSymbol}
-            onTimeframeChange={setTimeframe}
-            onRefresh={handleRefresh}
-          />
+          <TabErrorBoundary tabName="Dashboard Header">
+            <DashboardHeader
+              currentSymbol={symbol}
+              currentTimeframe={timeframe}
+              connectionStatus={connectionStatus}
+              onSymbolChange={setSymbol}
+              onTimeframeChange={setTimeframe}
+              onRefresh={handleRefresh}
+              authUser={authUser}
+              onLogout={handleLogout}
+              onOpenUserManagement={() => setIsUserManagementOpen(true)}
+            />
+          </TabErrorBoundary>
 
-          {/* Navigation Controls Bar (Dropdown Quick Select + 2-Line Tab Bar) */}
-          <div 
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '8px', 
-              borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0'}`, 
-              padding: '4px 6px', 
-              width: '100%', 
-              boxSizing: 'border-box' 
-            }}
-          >
-            {/* Mobile / Desktop Quick Dropdown Selector (Do Not Remove) */}
-            <div 
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '6px', 
-                background: isDark ? 'rgba(30, 41, 59, 0.85)' : '#ffffff', 
-                border: `1px solid ${isDark ? 'rgba(255,255,255,0.12)' : '#cbd5e1'}`, 
-                padding: '4px 8px', 
-                borderRadius: '6px', 
-                flexShrink: 0,
-                alignSelf: 'center',
-                boxShadow: isDark ? '0 1px 3px rgba(0, 0, 0, 0.3)' : '0 1px 3px rgba(0, 0, 0, 0.05)' 
-              }}
-            >
-              <Layers size={14} color="#60a5fa" />
-              <select
-                value={activeTab}
-                onChange={(e) => setActiveTab(e.target.value as TabType)}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: activeTabInfo.color,
-                  fontSize: '12px',
-                  fontWeight: '800',
-                  outline: 'none',
-                  cursor: 'pointer',
-                  maxWidth: '135px'
-                }}
-              >
-                {TABS_LIST.map((tab) => (
-                  <option key={tab.id} value={tab.id} style={{ backgroundColor: isDark ? '#0f172a' : '#ffffff', color: isDark ? '#ffffff' : '#0f172a' }}>
-                    {tab.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <TabErrorBoundary tabName="User Access Management">
+            <UserManagementModal
+              isOpen={isUserManagementOpen}
+              onClose={() => setIsUserManagementOpen(false)}
+              currentUser={authUser}
+            />
+          </TabErrorBoundary>
 
-            {/* 2-Line Tab Bar */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', flex: 1, minWidth: 0, overflow: 'hidden' }}>
-              {/* Line 1: Primary Charts, Profiles, Order Flow & Execution */}
-              <div className="mobile-tab-scroll" style={{ display: 'flex', alignItems: 'center', gap: '3px', margin: 0, paddingBottom: '1px' }}>
-                {line1Tabs.map(renderTabButton)}
-              </div>
-              {/* Line 2: Scanners, Timeframes, Live Signals & Intelligence */}
-              <div className="mobile-tab-scroll" style={{ display: 'flex', alignItems: 'center', gap: '3px', margin: 0, paddingBottom: '1px' }}>
-                {line2Tabs.map(renderTabButton)}
-              </div>
-            </div>
-
-          </div>
         </>
       )}
 
-      {/* Main Workspace */}
-      <div style={{ flex: '1', display: 'flex', flexDirection: 'column', minHeight: '0' }}>
+      {/* Main 3-Column Layout: Left Sidebar (~140px) | Center Chart Workspace (flex: 1) | Right Panel (~150px) */}
+      <div style={{ display: 'flex', flex: '1', minHeight: '0', gap: '8px', padding: '0 8px 8px 8px', width: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
+        
+        {/* LEFT SIDEBAR (~140px fixed): Collapsible tool groups matching media_1790927764907.png */}
+        <aside 
+          style={{ 
+            width: isMobile ? '0' : '140px', 
+            minWidth: isMobile ? '0' : '140px', 
+            maxWidth: isMobile ? '0' : '140px', 
+            display: isMobile ? 'none' : 'flex', 
+            flexDirection: 'column', 
+            background: isDark ? 'rgba(15, 23, 42, 0.45)' : '#ffffff', 
+            border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0'}`, 
+            borderRadius: '8px', 
+            padding: '8px 6px', 
+            boxSizing: 'border-box', 
+            overflowY: 'auto' 
+          }}
+        >
+          {/* FAVORITES SECTION (Quick access for starred sections) */}
+          <div style={{ marginBottom: '8px', paddingBottom: '6px', borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0'}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '2px 4px' }}>
+              <button
+                onClick={() => toggleGroup('Favorites')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#f59e0b',
+                  fontSize: '11px',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  flex: 1,
+                  padding: 0
+                }}
+              >
+                <span style={{ fontSize: '9px', opacity: 0.7 }}>{openGroups['Favorites'] !== false ? '⌵' : '›'}</span>
+                <Star size={11} fill="#f59e0b" strokeWidth={1.5} />
+                <span>Favorites</span>
+              </button>
+              {favoriteSections.length > 0 && (
+                <span style={{ fontSize: '9px', fontWeight: '700', color: '#f59e0b', opacity: 0.85, background: 'rgba(245, 158, 11, 0.15)', padding: '0 4px', borderRadius: '4px' }}>
+                  {favoriteSections.length}
+                </span>
+              )}
+            </div>
+
+            {openGroups['Favorites'] !== false && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', paddingLeft: '6px', marginTop: '3px' }}>
+                {favoriteSections.length === 0 ? (
+                  <span style={{ fontSize: '10px', color: 'var(--text-secondary)', padding: '3px 4px', fontStyle: 'italic', opacity: 0.75 }}>
+                    Star any section below for quick access
+                  </span>
+                ) : (
+                  favoriteSections.map(secName => {
+                    const groupObj = TOOL_GROUPS.find(g => g.name === secName);
+                    if (!groupObj) return null;
+                    return (
+                      <div key={`fav-group-${secName}`} style={{ marginBottom: '3px' }}>
+                        <div style={{ fontSize: '9px', fontWeight: '800', color: isDark ? 'rgba(255, 255, 255, 0.5)' : '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', padding: '1px 4px' }}>
+                          {secName}
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', paddingLeft: '4px' }}>
+                          {groupObj.items.map((item) => {
+                            const isActive = activeTab === item.id;
+                            return (
+                              <button
+                                key={`fav-${item.id}`}
+                                onClick={() => setActiveTab(item.id)}
+                                style={{
+                                  display: 'block',
+                                  width: '100%',
+                                  textAlign: 'left',
+                                  background: isActive ? (isDark ? 'rgba(56, 189, 248, 0.2)' : '#e0f2fe') : 'transparent',
+                                  color: isActive ? (isDark ? '#38bdf8' : '#0284c7') : 'var(--text-primary)',
+                                  fontWeight: isActive ? '800' : '500',
+                                  fontSize: '11px',
+                                  padding: '3px 6px',
+                                  borderRadius: '5px',
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.15s ease',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis'
+                                }}
+                                title={item.label}
+                              >
+                                {item.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* REGULAR SECTIONS with Star Button on each Section Header */}
+          {TOOL_GROUPS.map((group) => {
+            const isOpen = openGroups[group.name] !== false;
+            const isFav = favoriteSections.includes(group.name);
+            return (
+              <div key={group.name} style={{ marginBottom: '6px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    width: '100%',
+                    padding: '2px 4px'
+                  }}
+                >
+                  <button
+                    onClick={() => toggleGroup(group.name)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'var(--text-secondary)',
+                      fontSize: '11px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      flex: 1,
+                      padding: 0
+                    }}
+                  >
+                    <span style={{ fontSize: '9px', opacity: 0.7 }}>{isOpen ? '⌵' : '›'}</span>
+                    <span>{group.name}</span>
+                  </button>
+
+                  {/* Section Star Toggle Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavoriteSection(group.name);
+                    }}
+                    title={isFav ? `Remove "${group.name}" from Favorites` : `Add "${group.name}" section to Favorites`}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '2px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: isFav ? '#f59e0b' : (isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.25)'),
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <Star size={11} fill={isFav ? '#f59e0b' : 'transparent'} strokeWidth={1.8} />
+                  </button>
+                </div>
+
+                {isOpen && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', paddingLeft: '8px', marginTop: '2px' }}>
+                    {group.items.map((item) => {
+                      const isActive = activeTab === item.id;
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => setActiveTab(item.id)}
+                          style={{
+                            display: 'block',
+                            width: '100%',
+                            textAlign: 'left',
+                            background: isActive ? (isDark ? 'rgba(56, 189, 248, 0.2)' : '#e0f2fe') : 'transparent',
+                            color: isActive ? (isDark ? '#38bdf8' : '#0284c7') : 'var(--text-primary)',
+                            fontWeight: isActive ? '800' : '500',
+                            fontSize: '11px',
+                            padding: '4px 6px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                          }}
+                          title={item.label}
+                        >
+                          {item.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </aside>
+
+        {/* CENTER MAIN WORKSPACE: Takes all remaining width and height */}
+        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0, overflow: 'hidden' }}>
+          
+          {/* Top Info Line above chart */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '6px 12px',
+            background: isDark ? 'rgba(15, 23, 42, 0.6)' : '#ffffff',
+            border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0'}`,
+            borderRadius: '8px 8px 0 0',
+            flexWrap: 'wrap',
+            gap: '8px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '15px', fontWeight: '900', color: 'var(--text-primary)' }}>
+                {symbolDisplayName}
+              </span>
+              <span style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-primary)', fontFamily: 'monospace' }}>
+                {typeof lastPrice === 'number' && !isNaN(lastPrice) ? lastPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '--'}
+              </span>
+              <span style={{
+                fontSize: '12px',
+                fontWeight: '700',
+                color: (priceChange || 0) >= 0 ? '#10b981' : '#ef4444',
+                fontFamily: 'monospace'
+              }}>
+                {typeof priceChange === 'number' && !isNaN(priceChange) ? `${priceChange >= 0 ? '+' : ''}${priceChange.toFixed(2)}` : '--'} ({typeof priceChangePct === 'number' && !isNaN(priceChangePct) ? `${priceChangePct >= 0 ? '+' : ''}${priceChangePct.toFixed(2)}%` : '--'})
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600' }}>Contract:</span>
+              <select
+                value={symbol}
+                onChange={(e) => setSymbol(e.target.value)}
+                style={{
+                  background: isDark ? 'rgba(30, 41, 59, 0.8)' : '#f8fafc',
+                  border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.15)' : '#cbd5e1'}`,
+                  color: 'var(--text-primary)',
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  cursor: 'pointer'
+                }}
+              >
+                {!['NSE:NIFTY', 'NSE:NIFTY1!', 'NSE:BANKNIFTY', 'NSE:BANKNIFTY1!', 'NSE:FINNIFTY', 'NSE:RELIANCE', 'NSE:RELIANCE1!', 'MCX:CRUDEOIL1!', 'BSE:SENSEX'].includes(symbol) && (
+                  <option value={symbol}>{symbolDisplayName || symbol}</option>
+                )}
+                <option value="NSE:NIFTY">NIFTY 50 (Spot)</option>
+                <option value="NSE:NIFTY1!">NIFTY FUT (Current Expiry)</option>
+                <option value="NSE:BANKNIFTY">BANK NIFTY (Spot)</option>
+                <option value="NSE:BANKNIFTY1!">BANK NIFTY FUT</option>
+                <option value="NSE:FINNIFTY">FIN NIFTY</option>
+                <option value="NSE:RELIANCE">RELIANCE (Spot)</option>
+                <option value="NSE:RELIANCE1!">RELIANCE FUT</option>
+                <option value="MCX:CRUDEOIL1!">CRUDE OIL FUT</option>
+                <option value="BSE:SENSEX">SENSEX</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Active Workspace Component */}
+          <div style={{ flex: 1, minHeight: 0, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
         {activeTab === 'manual_trades' ? (
           <TabErrorBoundary tabName="Manual Trades">
             <ManualTradesContainer
@@ -687,8 +1190,18 @@ function App() {
             />
           </TabErrorBoundary>
         ) : activeTab === 'test' ? (
-          <TabErrorBoundary tabName="Test">
+          <TabErrorBoundary tabName="Orderflow Chart">
             <TestContainer
+              selectedSymbol={symbol}
+              selectedTimeframe={timeframe}
+              onSymbolSelect={setSymbol}
+              onTimeframeChange={setTimeframe}
+              onSwitchToChart={() => setActiveTab('chart')}
+            />
+          </TabErrorBoundary>
+        ) : activeTab === 'test2' ? (
+          <TabErrorBoundary tabName="Test 2">
+            <Test2Container
               selectedSymbol={symbol}
               selectedTimeframe={timeframe}
               onSymbolSelect={setSymbol}
@@ -869,13 +1382,6 @@ function App() {
               onSwitchToChart={() => setActiveTab('chart')}
             />
           </TabErrorBoundary>
-        ) : activeTab === 'order_flow_footprint' ? (
-          <TabErrorBoundary tabName="Order Flow">
-            <OrderFlowFootprintContainer
-              onSymbolSelect={setSymbol}
-              onSwitchToChart={() => setActiveTab('chart')}
-            />
-          </TabErrorBoundary>
         ) : (
           <>
             {error && (
@@ -915,7 +1421,278 @@ function App() {
             )}
           </>
         )}
+          </div>
+        </main>
+
+        {/* RIGHT PANEL (~160px): Futures / Stocks / MCX / Indices Watchlist */}
+        <aside 
+          style={{ 
+            width: isMobile ? '0' : '160px', 
+            minWidth: isMobile ? '0' : '160px', 
+            maxWidth: isMobile ? '0' : '160px', 
+            display: isMobile ? 'none' : 'flex', 
+            flexDirection: 'column', 
+            gap: '8px', 
+            background: isDark ? 'rgba(15, 23, 42, 0.45)' : '#ffffff', 
+            border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0'}`, 
+            borderRadius: '8px', 
+            padding: '8px 6px', 
+            boxSizing: 'border-box' 
+          }}
+        >
+          {/* Category Tabs: Futures / Stocks / MCX / Indices in 2x2 grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px', borderRadius: '6px', padding: '3px', background: isDark ? 'rgba(0, 0, 0, 0.25)' : '#f1f5f9' }}>
+            {(['Futures', 'Stocks', 'MCX', 'Indices'] as const).map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setWatchlistCategory(cat)}
+                style={{
+                  padding: '5px 2px',
+                  fontSize: '10px',
+                  fontWeight: '800',
+                  borderRadius: '4px',
+                  border: 'none',
+                  background: watchlistCategory === cat ? (isDark ? '#0284c7' : '#e0f2fe') : 'transparent',
+                  color: watchlistCategory === cat ? (isDark ? '#ffffff' : '#0284c7') : 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  textAlign: 'center'
+                }}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Quick Search Filter */}
+          <input
+            type="text"
+            placeholder={`🔍 Search ${watchlistCategory}...`}
+            value={watchlistSearch}
+            onChange={(e) => setWatchlistSearch(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '4px 6px',
+              fontSize: '10px',
+              borderRadius: '4px',
+              border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.12)' : '#cbd5e1'}`,
+              background: isDark ? 'rgba(0, 0, 0, 0.25)' : '#f8fafc',
+              color: 'var(--text-primary)',
+              outline: 'none',
+              boxSizing: 'border-box'
+            }}
+          />
+
+          {/* Instrument List */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', overflowY: 'auto', flex: 1 }}>
+            {filteredWatchlist.length === 0 ? (
+              <div style={{ fontSize: '10px', color: 'var(--text-secondary)', textAlign: 'center', padding: '12px 4px', fontStyle: 'italic' }}>
+                No matching {watchlistCategory} found
+              </div>
+            ) : (
+              filteredWatchlist.map((item) => {
+              const isSelected = symbol === item.symbol;
+              return (
+                <div
+                  key={item.symbol}
+                  onClick={() => setSymbol(item.symbol)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '5px 6px',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    background: isSelected ? (isDark ? 'rgba(56, 189, 248, 0.15)' : '#e0f2fe') : 'transparent',
+                    border: isSelected ? `1px solid ${isDark ? '#38bdf8' : '#0284c7'}` : '1px solid transparent',
+                    transition: 'all 0.15s ease'
+                  }}
+                  title={item.name}
+                >
+                  <span style={{ fontSize: '10.5px', fontWeight: isSelected ? '800' : '600', color: isSelected ? (isDark ? '#38bdf8' : '#0284c7') : 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {item.name}
+                  </span>
+                  <span style={{ fontSize: '10px', fontWeight: '700', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>
+                    {item.price ? item.price.toLocaleString('en-IN') : '--'}
+                  </span>
+                </div>
+              );
+            }))}
+          </div>
+        </aside>
+
       </div>
+
+      {/* Mobile Bottom Navigation & Slide-Up Drawer (< 768px) */}
+      {isMobile && (
+        <>
+          <div style={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            background: isDark ? '#0f172a' : '#ffffff',
+            borderTop: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.12)' : '#e2e8f0'}`,
+            padding: '6px 12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            zIndex: 1000
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Layers size={14} color="#38bdf8" />
+              <select
+                value={activeTab}
+                onChange={(e) => setActiveTab(e.target.value as TabType)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-primary)',
+                  fontSize: '12px',
+                  fontWeight: '800'
+                }}
+              >
+                {favoriteSections.length > 0 && (
+                  <optgroup label="⭐ Favorites">
+                    {favoriteSections.flatMap(secName => {
+                      const grp = TOOL_GROUPS.find(g => g.name === secName);
+                      return grp ? grp.items.map(i => (
+                        <option key={`fav-mob-${i.id}`} value={i.id}>{grp.name}: {i.label}</option>
+                      )) : [];
+                    })}
+                  </optgroup>
+                )}
+                {TOOL_GROUPS.map((g) => (
+                  <optgroup key={g.name} label={g.name}>
+                    {g.items.map((i) => (
+                      <option key={i.id} value={i.id}>{i.label}</option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+            </div>
+
+            <button
+              onClick={() => setIsWatchlistDrawerOpen(!isWatchlistDrawerOpen)}
+              style={{
+                background: 'rgba(56, 189, 248, 0.15)',
+                border: '1px solid #38bdf8',
+                color: '#38bdf8',
+                padding: '4px 10px',
+                borderRadius: '6px',
+                fontSize: '11px',
+                fontWeight: '800',
+                cursor: 'pointer'
+              }}
+            >
+              📋 Watchlist
+            </button>
+          </div>
+
+          {/* Mobile Watchlist Slide-Up Drawer */}
+          {isWatchlistDrawerOpen && (
+            <div 
+              onClick={() => setIsWatchlistDrawerOpen(false)}
+              style={{
+                position: 'fixed',
+                inset: 0,
+                background: 'rgba(0,0,0,0.6)',
+                zIndex: 9999,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-end'
+              }}
+            >
+              <div 
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  background: isDark ? '#0f172a' : '#ffffff',
+                  borderTopLeftRadius: '14px',
+                  borderTopRightRadius: '14px',
+                  padding: '16px',
+                  maxHeight: '60vh',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-primary)' }}>Market Watchlist</span>
+                  <button onClick={() => setIsWatchlistDrawerOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}>✕</button>
+                </div>
+                <div style={{ display: 'flex', borderRadius: '6px', padding: '2px', background: isDark ? 'rgba(0, 0, 0, 0.25)' : '#f1f5f9' }}>
+                  {(['Futures', 'Stocks', 'MCX', 'Indices'] as const).map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setWatchlistCategory(cat)}
+                      style={{
+                        flex: 1,
+                        padding: '4px 0',
+                        fontSize: '11px',
+                        fontWeight: '800',
+                        borderRadius: '4px',
+                        border: 'none',
+                        background: watchlistCategory === cat ? (isDark ? '#0284c7' : '#e0f2fe') : 'transparent',
+                        color: watchlistCategory === cat ? (isDark ? '#ffffff' : '#0284c7') : 'var(--text-secondary)',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Mobile Quick Search */}
+                <input
+                  type="text"
+                  placeholder={`🔍 Search ${watchlistCategory}...`}
+                  value={watchlistSearch}
+                  onChange={(e) => setWatchlistSearch(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '6px 10px',
+                    fontSize: '12px',
+                    borderRadius: '6px',
+                    border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.15)' : '#cbd5e1'}`,
+                    background: isDark ? 'rgba(0, 0, 0, 0.25)' : '#f8fafc',
+                    color: 'var(--text-primary)',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                    marginBottom: '6px'
+                  }}
+                />
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', overflowY: 'auto' }}>
+                  {filteredWatchlist.length === 0 ? (
+                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', textAlign: 'center', padding: '16px 0', fontStyle: 'italic' }}>
+                      No matching {watchlistCategory} found
+                    </div>
+                  ) : (
+                    filteredWatchlist.map((item) => (
+                    <div
+                      key={item.symbol}
+                      onClick={() => {
+                        setSymbol(item.symbol);
+                        setIsWatchlistDrawerOpen(false);
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '8px 10px',
+                        borderRadius: '6px',
+                        background: symbol === item.symbol ? (isDark ? 'rgba(56, 189, 248, 0.15)' : '#e0f2fe') : 'transparent'
+                      }}
+                    >
+                      <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)' }}>{item.name}</span>
+                      <span style={{ fontSize: '11.5px', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>₹{item.price}</span>
+                    </div>
+                  )))}
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
 
       {/* Global Realtime Level Alert Popup Modal - Visible irrespective of which tab user is in */}
       <RealtimeLevelAlertPopup

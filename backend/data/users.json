@@ -1,0 +1,32 @@
+[
+  {
+    "username": "admin",
+    "name": "Admin",
+    "password": "Melissa@123",
+    "role": "admin",
+    "favorites": [
+      "Charts"
+    ],
+    "lastLogin": "2026-10-04T16:30:51.674Z"
+  },
+  {
+    "username": "sharath",
+    "name": "Sharath SG",
+    "password": "sharath@2026",
+    "role": "trader",
+    "favorites": [
+      "Charts"
+    ],
+    "lastLogin": "2026-10-04T16:34:10.383Z"
+  },
+  {
+    "username": "sharathsg",
+    "name": "Sharath SG",
+    "password": "sharath@2026",
+    "role": "trader",
+    "favorites": [
+      "Charts"
+    ],
+    "lastLogin": "2026-10-04T16:34:10.395Z"
+  }
+]
