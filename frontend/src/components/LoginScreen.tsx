@@ -12,6 +12,8 @@ export interface UserAccount {
   password: string;
   role?: string;
   lastLogin?: string;
+  isOnline?: boolean;
+  lastSeen?: string | number;
 }
 
 // Built-in Authoritative Access Accounts

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { X, UserPlus, Users, Trash2, Key, Shield, Copy, CheckCircle2, RefreshCw, ExternalLink, Clock } from 'lucide-react';
 import { DEFAULT_ACCOUNTS, UserAccount, getDeletedUsers, addDeletedUser, unmarkDeletedUser } from './LoginScreen';
 import { getBackendHttpUrl } from '../utils/tvStreamer';
@@ -161,13 +161,11 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
       }
     } catch {}
 
-    // For current logged-in user (e.g. Admin), ensure active timestamp
+    // For current logged-in user (e.g. Admin), ensure active online flag
     const currentClean = (currentUser || '').trim().toLowerCase();
     combined.forEach(u => {
       if (u.username.toLowerCase() === currentClean || (u.name && u.name.toLowerCase() === currentClean)) {
-        if (!u.lastLogin) {
-          u.lastLogin = new Date().toISOString();
-        }
+        u.isOnline = true;
       }
     });
 
@@ -179,10 +177,22 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
       loadUsers();
       setStatusMsg(null);
       setConfirmDeleteUser(null);
+      const timer = setInterval(loadUsers, 5000);
+      return () => clearInterval(timer);
     }
   }, [isOpen]);
 
   const isAdmin = (currentUser || '').trim().toLowerCase() === 'admin';
+
+  const onlineCount = useMemo(() => {
+    const currentClean = (currentUser || '').trim().toLowerCase();
+    return users.filter(u => {
+      const isCurrent = currentClean === u.username.toLowerCase() || currentClean === (u.name || '').toLowerCase();
+      return isCurrent || !!u.isOnline;
+    }).length;
+  }, [users, currentUser]);
+
+  const offlineCount = Math.max(0, users.length - onlineCount);
 
   if (!isOpen || !isAdmin) return null;
 
@@ -546,10 +556,40 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
 
           {/* Active Authorized Users List */}
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-              <div style={{ fontSize: '13px', fontWeight: '800', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
+              <div style={{ fontSize: '13px', fontWeight: '800', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 <Shield size={15} color="#10b981" />
                 <span>Authorized Users ({users.length})</span>
+                <span style={{
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  color: '#34d399',
+                  background: 'rgba(16, 185, 129, 0.15)',
+                  border: '1px solid rgba(16, 185, 129, 0.3)',
+                  padding: '2px 8px',
+                  borderRadius: '12px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px'
+                }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 6px #10b981' }} className="animate-pulse" />
+                  {onlineCount} Online
+                </span>
+                <span style={{
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  color: '#94a3b8',
+                  background: 'rgba(100, 116, 139, 0.15)',
+                  border: '1px solid rgba(100, 116, 139, 0.25)',
+                  padding: '2px 8px',
+                  borderRadius: '12px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px'
+                }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#64748b' }} />
+                  {offlineCount} Offline
+                </span>
               </div>
               <button
                 onClick={loadUsers}
@@ -572,7 +612,9 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {users.map((u) => {
-                const isCurrent = currentUser?.toLowerCase() === u.username.toLowerCase();
+                const currentClean = (currentUser || '').trim().toLowerCase();
+                const isCurrent = currentClean === u.username.toLowerCase() || currentClean === (u.name || '').toLowerCase();
+                const isOnline = isCurrent || !!u.isOnline;
                 const isCopied = copiedLinkUser === u.username;
                 return (
                   <div
@@ -582,7 +624,7 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       background: 'rgba(30, 41, 59, 0.4)',
-                      border: `1px solid ${isCurrent ? 'rgba(56, 189, 248, 0.4)' : 'rgba(255, 255, 255, 0.08)'}`,
+                      border: `1px solid ${isCurrent ? 'rgba(56, 189, 248, 0.4)' : (isOnline ? 'rgba(16, 185, 129, 0.25)' : 'rgba(255, 255, 255, 0.08)')}`,
                       borderRadius: '8px',
                       padding: '10px 14px',
                       gap: '12px',
@@ -591,8 +633,9 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: '160px' }}>
                       <div style={{
-                        width: '32px',
-                        height: '32px',
+                        position: 'relative',
+                        width: '34px',
+                        height: '34px',
                         borderRadius: '50%',
                         background: u.role === 'admin' ? 'rgba(168, 85, 247, 0.2)' : 'rgba(56, 189, 248, 0.2)',
                         border: `1px solid ${u.role === 'admin' ? '#a855f7' : '#38bdf8'}`,
@@ -604,6 +647,20 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
                         fontSize: '13px'
                       }}>
                         {(u.name || u.username)[0].toUpperCase()}
+                        {/* Avatar status dot */}
+                        <span
+                          style={{
+                            position: 'absolute',
+                            bottom: '-1px',
+                            right: '-1px',
+                            width: '9px',
+                            height: '9px',
+                            borderRadius: '50%',
+                            backgroundColor: isOnline ? '#10b981' : '#64748b',
+                            border: '1.5px solid #0f172a',
+                            boxShadow: isOnline ? '0 0 6px #10b981' : 'none'
+                          }}
+                        />
                       </div>
                       <div>
                         <div style={{ fontSize: '13px', fontWeight: '800', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -618,6 +675,37 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
                           @{u.username} · Role: <strong style={{ color: '#cbd5e1', textTransform: 'capitalize' }}>{u.role || 'trader'}</strong>
                         </div>
                       </div>
+                    </div>
+
+                    {/* Online / Offline Status Badge */}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      background: isOnline ? 'rgba(16, 185, 129, 0.12)' : 'rgba(100, 116, 139, 0.12)',
+                      border: `1px solid ${isOnline ? 'rgba(16, 185, 129, 0.35)' : 'rgba(100, 116, 139, 0.25)'}`,
+                      padding: '4px 10px',
+                      borderRadius: '6px',
+                      fontSize: '11px',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      <span
+                        style={{
+                          width: '7px',
+                          height: '7px',
+                          borderRadius: '50%',
+                          backgroundColor: isOnline ? '#10b981' : '#64748b',
+                          boxShadow: isOnline ? '0 0 8px #10b981' : 'none'
+                        }}
+                        className={isOnline ? 'animate-pulse' : ''}
+                      />
+                      <strong style={{
+                        color: isOnline ? '#34d399' : '#94a3b8',
+                        fontWeight: '800',
+                        letterSpacing: '0.2px'
+                      }}>
+                        {isOnline ? (isCurrent ? 'Online (You)' : 'Online') : 'Offline'}
+                      </strong>
                     </div>
 
                     {/* Password Display */}
@@ -636,37 +724,27 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
                       <span>Password: <strong style={{ color: '#e2e8f0' }}>{u.password}</strong></span>
                     </div>
 
-                    {/* Last Logged In Display in same row */}
+                    {/* True Last Login Display */}
                     <div style={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: '5px',
-                      background: (u.lastLogin || isCurrent)
-                        ? ((isRecent(u.lastLogin) || isCurrent) ? 'rgba(16, 185, 129, 0.12)' : 'rgba(56, 189, 248, 0.1)')
-                        : 'rgba(255, 255, 255, 0.04)',
-                      border: `1px solid ${
-                        (u.lastLogin || isCurrent)
-                          ? ((isRecent(u.lastLogin) || isCurrent) ? 'rgba(16, 185, 129, 0.3)' : 'rgba(56, 189, 248, 0.25)')
-                          : 'rgba(255, 255, 255, 0.08)'
-                      }`,
+                      background: u.lastLogin ? 'rgba(56, 189, 248, 0.08)' : 'rgba(255, 255, 255, 0.04)',
+                      border: `1px solid ${u.lastLogin ? 'rgba(56, 189, 248, 0.25)' : 'rgba(255, 255, 255, 0.08)'}`,
                       padding: '4px 9px',
                       borderRadius: '6px',
                       fontSize: '11px',
                       whiteSpace: 'nowrap'
                     }}
-                    title={u.lastLogin ? `Last login: ${formatFullIST(u.lastLogin)}` : (isCurrent ? 'Active now in this session' : 'Never logged in yet')}
+                    title={u.lastLogin ? `Last Login: ${formatFullIST(u.lastLogin)}` : 'No recorded login session yet'}
                     >
-                      <Clock size={12} color={(u.lastLogin || isCurrent) ? ((isRecent(u.lastLogin) || isCurrent) ? '#10b981' : '#38bdf8') : '#64748b'} />
+                      <Clock size={12} color={u.lastLogin ? '#38bdf8' : '#64748b'} />
                       <span style={{ color: '#94a3b8' }}>Last Login:</span>
                       <strong style={{
-                        color: (u.lastLogin || isCurrent)
-                          ? ((isRecent(u.lastLogin) || isCurrent) ? '#34d399' : '#e2e8f0')
-                          : '#64748b',
+                        color: u.lastLogin ? '#e2e8f0' : '#64748b',
                         fontWeight: '700'
                       }}>
-                        {isCurrent && (!u.lastLogin || isRecent(u.lastLogin))
-                          ? 'Active Now'
-                          : (u.lastLogin ? formatDisplayTime(u.lastLogin) : 'Never')}
+                        {u.lastLogin ? formatDisplayTime(u.lastLogin) : 'Never'}
                       </strong>
                     </div>
 

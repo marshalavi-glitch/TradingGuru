@@ -200,11 +200,24 @@ function App() {
       cleanUrl.searchParams.delete('auth');
       window.history.replaceState({}, document.title, cleanUrl.toString());
     } catch {}
+    try {
+      if (authUser) {
+        getBackendHttpUrl().then(backendHttp => {
+          if (backendHttp) {
+            fetch(`${backendHttp}/api/auth/heartbeat-leave`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ username: authUser })
+            }).catch(() => {});
+          }
+        }).catch(() => {});
+      }
+    } catch {}
     clearStoredAuthUser();
     setAuthUser(null);
   };
 
-  // Multi-Device Session Invalidation Engine
+  // Multi-Device Session Invalidation Engine & Real-Time Presence Heartbeat
   useEffect(() => {
     if (!authUser) return;
 
@@ -221,6 +234,17 @@ function App() {
 
         const backendHttp = await getBackendHttpUrl();
         if (backendHttp) {
+          // Active Presence Heartbeat
+          fetch(`${backendHttp}/api/auth/heartbeat`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'bypass-tunnel-reminder': 'true',
+              'x-auth-user': authUser
+            },
+            body: JSON.stringify({ username: authUser })
+          }).catch(() => {});
+
           const res = await fetch(`${backendHttp}/api/auth/session-control`, {
             headers: { 'bypass-tunnel-reminder': 'true' }
           });
@@ -241,12 +265,25 @@ function App() {
     };
 
     checkSessionValidity();
-    const interval = setInterval(checkSessionValidity, 15000);
+    const interval = setInterval(checkSessionValidity, 12000);
     window.addEventListener('focus', checkSessionValidity);
+
+    const handleBeforeUnload = () => {
+      try {
+        getBackendHttpUrl().then(backendHttp => {
+          if (backendHttp && authUser) {
+            const blob = new Blob([JSON.stringify({ username: authUser })], { type: 'application/json' });
+            navigator.sendBeacon(`${backendHttp}/api/auth/heartbeat-leave`, blob);
+          }
+        }).catch(() => {});
+      } catch {}
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
       clearInterval(interval);
       window.removeEventListener('focus', checkSessionValidity);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [authUser]);
 

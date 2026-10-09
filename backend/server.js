@@ -1949,10 +1949,72 @@ function isAuthorizedAdmin(req) {
   return false;
 }
 
+// Active Real-Time User Presence Tracker
+const activeUserPresence = new Map(); // cleanUsername -> { lastPing: timestamp }
+
+function recordUserPresence(username) {
+  if (!username) return;
+  const clean = String(username).trim().toLowerCase();
+  activeUserPresence.set(clean, { lastPing: Date.now() });
+}
+
+function removeUserPresence(username) {
+  if (!username) return;
+  const clean = String(username).trim().toLowerCase();
+  activeUserPresence.delete(clean);
+}
+
+function isUserOnline(username) {
+  if (!username) return false;
+  const clean = String(username).trim().toLowerCase();
+  const presence = activeUserPresence.get(clean);
+  if (!presence) return false;
+  return (Date.now() - presence.lastPing) < 40000;
+}
+
 app.get('/api/auth/users', (req, res) => {
   try {
     const users = loadUsersFromDisk();
-    res.json({ success: true, users });
+    const enrichedUsers = users.map(u => {
+      const cleanUser = (u.username || '').toLowerCase();
+      const cleanName = (u.name || '').toLowerCase();
+      const online = isUserOnline(cleanUser) || isUserOnline(cleanName);
+      const presence = activeUserPresence.get(cleanUser) || activeUserPresence.get(cleanName);
+      return {
+        ...u,
+        isOnline: online,
+        lastSeen: presence ? new Date(presence.lastPing).toISOString() : (u.lastLogin || null)
+      };
+    });
+    res.json({ success: true, users: enrichedUsers });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST /api/auth/heartbeat - Keep-alive ping sent by active client sessions
+app.post('/api/auth/heartbeat', (req, res) => {
+  try {
+    const { username } = req.body || {};
+    const requester = username || req.headers['x-auth-user'] || '';
+    if (requester) {
+      recordUserPresence(requester);
+    }
+    res.json({ success: true, timestamp: Date.now() });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST /api/auth/heartbeat-leave - Immediately flags user as offline upon sign out or unload
+app.post('/api/auth/heartbeat-leave', (req, res) => {
+  try {
+    const { username } = req.body || {};
+    const requester = username || req.headers['x-auth-user'] || '';
+    if (requester) {
+      removeUserPresence(requester);
+    }
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -2031,6 +2093,7 @@ app.post('/api/auth/record-login', (req, res) => {
     if (match) {
       match.lastLogin = nowIso;
       saveUsersToDisk(users);
+      recordUserPresence(match.username);
       console.log(`[Auth Engine] Recorded login for "${match.username}" at ${nowIso}`);
       return res.json({ success: true, lastLogin: nowIso });
     }
