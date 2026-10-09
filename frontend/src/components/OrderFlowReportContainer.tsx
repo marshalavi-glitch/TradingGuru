@@ -75,7 +75,22 @@ export const OrderFlowReportContainer: React.FC<OrderFlowReportContainerProps> =
 }) => {
   const { isDark } = useTheme();
   const currentAuthUser = getStoredAuthUser();
-  const isAdmin = currentAuthUser === 'admin';
+  const isAdmin = useMemo(() => {
+    if (!currentAuthUser) return false;
+    const clean = currentAuthUser.trim().toLowerCase();
+    if (clean === 'admin') return true;
+    try {
+      const custom = localStorage.getItem('trading_guru_custom_accounts');
+      if (custom) {
+        const accounts = JSON.parse(custom);
+        const match = accounts.find((a: any) => 
+          (a.username || '').toLowerCase() === clean || (a.name || '').toLowerCase() === clean
+        );
+        if (match && match.role === 'admin') return true;
+      }
+    } catch {}
+    return false;
+  }, [currentAuthUser]);
 
   // State
   const [items, setItems] = useState<OrderFlowStockItem[]>([]);
@@ -123,7 +138,8 @@ export const OrderFlowReportContainer: React.FC<OrderFlowReportContainerProps> =
       const baseUrl = await getBackendHttpUrl();
       const res = await fetch(`${baseUrl}/api/orderflow-report/data`, {
         headers: {
-          'x-auth-user': 'admin'
+          'bypass-tunnel-reminder': 'true',
+          'x-auth-user': currentAuthUser || 'admin'
         }
       });
 
@@ -146,7 +162,7 @@ export const OrderFlowReportContainer: React.FC<OrderFlowReportContainerProps> =
     } finally {
       if (!quiet) setLoading(false);
     }
-  }, [isAdmin]);
+  }, [isAdmin, currentAuthUser]);
 
   useEffect(() => {
     fetchReportData();
@@ -168,7 +184,8 @@ export const OrderFlowReportContainer: React.FC<OrderFlowReportContainerProps> =
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-auth-user': 'admin'
+          'bypass-tunnel-reminder': 'true',
+          'x-auth-user': currentAuthUser || 'admin'
         },
         body: JSON.stringify({ fullScan })
       });
@@ -177,7 +194,10 @@ export const OrderFlowReportContainer: React.FC<OrderFlowReportContainerProps> =
         // Poll quickly during scan
         const pollTimer = setInterval(async () => {
           const pollRes = await fetch(`${baseUrl}/api/orderflow-report/data`, {
-            headers: { 'x-auth-user': 'admin' }
+            headers: { 
+              'bypass-tunnel-reminder': 'true',
+              'x-auth-user': currentAuthUser || 'admin' 
+            }
           });
           if (pollRes.ok) {
             const pData = await pollRes.json();
@@ -202,7 +222,8 @@ export const OrderFlowReportContainer: React.FC<OrderFlowReportContainerProps> =
   const handleDownloadExcel = async () => {
     try {
       const baseUrl = await getBackendHttpUrl();
-      const downloadUrl = `${baseUrl}/api/orderflow-report/export-excel?admin=admin`;
+      const userParam = encodeURIComponent(currentAuthUser || 'admin');
+      const downloadUrl = `${baseUrl}/api/orderflow-report/export-excel?admin=${userParam}`;
       const link = document.createElement('a');
       link.href = downloadUrl;
       link.setAttribute('download', `OrderFlow_Levels_1000_Stocks_${new Date().toISOString().slice(0, 10)}.xlsx`);
@@ -218,7 +239,8 @@ export const OrderFlowReportContainer: React.FC<OrderFlowReportContainerProps> =
   const handleDownloadCsv = async () => {
     try {
       const baseUrl = await getBackendHttpUrl();
-      const downloadUrl = `${baseUrl}/api/orderflow-report/export-csv?admin=admin`;
+      const userParam = encodeURIComponent(currentAuthUser || 'admin');
+      const downloadUrl = `${baseUrl}/api/orderflow-report/export-csv?admin=${userParam}`;
       const link = document.createElement('a');
       link.href = downloadUrl;
       link.setAttribute('download', `OrderFlow_Levels_1000_Stocks_${new Date().toISOString().slice(0, 10)}.csv`);

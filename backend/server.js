@@ -1933,8 +1933,20 @@ function saveUsersToDisk(usersList) {
 }
 
 function isAuthorizedAdmin(req) {
-  const requester = (req.headers['x-auth-user'] || req.query.admin || req.body?.adminUser || '').toString().trim().toLowerCase();
-  return requester === 'admin';
+  const requester = (req.headers['x-auth-user'] || req.query.admin || req.body?.adminUser || req.body?.authUser || '').toString().trim().toLowerCase();
+  if (!requester) return false;
+  if (requester === 'admin') return true;
+  try {
+    const users = loadUsersFromDisk();
+    const found = users.find(u => 
+      (u.username || '').toLowerCase() === requester || 
+      (u.name || '').toLowerCase() === requester
+    );
+    if (found && (found.role === 'admin' || (found.username || '').toLowerCase() === 'admin')) {
+      return true;
+    }
+  } catch (e) {}
+  return false;
 }
 
 app.get('/api/auth/users', (req, res) => {
