@@ -1,0 +1,997 @@
+[
+  {
+    "symbol": "NSE:NIFTY1!",
+    "name": "NIFTY FUT",
+    "price": 22441
+  },
+  {
+    "symbol": "NSE:BANKNIFTY1!",
+    "name": "BANK NIFTY FUT",
+    "price": 54539
+  },
+  {
+    "symbol": "NSE:FINNIFTY1!",
+    "name": "FIN NIFTY FUT",
+    "price": 24556
+  },
+  {
+    "symbol": "NSE:MIDCPNIFTY1!",
+    "name": "MIDCAP FUT",
+    "price": 13580
+  },
+  {
+    "symbol": "NSE:AARTIIND1!",
+    "name": "AARTI IND FUT",
+    "price": 480
+  },
+  {
+    "symbol": "NSE:ABB1!",
+    "name": "ABB FUT",
+    "price": 8150
+  },
+  {
+    "symbol": "NSE:ABBOTINDIA1!",
+    "name": "ABBOT INDIA FUT",
+    "price": 27800
+  },
+  {
+    "symbol": "NSE:ABCAPITAL1!",
+    "name": "ADITYA BIRLA CAP FUT",
+    "price": 225
+  },
+  {
+    "symbol": "NSE:ABFRL1!",
+    "name": "ABFRL FUT",
+    "price": 320
+  },
+  {
+    "symbol": "NSE:ACC1!",
+    "name": "ACC FUT",
+    "price": 2450
+  },
+  {
+    "symbol": "NSE:ADANIENT1!",
+    "name": "ADANI ENT FUT",
+    "price": 3120
+  },
+  {
+    "symbol": "NSE:ADANIPORTS1!",
+    "name": "ADANI PORTS FUT",
+    "price": 1440
+  },
+  {
+    "symbol": "NSE:ALKEM1!",
+    "name": "ALKEM LABS FUT",
+    "price": 5850
+  },
+  {
+    "symbol": "NSE:AMBUJACEM1!",
+    "name": "AMBUJA CEM FUT",
+    "price": 635
+  },
+  {
+    "symbol": "NSE:APLAPOLLO1!",
+    "name": "APL APOLLO FUT",
+    "price": 1520
+  },
+  {
+    "symbol": "NSE:APOLLOHOSP1!",
+    "name": "APOLLO HOSP FUT",
+    "price": 7100
+  },
+  {
+    "symbol": "NSE:APOLLOTYRE1!",
+    "name": "APOLLO TYRE FUT",
+    "price": 510
+  },
+  {
+    "symbol": "NSE:ASHOKLEY1!",
+    "name": "ASHOK LEYLAND FUT",
+    "price": 225
+  },
+  {
+    "symbol": "NSE:ASIANPAINT1!",
+    "name": "ASIAN PAINTS FUT",
+    "price": 3010
+  },
+  {
+    "symbol": "NSE:ASTRAL1!",
+    "name": "ASTRAL FUT",
+    "price": 1980
+  },
+  {
+    "symbol": "NSE:ATUL1!",
+    "name": "ATUL FUT",
+    "price": 7400
+  },
+  {
+    "symbol": "NSE:AUBANK1!",
+    "name": "AU SMALL BANK FUT",
+    "price": 635
+  },
+  {
+    "symbol": "NSE:AUROPHARMA1!",
+    "name": "AUROBINDO FUT",
+    "price": 1480
+  },
+  {
+    "symbol": "NSE:AXISBANK1!",
+    "name": "AXIS BANK FUT",
+    "price": 1240
+  },
+  {
+    "symbol": "NSE:BAJAJ-AUTO1!",
+    "name": "BAJAJ AUTO FUT",
+    "price": 9850
+  },
+  {
+    "symbol": "NSE:BAJAJFINSV1!",
+    "name": "BAJAJ FINSERV FUT",
+    "price": 1771
+  },
+  {
+    "symbol": "NSE:BAJFINANCE1!",
+    "name": "BAJAJ FINANCE FUT",
+    "price": 7150
+  },
+  {
+    "symbol": "NSE:BALKRISIND1!",
+    "name": "BALKRISHNA IND FUT",
+    "price": 2980
+  },
+  {
+    "symbol": "NSE:BALRAMCHIN1!",
+    "name": "BALRAMPUR CHINI FUT",
+    "price": 560
+  },
+  {
+    "symbol": "NSE:BANDHANBNK1!",
+    "name": "BANDHAN BANK FUT",
+    "price": 195
+  },
+  {
+    "symbol": "NSE:BANKBARODA1!",
+    "name": "BANK BARODA FUT",
+    "price": 235
+  },
+  {
+    "symbol": "NSE:BATAINDIA1!",
+    "name": "BATA INDIA FUT",
+    "price": 1420
+  },
+  {
+    "symbol": "NSE:BEL1!",
+    "name": "BEL FUT",
+    "price": 295
+  },
+  {
+    "symbol": "NSE:BERGEPAINT1!",
+    "name": "BERGER PAINTS FUT",
+    "price": 560
+  },
+  {
+    "symbol": "NSE:BHARATFORG1!",
+    "name": "BHARAT FORGE FUT",
+    "price": 1520
+  },
+  {
+    "symbol": "NSE:BHARTIARTL1!",
+    "name": "BHARTI AIRTEL FUT",
+    "price": 1650
+  },
+  {
+    "symbol": "NSE:BHEL1!",
+    "name": "BHEL FUT",
+    "price": 275
+  },
+  {
+    "symbol": "NSE:BIOCON1!",
+    "name": "BIOCON FUT",
+    "price": 365
+  },
+  {
+    "symbol": "NSE:BOSCHLTD1!",
+    "name": "BOSCH FUT",
+    "price": 33500
+  },
+  {
+    "symbol": "NSE:BPCL1!",
+    "name": "BPCL FUT",
+    "price": 345
+  },
+  {
+    "symbol": "NSE:BRITANNIA1!",
+    "name": "BRITANNIA FUT",
+    "price": 5980
+  },
+  {
+    "symbol": "NSE:BSOFT1!",
+    "name": "BIRLASOFT FUT",
+    "price": 610
+  },
+  {
+    "symbol": "NSE:CANBK1!",
+    "name": "CANARA BANK FUT",
+    "price": 105
+  },
+  {
+    "symbol": "NSE:CANFINHOME1!",
+    "name": "CAN FIN HOMES FUT",
+    "price": 875
+  },
+  {
+    "symbol": "NSE:CHAMBLFERT1!",
+    "name": "CHAMBAL FERT FUT",
+    "price": 515
+  },
+  {
+    "symbol": "NSE:CHOLAFIN1!",
+    "name": "CHOLAMANDALAM FUT",
+    "price": 1490
+  },
+  {
+    "symbol": "NSE:CIPLA1!",
+    "name": "CIPLA FUT",
+    "price": 1620
+  },
+  {
+    "symbol": "NSE:COALINDIA1!",
+    "name": "COAL INDIA FUT",
+    "price": 495
+  },
+  {
+    "symbol": "NSE:COFORGE1!",
+    "name": "COFORGE FUT",
+    "price": 7450
+  },
+  {
+    "symbol": "NSE:COLPAL1!",
+    "name": "COLGATE FUT",
+    "price": 3550
+  },
+  {
+    "symbol": "NSE:CONCOR1!",
+    "name": "CONCOR FUT",
+    "price": 890
+  },
+  {
+    "symbol": "NSE:COROMANDEL1!",
+    "name": "COROMANDEL FUT",
+    "price": 1680
+  },
+  {
+    "symbol": "NSE:CROMPTON1!",
+    "name": "CROMPTON FUT",
+    "price": 430
+  },
+  {
+    "symbol": "NSE:CUB1!",
+    "name": "CITY UNION BANK FUT",
+    "price": 165
+  },
+  {
+    "symbol": "NSE:CUMMINSIND1!",
+    "name": "CUMMINS INDIA FUT",
+    "price": 3780
+  },
+  {
+    "symbol": "NSE:DABUR1!",
+    "name": "DABUR FUT",
+    "price": 625
+  },
+  {
+    "symbol": "NSE:DALBHARAT1!",
+    "name": "DALMIA BHARAT FUT",
+    "price": 1850
+  },
+  {
+    "symbol": "NSE:DEEPAKNTR1!",
+    "name": "DEEPAK NITRITE FUT",
+    "price": 2850
+  },
+  {
+    "symbol": "NSE:DELHIVERY1!",
+    "name": "DELHIVERY FUT",
+    "price": 415
+  },
+  {
+    "symbol": "NSE:DIVISLAB1!",
+    "name": "DIVIS LAB FUT",
+    "price": 5520
+  },
+  {
+    "symbol": "NSE:DIXON1!",
+    "name": "DIXON TECH FUT",
+    "price": 12850
+  },
+  {
+    "symbol": "NSE:DLF1!",
+    "name": "DLF FUT",
+    "price": 865
+  },
+  {
+    "symbol": "NSE:DRREDDY1!",
+    "name": "DR REDDYS FUT",
+    "price": 6650
+  },
+  {
+    "symbol": "NSE:EICHERMOT1!",
+    "name": "EICHER MOTORS FUT",
+    "price": 4850
+  },
+  {
+    "symbol": "NSE:ESCORTS1!",
+    "name": "ESCORTS FUT",
+    "price": 3820
+  },
+  {
+    "symbol": "NSE:EXIDEIND1!",
+    "name": "EXIDE IND FUT",
+    "price": 495
+  },
+  {
+    "symbol": "NSE:FEDERALBNK1!",
+    "name": "FEDERAL BANK FUT",
+    "price": 195
+  },
+  {
+    "symbol": "NSE:GAIL1!",
+    "name": "GAIL FUT",
+    "price": 220
+  },
+  {
+    "symbol": "NSE:GLENMARK1!",
+    "name": "GLENMARK FUT",
+    "price": 1680
+  },
+  {
+    "symbol": "NSE:GMRINFRA1!",
+    "name": "GMR AIRPORTS FUT",
+    "price": 92
+  },
+  {
+    "symbol": "NSE:GNFC1!",
+    "name": "GNFC FUT",
+    "price": 685
+  },
+  {
+    "symbol": "NSE:GODREJCP1!",
+    "name": "GODREJ CONSUMER FUT",
+    "price": 1320
+  },
+  {
+    "symbol": "NSE:GODREJPROP1!",
+    "name": "GODREJ PROP FUT",
+    "price": 2980
+  },
+  {
+    "symbol": "NSE:GRANULES1!",
+    "name": "GRANULES FUT",
+    "price": 565
+  },
+  {
+    "symbol": "NSE:GRASIM1!",
+    "name": "GRASIM FUT",
+    "price": 2680
+  },
+  {
+    "symbol": "NSE:GUJGASLTD1!",
+    "name": "GUJARAT GAS FUT",
+    "price": 585
+  },
+  {
+    "symbol": "NSE:HAL1!",
+    "name": "HAL FUT",
+    "price": 4450
+  },
+  {
+    "symbol": "NSE:HAVELLS1!",
+    "name": "HAVELLS FUT",
+    "price": 1880
+  },
+  {
+    "symbol": "NSE:HCLTECH1!",
+    "name": "HCL TECH FUT",
+    "price": 1790
+  },
+  {
+    "symbol": "NSE:HDFCAMC1!",
+    "name": "HDFC AMC FUT",
+    "price": 4350
+  },
+  {
+    "symbol": "NSE:HDFCBANK1!",
+    "name": "HDFC BANK FUT",
+    "price": 1712
+  },
+  {
+    "symbol": "NSE:HDFCLIFE1!",
+    "name": "HDFC LIFE FUT",
+    "price": 725
+  },
+  {
+    "symbol": "NSE:HEROMOTOCO1!",
+    "name": "HERO MOTOCORP FUT",
+    "price": 5350
+  },
+  {
+    "symbol": "NSE:HINDALCO1!",
+    "name": "HINDALCO FUT",
+    "price": 710
+  },
+  {
+    "symbol": "NSE:HINDCOPPER1!",
+    "name": "HIND COPPER FUT",
+    "price": 325
+  },
+  {
+    "symbol": "NSE:HINDPETRO1!",
+    "name": "HPCL FUT",
+    "price": 385
+  },
+  {
+    "symbol": "NSE:HINDUNILVR1!",
+    "name": "HIND UNILEVER FUT",
+    "price": 2820
+  },
+  {
+    "symbol": "NSE:HUDCO1!",
+    "name": "HUDCO FUT",
+    "price": 245
+  },
+  {
+    "symbol": "NSE:ICICIBANK1!",
+    "name": "ICICI BANK FUT",
+    "price": 1296
+  },
+  {
+    "symbol": "NSE:ICICIGI1!",
+    "name": "ICICI LOMBARD FUT",
+    "price": 2120
+  },
+  {
+    "symbol": "NSE:ICICIPRULI1!",
+    "name": "ICICI PRU LIFE FUT",
+    "price": 745
+  },
+  {
+    "symbol": "NSE:IDEA1!",
+    "name": "IDEA FUT",
+    "price": 10
+  },
+  {
+    "symbol": "NSE:IDFC1!",
+    "name": "IDFC FUT",
+    "price": 115
+  },
+  {
+    "symbol": "NSE:IDFCFIRSTB1!",
+    "name": "IDFC FIRST BANK FUT",
+    "price": 73
+  },
+  {
+    "symbol": "NSE:IEX1!",
+    "name": "IEX FUT",
+    "price": 205
+  },
+  {
+    "symbol": "NSE:IGL1!",
+    "name": "IGL FUT",
+    "price": 540
+  },
+  {
+    "symbol": "NSE:INDHOTEL1!",
+    "name": "INDIAN HOTELS FUT",
+    "price": 710
+  },
+  {
+    "symbol": "NSE:INDIACEM1!",
+    "name": "INDIA CEMENTS FUT",
+    "price": 365
+  },
+  {
+    "symbol": "NSE:INDIAMART1!",
+    "name": "INDIAMART FUT",
+    "price": 2980
+  },
+  {
+    "symbol": "NSE:INDIGO1!",
+    "name": "INDIGO FUT",
+    "price": 4680
+  },
+  {
+    "symbol": "NSE:INDUSINDBK1!",
+    "name": "INDUSIND BANK FUT",
+    "price": 1420
+  },
+  {
+    "symbol": "NSE:INDUSTOWER1!",
+    "name": "INDUS TOWERS FUT",
+    "price": 385
+  },
+  {
+    "symbol": "NSE:INFY1!",
+    "name": "INFY FUT",
+    "price": 1840
+  },
+  {
+    "symbol": "NSE:IOC1!",
+    "name": "IOC FUT",
+    "price": 175
+  },
+  {
+    "symbol": "NSE:IPCALAB1!",
+    "name": "IPCA LABS FUT",
+    "price": 1420
+  },
+  {
+    "symbol": "NSE:IRCTC1!",
+    "name": "IRCTC FUT",
+    "price": 890
+  },
+  {
+    "symbol": "NSE:ITC1!",
+    "name": "ITC FUT",
+    "price": 510
+  },
+  {
+    "symbol": "NSE:JINDALSTEL1!",
+    "name": "JINDAL STEEL FUT",
+    "price": 995
+  },
+  {
+    "symbol": "NSE:JIOFIN1!",
+    "name": "JIO FINANCIAL FUT",
+    "price": 345
+  },
+  {
+    "symbol": "NSE:JKCEMENT1!",
+    "name": "JK CEMENT FUT",
+    "price": 4450
+  },
+  {
+    "symbol": "NSE:JSWSTEEL1!",
+    "name": "JSW STEEL FUT",
+    "price": 995
+  },
+  {
+    "symbol": "NSE:JUBLFOOD1!",
+    "name": "JUBILANT FOOD FUT",
+    "price": 635
+  },
+  {
+    "symbol": "NSE:KALYANKJIL1!",
+    "name": "KALYAN JEWELLERS FUT",
+    "price": 710
+  },
+  {
+    "symbol": "NSE:KOTAKBANK1!",
+    "name": "KOTAK BANK FUT",
+    "price": 1860
+  },
+  {
+    "symbol": "NSE:LALPATHLAB1!",
+    "name": "DR LAL PATHLABS FUT",
+    "price": 3250
+  },
+  {
+    "symbol": "NSE:LAURUSLABS1!",
+    "name": "LAURUS LABS FUT",
+    "price": 465
+  },
+  {
+    "symbol": "NSE:LICHSGFIN1!",
+    "name": "LIC HSG FIN FUT",
+    "price": 675
+  },
+  {
+    "symbol": "NSE:LICI1!",
+    "name": "LIC INDIA FUT",
+    "price": 985
+  },
+  {
+    "symbol": "NSE:LT1!",
+    "name": "LT FUT",
+    "price": 3620
+  },
+  {
+    "symbol": "NSE:LTF1!",
+    "name": "LT FINANCE FUT",
+    "price": 165
+  },
+  {
+    "symbol": "NSE:LTIM1!",
+    "name": "LTIMINDTREE FUT",
+    "price": 6150
+  },
+  {
+    "symbol": "NSE:LTTS1!",
+    "name": "LTTS FUT",
+    "price": 5450
+  },
+  {
+    "symbol": "NSE:LUPIN1!",
+    "name": "LUPIN FUT",
+    "price": 2180
+  },
+  {
+    "symbol": "NSE:M&M1!",
+    "name": "M&M FUT",
+    "price": 3120
+  },
+  {
+    "symbol": "NSE:M&MFIN1!",
+    "name": "M&M FINANCE FUT",
+    "price": 310
+  },
+  {
+    "symbol": "NSE:MANAPPURAM1!",
+    "name": "MANAPPURAM FUT",
+    "price": 195
+  },
+  {
+    "symbol": "NSE:MARICO1!",
+    "name": "MARICO FUT",
+    "price": 675
+  },
+  {
+    "symbol": "NSE:MARUTI1!",
+    "name": "MARUTI FUT",
+    "price": 12450
+  },
+  {
+    "symbol": "NSE:MCX1!",
+    "name": "MCX FUT",
+    "price": 5850
+  },
+  {
+    "symbol": "NSE:METROPOLIS1!",
+    "name": "METROPOLIS FUT",
+    "price": 2180
+  },
+  {
+    "symbol": "NSE:MFSL1!",
+    "name": "MAX FINANCIAL FUT",
+    "price": 1180
+  },
+  {
+    "symbol": "NSE:MGL1!",
+    "name": "MAHANAGAR GAS FUT",
+    "price": 1780
+  },
+  {
+    "symbol": "NSE:MOTHERSON1!",
+    "name": "MOTHERSON FUT",
+    "price": 195
+  },
+  {
+    "symbol": "NSE:MPHASIS1!",
+    "name": "MPHASIS FUT",
+    "price": 3050
+  },
+  {
+    "symbol": "NSE:MRF1!",
+    "name": "MRF FUT",
+    "price": 136500
+  },
+  {
+    "symbol": "NSE:MUTHOOTFIN1!",
+    "name": "MUTHOOT FINANCE FUT",
+    "price": 1980
+  },
+  {
+    "symbol": "NSE:NATIONALUM1!",
+    "name": "NATIONAL ALUM FUT",
+    "price": 215
+  },
+  {
+    "symbol": "NSE:NAUKRI1!",
+    "name": "NAUKRI FUT",
+    "price": 7450
+  },
+  {
+    "symbol": "NSE:NAVINFLUOR1!",
+    "name": "NAVIN FLUORINE FUT",
+    "price": 3350
+  },
+  {
+    "symbol": "NSE:NBCC1!",
+    "name": "NBCC FUT",
+    "price": 115
+  },
+  {
+    "symbol": "NSE:NCC1!",
+    "name": "NCC FUT",
+    "price": 315
+  },
+  {
+    "symbol": "NSE:NESTLEIND1!",
+    "name": "NESTLE INDIA FUT",
+    "price": 2680
+  },
+  {
+    "symbol": "NSE:NMDC1!",
+    "name": "NMDC FUT",
+    "price": 225
+  },
+  {
+    "symbol": "NSE:NTPC1!",
+    "name": "NTPC FUT",
+    "price": 420
+  },
+  {
+    "symbol": "NSE:OBEROIRLTY1!",
+    "name": "OBEROI REALTY FUT",
+    "price": 1880
+  },
+  {
+    "symbol": "NSE:OFSS1!",
+    "name": "OFSS FUT",
+    "price": 11450
+  },
+  {
+    "symbol": "NSE:ONGC1!",
+    "name": "ONGC FUT",
+    "price": 295
+  },
+  {
+    "symbol": "NSE:PAGEIND1!",
+    "name": "PAGE IND FUT",
+    "price": 44500
+  },
+  {
+    "symbol": "NSE:PEL1!",
+    "name": "PIRAMAL ENT FUT",
+    "price": 1080
+  },
+  {
+    "symbol": "NSE:PERSISTENT1!",
+    "name": "PERSISTENT FUT",
+    "price": 5450
+  },
+  {
+    "symbol": "NSE:PETRONET1!",
+    "name": "PETRONET LNG FUT",
+    "price": 345
+  },
+  {
+    "symbol": "NSE:PFC1!",
+    "name": "PFC FUT",
+    "price": 510
+  },
+  {
+    "symbol": "NSE:PIDILITIND1!",
+    "name": "PIDILITE IND FUT",
+    "price": 3180
+  },
+  {
+    "symbol": "NSE:PIIND1!",
+    "name": "PI IND FUT",
+    "price": 4450
+  },
+  {
+    "symbol": "NSE:PNB1!",
+    "name": "PNB FUT",
+    "price": 105
+  },
+  {
+    "symbol": "NSE:POLYCAB1!",
+    "name": "POLYCAB FUT",
+    "price": 6850
+  },
+  {
+    "symbol": "NSE:POONAWALLA1!",
+    "name": "POONAWALLA FUT",
+    "price": 385
+  },
+  {
+    "symbol": "NSE:POWERGRID1!",
+    "name": "POWER GRID FUT",
+    "price": 335
+  },
+  {
+    "symbol": "NSE:PVRINOX1!",
+    "name": "PVR INOX FUT",
+    "price": 1580
+  },
+  {
+    "symbol": "NSE:RAMCOCEM1!",
+    "name": "RAMCO CEMENT FUT",
+    "price": 865
+  },
+  {
+    "symbol": "NSE:RBLBANK1!",
+    "name": "RBL BANK FUT",
+    "price": 215
+  },
+  {
+    "symbol": "NSE:RECLTD1!",
+    "name": "REC LTD FUT",
+    "price": 545
+  },
+  {
+    "symbol": "NSE:RELIANCE1!",
+    "name": "RELIANCE FUT",
+    "price": 1284
+  },
+  {
+    "symbol": "NSE:SAIL1!",
+    "name": "SAIL FUT",
+    "price": 135
+  },
+  {
+    "symbol": "NSE:SBICARD1!",
+    "name": "SBI CARD FUT",
+    "price": 745
+  },
+  {
+    "symbol": "NSE:SBILIFE1!",
+    "name": "SBI LIFE FUT",
+    "price": 1780
+  },
+  {
+    "symbol": "NSE:SBIN1!",
+    "name": "SBIN FUT",
+    "price": 812
+  },
+  {
+    "symbol": "NSE:SHREECEM1!",
+    "name": "SHREE CEMENT FUT",
+    "price": 25400
+  },
+  {
+    "symbol": "NSE:SHRIRAMFIN1!",
+    "name": "SHRIRAM FIN FUT",
+    "price": 3350
+  },
+  {
+    "symbol": "NSE:SIEMENS1!",
+    "name": "SIEMENS FUT",
+    "price": 7450
+  },
+  {
+    "symbol": "NSE:SRF1!",
+    "name": "SRF FUT",
+    "price": 2540
+  },
+  {
+    "symbol": "NSE:SUNPHARMA1!",
+    "name": "SUN PHARMA FUT",
+    "price": 1880
+  },
+  {
+    "symbol": "NSE:SUNTV1!",
+    "name": "SUN TV FUT",
+    "price": 795
+  },
+  {
+    "symbol": "NSE:SUPREMEIND1!",
+    "name": "SUPREME IND FUT",
+    "price": 5450
+  },
+  {
+    "symbol": "NSE:SYNGENE1!",
+    "name": "SYNGENE FUT",
+    "price": 885
+  },
+  {
+    "symbol": "NSE:TATACHEM1!",
+    "name": "TATA CHEMICALS FUT",
+    "price": 1080
+  },
+  {
+    "symbol": "NSE:TATACOMM1!",
+    "name": "TATA COMM FUT",
+    "price": 1980
+  },
+  {
+    "symbol": "NSE:TATACONSUM1!",
+    "name": "TATA CONSUMER FUT",
+    "price": 1180
+  },
+  {
+    "symbol": "NSE:TATAMOTORS1!",
+    "name": "TATA MOTORS FUT",
+    "price": 890
+  },
+  {
+    "symbol": "NSE:TATAPOWER1!",
+    "name": "TATA POWER FUT",
+    "price": 445
+  },
+  {
+    "symbol": "NSE:TATASTEEL1!",
+    "name": "TATA STEEL FUT",
+    "price": 165
+  },
+  {
+    "symbol": "NSE:TCS1!",
+    "name": "TCS FUT",
+    "price": 3904
+  },
+  {
+    "symbol": "NSE:TECHM1!",
+    "name": "TECH MAHINDRA FUT",
+    "price": 1650
+  },
+  {
+    "symbol": "NSE:TITAN1!",
+    "name": "TITAN FUT",
+    "price": 3650
+  },
+  {
+    "symbol": "NSE:TORNTPHARM1!",
+    "name": "TORRENT PHARMA FUT",
+    "price": 3380
+  },
+  {
+    "symbol": "NSE:TORNTPOWER1!",
+    "name": "TORRENT POWER FUT",
+    "price": 1880
+  },
+  {
+    "symbol": "NSE:TRENT1!",
+    "name": "TRENT FUT",
+    "price": 7450
+  },
+  {
+    "symbol": "NSE:TVSMOTOR1!",
+    "name": "TVS MOTORS FUT",
+    "price": 2780
+  },
+  {
+    "symbol": "NSE:UBL1!",
+    "name": "UNITED BREWERIES FUT",
+    "price": 2080
+  },
+  {
+    "symbol": "NSE:ULTRACEMCO1!",
+    "name": "ULTRATECH CEMENT FUT",
+    "price": 11650
+  },
+  {
+    "symbol": "NSE:UNIONBANK1!",
+    "name": "UNION BANK FUT",
+    "price": 125
+  },
+  {
+    "symbol": "NSE:UNITDSPR1!",
+    "name": "MCDOWELL-N FUT",
+    "price": 1480
+  },
+  {
+    "symbol": "NSE:UPL1!",
+    "name": "UPL FUT",
+    "price": 565
+  },
+  {
+    "symbol": "NSE:VEDL1!",
+    "name": "VEDANTA FUT",
+    "price": 495
+  },
+  {
+    "symbol": "NSE:VOLTAS1!",
+    "name": "VOLTAS FUT",
+    "price": 1780
+  },
+  {
+    "symbol": "NSE:WIPRO1!",
+    "name": "WIPRO FUT",
+    "price": 545
+  },
+  {
+    "symbol": "NSE:YESBANK1!",
+    "name": "YES BANK FUT",
+    "price": 22
+  },
+  {
+    "symbol": "NSE:ZEEL1!",
+    "name": "ZEEL FUT",
+    "price": 130
+  },
+  {
+    "symbol": "NSE:ZOMATO1!",
+    "name": "ZOMATO FUT",
+    "price": 275
+  }
+]

@@ -1,6 +1,7 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import { angelOneBridge } from './angelone_bridge.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -38,12 +39,31 @@ function getExpiriesForSymbol(symbol) {
   const sym = symbol.replace('NSE:', '').toUpperCase();
   const expiries = [];
   const today = new Date();
+  const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
   
   if (sym === 'NIFTY' || sym === 'FINNIFTY') {
     for (let i = 0; i < 45; i++) {
       const d = new Date(today);
       d.setDate(today.getDate() + i);
       if (d.getDay() === 2) { // Tuesday
+        if (d.getTime() >= todayMidnight) {
+          const yy = String(d.getFullYear()).slice(-2);
+          const mm = String(d.getMonth() + 1).padStart(2, '0');
+          const dd = String(d.getDate()).padStart(2, '0');
+          expiries.push({
+            code: `${yy}${mm}${dd}`,
+            label: d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+          });
+        }
+      }
+    }
+  } else {
+    for (let m = 0; m < 4; m++) {
+      const d = new Date(today.getFullYear(), today.getMonth() + m + 1, 0); // Last day of month
+      while (d.getDay() !== 2) { // Roll back to Tuesday
+        d.setDate(d.getDate() - 1);
+      }
+      if (d.getTime() >= todayMidnight) {
         const yy = String(d.getFullYear()).slice(-2);
         const mm = String(d.getMonth() + 1).padStart(2, '0');
         const dd = String(d.getDate()).padStart(2, '0');
@@ -52,20 +72,6 @@ function getExpiriesForSymbol(symbol) {
           label: d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
         });
       }
-    }
-  } else {
-    for (let m = 0; m < 3; m++) {
-      const d = new Date(today.getFullYear(), today.getMonth() + m + 1, 0); // Last day of month
-      while (d.getDay() !== 2) { // Roll back to Tuesday
-        d.setDate(d.getDate() - 1);
-      }
-      const yy = String(d.getFullYear()).slice(-2);
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      const dd = String(d.getDate()).padStart(2, '0');
-      expiries.push({
-        code: `${yy}${mm}${dd}`,
-        label: d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
-      });
     }
   }
   return expiries;
@@ -78,70 +84,20 @@ function getAtmStrike(symbol, price) {
 
 async function findClosestValidOptionSymbol(symbol, price, optType, expiry) {
   const cleanSym = symbol.replace('NSE:', '').toUpperCase();
-  const suffix = optType === 'C' ? 'C' : 'P';
-  
-  const ltp = price;
+  const suffix = optType === 'C' ? 'CE' : 'PE';
   const interval = detectStrikeInterval(symbol, price);
   const estStrike = Math.round(price / interval) * interval;
-  const estStrikeStr = String(estStrike);
   
-  const prefixes = [];
-  if (estStrikeStr.length > 2) {
-    prefixes.push(estStrikeStr.slice(0, estStrikeStr.length - 2));
-    const lowerEst = estStrike - interval * 2;
-    const upperEst = estStrike + interval * 2;
-    const lowerPrefix = String(lowerEst).slice(0, estStrikeStr.length - 2);
-    const upperPrefix = String(upperEst).slice(0, estStrikeStr.length - 2);
-    if (!prefixes.includes(lowerPrefix)) prefixes.push(lowerPrefix);
-    if (!prefixes.includes(upperPrefix)) prefixes.push(upperPrefix);
-  } else {
-    prefixes.push('');
-  }
-  
-  const allContracts = new Set();
-  
-  for (const prefix of prefixes) {
-    const query = `${cleanSym}${expiry}${suffix}${prefix}`;
-    const url = `https://symbol-search.tradingview.com/symbol_search/?text=${encodeURIComponent(query)}&type=options&country=IN`;
-    
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 6000); // 6s timeout
-
-      const res = await fetch(url, {
-        signal: controller.signal,
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Referer': 'https://www.tradingview.com/',
-          'Origin': 'https://www.tradingview.com'
-        }
-      });
-      clearTimeout(timeoutId);
-      if (!res.ok) continue;
-      const data = await res.json();
-      if (Array.isArray(data)) {
-        data.forEach(item => {
-          const symName = item.symbol.toUpperCase();
-          const regex = new RegExp(`${cleanSym}${expiry}${suffix}(\\d+)`);
-          const match = symName.match(regex);
-          if (match) {
-            allContracts.add(parseInt(match[1]));
-          }
-        });
-      }
-    } catch (e) {
-      console.warn(`[Scanner] Option search error for prefix ${prefix}:`, e.message || e);
+  // Try querying Angel One SmartAPI for the exact scrip
+  try {
+    const searchPattern = `${cleanSym} ${estStrike} ${suffix}`;
+    const angelResults = await angelOneBridge.searchScrips(searchPattern);
+    if (angelResults && angelResults.length > 0) {
+      return angelResults[0].value;
     }
-  }
-  
-  const validStrikes = Array.from(allContracts);
-  if (validStrikes.length > 0) {
-    validStrikes.sort((a, b) => Math.abs(a - price) - Math.abs(b - price));
-    const closestStrike = validStrikes[0];
-    return `NSE:${cleanSym}${expiry}${suffix}${closestStrike}`;
-  }
-  
-  return null;
+  } catch (err) {}
+
+  return `NSE:${cleanSym}${expiry}${optType === 'C' ? 'C' : 'P'}${estStrike}`;
 }
 
 // Global cached scan results for both 5m (Daily Levels) and Daily (Monthly Levels) scans
@@ -200,7 +156,7 @@ export function saveLevelsCacheToDisk() {
 }
 
 
-const BATCH_SIZE = 5; // Scan 5 symbols at a time to prevent socket congestion
+const BATCH_SIZE = 1; // Scan 1 symbol sequentially to respect Angel One rate limit
 const PROXIMITY_THRESHOLD_PCT = 0.25; // 0.25% proximity threshold to classify a stock as "near" a level
 
 // Load scan symbols list dynamically from scan_symbols.json on boot
@@ -216,82 +172,15 @@ try {
 
 export { getExpiriesForSymbol, findClosestValidOptionSymbol, fetchCandlesForSymbol };
 
-async function fetchCandlesDirect(tvBridge, symbol, timeframe, limit = 10) {
-  let cleanupFn = null;
-  let resolved = false;
-  let cachedData = null;
-
-  return new Promise((resolve, reject) => {
-    const timeout = setTimeout(async () => {
-      if (!resolved) {
-        resolved = true;
-        if (cleanupFn) {
-          try { await cleanupFn(); } catch (e) {}
-        }
-        reject(new Error(`Timeout fetching candles for ${symbol} on tf ${timeframe}`));
-      }
-    }, 10000); // 10s timeout
-
-    const onData = async (data) => {
-      if (data.isSnapshot && !resolved) {
-        if (cleanupFn) {
-          resolved = true;
-          clearTimeout(timeout);
-          try { await cleanupFn(); } catch (err) {}
-          resolve(data.candles);
-        } else {
-          cachedData = data.candles;
-        }
-      }
-    };
-
-    const onError = async (err) => {
-      if (!resolved) {
-        resolved = true;
-        clearTimeout(timeout);
-        if (cleanupFn) {
-          try { await cleanupFn(); } catch (e) {}
-        }
-        reject(err);
-      }
-    };
-
-    tvBridge.subscribeSymbol(symbol, timeframe, onData, onError, limit)
-      .then(async (fn) => {
-        cleanupFn = fn;
-        if (resolved) {
-          try { await cleanupFn(); } catch (e) {}
-          return;
-        }
-        if (cachedData) {
-          resolved = true;
-          clearTimeout(timeout);
-          try { await cleanupFn(); } catch (e) {}
-          resolve(cachedData);
-        }
-      })
-      .catch((err) => {
-        if (!resolved) {
-          resolved = true;
-          clearTimeout(timeout);
-          reject(err);
-        }
-      });
-  });
-}
-
-async function fetchCandlesForSymbol(tvBridge, symbol, timeframe, limit = 10) {
+async function fetchCandlesForSymbol(symbol, timeframe, limit = 10) {
+  // Pure 0ms Angel One SmartAPI datafeed
   try {
-    const candles = await fetchCandlesDirect(tvBridge, symbol, timeframe, limit);
-    if (candles && candles.length > 0) return candles;
-  } catch (err) {
-    if (symbol && symbol.includes('1!')) {
-      const fallbackSym = symbol.replace('1!', '');
-      try {
-        const fallbackCandles = await fetchCandlesDirect(tvBridge, fallbackSym, timeframe, limit);
-        if (fallbackCandles && fallbackCandles.length > 0) return fallbackCandles;
-      } catch (e) {}
+    const angelRes = await angelOneBridge.getNormalizedCandles({ symbol, timeframe, limit, isPriority: false });
+    if (angelRes && angelRes.status && Array.isArray(angelRes.candles) && angelRes.candles.length > 0) {
+      return angelRes.candles;
     }
+  } catch (err) {
+    console.warn(`[Scanner] Angel One candle error for ${symbol}:`, err.message);
   }
   return [];
 }
@@ -424,13 +313,13 @@ function isMarketHours() {
   
   const timeInMinutes = hour * 60 + minute;
   const startInMinutes = 9 * 60 + 15; // 9:15 AM IST
-  const endInMinutes = 15 * 60 + 30; // 3:30 PM IST
+  const endInMinutes = 15 * 60 + 15; // 3:15 PM IST
   
   return timeInMinutes >= startInMinutes && timeInMinutes <= endInMinutes;
 }
 
 // Run one scanning pass over all symbols for a specific timeframe
-export async function runScan(tvBridge, timeframe) {
+export async function runScan(timeframe) {
   if (scannerCache.isScanning[timeframe]) return;
   
   const todayStr = new Date().toLocaleDateString('en-US', { timeZone: 'Asia/Kolkata' });
@@ -466,11 +355,12 @@ export async function runScan(tvBridge, timeframe) {
   // Process in batches
   for (let i = 0; i < SCAN_SYMBOLS.length; i += BATCH_SIZE) {
     const batch = SCAN_SYMBOLS.slice(i, i + BATCH_SIZE);
+    await new Promise(r => setTimeout(r, 380));
     
     // Scan batch in parallel
     const scanPromises = batch.map(async (symbol) => {
       try {
-        const candles = await fetchCandlesForSymbol(tvBridge, symbol, fetchTimeframe, 10);
+        const candles = await fetchCandlesForSymbol(symbol, fetchTimeframe, 10);
         const calc = processMatrixForSymbol(candles, timeframe);
         if (!calc) return;
 
@@ -546,7 +436,7 @@ export async function runScan(tvBridge, timeframe) {
                     
                     if (optionSymbol) {
                       console.log(`[Scanner] Fetching live option premium for ${optionSymbol}...`);
-                      const optionCandles = await fetchCandlesForSymbol(tvBridge, optionSymbol, '5', 5);
+                      const optionCandles = await fetchCandlesForSymbol(optionSymbol, '5', 5);
                       if (optionCandles && optionCandles.length > 0) {
                         actualPremium = optionCandles[optionCandles.length - 1].close;
                         console.log(`[Scanner] Live option premium for ${optionSymbol} is ₹${actualPremium}`);
@@ -594,7 +484,7 @@ export async function runScan(tvBridge, timeframe) {
     await Promise.all(scanPromises);
     
     // Small sleep between batches to let the socket breathe
-    await new Promise(r => setTimeout(r, 150));
+    await new Promise(r => setTimeout(r, 450));
   }
 
   // Update cached scan results for this timeframe
@@ -618,7 +508,7 @@ async function processQueue() {
   while (scanQueue.length > 0) {
     const nextScan = scanQueue.shift();
     try {
-      await runScan(nextScan.tvBridge, nextScan.timeframe);
+      await runScan(nextScan.timeframe);
     } catch (err) {
       console.error(`[Scanner] Error running scan for tf ${nextScan.timeframe}:`, err);
     }
@@ -627,33 +517,35 @@ async function processQueue() {
   isProcessingQueue = false;
 }
 
-export function queueScan(tvBridge, timeframe) {
+export function queueScan(timeframe) {
   if (!scanQueue.some(q => q.timeframe === timeframe)) {
-    scanQueue.push({ tvBridge, timeframe });
+    scanQueue.push({ timeframe });
   }
   processQueue();
 }
 
 // Start background scanner intervals
-export function startScanner(tvBridge) {
+export function startScanner() {
   // Load any existing signals from today's session on boot
   loadSignalsFromDisk();
 
-  // Queue scans on startup sequentially
-  queueScan(tvBridge, '5');
-  
-  // Wait 15 seconds before queueing the Daily scan on boot to let the 5m scan finish cleanly
+  // Queue scans on startup with delay to let pre-warming and socket settle
   setTimeout(() => {
-    queueScan(tvBridge, 'D');
-  }, 15000);
+    queueScan('5');
+  }, 45000);
+  
+  // Wait before queueing the Daily scan on boot
+  setTimeout(() => {
+    queueScan('D');
+  }, 90000);
 
   // Repeat 5m scan every 5 minutes (300000 ms)
   setInterval(() => {
-    queueScan(tvBridge, '5');
+    queueScan('5');
   }, 5 * 60 * 1000);
 
   // Repeat Daily scan every 15 minutes (since daily price changes much slower)
   setInterval(() => {
-    queueScan(tvBridge, 'D');
+    queueScan('D');
   }, 15 * 60 * 1000);
 }

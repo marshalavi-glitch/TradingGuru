@@ -1240,16 +1240,6 @@
   ],
   "bankniftyLevelsHit": [
     {
-      "type": "Support Touch",
-      "levelName": "S5 (VAL Extreme)",
-      "levelVal": 55782.046319999994,
-      "low": 55794.75,
-      "close": 55794.75,
-      "time": "03:25 pm",
-      "pattern": "Neutral Candle",
-      "result": "Bounced"
-    },
-    {
       "type": "Breakdown",
       "levelName": "S4 (VAL Breakdown Trigger)",
       "levelVal": 56086.03,

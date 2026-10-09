@@ -1,0 +1,609 @@
+=========================================
+MARKET ANALYSIS REPORT - 2/10/2026
+=========================================
+
+1. INDEX CLOSES:
+-----------------------------------------
+NIFTY 50  : 22421.95 (-0.88%)
+BANK NIFTY: 54450.75 (-0.33%)
+
+1B. INDEX LEVEL INTERACTIONS (NIFTY & BANK NIFTY):
+-----------------------------------------
+NIFTY Level Interactions:
+  - Breakdown of Monthly S4 (VAL Breakdown Trigger) (22502.67) | Close = 22421.95 | Excess = 0.36%
+BANK NIFTY Level Interactions:
+  - Support Touch at Monthly S4 (VAL Breakdown Trigger) (54104.39) at 01:55 pm | Candle = Tweezer Top (Double Rejection) | Session Low = 54066.60 | Close = 54450.75 | Result = Bounced
+  - Resistance Touch at Monthly R4 (VAH Breakout Trigger) (55161.71) at 01:05 pm | Candle = Neutral Candle | Session High = 55091.45 | Close = 54450.75 | Result = Rejected
+
+2. TOP GAINERS:
+-----------------------------------------
+COFORGE     : ₹1826.00    (+4.40%)
+INFY        : ₹1035.00    (+4.11%)
+HDFCLIFE    : ₹534.20     (+2.49%)
+HAVELLS     : ₹1040.00    (+2.36%)
+CUMMINSIND  : ₹4860.00    (+2.10%)
+HDFCBANK    : ₹721.20     (+1.76%)
+PERSISTENT  : ₹5367.00    (+1.67%)
+TATACOMM    : ₹1683.00    (+1.62%)
+SBILIFE     : ₹1721.60    (+1.49%)
+MFSL        : ₹1392.00    (+1.35%)
+
+3. TOP LOSERS:
+-----------------------------------------
+MARUTI      : ₹11386.00   (-4.86%)
+UPL         : ₹516.80     (-4.25%)
+LICHSGFIN   : ₹509.00     (-4.00%)
+SHRIRAMFIN  : ₹945.00     (-3.84%)
+RECLTD      : ₹287.75     (-3.76%)
+ZEEL        : ₹71.92      (-3.42%)
+TATASTEEL   : ₹178.00     (-3.42%)
+ADANIPORTS  : ₹1737.80    (-3.36%)
+GRASIM      : ₹2962.00    (-3.26%)
+EICHERMOT   : ₹6920.00    (-3.22%)
+
+4. SUPPORT BOUNCES (Within Proximity):
+-----------------------------------------
+ESCORTS     : Level = Buy Reversal (S3)         | Value = 2703.29    | Low = 2550.10    | Close = 2667.30    | Bounce = +4.60% | Candle = Hammer (Bullish Rejection) | Volume Climax Bullish Rejection (4.9x Vol) | Double Top Breakdown
+ESCORTS     : Level = Target (S5)               | Value = 2677.48    | Low = 2550.10    | Close = 2667.30    | Bounce = +4.60% | Candle = Hammer (Bullish Rejection) | Volume Climax Bullish Rejection (4.9x Vol) | Double Top Breakdown
+ESCORTS     : Level = Target (S6)               | Value = 2671.66    | Low = 2550.10    | Close = 2667.30    | Bounce = +4.60% | Candle = Hammer (Bullish Rejection) | Volume Climax Bullish Rejection (4.9x Vol) | Double Top Breakdown
+HDFCLIFE    : Level = Target (S5)               | Value = 514.40     | Low = 517.40     | Close = 534.20     | Bounce = +3.25% | Candle = Neutral Candle
+HDFCLIFE    : Level = S4 (VAL Breakdown Trigger) | Value = 516.91     | Low = 517.40     | Close = 534.20     | Bounce = +3.25% | Candle = Neutral Candle
+APOLLOHOSP  : Level = Support (S2)              | Value = 8054.40    | Low = 7910.00    | Close = 8133.50    | Bounce = +2.83% | Candle = Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 8053.0, close 8133.5) | Double Top Breakdown
+SBILIFE     : Level = Support (S2)              | Value = 1687.51    | Low = 1674.80    | Close = 1721.60    | Bounce = +2.79% | Candle = Piercing Line (Bullish Reversal) | SSL Sweep Reversal (Low swept 1681.0, close 1721.6)
+SBILIFE     : Level = Buy Reversal (S3)         | Value = 1683.06    | Low = 1674.80    | Close = 1721.60    | Bounce = +2.79% | Candle = Piercing Line (Bullish Reversal) | SSL Sweep Reversal (Low swept 1681.0, close 1721.6)
+BHEL        : Level = Support (S2)              | Value = 413.65     | Low = 411.35     | Close = 421.00     | Bounce = +2.35% | Candle = SSL Sweep Reversal (Low swept 411.7, close 421.0)
+BHEL        : Level = Buy Reversal (S3)         | Value = 412.72     | Low = 411.35     | Close = 421.00     | Bounce = +2.35% | Candle = SSL Sweep Reversal (Low swept 411.7, close 421.0)
+HEROMOTOCO  : Level = Break Down (S4)           | Value = 5183.52    | Low = 5051.00    | Close = 5168.00    | Bounce = +2.32% | Candle = Neutral Candle
+HEROMOTOCO  : Level = Target (S5)               | Value = 5149.96    | Low = 5051.00    | Close = 5168.00    | Bounce = +2.32% | Candle = Neutral Candle
+TATAMOTORS  : Level = Break Down (S4)           | Value = 279.68     | Low = 273.35     | Close = 279.40     | Bounce = +2.21% | Candle = Double Top Breakdown
+METROPOLIS  : Level = Support (S2)              | Value = 537.19     | Low = 526.30     | Close = 537.90     | Bounce = +2.20% | Candle = Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 536.6, close 537.9) | Double Top Breakdown
+CUMMINSIND  : Level = Support (S2)              | Value = 4742.03    | Low = 4760.00    | Close = 4860.00    | Bounce = +2.10% | Candle = Neutral Candle
+MGL         : Level = Buy Reversal (S3)         | Value = 1050.27    | Low = 1024.20    | Close = 1045.40    | Bounce = +2.07% | Candle = SSL Sweep Reversal (Low swept 1039.0, close 1045.4)
+MGL         : Level = Break Down (S4)           | Value = 1042.55    | Low = 1024.20    | Close = 1045.40    | Bounce = +2.07% | Candle = SSL Sweep Reversal (Low swept 1039.0, close 1045.4)
+MFSL        : Level = Support (S2)              | Value = 1364.09    | Low = 1364.40    | Close = 1392.00    | Bounce = +2.02% | Candle = Bullish Engulfing (Momentum Shift) | BSL Sweep Reversal (High swept 1395.1, close 1392.0) | Double Top Breakdown
+MFSL        : Level = Buy Reversal (S3)         | Value = 1359.43    | Low = 1364.40    | Close = 1392.00    | Bounce = +2.02% | Candle = Bullish Engulfing (Momentum Shift) | BSL Sweep Reversal (High swept 1395.1, close 1392.0) | Double Top Breakdown
+MFSL        : Level = Break Down (S4)           | Value = 1345.46    | Low = 1364.40    | Close = 1392.00    | Bounce = +2.02% | Candle = Bullish Engulfing (Momentum Shift) | BSL Sweep Reversal (High swept 1395.1, close 1392.0) | Double Top Breakdown
+JINDALSTEL  : Level = Buy Reversal (S3)         | Value = 1129.48    | Low = 1079.00    | Close = 1100.50    | Bounce = +1.99% | Candle = Neutral Candle
+HINDALCO    : Level = Support (S2)              | Value = 938.92     | Low = 923.50     | Close = 941.85     | Bounce = +1.99% | Candle = SSL Sweep Reversal (Low swept 941.1, close 941.9)
+HINDALCO    : Level = Buy Reversal (S3)         | Value = 937.48     | Low = 923.50     | Close = 941.85     | Bounce = +1.99% | Candle = SSL Sweep Reversal (Low swept 941.1, close 941.9)
+MARICO      : Level = Support (S2)              | Value = 783.57     | Low = 766.25     | Close = 781.35     | Bounce = +1.97% | Candle = Double Top Breakdown
+MARICO      : Level = Buy Reversal (S3)         | Value = 782.36     | Low = 766.25     | Close = 781.35     | Bounce = +1.97% | Candle = Double Top Breakdown
+MARICO      : Level = Break Down (S4)           | Value = 778.71     | Low = 766.25     | Close = 781.35     | Bounce = +1.97% | Candle = Double Top Breakdown
+LICHSGFIN   : Level = Break Down (S4)           | Value = 511.06     | Low = 499.25     | Close = 509.00     | Bounce = +1.95% | Candle = Three Black Crows (Bearish Initiation)
+LICHSGFIN   : Level = S5 (VAL Extreme)          | Value = 499.88     | Low = 499.25     | Close = 509.00     | Bounce = +1.95% | Candle = Three Black Crows (Bearish Initiation)
+DIVISLAB    : Level = Support (S2)              | Value = 9249.33    | Low = 9078.00    | Close = 9249.00    | Bounce = +1.88% | Candle = Neutral Candle
+DIVISLAB    : Level = Buy Reversal (S3)         | Value = 9228.25    | Low = 9078.00    | Close = 9249.00    | Bounce = +1.88% | Candle = Neutral Candle
+DIVISLAB    : Level = S5 (VAL Extreme)          | Value = 9091.12    | Low = 9078.00    | Close = 9249.00    | Bounce = +1.88% | Candle = Neutral Candle
+GODREJPROP  : Level = Target (S5)               | Value = 1596.96    | Low = 1566.60    | Close = 1595.80    | Bounce = +1.86% | Candle = Double Top Breakdown
+GODREJPROP  : Level = Target (S6)               | Value = 1592.19    | Low = 1566.60    | Close = 1595.80    | Bounce = +1.86% | Candle = Double Top Breakdown
+MANAPPURAM  : Level = Support (S2)              | Value = 314.07     | Low = 303.35     | Close = 308.90     | Bounce = +1.83% | Candle = Evening Star (Bearish Reversal) | Double Top Breakdown
+MANAPPURAM  : Level = Buy Reversal (S3)         | Value = 313.18     | Low = 303.35     | Close = 308.90     | Bounce = +1.83% | Candle = Evening Star (Bearish Reversal) | Double Top Breakdown
+MANAPPURAM  : Level = Target (S5)               | Value = 307.40     | Low = 303.35     | Close = 308.90     | Bounce = +1.83% | Candle = Evening Star (Bearish Reversal) | Double Top Breakdown
+BANDHANBNK  : Level = Buy Reversal (S3)         | Value = 176.27     | Low = 172.86     | Close = 176.00     | Bounce = +1.82% | Candle = Neutral Candle
+BAJAJFINSV  : Level = Support (S2)              | Value = 1722.59    | Low = 1703.40    | Close = 1732.60    | Bounce = +1.71% | Candle = Hammer (Bullish Rejection) | Volume Climax Bullish Rejection (3.3x Vol)
+BAJAJFINSV  : Level = Buy Reversal (S3)         | Value = 1718.38    | Low = 1703.40    | Close = 1732.60    | Bounce = +1.71% | Candle = Hammer (Bullish Rejection) | Volume Climax Bullish Rejection (3.3x Vol)
+BAJAJFINSV  : Level = Break Down (S4)           | Value = 1705.75    | Low = 1703.40    | Close = 1732.60    | Bounce = +1.71% | Candle = Hammer (Bullish Rejection) | Volume Climax Bullish Rejection (3.3x Vol)
+BAJAJFINSV  : Level = S4 (VAL Breakdown Trigger) | Value = 1705.75    | Low = 1703.40    | Close = 1732.60    | Bounce = +1.71% | Candle = Hammer (Bullish Rejection) | Volume Climax Bullish Rejection (3.3x Vol)
+INDUSTOWER  : Level = Break Down (S4)           | Value = 369.10     | Low = 370.00     | Close = 376.25     | Bounce = +1.69% | Candle = Neutral Candle
+BALKRISIND  : Level = Support (S2)              | Value = 2107.96    | Low = 2048.90    | Close = 2083.50    | Bounce = +1.69% | Candle = Neutral Candle
+BALKRISIND  : Level = Break Down (S4)           | Value = 2089.88    | Low = 2048.90    | Close = 2083.50    | Bounce = +1.69% | Candle = Neutral Candle
+BALKRISIND  : Level = Target (S5)               | Value = 2074.05    | Low = 2048.90    | Close = 2083.50    | Bounce = +1.69% | Candle = Neutral Candle
+PAGEIND     : Level = Support (S2)              | Value = 36212.67   | Low = 36055.00   | Close = 36660.00   | Bounce = +1.68% | Candle = Bullish Spinning Top (Indecision) | SSL Sweep Reversal (Low swept 36210.0, close 36660.0)
+NAUKRI      : Level = Support (S2)              | Value = 1211.89    | Low = 1180.30    | Close = 1200.00    | Bounce = +1.67% | Candle = Neutral Candle
+NAUKRI      : Level = Buy Reversal (S3)         | Value = 1208.09    | Low = 1180.30    | Close = 1200.00    | Bounce = +1.67% | Candle = Neutral Candle
+NAUKRI      : Level = Break Down (S4)           | Value = 1196.67    | Low = 1180.30    | Close = 1200.00    | Bounce = +1.67% | Candle = Neutral Candle
+NATIONALUM  : Level = Break Down (S4)           | Value = 336.55     | Low = 329.50     | Close = 334.90     | Bounce = +1.64% | Candle = Long-Legged Doji (Indecision)
+NATIONALUM  : Level = Target (S5)               | Value = 333.98     | Low = 329.50     | Close = 334.90     | Bounce = +1.64% | Candle = Long-Legged Doji (Indecision)
+IRCTC       : Level = Support (S2)              | Value = 452.69     | Low = 446.80     | Close = 454.10     | Bounce = +1.63% | Candle = Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 452.6, close 454.1)
+IRCTC       : Level = S4 (VAL Breakdown Trigger) | Value = 447.26     | Low = 446.80     | Close = 454.10     | Bounce = +1.63% | Candle = Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 452.6, close 454.1)
+OBEROIRLTY  : Level = Support (S2)              | Value = 1757.49    | Low = 1726.60    | Close = 1754.60    | Bounce = +1.62% | Candle = Bearish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 1751.5, close 1754.6)
+OBEROIRLTY  : Level = Buy Reversal (S3)         | Value = 1753.38    | Low = 1726.60    | Close = 1754.60    | Bounce = +1.62% | Candle = Bearish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 1751.5, close 1754.6)
+OBEROIRLTY  : Level = S5 (VAL Extreme)          | Value = 1726.67    | Low = 1726.60    | Close = 1754.60    | Bounce = +1.62% | Candle = Bearish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 1751.5, close 1754.6)
+ADANIENT    : Level = Support (S2)              | Value = 2889.17    | Low = 2772.00    | Close = 2816.80    | Bounce = +1.62% | Candle = Neutral Candle
+ADANIENT    : Level = Buy Reversal (S3)         | Value = 2882.06    | Low = 2772.00    | Close = 2816.80    | Bounce = +1.62% | Candle = Neutral Candle
+ADANIENT    : Level = Target (S6)               | Value = 2825.17    | Low = 2772.00    | Close = 2816.80    | Bounce = +1.62% | Candle = Neutral Candle
+CANBK       : Level = Buy Reversal (S3)         | Value = 118.88     | Low = 116.51     | Close = 118.36     | Bounce = +1.59% | Candle = Three Black Crows (Bearish Initiation) | Double Top Breakdown
+CANBK       : Level = Break Down (S4)           | Value = 118.32     | Low = 116.51     | Close = 118.36     | Bounce = +1.59% | Candle = Three Black Crows (Bearish Initiation) | Double Top Breakdown
+OFSS        : Level = Break Down (S4)           | Value = 10427.05   | Low = 10263.00   | Close = 10420.00   | Bounce = +1.53% | Candle = Neutral Candle
+OFSS        : Level = S6 (VAL Capitulation)     | Value = 10256.43   | Low = 10263.00   | Close = 10420.00   | Bounce = +1.53% | Candle = Neutral Candle
+JSWSTEEL    : Level = Target (S5)               | Value = 1233.80    | Low = 1214.80    | Close = 1233.00    | Bounce = +1.50% | Candle = Neutral Candle
+JSWSTEEL    : Level = Target (S6)               | Value = 1230.90    | Low = 1214.80    | Close = 1233.00    | Bounce = +1.50% | Candle = Neutral Candle
+PFC         : Level = Target (S5)               | Value = 318.97     | Low = 313.35     | Close = 318.00     | Bounce = +1.48% | Candle = Neutral Candle
+PFC         : Level = Target (S6)               | Value = 317.99     | Low = 313.35     | Close = 318.00     | Bounce = +1.48% | Candle = Neutral Candle
+FEDERALBNK  : Level = S4 (VAL Breakdown Trigger) | Value = 313.63     | Low = 313.75     | Close = 318.20     | Bounce = +1.42% | Candle = SSL Sweep Reversal (Low swept 317.4, close 318.2)
+ICICIPRULI  : Level = Support (S2)              | Value = 442.41     | Low = 441.80     | Close = 448.05     | Bounce = +1.41% | Candle = Bullish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 442.4, close 448.1)
+ICICIPRULI  : Level = S3 (VAL Reversion)        | Value = 441.71     | Low = 441.80     | Close = 448.05     | Bounce = +1.41% | Candle = Bullish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 442.4, close 448.1)
+TECHM       : Level = S3 (VAL Reversion)        | Value = 1512.59    | Low = 1512.00    | Close = 1533.00    | Bounce = +1.39% | Candle = Bearish Spinning Top (Indecision) | SSL Sweep Reversal (Low swept 1518.0, close 1533.0)
+POLYCAB     : Level = Support (S2)              | Value = 7998.32    | Low = 7883.00    | Close = 7990.00    | Bounce = +1.36% | Candle = Bearish Spinning Top (Indecision)
+POLYCAB     : Level = Buy Reversal (S3)         | Value = 7984.48    | Low = 7883.00    | Close = 7990.00    | Bounce = +1.36% | Candle = Bearish Spinning Top (Indecision)
+POLYCAB     : Level = S5 (VAL Extreme)          | Value = 7894.45    | Low = 7883.00    | Close = 7990.00    | Bounce = +1.36% | Candle = Bearish Spinning Top (Indecision)
+POLYCAB     : Level = S6 (VAL Capitulation)     | Value = 7875.00    | Low = 7883.00    | Close = 7990.00    | Bounce = +1.36% | Candle = Bearish Spinning Top (Indecision)
+LUPIN       : Level = Support (S2)              | Value = 2022.01    | Low = 2004.20    | Close = 2031.20    | Bounce = +1.35% | Candle = Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 2027.0, close 2031.2)
+LUPIN       : Level = S4 (VAL Breakdown Trigger) | Value = 2005.62    | Low = 2004.20    | Close = 2031.20    | Bounce = +1.35% | Candle = Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 2027.0, close 2031.2)
+TRENT       : Level = Target (S5)               | Value = 2576.38    | Low = 2545.80    | Close = 2580.00    | Bounce = +1.34% | Candle = Neutral Candle
+TRENT       : Level = Target (S6)               | Value = 2569.63    | Low = 2545.80    | Close = 2580.00    | Bounce = +1.34% | Candle = Neutral Candle
+WIPRO       : Level = S3 (VAL Reversion)        | Value = 157.20     | Low = 157.25     | Close = 159.35     | Bounce = +1.34% | Candle = Bullish Spinning Top (Indecision)
+AUBANK      : Level = Break Down (S4)           | Value = 999.36     | Low = 974.20     | Close = 987.00     | Bounce = +1.31% | Candle = Neutral Candle
+AUBANK      : Level = Target (S6)               | Value = 990.10     | Low = 974.20     | Close = 987.00     | Bounce = +1.31% | Candle = Neutral Candle
+CONCOR      : Level = Support (S2)              | Value = 445.80     | Low = 436.35     | Close = 442.00     | Bounce = +1.29% | Candle = Three Black Crows (Bearish Initiation) | Double Top Breakdown
+CONCOR      : Level = Break Down (S4)           | Value = 442.38     | Low = 436.35     | Close = 442.00     | Bounce = +1.29% | Candle = Three Black Crows (Bearish Initiation) | Double Top Breakdown
+ADANIPORTS  : Level = Support (S2)              | Value = 1793.20    | Low = 1716.00    | Close = 1737.80    | Bounce = +1.27% | Candle = Neutral Candle
+ADANIPORTS  : Level = Buy Reversal (S3)         | Value = 1790.65    | Low = 1716.00    | Close = 1737.80    | Bounce = +1.27% | Candle = Neutral Candle
+ADANIPORTS  : Level = Break Down (S4)           | Value = 1783.01    | Low = 1716.00    | Close = 1737.80    | Bounce = +1.27% | Candle = Neutral Candle
+TATACONSUM  : Level = S3 (VAL Reversion)        | Value = 944.38     | Low = 945.00     | Close = 957.00     | Bounce = +1.27% | Candle = SSL Sweep Reversal (Low swept 949.5, close 957.0)
+ASIANPAINT  : Level = Support (S2)              | Value = 2395.17    | Low = 2377.00    | Close = 2407.00    | Bounce = +1.26% | Candle = SSL Sweep Reversal (Low swept 2390.0, close 2407.0)
+ASIANPAINT  : Level = Buy Reversal (S3)         | Value = 2391.46    | Low = 2377.00    | Close = 2407.00    | Bounce = +1.26% | Candle = SSL Sweep Reversal (Low swept 2390.0, close 2407.0)
+ASIANPAINT  : Level = S4 (VAL Breakdown Trigger) | Value = 2380.32    | Low = 2377.00    | Close = 2407.00    | Bounce = +1.26% | Candle = SSL Sweep Reversal (Low swept 2390.0, close 2407.0)
+VOLTAS      : Level = Break Down (S4)           | Value = 1052.51    | Low = 1040.60    | Close = 1053.20    | Bounce = +1.21% | Candle = Double Top Breakdown
+BPCL        : Level = Support (S2)              | Value = 301.89     | Low = 297.10     | Close = 300.60     | Bounce = +1.18% | Candle = Bearish Spinning Top (Indecision)
+BPCL        : Level = Buy Reversal (S3)         | Value = 301.23     | Low = 297.10     | Close = 300.60     | Bounce = +1.18% | Candle = Bearish Spinning Top (Indecision)
+BPCL        : Level = Break Down (S4)           | Value = 299.27     | Low = 297.10     | Close = 300.60     | Bounce = +1.18% | Candle = Bearish Spinning Top (Indecision)
+BPCL        : Level = S5 (VAL Extreme)          | Value = 296.97     | Low = 297.10     | Close = 300.60     | Bounce = +1.18% | Candle = Bearish Spinning Top (Indecision)
+BEL         : Level = Break Down (S4)           | Value = 385.00     | Low = 378.65     | Close = 383.10     | Bounce = +1.18% | Candle = Neutral Candle
+BEL         : Level = Target (S5)               | Value = 383.07     | Low = 378.65     | Close = 383.10     | Bounce = +1.18% | Candle = Neutral Candle
+BEL         : Level = Target (S6)               | Value = 382.25     | Low = 378.65     | Close = 383.10     | Bounce = +1.18% | Candle = Neutral Candle
+BAJFINANCE  : Level = Buy Reversal (S3)         | Value = 952.33     | Low = 937.30     | Close = 948.30     | Bounce = +1.17% | Candle = Neutral Candle
+BAJFINANCE  : Level = Break Down (S4)           | Value = 945.26     | Low = 937.30     | Close = 948.30     | Bounce = +1.17% | Candle = Neutral Candle
+BAJFINANCE  : Level = S5 (VAL Extreme)          | Value = 937.01     | Low = 937.30     | Close = 948.30     | Bounce = +1.17% | Candle = Neutral Candle
+EICHERMOT   : Level = Support (S2)              | Value = 7127.08    | Low = 6840.00    | Close = 6920.00    | Bounce = +1.17% | Candle = Neutral Candle
+UPL         : Level = Support (S2)              | Value = 537.98     | Low = 511.20     | Close = 516.80     | Bounce = +1.10% | Candle = Double Top Breakdown
+UPL         : Level = Buy Reversal (S3)         | Value = 537.10     | Low = 511.20     | Close = 516.80     | Bounce = +1.10% | Candle = Double Top Breakdown
+TATAPOWER   : Level = Buy Reversal (S3)         | Value = 357.49     | Low = 346.40     | Close = 350.15     | Bounce = +1.08% | Candle = Neutral Candle
+IDFCFIRSTB  : Level = Buy Reversal (S3)         | Value = 80.72      | Low = 79.53      | Close = 80.39      | Bounce = +1.08% | Candle = Neutral Candle
+IDFCFIRSTB  : Level = Break Down (S4)           | Value = 80.00      | Low = 79.53      | Close = 80.39      | Bounce = +1.08% | Candle = Neutral Candle
+CHOLAFIN    : Level = Support (S2)              | Value = 1612.30    | Low = 1563.20    | Close = 1580.00    | Bounce = +1.07% | Candle = Neutral Candle
+CHOLAFIN    : Level = Buy Reversal (S3)         | Value = 1608.45    | Low = 1563.20    | Close = 1580.00    | Bounce = +1.07% | Candle = Neutral Candle
+CHOLAFIN    : Level = Target (S5)               | Value = 1583.41    | Low = 1563.20    | Close = 1580.00    | Bounce = +1.07% | Candle = Neutral Candle
+CHOLAFIN    : Level = Target (S6)               | Value = 1577.48    | Low = 1563.20    | Close = 1580.00    | Bounce = +1.07% | Candle = Neutral Candle
+INDIGO      : Level = Buy Reversal (S3)         | Value = 4948.80    | Low = 4878.00    | Close = 4929.90    | Bounce = +1.06% | Candle = Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 4893.5, close 4929.9)
+INDIGO      : Level = Break Down (S4)           | Value = 4913.60    | Low = 4878.00    | Close = 4929.90    | Bounce = +1.06% | Candle = Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 4893.5, close 4929.9)
+INDIGO      : Level = S5 (VAL Extreme)          | Value = 4872.49    | Low = 4878.00    | Close = 4929.90    | Bounce = +1.06% | Candle = Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 4893.5, close 4929.9)
+LT          : Level = Support (S2)              | Value = 3749.64    | Low = 3655.90    | Close = 3693.40    | Bounce = +1.03% | Candle = Double Top Breakdown
+LT          : Level = Buy Reversal (S3)         | Value = 3744.46    | Low = 3655.90    | Close = 3693.40    | Bounce = +1.03% | Candle = Double Top Breakdown
+LT          : Level = Target (S5)               | Value = 3710.78    | Low = 3655.90    | Close = 3693.40    | Bounce = +1.03% | Candle = Double Top Breakdown
+LT          : Level = Target (S6)               | Value = 3703.05    | Low = 3655.90    | Close = 3693.40    | Bounce = +1.03% | Candle = Double Top Breakdown
+BSOFT       : Level = Support (S2)              | Value = 269.79     | Low = 267.05     | Close = 269.75     | Bounce = +1.01% | Candle = Bearish Engulfing (Momentum Shift) | Double Top Breakdown
+BSOFT       : Level = Buy Reversal (S3)         | Value = 268.84     | Low = 267.05     | Close = 269.75     | Bounce = +1.01% | Candle = Bearish Engulfing (Momentum Shift) | Double Top Breakdown
+COALINDIA   : Level = Break Down (S4)           | Value = 420.08     | Low = 416.30     | Close = 420.40     | Bounce = +0.98% | Candle = Bearish Spinning Top (Indecision)
+COALINDIA   : Level = S6 (VAL Capitulation)     | Value = 416.03     | Low = 416.30     | Close = 420.40     | Bounce = +0.98% | Candle = Bearish Spinning Top (Indecision)
+NESTLEIND   : Level = Support (S2)              | Value = 1303.49    | Low = 1295.00    | Close = 1307.70    | Bounce = +0.98% | Candle = Neutral Candle
+SHRIRAMFIN  : Level = Break Down (S4)           | Value = 970.66     | Low = 936.00     | Close = 945.00     | Bounce = +0.96% | Candle = Neutral Candle
+DRREDDY     : Level = Support (S2)              | Value = 1227.43    | Low = 1194.90    | Close = 1206.20    | Bounce = +0.95% | Candle = Neutral Candle
+DRREDDY     : Level = Buy Reversal (S3)         | Value = 1224.64    | Low = 1194.90    | Close = 1206.20    | Bounce = +0.95% | Candle = Neutral Candle
+DRREDDY     : Level = Break Down (S4)           | Value = 1216.28    | Low = 1194.90    | Close = 1206.20    | Bounce = +0.95% | Candle = Neutral Candle
+DRREDDY     : Level = Target (S5)               | Value = 1206.52    | Low = 1194.90    | Close = 1206.20    | Bounce = +0.95% | Candle = Neutral Candle
+DRREDDY     : Level = Target (S6)               | Value = 1202.13    | Low = 1194.90    | Close = 1206.20    | Bounce = +0.95% | Candle = Neutral Candle
+ULTRACEMCO  : Level = Target (S5)               | Value = 10807.02   | Low = 10612.00   | Close = 10710.00   | Bounce = +0.92% | Candle = Neutral Candle
+NIFTY       : Level = Break Down (S4)           | Value = 22502.67   | Low = 22217.30   | Close = 22421.95   | Bounce = +0.92% | Candle = Double Top Breakdown
+NIFTY       : Level = Target (S5)               | Value = 22433.88   | Low = 22217.30   | Close = 22421.95   | Bounce = +0.92% | Candle = Double Top Breakdown
+NIFTY       : Level = Target (S6)               | Value = 22406.06   | Low = 22217.30   | Close = 22421.95   | Bounce = +0.92% | Candle = Double Top Breakdown
+HAL         : Level = Break Down (S4)           | Value = 4620.53    | Low = 4559.30    | Close = 4601.00    | Bounce = +0.91% | Candle = Tweezer Top (Double Rejection)
+HAL         : Level = Target (S5)               | Value = 4592.82    | Low = 4559.30    | Close = 4601.00    | Bounce = +0.91% | Candle = Tweezer Top (Double Rejection)
+HAL         : Level = Target (S6)               | Value = 4580.70    | Low = 4559.30    | Close = 4601.00    | Bounce = +0.91% | Candle = Tweezer Top (Double Rejection)
+SBIN        : Level = Support (S2)              | Value = 957.06     | Low = 945.80     | Close = 954.10     | Bounce = +0.88% | Candle = Long-Legged Doji (Indecision)
+SBIN        : Level = Buy Reversal (S3)         | Value = 955.84     | Low = 945.80     | Close = 954.10     | Bounce = +0.88% | Candle = Long-Legged Doji (Indecision)
+SBIN        : Level = Break Down (S4)           | Value = 952.19     | Low = 945.80     | Close = 954.10     | Bounce = +0.88% | Candle = Long-Legged Doji (Indecision)
+SBIN        : Level = S6 (VAL Capitulation)     | Value = 946.20     | Low = 945.80     | Close = 954.10     | Bounce = +0.88% | Candle = Long-Legged Doji (Indecision)
+POWERGRID   : Level = Support (S2)              | Value = 259.79     | Low = 252.35     | Close = 254.55     | Bounce = +0.87% | Candle = Double Top Breakdown
+POWERGRID   : Level = Buy Reversal (S3)         | Value = 259.43     | Low = 252.35     | Close = 254.55     | Bounce = +0.87% | Candle = Double Top Breakdown
+POWERGRID   : Level = Break Down (S4)           | Value = 258.36     | Low = 252.35     | Close = 254.55     | Bounce = +0.87% | Candle = Double Top Breakdown
+BHARTIARTL  : Level = Break Down (S4)           | Value = 1742.81    | Low = 1726.30    | Close = 1741.10    | Bounce = +0.86% | Candle = Bearish Spinning Top (Indecision)
+BHARTIARTL  : Level = Target (S5)               | Value = 1734.52    | Low = 1726.30    | Close = 1741.10    | Bounce = +0.86% | Candle = Bearish Spinning Top (Indecision)
+ONGC        : Level = Support (S2)              | Value = 224.34     | Low = 220.60     | Close = 222.37     | Bounce = +0.80% | Candle = Double Top Breakdown
+ONGC        : Level = Buy Reversal (S3)         | Value = 223.61     | Low = 220.60     | Close = 222.37     | Bounce = +0.80% | Candle = Double Top Breakdown
+ONGC        : Level = Break Down (S4)           | Value = 221.42     | Low = 220.60     | Close = 222.37     | Bounce = +0.80% | Candle = Double Top Breakdown
+CIPLA       : Level = Support (S2)              | Value = 1339.03    | Low = 1333.40    | Close = 1344.00    | Bounce = +0.79% | Candle = Bearish Spinning Top (Indecision) | Three Black Crows (Bearish Initiation) | Double Top Breakdown
+MUTHOOTFIN  : Level = Target (S5)               | Value = 2696.33    | Low = 2676.90    | Close = 2697.10    | Bounce = +0.75% | Candle = Neutral Candle
+MUTHOOTFIN  : Level = Target (S6)               | Value = 2690.30    | Low = 2676.90    | Close = 2697.10    | Bounce = +0.75% | Candle = Neutral Candle
+INDUSINDBK  : Level = Target (S5)               | Value = 886.50     | Low = 880.30     | Close = 886.85     | Bounce = +0.74% | Candle = SSL Sweep Reversal (Low swept 885.0, close 886.9)
+INDUSINDBK  : Level = Target (S6)               | Value = 883.98     | Low = 880.30     | Close = 886.85     | Bounce = +0.74% | Candle = SSL Sweep Reversal (Low swept 885.0, close 886.9)
+PETRONET    : Level = S3 (VAL Reversion)        | Value = 283.15     | Low = 283.45     | Close = 285.50     | Bounce = +0.72% | Candle = Bullish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 284.0, close 285.5)
+BANKNIFTY   : Level = Support (S2)              | Value = 54456.83   | Low = 54066.60   | Close = 54450.75   | Bounce = +0.71% | Candle = Bearish Spinning Top (Indecision) | SSL Sweep Reversal (Low swept 54174.3, close 54450.8) | Double Top Breakdown
+BANKNIFTY   : Level = Buy Reversal (S3)         | Value = 54368.72   | Low = 54066.60   | Close = 54450.75   | Bounce = +0.71% | Candle = Bearish Spinning Top (Indecision) | SSL Sweep Reversal (Low swept 54174.3, close 54450.8) | Double Top Breakdown
+BANKNIFTY   : Level = S4 (VAL Breakdown Trigger) | Value = 54104.39   | Low = 54066.60   | Close = 54450.75   | Bounce = +0.71% | Candle = Bearish Spinning Top (Indecision) | SSL Sweep Reversal (Low swept 54174.3, close 54450.8) | Double Top Breakdown
+NTPC        : Level = Support (S2)              | Value = 321.82     | Low = 313.05     | Close = 315.10     | Bounce = +0.65% | Candle = Evening Star (Bearish Reversal)
+NTPC        : Level = Buy Reversal (S3)         | Value = 321.36     | Low = 313.05     | Close = 315.10     | Bounce = +0.65% | Candle = Evening Star (Bearish Reversal)
+NTPC        : Level = Break Down (S4)           | Value = 319.97     | Low = 313.05     | Close = 315.10     | Bounce = +0.65% | Candle = Evening Star (Bearish Reversal)
+GRASIM      : Level = Support (S2)              | Value = 3049.82    | Low = 2944.40    | Close = 2962.00    | Bounce = +0.60% | Candle = Double Top Breakdown
+RELIANCE    : Level = Target (S6)               | Value = 1172.13    | Low = 1160.80    | Close = 1167.70    | Bounce = +0.59% | Candle = Neutral Candle
+TITAN       : Level = Break Down (S4)           | Value = 4525.95    | Low = 4491.00    | Close = 4515.70    | Bounce = +0.55% | Candle = Double Top Breakdown
+TITAN       : Level = S5 (VAL Extreme)          | Value = 4490.30    | Low = 4491.00    | Close = 4515.70    | Bounce = +0.55% | Candle = Double Top Breakdown
+HINDUNILVR  : Level = Break Down (S4)           | Value = 1865.68    | Low = 1826.90    | Close = 1836.00    | Bounce = +0.50% | Candle = Double Top Breakdown
+PIDILITIND  : Level = Support (S2)              | Value = 1459.27    | Low = 1456.80    | Close = 1464.00    | Bounce = +0.49% | Candle = Three Black Crows (Bearish Initiation)
+PIDILITIND  : Level = S3 (VAL Reversion)        | Value = 1456.35    | Low = 1456.80    | Close = 1464.00    | Bounce = +0.49% | Candle = Three Black Crows (Bearish Initiation)
+SUNPHARMA   : Level = Support (S2)              | Value = 1807.54    | Low = 1792.60    | Close = 1801.00    | Bounce = +0.47% | Candle = Neutral Candle
+SUNPHARMA   : Level = Buy Reversal (S3)         | Value = 1803.01    | Low = 1792.60    | Close = 1801.00    | Bounce = +0.47% | Candle = Neutral Candle
+ZEEL        : Level = Support (S2)              | Value = 74.02      | Low = 71.64      | Close = 71.92      | Bounce = +0.39% | Candle = Bearish Marubozu (Strong Bearish Momentum) | Bearish Engulfing (Momentum Shift)
+ZEEL        : Level = Target (S6)               | Value = 72.01      | Low = 71.64      | Close = 71.92      | Bounce = +0.39% | Candle = Bearish Marubozu (Strong Bearish Momentum) | Bearish Engulfing (Momentum Shift)
+MCX         : Level = Buy Reversal (S3)         | Value = 3275.65    | Low = 3193.60    | Close = 3204.00    | Bounce = +0.33% | Candle = Neutral Candle
+MCX         : Level = Target (S6)               | Value = 3209.14    | Low = 3193.60    | Close = 3204.00    | Bounce = +0.33% | Candle = Neutral Candle
+DABUR       : Level = Target (S5)               | Value = 375.31     | Low = 373.20     | Close = 374.25     | Bounce = +0.28% | Candle = Neutral Candle
+DABUR       : Level = Target (S6)               | Value = 374.59     | Low = 373.20     | Close = 374.25     | Bounce = +0.28% | Candle = Neutral Candle
+ICICIBANK   : Level = Support (S2)              | Value = 1314.06    | Low = 1308.40    | Close = 1310.60    | Bounce = +0.17% | Candle = Neutral Candle
+ICICIBANK   : Level = Buy Reversal (S3)         | Value = 1310.23    | Low = 1308.40    | Close = 1310.60    | Bounce = +0.17% | Candle = Neutral Candle
+ICICIBANK   : Level = S3 (VAL Reversion)        | Value = 1310.23    | Low = 1308.40    | Close = 1310.60    | Bounce = +0.17% | Candle = Neutral Candle
+AXISBANK    : Level = Support (S2)              | Value = 1219.40    | Low = 1215.30    | Close = 1217.10    | Bounce = +0.15% | Candle = Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 1237.1, close 1217.1) | Double Top Breakdown
+AXISBANK    : Level = Buy Reversal (S3)         | Value = 1216.10    | Low = 1215.30    | Close = 1217.10    | Bounce = +0.15% | Candle = Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 1237.1, close 1217.1) | Double Top Breakdown
+AXISBANK    : Level = S3 (VAL Reversion)        | Value = 1216.10    | Low = 1215.30    | Close = 1217.10    | Bounce = +0.15% | Candle = Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 1237.1, close 1217.1) | Double Top Breakdown
+ICICIGI     : Level = Buy Reversal (S3)         | Value = 1568.44    | Low = 1562.60    | Close = 1563.00    | Bounce = +0.03% | Candle = BSL Sweep Reversal (High swept 1590.0, close 1563.0)
+
+4B. RESISTANCE REJECTIONS (Within Proximity):
+-----------------------------------------
+DIXON       : Level = Target (R5)               | Value = 13383.14   | High = 13290.00   | Close = 12700.00   | Rejection = -4.44% | Candle = Three Black Crows (Bearish Initiation)
+DIXON       : Level = R4 (VAH Breakout Trigger) | Value = 13278.75   | High = 13290.00   | Close = 12700.00   | Rejection = -4.44% | Candle = Three Black Crows (Bearish Initiation)
+MARUTI      : Level = Sell reversal (R3)        | Value = 12018.15   | High = 11907.00   | Close = 11386.00   | Rejection = -4.38% | Candle = Neutral Candle
+MARUTI      : Level = Resistance (R2)           | Value = 12001.10   | High = 11907.00   | Close = 11386.00   | Rejection = -4.38% | Candle = Neutral Candle
+LICHSGFIN   : Level = Target (R5)               | Value = 560.52     | High = 531.70     | Close = 509.00     | Rejection = -4.27% | Candle = Three Black Crows (Bearish Initiation)
+KOTAKBANK   : Level = Resistance (R2)           | Value = 419.42     | High = 435.60     | Close = 418.35     | Rejection = -3.96% | Candle = BSL Sweep Reversal (High swept 419.1, close 418.4)
+UPL         : Level = Sell reversal (R3)        | Value = 542.40     | High = 537.65     | Close = 516.80     | Rejection = -3.88% | Candle = Double Top Breakdown
+UPL         : Level = Resistance (R2)           | Value = 541.52     | High = 537.65     | Close = 516.80     | Rejection = -3.88% | Candle = Double Top Breakdown
+MCX         : Level = Sell reversal (R3)        | Value = 3325.15    | High = 3331.30    | Close = 3204.00    | Rejection = -3.82% | Candle = Neutral Candle
+MCX         : Level = Resistance (R2)           | Value = 3316.90    | High = 3331.30    | Close = 3204.00    | Rejection = -3.82% | Candle = Neutral Candle
+ZEEL        : Level = Breakout (R4)             | Value = 75.81      | High = 74.70      | Close = 71.92      | Rejection = -3.72% | Candle = Bearish Marubozu (Strong Bearish Momentum) | Bearish Engulfing (Momentum Shift)
+ZEEL        : Level = Sell reversal (R3)        | Value = 75.14      | High = 74.70      | Close = 71.92      | Rejection = -3.72% | Candle = Bearish Marubozu (Strong Bearish Momentum) | Bearish Engulfing (Momentum Shift)
+ZEEL        : Level = Resistance (R2)           | Value = 74.92      | High = 74.70      | Close = 71.92      | Rejection = -3.72% | Candle = Bearish Marubozu (Strong Bearish Momentum) | Bearish Engulfing (Momentum Shift)
+RECLTD      : Level = Sell reversal (R3)        | Value = 301.41     | High = 298.20     | Close = 287.75     | Rejection = -3.50% | Candle = Double Top Breakdown
+RECLTD      : Level = Resistance (R2)           | Value = 300.60     | High = 298.20     | Close = 287.75     | Rejection = -3.50% | Candle = Double Top Breakdown
+BSOFT       : Level = Breakout (R4)             | Value = 277.42     | High = 278.95     | Close = 269.75     | Rejection = -3.30% | Candle = Bearish Engulfing (Momentum Shift) | Double Top Breakdown
+BSOFT       : Level = Sell reversal (R3)        | Value = 274.56     | High = 278.95     | Close = 269.75     | Rejection = -3.30% | Candle = Bearish Engulfing (Momentum Shift) | Double Top Breakdown
+BSOFT       : Level = Resistance (R2)           | Value = 273.61     | High = 278.95     | Close = 269.75     | Rejection = -3.30% | Candle = Bearish Engulfing (Momentum Shift) | Double Top Breakdown
+EICHERMOT   : Level = Breakout (R4)             | Value = 7218.75    | High = 7146.00    | Close = 6920.00    | Rejection = -3.16% | Candle = Neutral Candle
+EICHERMOT   : Level = Sell reversal (R3)        | Value = 7184.38    | High = 7146.00    | Close = 6920.00    | Rejection = -3.16% | Candle = Neutral Candle
+SHRIRAMFIN  : Level = Resistance (R2)           | Value = 986.72     | High = 975.00     | Close = 945.00     | Rejection = -3.08% | Candle = Neutral Candle
+NMDC        : Level = Target (R5)               | Value = 77.63      | High = 76.97      | Close = 74.64      | Rejection = -3.03% | Candle = Neutral Candle
+NMDC        : Level = Breakout (R4)             | Value = 77.23      | High = 76.97      | Close = 74.64      | Rejection = -3.03% | Candle = Neutral Candle
+NMDC        : Level = R3 (VAH Reversion)        | Value = 76.88      | High = 76.97      | Close = 74.64      | Rejection = -3.03% | Candle = Neutral Candle
+ADANIENT    : Level = Breakout (R4)             | Value = 2946.08    | High = 2903.70    | Close = 2816.80    | Rejection = -2.99% | Candle = Neutral Candle
+ADANIENT    : Level = Sell reversal (R3)        | Value = 2924.74    | High = 2903.70    | Close = 2816.80    | Rejection = -2.99% | Candle = Neutral Candle
+ADANIENT    : Level = Resistance (R2)           | Value = 2917.63    | High = 2903.70    | Close = 2816.80    | Rejection = -2.99% | Candle = Neutral Candle
+JINDALSTEL  : Level = Sell reversal (R3)        | Value = 1140.32    | High = 1132.70    | Close = 1100.50    | Rejection = -2.84% | Candle = Neutral Candle
+JINDALSTEL  : Level = Resistance (R2)           | Value = 1138.51    | High = 1132.70    | Close = 1100.50    | Rejection = -2.84% | Candle = Neutral Candle
+MANAPPURAM  : Level = Breakout (R4)             | Value = 321.19     | High = 317.45     | Close = 308.90     | Rejection = -2.69% | Candle = Evening Star (Bearish Reversal) | Double Top Breakdown
+MANAPPURAM  : Level = Sell reversal (R3)        | Value = 318.52     | High = 317.45     | Close = 308.90     | Rejection = -2.69% | Candle = Evening Star (Bearish Reversal) | Double Top Breakdown
+MANAPPURAM  : Level = Resistance (R2)           | Value = 317.63     | High = 317.45     | Close = 308.90     | Rejection = -2.69% | Candle = Evening Star (Bearish Reversal) | Double Top Breakdown
+IRCTC       : Level = Breakout (R4)             | Value = 463.54     | High = 466.25     | Close = 454.10     | Rejection = -2.61% | Candle = Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 452.6, close 454.1)
+IRCTC       : Level = Sell reversal (R3)        | Value = 459.47     | High = 466.25     | Close = 454.10     | Rejection = -2.61% | Candle = Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 452.6, close 454.1)
+IRCTC       : Level = Resistance (R2)           | Value = 458.11     | High = 466.25     | Close = 454.10     | Rejection = -2.61% | Candle = Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 452.6, close 454.1)
+PFC         : Level = Target (R5)               | Value = 332.03     | High = 326.50     | Close = 318.00     | Rejection = -2.60% | Candle = Neutral Candle
+PFC         : Level = Breakout (R4)             | Value = 329.63     | High = 326.50     | Close = 318.00     | Rejection = -2.60% | Candle = Neutral Candle
+PFC         : Level = Sell reversal (R3)        | Value = 327.56     | High = 326.50     | Close = 318.00     | Rejection = -2.60% | Candle = Neutral Candle
+PFC         : Level = Resistance (R2)           | Value = 326.88     | High = 326.50     | Close = 318.00     | Rejection = -2.60% | Candle = Neutral Candle
+DABUR       : Level = Breakout (R4)             | Value = 383.13     | High = 383.85     | Close = 374.25     | Rejection = -2.50% | Candle = Neutral Candle
+DABUR       : Level = Sell reversal (R3)        | Value = 381.61     | High = 383.85     | Close = 374.25     | Rejection = -2.50% | Candle = Neutral Candle
+DABUR       : Level = Resistance (R2)           | Value = 381.11     | High = 383.85     | Close = 374.25     | Rejection = -2.50% | Candle = Neutral Candle
+MUTHOOTFIN  : Level = Target (R5)               | Value = 2777.87    | High = 2765.60    | Close = 2697.10    | Rejection = -2.48% | Candle = Neutral Candle
+MUTHOOTFIN  : Level = Breakout (R4)             | Value = 2762.84    | High = 2765.60    | Close = 2697.10    | Rejection = -2.48% | Candle = Neutral Candle
+MUTHOOTFIN  : Level = Sell reversal (R3)        | Value = 2749.97    | High = 2765.60    | Close = 2697.10    | Rejection = -2.48% | Candle = Neutral Candle
+MUTHOOTFIN  : Level = R4 (VAH Breakout Trigger) | Value = 2762.84    | High = 2765.60    | Close = 2697.10    | Rejection = -2.48% | Candle = Neutral Candle
+VOLTAS      : Level = Target (R5)               | Value = 1097.70    | High = 1078.60    | Close = 1053.20    | Rejection = -2.35% | Candle = Double Top Breakdown
+VOLTAS      : Level = R3 (VAH Reversion)        | Value = 1078.74    | High = 1078.60    | Close = 1053.20    | Rejection = -2.35% | Candle = Double Top Breakdown
+HEROMOTOCO  : Level = Target (R5)               | Value = 5332.04    | High = 5290.00    | Close = 5168.00    | Rejection = -2.31% | Candle = Neutral Candle
+HEROMOTOCO  : Level = Breakout (R4)             | Value = 5298.48    | High = 5290.00    | Close = 5168.00    | Rejection = -2.31% | Candle = Neutral Candle
+HEROMOTOCO  : Level = Sell reversal (R3)        | Value = 5269.74    | High = 5290.00    | Close = 5168.00    | Rejection = -2.31% | Candle = Neutral Candle
+HEROMOTOCO  : Level = Resistance (R2)           | Value = 5260.16    | High = 5290.00    | Close = 5168.00    | Rejection = -2.31% | Candle = Neutral Candle
+M&M         : Level = Breakout (R4)             | Value = 2983.55    | High = 2927.40    | Close = 2860.00    | Rejection = -2.30% | Candle = Neutral Candle
+M&M         : Level = Sell reversal (R3)        | Value = 2966.78    | High = 2927.40    | Close = 2860.00    | Rejection = -2.30% | Candle = Neutral Candle
+M&M         : Level = Resistance (R2)           | Value = 2961.18    | High = 2927.40    | Close = 2860.00    | Rejection = -2.30% | Candle = Neutral Candle
+TITAN       : Level = Target (R5)               | Value = 4683.70    | High = 4621.80    | Close = 4515.70    | Rejection = -2.30% | Candle = Double Top Breakdown
+TITAN       : Level = R3 (VAH Reversion)        | Value = 4617.52    | High = 4621.80    | Close = 4515.70    | Rejection = -2.30% | Candle = Double Top Breakdown
+GODREJPROP  : Level = Breakout (R4)             | Value = 1648.41    | High = 1632.90    | Close = 1595.80    | Rejection = -2.27% | Candle = Double Top Breakdown
+OFSS        : Level = Breakout (R4)             | Value = 10832.95   | High = 10661.00   | Close = 10420.00   | Rejection = -2.26% | Candle = Neutral Candle
+OFSS        : Level = Sell reversal (R3)        | Value = 10731.48   | High = 10661.00   | Close = 10420.00   | Rejection = -2.26% | Candle = Neutral Candle
+OFSS        : Level = Resistance (R2)           | Value = 10697.65   | High = 10661.00   | Close = 10420.00   | Rejection = -2.26% | Candle = Neutral Candle
+INDUSTOWER  : Level = Breakout (R4)             | Value = 377.30     | High = 384.70     | Close = 376.25     | Rejection = -2.20% | Candle = Neutral Candle
+INDUSTOWER  : Level = Sell reversal (R3)        | Value = 375.25     | High = 384.70     | Close = 376.25     | Rejection = -2.20% | Candle = Neutral Candle
+INDUSTOWER  : Level = Resistance (R2)           | Value = 374.57     | High = 384.70     | Close = 376.25     | Rejection = -2.20% | Candle = Neutral Candle
+AUBANK      : Level = Resistance (R2)           | Value = 1013.95    | High = 1009.00    | Close = 987.00     | Rejection = -2.18% | Candle = Neutral Candle
+HAL         : Level = Sell reversal (R3)        | Value = 4691.73    | High = 4699.70    | Close = 4601.00    | Rejection = -2.10% | Candle = Tweezer Top (Double Rejection)
+HAL         : Level = Resistance (R2)           | Value = 4683.82    | High = 4699.70    | Close = 4601.00    | Rejection = -2.10% | Candle = Tweezer Top (Double Rejection)
+IOC         : Level = Sell reversal (R3)        | Value = 135.71     | High = 134.10     | Close = 131.34     | Rejection = -2.06% | Candle = Bearish Marubozu (Strong Bearish Momentum)
+IOC         : Level = Resistance (R2)           | Value = 135.45     | High = 134.10     | Close = 131.34     | Rejection = -2.06% | Candle = Bearish Marubozu (Strong Bearish Momentum)
+METROPOLIS  : Level = R3 (VAH Reversion)        | Value = 548.47     | High = 549.00     | Close = 537.90     | Rejection = -2.02% | Candle = Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 536.6, close 537.9) | Double Top Breakdown
+HINDUNILVR  : Level = Sell reversal (R3)        | Value = 1885.81    | High = 1873.60    | Close = 1836.00    | Rejection = -2.01% | Candle = Double Top Breakdown
+HINDUNILVR  : Level = Resistance (R2)           | Value = 1883.57    | High = 1873.60    | Close = 1836.00    | Rejection = -2.01% | Candle = Double Top Breakdown
+AXISBANK    : Level = Sell reversal (R3)        | Value = 1235.90    | High = 1241.60    | Close = 1217.10    | Rejection = -1.97% | Candle = Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 1237.1, close 1217.1) | Double Top Breakdown
+AXISBANK    : Level = Resistance (R2)           | Value = 1232.60    | High = 1241.60    | Close = 1217.10    | Rejection = -1.97% | Candle = Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 1237.1, close 1217.1) | Double Top Breakdown
+CONCOR      : Level = Breakout (R4)             | Value = 452.62     | High = 450.85     | Close = 442.00     | Rejection = -1.96% | Candle = Three Black Crows (Bearish Initiation) | Double Top Breakdown
+CONCOR      : Level = Sell reversal (R3)        | Value = 450.06     | High = 450.85     | Close = 442.00     | Rejection = -1.96% | Candle = Three Black Crows (Bearish Initiation) | Double Top Breakdown
+CONCOR      : Level = Resistance (R2)           | Value = 449.20     | High = 450.85     | Close = 442.00     | Rejection = -1.96% | Candle = Three Black Crows (Bearish Initiation) | Double Top Breakdown
+TATAPOWER   : Level = Breakout (R4)             | Value = 362.02     | High = 357.15     | Close = 350.15     | Rejection = -1.96% | Candle = Neutral Candle
+TATAPOWER   : Level = Sell reversal (R3)        | Value = 360.51     | High = 357.15     | Close = 350.15     | Rejection = -1.96% | Candle = Neutral Candle
+TATAPOWER   : Level = Resistance (R2)           | Value = 360.01     | High = 357.15     | Close = 350.15     | Rejection = -1.96% | Candle = Neutral Candle
+JSWSTEEL    : Level = Target (R5)               | Value = 1273.00    | High = 1256.40    | Close = 1233.00    | Rejection = -1.86% | Candle = Neutral Candle
+NTPC        : Level = Resistance (R2)           | Value = 323.68     | High = 320.95     | Close = 315.10     | Rejection = -1.82% | Candle = Evening Star (Bearish Reversal)
+NAUKRI      : Level = Breakout (R4)             | Value = 1242.33    | High = 1221.20    | Close = 1200.00    | Rejection = -1.74% | Candle = Neutral Candle
+POLYCAB     : Level = Target (R6)               | Value = 8177.00    | High = 8131.00    | Close = 7990.00    | Rejection = -1.73% | Candle = Bearish Spinning Top (Indecision)
+POLYCAB     : Level = Target (R5)               | Value = 8157.55    | High = 8131.00    | Close = 7990.00    | Rejection = -1.73% | Candle = Bearish Spinning Top (Indecision)
+POLYCAB     : Level = Breakout (R4)             | Value = 8109.05    | High = 8131.00    | Close = 7990.00    | Rejection = -1.73% | Candle = Bearish Spinning Top (Indecision)
+INDIGO      : Level = Sell reversal (R3)        | Value = 5019.20    | High = 5016.20    | Close = 4929.90    | Rejection = -1.72% | Candle = Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 4893.5, close 4929.9)
+INDIGO      : Level = Resistance (R2)           | Value = 5007.47    | High = 5016.20    | Close = 4929.90    | Rejection = -1.72% | Candle = Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 4893.5, close 4929.9)
+INDIGO      : Level = R3 (VAH Reversion)        | Value = 5019.20    | High = 5016.20    | Close = 4929.90    | Rejection = -1.72% | Candle = Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 4893.5, close 4929.9)
+POWERGRID   : Level = Sell reversal (R3)        | Value = 261.57     | High = 259.00     | Close = 254.55     | Rejection = -1.72% | Candle = Double Top Breakdown
+TRENT       : Level = Target (R5)               | Value = 2666.82    | High = 2624.00    | Close = 2580.00    | Rejection = -1.68% | Candle = Neutral Candle
+BHEL        : Level = Breakout (R4)             | Value = 421.06     | High = 428.15     | Close = 421.00     | Rejection = -1.67% | Candle = SSL Sweep Reversal (Low swept 411.7, close 421.0)
+BHEL        : Level = Sell reversal (R3)        | Value = 418.28     | High = 428.15     | Close = 421.00     | Rejection = -1.67% | Candle = SSL Sweep Reversal (Low swept 411.7, close 421.0)
+BHEL        : Level = Resistance (R2)           | Value = 417.35     | High = 428.15     | Close = 421.00     | Rejection = -1.67% | Candle = SSL Sweep Reversal (Low swept 411.7, close 421.0)
+PIDILITIND  : Level = Target (R6)               | Value = 1496.90    | High = 1486.90    | Close = 1464.00    | Rejection = -1.54% | Candle = Three Black Crows (Bearish Initiation)
+PIDILITIND  : Level = Target (R5)               | Value = 1492.80    | High = 1486.90    | Close = 1464.00    | Rejection = -1.54% | Candle = Three Black Crows (Bearish Initiation)
+PIDILITIND  : Level = Breakout (R4)             | Value = 1482.59    | High = 1486.90    | Close = 1464.00    | Rejection = -1.54% | Candle = Three Black Crows (Bearish Initiation)
+PIDILITIND  : Level = Resistance (R2)           | Value = 1470.93    | High = 1486.90    | Close = 1464.00    | Rejection = -1.54% | Candle = Three Black Crows (Bearish Initiation)
+SUNPHARMA   : Level = R3 (VAH Reversion)        | Value = 1830.18    | High = 1828.70    | Close = 1801.00    | Rejection = -1.51% | Candle = Neutral Candle
+CANBK       : Level = Target (R5)               | Value = 121.22     | High = 120.13     | Close = 118.36     | Rejection = -1.47% | Candle = Three Black Crows (Bearish Initiation) | Double Top Breakdown
+CANBK       : Level = Breakout (R4)             | Value = 120.56     | High = 120.13     | Close = 118.36     | Rejection = -1.47% | Candle = Three Black Crows (Bearish Initiation) | Double Top Breakdown
+CANBK       : Level = Sell reversal (R3)        | Value = 120.00     | High = 120.13     | Close = 118.36     | Rejection = -1.47% | Candle = Three Black Crows (Bearish Initiation) | Double Top Breakdown
+CANBK       : Level = Resistance (R2)           | Value = 119.81     | High = 120.13     | Close = 118.36     | Rejection = -1.47% | Candle = Three Black Crows (Bearish Initiation) | Double Top Breakdown
+CANBK       : Level = R3 (VAH Reversion)        | Value = 120.00     | High = 120.13     | Close = 118.36     | Rejection = -1.47% | Candle = Three Black Crows (Bearish Initiation) | Double Top Breakdown
+BPCL        : Level = Breakout (R4)             | Value = 307.13     | High = 305.05     | Close = 300.60     | Rejection = -1.46% | Candle = Bearish Spinning Top (Indecision)
+BPCL        : Level = Sell reversal (R3)        | Value = 305.17     | High = 305.05     | Close = 300.60     | Rejection = -1.46% | Candle = Bearish Spinning Top (Indecision)
+BPCL        : Level = Resistance (R2)           | Value = 304.51     | High = 305.05     | Close = 300.60     | Rejection = -1.46% | Candle = Bearish Spinning Top (Indecision)
+BPCL        : Level = R3 (VAH Reversion)        | Value = 305.17     | High = 305.05     | Close = 300.60     | Rejection = -1.46% | Candle = Bearish Spinning Top (Indecision)
+OBEROIRLTY  : Level = Breakout (R4)             | Value = 1790.34    | High = 1780.50    | Close = 1754.60    | Rejection = -1.45% | Candle = Bearish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 1751.5, close 1754.6)
+OBEROIRLTY  : Level = Sell reversal (R3)        | Value = 1778.02    | High = 1780.50    | Close = 1754.60    | Rejection = -1.45% | Candle = Bearish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 1751.5, close 1754.6)
+OBEROIRLTY  : Level = Resistance (R2)           | Value = 1773.91    | High = 1780.50    | Close = 1754.60    | Rejection = -1.45% | Candle = Bearish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 1751.5, close 1754.6)
+OBEROIRLTY  : Level = R3 (VAH Reversion)        | Value = 1778.02    | High = 1780.50    | Close = 1754.60    | Rejection = -1.45% | Candle = Bearish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 1751.5, close 1754.6)
+ICICIBANK   : Level = Sell reversal (R3)        | Value = 1333.17    | High = 1329.90    | Close = 1310.60    | Rejection = -1.45% | Candle = Neutral Candle
+ICICIBANK   : Level = Resistance (R2)           | Value = 1329.35    | High = 1329.90    | Close = 1310.60    | Rejection = -1.45% | Candle = Neutral Candle
+TECHM       : Level = Breakout (R4)             | Value = 1546.83    | High = 1554.80    | Close = 1533.00    | Rejection = -1.40% | Candle = Bearish Spinning Top (Indecision) | SSL Sweep Reversal (Low swept 1518.0, close 1533.0)
+TECHM       : Level = Sell reversal (R3)        | Value = 1535.41    | High = 1554.80    | Close = 1533.00    | Rejection = -1.40% | Candle = Bearish Spinning Top (Indecision) | SSL Sweep Reversal (Low swept 1518.0, close 1533.0)
+TECHM       : Level = Resistance (R2)           | Value = 1531.61    | High = 1554.80    | Close = 1533.00    | Rejection = -1.40% | Candle = Bearish Spinning Top (Indecision) | SSL Sweep Reversal (Low swept 1518.0, close 1533.0)
+BHARTIARTL  : Level = Target (R5)               | Value = 1779.48    | High = 1765.80    | Close = 1741.10    | Rejection = -1.40% | Candle = Bearish Spinning Top (Indecision)
+BHARTIARTL  : Level = R3 (VAH Reversion)        | Value = 1764.10    | High = 1765.80    | Close = 1741.10    | Rejection = -1.40% | Candle = Bearish Spinning Top (Indecision)
+COALINDIA   : Level = Target (R5)               | Value = 432.80     | High = 426.35     | Close = 420.40     | Rejection = -1.40% | Candle = Bearish Spinning Top (Indecision)
+COALINDIA   : Level = Breakout (R4)             | Value = 429.92     | High = 426.35     | Close = 420.40     | Rejection = -1.40% | Candle = Bearish Spinning Top (Indecision)
+COALINDIA   : Level = Sell reversal (R3)        | Value = 427.46     | High = 426.35     | Close = 420.40     | Rejection = -1.40% | Candle = Bearish Spinning Top (Indecision)
+COALINDIA   : Level = Resistance (R2)           | Value = 426.64     | High = 426.35     | Close = 420.40     | Rejection = -1.40% | Candle = Bearish Spinning Top (Indecision)
+RELIANCE    : Level = Breakout (R4)             | Value = 1195.14    | High = 1183.90    | Close = 1167.70    | Rejection = -1.37% | Candle = Neutral Candle
+RELIANCE    : Level = Sell reversal (R3)        | Value = 1191.07    | High = 1183.90    | Close = 1167.70    | Rejection = -1.37% | Candle = Neutral Candle
+RELIANCE    : Level = Resistance (R2)           | Value = 1189.71    | High = 1183.90    | Close = 1167.70    | Rejection = -1.37% | Candle = Neutral Candle
+BANKBARODA  : Level = Target (R5)               | Value = 235.26     | High = 233.99     | Close = 230.82     | Rejection = -1.35% | Candle = SSL Sweep Reversal (Low swept 230.3, close 230.8) | Double Top Breakdown
+BANKBARODA  : Level = Breakout (R4)             | Value = 233.53     | High = 233.99     | Close = 230.82     | Rejection = -1.35% | Candle = SSL Sweep Reversal (Low swept 230.3, close 230.8) | Double Top Breakdown
+BANKBARODA  : Level = Sell reversal (R3)        | Value = 232.04     | High = 233.99     | Close = 230.82     | Rejection = -1.35% | Candle = SSL Sweep Reversal (Low swept 230.3, close 230.8) | Double Top Breakdown
+BANKBARODA  : Level = Resistance (R2)           | Value = 231.54     | High = 233.99     | Close = 230.82     | Rejection = -1.35% | Candle = SSL Sweep Reversal (Low swept 230.3, close 230.8) | Double Top Breakdown
+PAGEIND     : Level = Breakout (R4)             | Value = 36902.00   | High = 37135.00   | Close = 36660.00   | Rejection = -1.28% | Candle = Bullish Spinning Top (Indecision) | SSL Sweep Reversal (Low swept 36210.0, close 36660.0)
+PAGEIND     : Level = Sell reversal (R3)        | Value = 36643.50   | High = 37135.00   | Close = 36660.00   | Rejection = -1.28% | Candle = Bullish Spinning Top (Indecision) | SSL Sweep Reversal (Low swept 36210.0, close 36660.0)
+PAGEIND     : Level = Resistance (R2)           | Value = 36557.33   | High = 37135.00   | Close = 36660.00   | Rejection = -1.28% | Candle = Bullish Spinning Top (Indecision) | SSL Sweep Reversal (Low swept 36210.0, close 36660.0)
+ESCORTS     : Level = Breakout (R4)             | Value = 2739.01    | High = 2701.00    | Close = 2667.30    | Rejection = -1.25% | Candle = Hammer (Bullish Rejection) | Volume Climax Bullish Rejection (4.9x Vol) | Double Top Breakdown
+ESCORTS     : Level = Sell reversal (R3)        | Value = 2727.11    | High = 2701.00    | Close = 2667.30    | Rejection = -1.25% | Candle = Hammer (Bullish Rejection) | Volume Climax Bullish Rejection (4.9x Vol) | Double Top Breakdown
+ESCORTS     : Level = Resistance (R2)           | Value = 2723.14    | High = 2701.00    | Close = 2667.30    | Rejection = -1.25% | Candle = Hammer (Bullish Rejection) | Volume Climax Bullish Rejection (4.9x Vol) | Double Top Breakdown
+MARICO      : Level = Target (R5)               | Value = 797.54     | High = 791.00     | Close = 781.35     | Rejection = -1.22% | Candle = Double Top Breakdown
+MARICO      : Level = Breakout (R4)             | Value = 793.29     | High = 791.00     | Close = 781.35     | Rejection = -1.22% | Candle = Double Top Breakdown
+IDFCFIRSTB  : Level = Resistance (R2)           | Value = 81.92      | High = 81.38      | Close = 80.39      | Rejection = -1.22% | Candle = Neutral Candle
+LT          : Level = Sell reversal (R3)        | Value = 3775.54    | High = 3737.30    | Close = 3693.40    | Rejection = -1.17% | Candle = Double Top Breakdown
+LT          : Level = Resistance (R2)           | Value = 3770.36    | High = 3737.30    | Close = 3693.40    | Rejection = -1.17% | Candle = Double Top Breakdown
+SBIN        : Level = Target (R5)               | Value = 971.09     | High = 965.40     | Close = 954.10     | Rejection = -1.17% | Candle = Long-Legged Doji (Indecision)
+SBIN        : Level = Breakout (R4)             | Value = 966.81     | High = 965.40     | Close = 954.10     | Rejection = -1.17% | Candle = Long-Legged Doji (Indecision)
+SBIN        : Level = R4 (VAH Breakout Trigger) | Value = 966.81     | High = 965.40     | Close = 954.10     | Rejection = -1.17% | Candle = Long-Legged Doji (Indecision)
+NATIONALUM  : Level = Target (R5)               | Value = 347.92     | High = 338.85     | Close = 334.90     | Rejection = -1.17% | Candle = Long-Legged Doji (Indecision)
+NATIONALUM  : Level = Breakout (R4)             | Value = 345.35     | High = 338.85     | Close = 334.90     | Rejection = -1.17% | Candle = Long-Legged Doji (Indecision)
+BANKNIFTY   : Level = Sell reversal (R3)        | Value = 54897.38   | High = 55091.45   | Close = 54450.75   | Rejection = -1.16% | Candle = Bearish Spinning Top (Indecision) | SSL Sweep Reversal (Low swept 54174.3, close 54450.8) | Double Top Breakdown
+BANKNIFTY   : Level = Resistance (R2)           | Value = 54809.27   | High = 55091.45   | Close = 54450.75   | Rejection = -1.16% | Candle = Bearish Spinning Top (Indecision) | SSL Sweep Reversal (Low swept 54174.3, close 54450.8) | Double Top Breakdown
+BANKNIFTY   : Level = R4 (VAH Breakout Trigger) | Value = 55161.71   | High = 55091.45   | Close = 54450.75   | Rejection = -1.16% | Candle = Bearish Spinning Top (Indecision) | SSL Sweep Reversal (Low swept 54174.3, close 54450.8) | Double Top Breakdown
+BALKRISIND  : Level = Breakout (R4)             | Value = 2144.12    | High = 2108.00    | Close = 2083.50    | Rejection = -1.16% | Candle = Neutral Candle
+BALKRISIND  : Level = Sell reversal (R3)        | Value = 2130.56    | High = 2108.00    | Close = 2083.50    | Rejection = -1.16% | Candle = Neutral Candle
+BALKRISIND  : Level = Resistance (R2)           | Value = 2126.04    | High = 2108.00    | Close = 2083.50    | Rejection = -1.16% | Candle = Neutral Candle
+CIPLA       : Level = Target (R6)               | Value = 1384.00    | High = 1359.40    | Close = 1344.00    | Rejection = -1.13% | Candle = Bearish Spinning Top (Indecision) | Three Black Crows (Bearish Initiation) | Double Top Breakdown
+MGL         : Level = Sell reversal (R3)        | Value = 1065.73    | High = 1056.30    | Close = 1045.40    | Rejection = -1.03% | Candle = SSL Sweep Reversal (Low swept 1039.0, close 1045.4)
+MGL         : Level = Resistance (R2)           | Value = 1063.15    | High = 1056.30    | Close = 1045.40    | Rejection = -1.03% | Candle = SSL Sweep Reversal (Low swept 1039.0, close 1045.4)
+HCLTECH     : Level = Breakout (R4)             | Value = 1247.38    | High = 1256.00    | Close = 1243.10    | Rejection = -1.03% | Candle = Neutral Candle
+HCLTECH     : Level = Sell reversal (R3)        | Value = 1238.69    | High = 1256.00    | Close = 1243.10    | Rejection = -1.03% | Candle = Neutral Candle
+HCLTECH     : Level = Resistance (R2)           | Value = 1235.79    | High = 1256.00    | Close = 1243.10    | Rejection = -1.03% | Candle = Neutral Candle
+HCLTECH     : Level = R5 (VAH Extreme)          | Value = 1257.53    | High = 1256.00    | Close = 1243.10    | Rejection = -1.03% | Candle = Neutral Candle
+NESTLEIND   : Level = Target (R6)               | Value = 1345.50    | High = 1320.90    | Close = 1307.70    | Rejection = -1.00% | Candle = Neutral Candle
+NESTLEIND   : Level = R3 (VAH Reversion)        | Value = 1319.76    | High = 1320.90    | Close = 1307.70    | Rejection = -1.00% | Candle = Neutral Candle
+WIPRO       : Level = Breakout (R4)             | Value = 161.10     | High = 160.95     | Close = 159.35     | Rejection = -0.99% | Candle = Bullish Spinning Top (Indecision)
+WIPRO       : Level = Sell reversal (R3)        | Value = 159.80     | High = 160.95     | Close = 159.35     | Rejection = -0.99% | Candle = Bullish Spinning Top (Indecision)
+WIPRO       : Level = Resistance (R2)           | Value = 159.37     | High = 160.95     | Close = 159.35     | Rejection = -0.99% | Candle = Bullish Spinning Top (Indecision)
+WIPRO       : Level = R4 (VAH Breakout Trigger) | Value = 161.10     | High = 160.95     | Close = 159.35     | Rejection = -0.99% | Candle = Bullish Spinning Top (Indecision)
+FEDERALBNK  : Level = Target (R5)               | Value = 323.37     | High = 321.35     | Close = 318.20     | Rejection = -0.98% | Candle = SSL Sweep Reversal (Low swept 317.4, close 318.2)
+FEDERALBNK  : Level = Breakout (R4)             | Value = 321.17     | High = 321.35     | Close = 318.20     | Rejection = -0.98% | Candle = SSL Sweep Reversal (Low swept 317.4, close 318.2)
+FEDERALBNK  : Level = Sell reversal (R3)        | Value = 319.28     | High = 321.35     | Close = 318.20     | Rejection = -0.98% | Candle = SSL Sweep Reversal (Low swept 317.4, close 318.2)
+FEDERALBNK  : Level = Resistance (R2)           | Value = 318.66     | High = 321.35     | Close = 318.20     | Rejection = -0.98% | Candle = SSL Sweep Reversal (Low swept 317.4, close 318.2)
+FEDERALBNK  : Level = R4 (VAH Breakout Trigger) | Value = 321.17     | High = 321.35     | Close = 318.20     | Rejection = -0.98% | Candle = SSL Sweep Reversal (Low swept 317.4, close 318.2)
+TCS         : Level = Target (R5)               | Value = 2094.51    | High = 2093.90    | Close = 2075.00    | Rejection = -0.90% | Candle = SSL Sweep Reversal (Low swept 2050.6, close 2075.0) | Double Top Breakdown
+TCS         : Level = Breakout (R4)             | Value = 2078.32    | High = 2093.90    | Close = 2075.00    | Rejection = -0.90% | Candle = SSL Sweep Reversal (Low swept 2050.6, close 2075.0) | Double Top Breakdown
+TCS         : Level = R5 (VAH Extreme)          | Value = 2094.51    | High = 2093.90    | Close = 2075.00    | Rejection = -0.90% | Candle = SSL Sweep Reversal (Low swept 2050.6, close 2075.0) | Double Top Breakdown
+TATACOMM    : Level = Target (R6)               | Value = 1684.47    | High = 1697.90    | Close = 1683.00    | Rejection = -0.88% | Candle = SSL Sweep Reversal (Low swept 1640.1, close 1683.0)
+TATACOMM    : Level = Target (R5)               | Value = 1680.59    | High = 1697.90    | Close = 1683.00    | Rejection = -0.88% | Candle = SSL Sweep Reversal (Low swept 1640.1, close 1683.0)
+TATACOMM    : Level = Sell reversal (R3)        | Value = 1663.90    | High = 1697.90    | Close = 1683.00    | Rejection = -0.88% | Candle = SSL Sweep Reversal (Low swept 1640.1, close 1683.0)
+TATACOMM    : Level = Resistance (R2)           | Value = 1661.33    | High = 1697.90    | Close = 1683.00    | Rejection = -0.88% | Candle = SSL Sweep Reversal (Low swept 1640.1, close 1683.0)
+NIFTY       : Level = Target (R5)               | Value = 22807.02   | High = 22610.60   | Close = 22421.95   | Rejection = -0.83% | Candle = Double Top Breakdown
+NIFTY       : Level = Breakout (R4)             | Value = 22738.23   | High = 22610.60   | Close = 22421.95   | Rejection = -0.83% | Candle = Double Top Breakdown
+NIFTY       : Level = Sell reversal (R3)        | Value = 22679.34   | High = 22610.60   | Close = 22421.95   | Rejection = -0.83% | Candle = Double Top Breakdown
+TATACONSUM  : Level = Breakout (R4)             | Value = 959.73     | High = 964.80     | Close = 957.00     | Rejection = -0.81% | Candle = SSL Sweep Reversal (Low swept 949.5, close 957.0)
+TATACONSUM  : Level = Sell reversal (R3)        | Value = 954.62     | High = 964.80     | Close = 957.00     | Rejection = -0.81% | Candle = SSL Sweep Reversal (Low swept 949.5, close 957.0)
+TATACONSUM  : Level = Resistance (R2)           | Value = 952.91     | High = 964.80     | Close = 957.00     | Rejection = -0.81% | Candle = SSL Sweep Reversal (Low swept 949.5, close 957.0)
+TATACONSUM  : Level = R5 (VAH Extreme)          | Value = 965.70     | High = 964.80     | Close = 957.00     | Rejection = -0.81% | Candle = SSL Sweep Reversal (Low swept 949.5, close 957.0)
+MFSL        : Level = Sell reversal (R3)        | Value = 1387.37    | High = 1403.10    | Close = 1392.00    | Rejection = -0.79% | Candle = Bullish Engulfing (Momentum Shift) | BSL Sweep Reversal (High swept 1395.1, close 1392.0) | Double Top Breakdown
+MFSL        : Level = R4 (VAH Breakout Trigger) | Value = 1401.34    | High = 1403.10    | Close = 1392.00    | Rejection = -0.79% | Candle = Bullish Engulfing (Momentum Shift) | BSL Sweep Reversal (High swept 1395.1, close 1392.0) | Double Top Breakdown
+BEL         : Level = Sell reversal (R3)        | Value = 389.95     | High = 386.15     | Close = 383.10     | Rejection = -0.79% | Candle = Neutral Candle
+BEL         : Level = Resistance (R2)           | Value = 389.40     | High = 386.15     | Close = 383.10     | Rejection = -0.79% | Candle = Neutral Candle
+PETRONET    : Level = Target (R5)               | Value = 288.77     | High = 287.50     | Close = 285.50     | Rejection = -0.70% | Candle = Bullish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 284.0, close 285.5)
+PETRONET    : Level = Breakout (R4)             | Value = 287.19     | High = 287.50     | Close = 285.50     | Rejection = -0.70% | Candle = Bullish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 284.0, close 285.5)
+PETRONET    : Level = Sell reversal (R3)        | Value = 285.85     | High = 287.50     | Close = 285.50     | Rejection = -0.70% | Candle = Bullish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 284.0, close 285.5)
+PETRONET    : Level = Resistance (R2)           | Value = 285.40     | High = 287.50     | Close = 285.50     | Rejection = -0.70% | Candle = Bullish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 284.0, close 285.5)
+PETRONET    : Level = R4 (VAH Breakout Trigger) | Value = 287.19     | High = 287.50     | Close = 285.50     | Rejection = -0.70% | Candle = Bullish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 284.0, close 285.5)
+TATAMOTORS  : Level = Sell reversal (R3)        | Value = 285.41     | High = 281.30     | Close = 279.40     | Rejection = -0.68% | Candle = Double Top Breakdown
+TATAMOTORS  : Level = Resistance (R2)           | Value = 284.77     | High = 281.30     | Close = 279.40     | Rejection = -0.68% | Candle = Double Top Breakdown
+LUPIN       : Level = Target (R5)               | Value = 2069.14    | High = 2044.10    | Close = 2031.20    | Rejection = -0.63% | Candle = Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 2027.0, close 2031.2)
+LUPIN       : Level = Resistance (R2)           | Value = 2038.39    | High = 2044.10    | Close = 2031.20    | Rejection = -0.63% | Candle = Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 2027.0, close 2031.2)
+LUPIN       : Level = R3 (VAH Reversion)        | Value = 2042.49    | High = 2044.10    | Close = 2031.20    | Rejection = -0.63% | Candle = Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 2027.0, close 2031.2)
+ICICIPRULI  : Level = Breakout (R4)             | Value = 447.98     | High = 450.55     | Close = 448.05     | Rejection = -0.55% | Candle = Bullish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 442.4, close 448.1)
+ICICIPRULI  : Level = Sell reversal (R3)        | Value = 445.89     | High = 450.55     | Close = 448.05     | Rejection = -0.55% | Candle = Bullish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 442.4, close 448.1)
+ICICIPRULI  : Level = R5 (VAH Extreme)          | Value = 450.42     | High = 450.55     | Close = 448.05     | Rejection = -0.55% | Candle = Bullish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 442.4, close 448.1)
+PERSISTENT  : Level = Breakout (R4)             | Value = 5387.35    | High = 5396.00    | Close = 5367.00    | Rejection = -0.54% | Candle = Neutral Candle
+PERSISTENT  : Level = Sell reversal (R3)        | Value = 5333.18    | High = 5396.00    | Close = 5367.00    | Rejection = -0.54% | Candle = Neutral Candle
+PERSISTENT  : Level = Resistance (R2)           | Value = 5315.12    | High = 5396.00    | Close = 5367.00    | Rejection = -0.54% | Candle = Neutral Candle
+ASIANPAINT  : Level = Breakout (R4)             | Value = 2424.88    | High = 2420.00    | Close = 2407.00    | Rejection = -0.54% | Candle = SSL Sweep Reversal (Low swept 2390.0, close 2407.0)
+ASIANPAINT  : Level = Sell reversal (R3)        | Value = 2413.74    | High = 2420.00    | Close = 2407.00    | Rejection = -0.54% | Candle = SSL Sweep Reversal (Low swept 2390.0, close 2407.0)
+ASIANPAINT  : Level = Resistance (R2)           | Value = 2410.03    | High = 2420.00    | Close = 2407.00    | Rejection = -0.54% | Candle = SSL Sweep Reversal (Low swept 2390.0, close 2407.0)
+HINDALCO    : Level = Target (R5)               | Value = 955.48     | High = 946.65     | Close = 941.85     | Rejection = -0.51% | Candle = SSL Sweep Reversal (Low swept 941.1, close 941.9)
+HINDALCO    : Level = Breakout (R4)             | Value = 950.43     | High = 946.65     | Close = 941.85     | Rejection = -0.51% | Candle = SSL Sweep Reversal (Low swept 941.1, close 941.9)
+HINDALCO    : Level = Sell reversal (R3)        | Value = 946.12     | High = 946.65     | Close = 941.85     | Rejection = -0.51% | Candle = SSL Sweep Reversal (Low swept 941.1, close 941.9)
+HINDALCO    : Level = Resistance (R2)           | Value = 944.68     | High = 946.65     | Close = 941.85     | Rejection = -0.51% | Candle = SSL Sweep Reversal (Low swept 941.1, close 941.9)
+HINDALCO    : Level = R3 (VAH Reversion)        | Value = 946.12     | High = 946.65     | Close = 941.85     | Rejection = -0.51% | Candle = SSL Sweep Reversal (Low swept 941.1, close 941.9)
+SBILIFE     : Level = Breakout (R4)             | Value = 1723.08    | High = 1730.30    | Close = 1721.60    | Rejection = -0.50% | Candle = Piercing Line (Bullish Reversal) | SSL Sweep Reversal (Low swept 1681.0, close 1721.6)
+SRF         : Level = Breakout (R4)             | Value = 2500.99    | High = 2494.90    | Close = 2486.20    | Rejection = -0.35% | Candle = SSL Sweep Reversal (Low swept 2450.3, close 2486.2)
+SRF         : Level = Sell reversal (R3)        | Value = 2486.74    | High = 2494.90    | Close = 2486.20    | Rejection = -0.35% | Candle = SSL Sweep Reversal (Low swept 2450.3, close 2486.2)
+SRF         : Level = Resistance (R2)           | Value = 2482.00    | High = 2494.90    | Close = 2486.20    | Rejection = -0.35% | Candle = SSL Sweep Reversal (Low swept 2450.3, close 2486.2)
+COFORGE     : Level = Target (R6)               | Value = 1824.40    | High = 1831.00    | Close = 1826.00    | Rejection = -0.27% | Candle = Bullish Marubozu (Strong Bullish Momentum) | Morning Star (Bullish Reversal)
+COFORGE     : Level = Target (R5)               | Value = 1814.70    | High = 1831.00    | Close = 1826.00    | Rejection = -0.27% | Candle = Bullish Marubozu (Strong Bullish Momentum) | Morning Star (Bullish Reversal)
+COFORGE     : Level = Breakout (R4)             | Value = 1790.52    | High = 1831.00    | Close = 1826.00    | Rejection = -0.27% | Candle = Bullish Marubozu (Strong Bullish Momentum) | Morning Star (Bullish Reversal)
+COFORGE     : Level = Sell reversal (R3)        | Value = 1769.81    | High = 1831.00    | Close = 1826.00    | Rejection = -0.27% | Candle = Bullish Marubozu (Strong Bullish Momentum) | Morning Star (Bullish Reversal)
+COFORGE     : Level = Resistance (R2)           | Value = 1762.90    | High = 1831.00    | Close = 1826.00    | Rejection = -0.27% | Candle = Bullish Marubozu (Strong Bullish Momentum) | Morning Star (Bullish Reversal)
+HAVELLS     : Level = Target (R5)               | Value = 1050.24    | High = 1041.80    | Close = 1040.00    | Rejection = -0.17% | Candle = Bullish Marubozu (Strong Bullish Momentum)
+HAVELLS     : Level = Breakout (R4)             | Value = 1037.62    | High = 1041.80    | Close = 1040.00    | Rejection = -0.17% | Candle = Bullish Marubozu (Strong Bullish Momentum)
+BAJAJFINSV  : Level = Sell reversal (R3)        | Value = 1743.62    | High = 1734.90    | Close = 1732.60    | Rejection = -0.13% | Candle = Hammer (Bullish Rejection) | Volume Climax Bullish Rejection (3.3x Vol)
+BAJAJFINSV  : Level = Resistance (R2)           | Value = 1739.41    | High = 1734.90    | Close = 1732.60    | Rejection = -0.13% | Candle = Hammer (Bullish Rejection) | Volume Climax Bullish Rejection (3.3x Vol)
+HDFCBANK    : Level = Target (R6)               | Value = 720.30     | High = 721.30     | Close = 721.20     | Rejection = -0.01% | Candle = Bullish Marubozu (Strong Bullish Momentum) | Bullish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 708.7, close 721.2)
+HDFCBANK    : Level = Target (R5)               | Value = 718.81     | High = 721.30     | Close = 721.20     | Rejection = -0.01% | Candle = Bullish Marubozu (Strong Bullish Momentum) | Bullish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 708.7, close 721.2)
+HDFCBANK    : Level = Breakout (R4)             | Value = 715.08     | High = 721.30     | Close = 721.20     | Rejection = -0.01% | Candle = Bullish Marubozu (Strong Bullish Momentum) | Bullish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 708.7, close 721.2)
+HDFCBANK    : Level = Sell reversal (R3)        | Value = 711.89     | High = 721.30     | Close = 721.20     | Rejection = -0.01% | Candle = Bullish Marubozu (Strong Bullish Momentum) | Bullish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 708.7, close 721.2)
+INFY        : Level = Target (R5)               | Value = 1021.80    | High = 1035.00    | Close = 1035.00    | Rejection = -0.00% | Candle = Neutral Candle
+INFY        : Level = Breakout (R4)             | Value = 1011.59    | High = 1035.00    | Close = 1035.00    | Rejection = -0.00% | Candle = Neutral Candle
+CUMMINSIND  : Level = Target (R6)               | Value = 4858.39    | High = 4860.00    | Close = 4860.00    | Rejection = -0.00% | Candle = Neutral Candle
+CUMMINSIND  : Level = Target (R5)               | Value = 4845.38    | High = 4860.00    | Close = 4860.00    | Rejection = -0.00% | Candle = Neutral Candle
+
+5. LEVEL BREAKDOWNS (Closed Below S4):
+-----------------------------------------
+MARUTI      : S4 Value = 11864.70   | Close = 11386.00   | Excess = -4.03%
+UPL         : S4 Value = 534.44     | Close = 516.80     | Excess = -3.30%
+SHRIRAMFIN  : S4 Value = 970.66     | Close = 945.00     | Excess = -2.64%
+ADANIPORTS  : S4 Value = 1783.01    | Close = 1737.80    | Excess = -2.54%
+EICHERMOT   : S4 Value = 7081.25    | Close = 6920.00    | Excess = -2.28%
+RECLTD      : S4 Value = 294.19     | Close = 287.75     | Excess = -2.19%
+GRASIM      : S4 Value = 3025.66    | Close = 2962.00    | Excess = -2.10%
+JINDALSTEL  : S4 Value = 1124.07    | Close = 1100.50    | Excess = -2.10%
+M&M         : S4 Value = 2916.45    | Close = 2860.00    | Excess = -1.94%
+TATASTEEL   : S4 Value = 181.41     | Close = 178.00     | Excess = -1.88%
+DIXON       : S4 Value = 12921.25   | Close = 12700.00   | Excess = -1.71%
+ZEEL        : S4 Value = 73.13      | Close = 71.92      | Excess = -1.65%
+TATAPOWER   : S4 Value = 355.98     | Close = 350.15     | Excess = -1.64%
+NMDC        : S4 Value = 75.85      | Close = 74.64      | Excess = -1.60%
+HINDUNILVR  : S4 Value = 1865.68    | Close = 1836.00    | Excess = -1.59%
+VEDL        : S4 Value = 256.06     | Close = 252.05     | Excess = -1.57%
+ADANIENT    : S4 Value = 2860.72    | Close = 2816.80    | Excess = -1.54%
+NTPC        : S4 Value = 319.97     | Close = 315.10     | Excess = -1.52%
+IOC         : S4 Value = 133.36     | Close = 131.34     | Excess = -1.52%
+POWERGRID   : S4 Value = 258.36     | Close = 254.55     | Excess = -1.47%
+MCX         : S4 Value = 3250.90    | Close = 3204.00    | Excess = -1.44%
+ULTRACEMCO  : S4 Value = 10861.95   | Close = 10710.00   | Excess = -1.40%
+AUBANK      : S4 Value = 999.36     | Close = 987.00     | Excess = -1.24%
+CHOLAFIN    : S4 Value = 1596.90    | Close = 1580.00    | Excess = -1.06%
+PFC         : S4 Value = 321.38     | Close = 318.00     | Excess = -1.05%
+LT          : S4 Value = 3728.93    | Close = 3693.40    | Excess = -0.95%
+RELIANCE    : S4 Value = 1178.86    | Close = 1167.70    | Excess = -0.95%
+ESCORTS     : S4 Value = 2691.38    | Close = 2667.30    | Excess = -0.89%
+DRREDDY     : S4 Value = 1216.28    | Close = 1206.20    | Excess = -0.83%
+GODREJPROP  : S4 Value = 1608.59    | Close = 1595.80    | Excess = -0.80%
+DABUR       : S4 Value = 377.08     | Close = 374.25     | Excess = -0.75%
+JSWSTEEL    : S4 Value = 1241.03    | Close = 1233.00    | Excess = -0.65%
+INDUSINDBK  : S4 Value = 892.00     | Close = 886.85     | Excess = -0.58%
+MUTHOOTFIN  : S4 Value = 2711.36    | Close = 2697.10    | Excess = -0.53%
+MANAPPURAM  : S4 Value = 310.52     | Close = 308.90     | Excess = -0.52%
+TRENT       : S4 Value = 2593.05    | Close = 2580.00    | Excess = -0.50%
+BEL         : S4 Value = 385.00     | Close = 383.10     | Excess = -0.49%
+NATIONALUM  : S4 Value = 336.55     | Close = 334.90     | Excess = -0.49%
+HAL         : S4 Value = 4620.53    | Close = 4601.00    | Excess = -0.42%
+LICHSGFIN   : S4 Value = 511.06     | Close = 509.00     | Excess = -0.40%
+NIFTY       : S4 Value = 22502.67   | Close = 22421.95   | Excess = -0.36%
+BALKRISIND  : S4 Value = 2089.88    | Close = 2083.50    | Excess = -0.31%
+HEROMOTOCO  : S4 Value = 5183.52    | Close = 5168.00    | Excess = -0.30%
+TITAN       : S4 Value = 4525.95    | Close = 4515.70    | Excess = -0.23%
+TATAMOTORS  : S4 Value = 279.68     | Close = 279.40     | Excess = -0.10%
+BHARTIARTL  : S4 Value = 1742.81    | Close = 1741.10    | Excess = -0.10%
+CONCOR      : S4 Value = 442.38     | Close = 442.00     | Excess = -0.09%
+OFSS        : S4 Value = 10427.05   | Close = 10420.00   | Excess = -0.07%
+
+5B. DETECTED PRICE ACTION & CANDLESTICK PATTERNS:
+-----------------------------------------
+TCS         : SSL Sweep Reversal (Low swept 2050.6, close 2075.0) | Double Top Breakdown
+NIFTY       : Double Top Breakdown
+BANKNIFTY   : Bearish Spinning Top (Indecision) | SSL Sweep Reversal (Low swept 54174.3, close 54450.8) | Double Top Breakdown
+HDFCBANK    : Bullish Marubozu (Strong Bullish Momentum) | Bullish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 708.7, close 721.2)
+BHARTIARTL  : Bearish Spinning Top (Indecision)
+SBIN        : Long-Legged Doji (Indecision)
+TATAMOTORS  : Double Top Breakdown
+AXISBANK    : Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 1237.1, close 1217.1) | Double Top Breakdown
+KOTAKBANK   : BSL Sweep Reversal (High swept 419.1, close 418.4)
+LT          : Double Top Breakdown
+TITAN       : Double Top Breakdown
+TATASTEEL   : Double Top Breakdown
+COALINDIA   : Bearish Spinning Top (Indecision)
+HINDALCO    : SSL Sweep Reversal (Low swept 941.1, close 941.9)
+NTPC        : Evening Star (Bearish Reversal)
+POWERGRID   : Double Top Breakdown
+ONGC        : Double Top Breakdown
+TECHM       : Bearish Spinning Top (Indecision) | SSL Sweep Reversal (Low swept 1518.0, close 1533.0)
+ASIANPAINT  : SSL Sweep Reversal (Low swept 2390.0, close 2407.0)
+WIPRO       : Bullish Spinning Top (Indecision)
+BPCL        : Bearish Spinning Top (Indecision)
+BAJAJFINSV  : Hammer (Bullish Rejection) | Volume Climax Bullish Rejection (3.3x Vol)
+LTIM        : Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 3979.9, close 4007.0)
+GRASIM      : Double Top Breakdown
+CIPLA       : Bearish Spinning Top (Indecision) | Three Black Crows (Bearish Initiation) | Double Top Breakdown
+HINDUNILVR  : Double Top Breakdown
+IOC         : Bearish Marubozu (Strong Bearish Momentum)
+INDUSINDBK  : SSL Sweep Reversal (Low swept 885.0, close 886.9)
+UPL         : Double Top Breakdown
+TATACONSUM  : SSL Sweep Reversal (Low swept 949.5, close 957.0)
+APOLLOHOSP  : Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 8053.0, close 8133.5) | Double Top Breakdown
+BHEL        : SSL Sweep Reversal (Low swept 411.7, close 421.0)
+CANBK       : Three Black Crows (Bearish Initiation) | Double Top Breakdown
+BANKBARODA  : SSL Sweep Reversal (Low swept 230.3, close 230.8) | Double Top Breakdown
+BSOFT       : Bearish Engulfing (Momentum Shift) | Double Top Breakdown
+COFORGE     : Bullish Marubozu (Strong Bullish Momentum) | Morning Star (Bullish Reversal)
+CONCOR      : Three Black Crows (Bearish Initiation) | Double Top Breakdown
+HAVELLS     : Bullish Marubozu (Strong Bullish Momentum)
+GODREJPROP  : Double Top Breakdown
+ESCORTS     : Hammer (Bullish Rejection) | Volume Climax Bullish Rejection (4.9x Vol) | Double Top Breakdown
+FEDERALBNK  : SSL Sweep Reversal (Low swept 317.4, close 318.2)
+DIXON       : Three Black Crows (Bearish Initiation)
+ICICIPRULI  : Bullish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 442.4, close 448.1)
+ICICIGI     : BSL Sweep Reversal (High swept 1590.0, close 1563.0)
+HAL         : Tweezer Top (Double Rejection)
+IRCTC       : Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 452.6, close 454.1)
+INDIGO      : Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 4893.5, close 4929.9)
+LICHSGFIN   : Three Black Crows (Bearish Initiation)
+METROPOLIS  : Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 536.6, close 537.9) | Double Top Breakdown
+MARICO      : Double Top Breakdown
+MANAPPURAM  : Evening Star (Bearish Reversal) | Double Top Breakdown
+LUPIN       : Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 2027.0, close 2031.2)
+NATIONALUM  : Long-Legged Doji (Indecision)
+MGL         : SSL Sweep Reversal (Low swept 1039.0, close 1045.4)
+MFSL        : Bullish Engulfing (Momentum Shift) | BSL Sweep Reversal (High swept 1395.1, close 1392.0) | Double Top Breakdown
+PAGEIND     : Bullish Spinning Top (Indecision) | SSL Sweep Reversal (Low swept 36210.0, close 36660.0)
+OBEROIRLTY  : Bearish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 1751.5, close 1754.6)
+POLYCAB     : Bearish Spinning Top (Indecision)
+PETRONET    : Bullish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 284.0, close 285.5)
+PIDILITIND  : Three Black Crows (Bearish Initiation)
+RECLTD      : Double Top Breakdown
+SRF         : SSL Sweep Reversal (Low swept 2450.3, close 2486.2)
+VOLTAS      : Double Top Breakdown
+TATACOMM    : SSL Sweep Reversal (Low swept 1640.1, close 1683.0)
+SBILIFE     : Piercing Line (Bullish Reversal) | SSL Sweep Reversal (Low swept 1681.0, close 1721.6)
+ZEEL        : Bearish Marubozu (Strong Bearish Momentum) | Bearish Engulfing (Momentum Shift)
+
+6. ATM OPTIONS PREMIUMS:
+-----------------------------------------
+NIFTY_ATM_22400_EXP_261006         : CE = ₹156.10 | PE = ₹104.40
+
+=========================================
+7. INTRADAY 5-MIN OPTION PREMIUM BACKTEST & LEARNINGS:
+-----------------------------------------
+No option trades triggered today.
+
+8. OPENING BIAS VALIDATION (Did the market follow the 2-Year Opening Bias?):
+-----------------------------------------
+* NIFTY: SUCCESS
+  - Zone: Open Between S4 and S3
+  - Prediction: Expected RED Close (Probability: 38.3%)
+  - Actual: Closed RED (Open: 22543.70 | Close: 22421.95 | Move: -121.75 pts)
+  - Analysis: The index behaved exactly as predicted by the 2-year backtest for Open Between S4 and S3.
+
+* BANKNIFTY: FAILED
+  - Zone: Open Between S2 and R2 (Value Area Midpoint)
+  - Prediction: Expected GREEN Close (Probability: 52.3%)
+  - Actual: Closed RED (Open: 54583.05 | Close: 54450.75 | Move: -132.30 pts)
+  - Analysis: The gap was rejected/accepted differently. Today's close (RED) deviated from the historical bias. Re-calibrating future zone expectations (New Green Close probability: 52.3%).
+
+=========================================

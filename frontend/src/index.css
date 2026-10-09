@@ -38,6 +38,10 @@
   box-sizing: border-box;
 }
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 /* White / Light Theme Variables */
 :root[data-theme="light"],
 body.theme-light {
@@ -98,10 +102,13 @@ body.theme-light {
 
 #root {
   min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
   display: flex;
   flex-direction: column;
-  padding: 24px;
+  padding: 6px 10px;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 /* Glassmorphism panel styling */

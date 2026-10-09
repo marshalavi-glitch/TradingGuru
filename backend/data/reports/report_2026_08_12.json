@@ -3105,18 +3105,6 @@
       "isFno": true
     },
     {
-      "symbol": "NSE:BAJAJHLDNG",
-      "levelName": "S6 (VAL Capitulation)",
-      "levelVal": 11360.738696109358,
-      "low": 11410,
-      "close": 11579,
-      "bounceStrengthPct": 1.481156879929886,
-      "pattern": "Dragonfly Doji (Bullish Rejection) | Hanging Man (Bearish Rejection) | SSL Sweep Reversal (Low swept 11412.0, close 11579.0)",
-      "touchTime": "03:16 pm",
-      "optionPremium": 257.05,
-      "isFno": true
-    },
-    {
       "symbol": "NSE:DIVISLAB",
       "levelName": "S2 (VAL Reversion)",
       "levelVal": 8524.783333333333,
@@ -4953,18 +4941,6 @@
       "isFno": false
     },
     {
-      "symbol": "NSE:IRCTC",
-      "levelName": "S4 (VAL Breakdown Trigger)",
-      "levelVal": 509.275,
-      "low": 510,
-      "close": 513.55,
-      "bounceStrengthPct": 0.6960784313725401,
-      "pattern": "SSL Sweep Reversal (Low swept 512.8, close 513.5)",
-      "touchTime": "03:23 pm",
-      "optionPremium": null,
-      "isFno": false
-    },
-    {
       "symbol": "NSE:GVT&D",
       "levelName": "S5 (VAL Extreme)",
       "levelVal": 4278.95272,
@@ -5439,18 +5415,6 @@
       "pattern": "BSL Sweep Reversal (High swept 1859.0, close 1850.0)",
       "touchTime": "09:22 am",
       "optionPremium": 39.85,
-      "isFno": true
-    },
-    {
-      "symbol": "NSE:LAURUSLABS",
-      "levelName": "S6 (VAL Capitulation)",
-      "levelVal": 1831.7481861327803,
-      "low": 1835,
-      "close": 1850,
-      "bounceStrengthPct": 0.8174386920980926,
-      "pattern": "BSL Sweep Reversal (High swept 1859.0, close 1850.0)",
-      "touchTime": "03:17 pm",
-      "optionPremium": 37.7,
       "isFno": true
     },
     {
@@ -8112,18 +8076,6 @@
       "isFno": false
     },
     {
-      "symbol": "NSE:HUDCO",
-      "levelName": "S5 (VAL Extreme)",
-      "levelVal": 191.44013600000002,
-      "low": 191.25,
-      "close": 192.73,
-      "bounceStrengthPct": 0.7738562091503215,
-      "pattern": "Double Top Breakdown",
-      "touchTime": "03:29 pm",
-      "optionPremium": null,
-      "isFno": false
-    },
-    {
       "symbol": "NSE:DIXON",
       "levelName": "S2 (VAL Reversion)",
       "levelVal": 13988.716666666667,
@@ -10631,18 +10583,6 @@
       "isFno": true
     },
     {
-      "symbol": "NSE:KEI",
-      "levelName": "R5 (VAH Extreme)",
-      "levelVal": 5748.49856,
-      "high": 5754,
-      "close": 5754,
-      "rejectStrengthPct": 0,
-      "pattern": "Bullish Engulfing (Momentum Shift) | Double Bottom Breakout | Cup & Handle Breakout (26% Handle retracement)",
-      "touchTime": "03:17 pm",
-      "optionPremium": 105.5,
-      "isFno": true
-    },
-    {
       "symbol": "NSE:AUBANK",
       "levelName": "R3 (VAH Reversion)",
       "levelVal": 1077.4175,
@@ -12485,18 +12425,6 @@
       "isFno": true
     },
     {
-      "symbol": "NSE:VBL",
-      "levelName": "R3 (VAH Reversion)",
-      "levelVal": 440.6025,
-      "high": 440.5,
-      "close": 440.5,
-      "rejectStrengthPct": 0,
-      "pattern": "Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 435.4, close 440.5)",
-      "touchTime": "03:16 pm",
-      "optionPremium": 9.25,
-      "isFno": true
-    },
-    {
       "symbol": "NSE:CGPOWER",
       "levelName": "R2 (VAH Reversion)",
       "levelVal": 883.7683333333333,
@@ -13000,30 +12928,6 @@
       "rejectStrengthPct": 1.2058303886925876,
       "pattern": "Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 4434.1, close 4473.4)",
       "touchTime": "03:01 pm",
-      "optionPremium": null,
-      "isFno": false
-    },
-    {
-      "symbol": "NSE:SUNDARMFIN",
-      "levelName": "R3 (VAH Reversion)",
-      "levelVal": 4486.147499999999,
-      "high": 4528,
-      "close": 4473.4,
-      "rejectStrengthPct": 1.2058303886925876,
-      "pattern": "Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 4434.1, close 4473.4)",
-      "touchTime": "03:17 pm",
-      "optionPremium": null,
-      "isFno": false
-    },
-    {
-      "symbol": "NSE:SUNDARMFIN",
-      "levelName": "R4 (VAH Breakout Trigger)",
-      "levelVal": 4524.8949999999995,
-      "high": 4528,
-      "close": 4473.4,
-      "rejectStrengthPct": 1.2058303886925876,
-      "pattern": "Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 4434.1, close 4473.4)",
-      "touchTime": "03:29 pm",
       "optionPremium": null,
       "isFno": false
     },
@@ -15643,18 +15547,6 @@
       "rejectStrengthPct": 0.6040558032503912,
       "pattern": "Long-Legged Doji (Indecision)",
       "touchTime": "09:24 am",
-      "optionPremium": null,
-      "isFno": false
-    },
-    {
-      "symbol": "NSE:COROMANDEL",
-      "levelName": "R2 (VAH Reversion)",
-      "levelVal": 2089.6916666666666,
-      "high": 2085.9,
-      "close": 2073.3,
-      "rejectStrengthPct": 0.6040558032503912,
-      "pattern": "Long-Legged Doji (Indecision)",
-      "touchTime": "03:29 pm",
       "optionPremium": null,
       "isFno": false
     },

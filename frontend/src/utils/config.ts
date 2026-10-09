@@ -2,6 +2,13 @@ let cachedBackendUrl: string | null = null;
 let lastFetchTime = 0;
 let pendingResolvePromise: Promise<string> | null = null;
 
+export const DEFAULT_FALLBACK_URLS = [
+  'https://monday-willing-kills-aerial.trycloudflare.com',
+  'https://revenue-substantially-advantages-expanded.trycloudflare.com',
+  'https://lists-characterized-patients-appreciated.trycloudflare.com',
+  'https://sharp-taxis-smash.loca.lt'
+];
+
 // Global fetch interceptor: Automatically attaches 'bypass-tunnel-reminder: true'
 // so Localtunnel never serves the HTML landing page to ANY container
 if (typeof window !== 'undefined' && !(window as any).__fetchBypassInstalled) {
@@ -108,10 +115,24 @@ export async function resolveBackendUrl(forceRefresh = false): Promise<string> {
         }
       }
 
+      // 1.5. If running on localhost / 127.0.0.1, prioritize local server for 0ms latency
+      if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+        const localCandidate = 'http://localhost:3002';
+        const isLocalAlive = await pingHealth(localCandidate, 1500);
+        if (isLocalAlive) {
+          cachedBackendUrl = localCandidate;
+          lastFetchTime = now;
+          return cachedBackendUrl;
+        }
+      }
+
       // 2. Fetch live_backend.json from high-priority accessible endpoints
       const fetchUrls = [
-        'https://marshalavi-tradingguru.static.hf.space/live_backend.json',
         typeof window !== 'undefined' ? `${window.location.origin}/live_backend.json` : null,
+        'https://marshalavi-tradingguru-terminal.static.hf.space/live_backend.json',
+        'https://huggingface.co/spaces/marshalavi/TradingGuru-Terminal/raw/main/live_backend.json',
+        'https://marshalavi-tradingguru.hf.space/live_backend.json',
+        'https://marshalavi-tradingguru.static.hf.space/live_backend.json',
         'https://huggingface.co/spaces/marshalavi/TradingGuru/raw/main/live_backend.json'
       ].filter(Boolean) as string[];
 
@@ -125,7 +146,7 @@ export async function resolveBackendUrl(forceRefresh = false): Promise<string> {
           });
           if (res.ok) {
             const json = await res.json();
-            if (json && (json.backendUrl || json.backupUrl)) {
+            if (json && (json.backendUrl || json.backupUrl || json.cloudflareUrl)) {
               discoveredJson = json;
               break;
             }
@@ -135,52 +156,54 @@ export async function resolveBackendUrl(forceRefresh = false): Promise<string> {
         }
       }
 
-      // 3. Test discovered candidates with pingHealth
+      // 3. Test discovered candidates + built-in fallback tunnels with pingHealth
+      const rawCandidates: string[] = [];
       if (discoveredJson) {
-        const rawCandidates = [
-          discoveredJson.backendUrl,
-          discoveredJson.backupUrl,
-          discoveredJson.cloudflareUrl,
-          discoveredJson.localtunnelUrl
-        ].filter(Boolean) as string[];
-
-        const isHttpsPage = typeof window !== 'undefined' && window.location.protocol === 'https:';
-
-        for (const raw of rawCandidates) {
-          let clean = raw.trim().replace(/^wss?:\/\//, '').replace(/^https?:\/\//, '').replace(/\/$/, '');
-          const proto = isHttpsPage ? 'https' : (raw.startsWith('http://') ? 'http' : 'https');
-          const candidate = `${proto}://${clean}`;
-
-          // Avoid plain HTTP on HTTPS pages
-          if (isHttpsPage && candidate.startsWith('http://')) continue;
-
-          console.log(`[Config] Testing candidate backend URL: ${candidate}...`);
-          const alive = await pingHealth(candidate, 2500);
-          if (alive) {
-            cachedBackendUrl = candidate;
-            lastFetchTime = now;
-            console.log(`✅ [Config] Connected to verified LIVE backend: ${cachedBackendUrl}`);
-            return cachedBackendUrl;
-          }
+        if (discoveredJson.backendUrl) rawCandidates.push(discoveredJson.backendUrl);
+        if (discoveredJson.backupUrl) rawCandidates.push(discoveredJson.backupUrl);
+        if (discoveredJson.cloudflareUrl) rawCandidates.push(discoveredJson.cloudflareUrl);
+        if (discoveredJson.localtunnelUrl) rawCandidates.push(discoveredJson.localtunnelUrl);
+      }
+      for (const defUrl of DEFAULT_FALLBACK_URLS) {
+        if (!rawCandidates.includes(defUrl)) {
+          rawCandidates.push(defUrl);
         }
+      }
 
-        // If none responded to pingHealth (e.g. transient network latency), fallback to the first HTTPS candidate
-        for (const raw of rawCandidates) {
-          let clean = raw.trim().replace(/^wss?:\/\//, '').replace(/^https?:\/\//, '').replace(/\/$/, '');
-          const proto = isHttpsPage ? 'https' : 'http';
-          cachedBackendUrl = `${proto}://${clean}`;
+      const isHttpsPage = typeof window !== 'undefined' && window.location.protocol === 'https:';
+
+      for (const raw of rawCandidates) {
+        let clean = raw.trim().replace(/^wss?:\/\//, '').replace(/^https?:\/\//, '').replace(/\/$/, '');
+        const proto = isHttpsPage ? 'https' : (raw.startsWith('http://') ? 'http' : 'https');
+        const candidate = `${proto}://${clean}`;
+
+        // Avoid plain HTTP on HTTPS pages
+        if (isHttpsPage && candidate.startsWith('http://')) continue;
+
+        console.log(`[Config] Testing candidate backend URL: ${candidate}...`);
+        const alive = await pingHealth(candidate, 5000);
+        if (alive) {
+          cachedBackendUrl = candidate;
           lastFetchTime = now;
+          console.log(`✅ [Config] Connected to verified LIVE backend: ${cachedBackendUrl}`);
           return cachedBackendUrl;
         }
+      }
+
+      // If none responded to pingHealth (e.g. transient network latency), fallback to the first HTTPS candidate
+      for (const raw of rawCandidates) {
+        let clean = raw.trim().replace(/^wss?:\/\//, '').replace(/^https?:\/\//, '').replace(/\/$/, '');
+        const proto = isHttpsPage ? 'https' : 'http';
+        cachedBackendUrl = `${proto}://${clean}`;
+        lastFetchTime = now;
+        return cachedBackendUrl;
       }
 
       // 4. Localhost Fallback
       if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
         cachedBackendUrl = 'http://localhost:3002';
-      } else if (typeof window !== 'undefined' && window.location.origin && !window.location.origin.includes('hf.space')) {
-        cachedBackendUrl = window.location.origin;
       } else {
-        cachedBackendUrl = 'http://localhost:3002';
+        cachedBackendUrl = DEFAULT_FALLBACK_URLS[0];
       }
 
       lastFetchTime = now;
@@ -198,7 +221,7 @@ if (typeof window !== 'undefined') {
   resolveBackendUrl().catch(() => {});
   setInterval(async () => {
     if (cachedBackendUrl) {
-      const alive = await pingHealth(cachedBackendUrl, 3000);
+      const alive = await pingHealth(cachedBackendUrl, 5000);
       if (!alive) {
         console.warn(`[Config Auto-Healer] Active backend ${cachedBackendUrl} unresponsive. Re-resolving...`);
         resolveBackendUrl(true).catch(() => {});
@@ -209,9 +232,8 @@ if (typeof window !== 'undefined') {
 
 export function getBackendHttpUrlSync(): string {
   if (cachedBackendUrl) return cachedBackendUrl;
-  const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
   if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
     return 'http://localhost:3002';
   }
-  return isHttps ? 'https://localhost:3002' : 'http://localhost:3002';
+  return DEFAULT_FALLBACK_URLS[0];
 }

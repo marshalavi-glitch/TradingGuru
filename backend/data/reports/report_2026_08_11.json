@@ -3174,18 +3174,6 @@
       "isFno": false
     },
     {
-      "symbol": "NSE:AIAENG",
-      "levelName": "S4 (VAL Breakdown Trigger)",
-      "levelVal": 4745.915,
-      "low": 4763.5,
-      "close": 4781.6,
-      "bounceStrengthPct": 0.3799727091424449,
-      "pattern": "SSL Sweep Reversal (Low swept 4774.8, close 4781.6) | Double Bottom Breakout | Cup & Handle Breakout (25% Handle retracement)",
-      "touchTime": "03:16 pm",
-      "optionPremium": null,
-      "isFno": false
-    },
-    {
       "symbol": "NSE:BDL",
       "levelName": "S2 (VAL Reversion)",
       "levelVal": 1303.9133333333334,
@@ -5952,18 +5940,6 @@
       "isFno": true
     },
     {
-      "symbol": "NSE:PIIND",
-      "levelName": "S6 (VAL Capitulation)",
-      "levelVal": 2705.547697356427,
-      "low": 2711.6,
-      "close": 2730,
-      "bounceStrengthPct": 0.678566160200623,
-      "pattern": "Neutral Candle",
-      "touchTime": "03:16 pm",
-      "optionPremium": null,
-      "isFno": true
-    },
-    {
       "symbol": "NSE:POWERGRID",
       "levelName": "S2 (VAL Reversion)",
       "levelVal": 269.5866666666667,
@@ -6716,18 +6692,6 @@
       "bounceStrengthPct": 0.9656565656565693,
       "pattern": "SSL Sweep Reversal (Low swept 2475.1, close 2498.9)",
       "touchTime": "01:06 pm",
-      "optionPremium": null,
-      "isFno": false
-    },
-    {
-      "symbol": "NSE:BALKRISIND",
-      "levelName": "S4 (VAL Breakdown Trigger)",
-      "levelVal": 2485.055,
-      "low": 2475,
-      "close": 2498.9,
-      "bounceStrengthPct": 0.9656565656565693,
-      "pattern": "SSL Sweep Reversal (Low swept 2475.1, close 2498.9)",
-      "touchTime": "03:16 pm",
       "optionPremium": null,
       "isFno": false
     },
@@ -9140,18 +9104,6 @@
       "bounceStrengthPct": 1.0840824960338606,
       "pattern": "Neutral Candle",
       "touchTime": "12:31 pm",
-      "optionPremium": null,
-      "isFno": false
-    },
-    {
-      "symbol": "NSE:AIIL",
-      "levelName": "S6 (VAL Capitulation)",
-      "levelVal": 572.4212576134513,
-      "low": 567.3,
-      "close": 573.45,
-      "bounceStrengthPct": 1.0840824960338606,
-      "pattern": "Neutral Candle",
-      "touchTime": "03:16 pm",
       "optionPremium": null,
       "isFno": false
     },
@@ -13861,18 +13813,6 @@
       "rejectStrengthPct": 0.5414364640883953,
       "pattern": "Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 448.3, close 450.1)",
       "touchTime": "09:27 am",
-      "optionPremium": null,
-      "isFno": false
-    },
-    {
-      "symbol": "NSE:TMCV",
-      "levelName": "R2 (VAH Reversion)",
-      "levelVal": 452.4916666666667,
-      "high": 452.5,
-      "close": 450.05,
-      "rejectStrengthPct": 0.5414364640883953,
-      "pattern": "Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 448.3, close 450.1)",
-      "touchTime": "03:21 pm",
       "optionPremium": null,
       "isFno": false
     },

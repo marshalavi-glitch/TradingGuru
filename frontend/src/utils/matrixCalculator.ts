@@ -36,11 +36,11 @@ export function calculateMatrixSeriesData(candles: Candle[], timeframe: string):
     const date = new Date(c.time * 1000);
     let key = '';
     if (isDailyAnchor) {
-      // YYYY-MM-DD daily grouping
-      key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      // YYYY-MM-DD daily grouping in Indian Standard Time (IST)
+      key = date.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
     } else {
-      // YYYY-MM monthly grouping
-      key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      // YYYY-MM monthly grouping in Indian Standard Time (IST)
+      key = date.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }).substring(0, 7);
     }
     if (!groups[key]) {
       groups[key] = [];
@@ -52,11 +52,11 @@ export function calculateMatrixSeriesData(candles: Candle[], timeframe: string):
   // Ensure keys are sorted chronologically
   groupKeys.sort();
 
-  // 2. Only calculate and return levels for the LATEST / CURRENT intraday session (previous days levels not shown)
-  if (groupKeys.length >= 2) {
+  // 2. Calculate and return levels for the LATEST / CURRENT intraday session
+  if (groupKeys.length >= 1) {
     const i = groupKeys.length - 1; // Latest intraday group
     const currentKey = groupKeys[i];
-    const prevKey = groupKeys[i - 1];
+    const prevKey = groupKeys.length >= 2 ? groupKeys[i - 1] : groupKeys[i];
 
     const currentCandles = groups[currentKey];
     const prevCandles = groups[prevKey];
@@ -69,7 +69,11 @@ export function calculateMatrixSeriesData(candles: Candle[], timeframe: string):
       const sortedPrev = [...prevCandles].sort((a, b) => a.time - b.time);
       const c_prev = sortedPrev[sortedPrev.length - 1].close;
 
-      const r_prev = h_prev - l_prev;
+      let r_prev = h_prev - l_prev;
+      if (r_prev <= 0) {
+        r_prev = Math.max(1, c_prev * 0.01);
+      }
+      
       if (r_prev > 0) {
         // Matrix levels
         const r2 = c_prev + (r_prev * 1.1 / 6.0);
@@ -81,7 +85,7 @@ export function calculateMatrixSeriesData(candles: Candle[], timeframe: string):
 
         const r5 = r4 + 1.168 * (r4 - r3);
         const s5 = s4 - 1.168 * (s3 - s4);
-        const r6 = (h_prev / l_prev) * c_prev;
+        const r6 = l_prev > 0 ? (h_prev / l_prev) * c_prev : c_prev * 1.05;
         const s6 = c_prev - (r6 - c_prev);
 
         const levels = {

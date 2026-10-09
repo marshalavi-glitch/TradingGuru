@@ -36,12 +36,23 @@ const liveOptionCandlesCacheTime = {};
 async function getLiveOptionCandles(optSym) {
   const now = Date.now();
   const cachedTime = liveOptionCandlesCacheTime[optSym];
-  if (cachedTime && (now - cachedTime < 15000) && liveOptionCandlesCache[optSym]) {
+  if (cachedTime && (now - cachedTime < 60000) && liveOptionCandlesCache[optSym]) {
     return liveOptionCandlesCache[optSym];
   }
   
+  // Fast check: if candle cache in bridge already has it
+  const bridgeCandles = angelOneBridge.candleCache?.[`${optSym}_5`]?.candles;
+  if (bridgeCandles && bridgeCandles.length > 0) {
+    liveOptionCandlesCache[optSym] = bridgeCandles;
+    liveOptionLtpCache[optSym] = bridgeCandles[bridgeCandles.length - 1].close;
+    liveOptionCandlesCacheTime[optSym] = now;
+    return bridgeCandles;
+  }
+
   try {
-    const candles = await fetchCandlesForSymbol(optSym, '5', 15);
+    const candlesPromise = fetchCandlesForSymbol(optSym, '5', 15);
+    const timeoutPromise = new Promise(resolve => setTimeout(() => resolve(null), 400));
+    const candles = await Promise.race([candlesPromise, timeoutPromise]);
     if (candles && candles.length > 0) {
       liveOptionCandlesCache[optSym] = candles;
       liveOptionLtpCache[optSym] = candles[candles.length - 1].close;
@@ -163,7 +174,9 @@ import { scanMp3DayPatterns, mp3DayCache, loadMp3DayCacheFromDisk } from './mp_3
 import fs from 'fs';
 import { exec } from 'child_process';
 import { analyzeConfluences, updateConstraintsFromError } from './confluenceAnalyzer.js';
+import { runHistoricalCleanup } from './cleanup_historical_315.js';
 
+runHistoricalCleanup();
 loadNr7CacheFromDisk();
 loadSrBreakoutCacheFromDisk();
 loadSwingCacheFromDisk();
@@ -184,15 +197,35 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cors({ origin: '*', credentials: true }));
 app.use(compression());
 
+let cachedLiveHistory = null;
+let lastLiveHistoryReadMs = 0;
+
+function getCachedLiveHistory() {
+  const now = Date.now();
+  if (cachedLiveHistory && (now - lastLiveHistoryReadMs < 15000)) {
+    return cachedLiveHistory;
+  }
+  const liveLogPath = path.join(__dirname, 'data/live_market_learnings.json');
+  try {
+    if (fs.existsSync(liveLogPath)) {
+      const rawLog = fs.readFileSync(liveLogPath, 'utf8').trim();
+      if (rawLog.length > 0) {
+        cachedLiveHistory = JSON.parse(rawLog.endsWith(']') ? rawLog : (rawLog.lastIndexOf('}') !== -1 ? rawLog.slice(0, rawLog.lastIndexOf('}') + 1) + ']' : '[]'));
+        lastLiveHistoryReadMs = now;
+        return cachedLiveHistory;
+      }
+    }
+  } catch (e) {}
+  if (!cachedLiveHistory) cachedLiveHistory = [];
+  lastLiveHistoryReadMs = now;
+  return cachedLiveHistory;
+}
+
 // Route for Live Confluence Analyzer Alerts
 app.get('/api/scanner/confluence', async (req, res) => {
   try {
-    const liveLogPath = path.join(__dirname, 'data/live_market_learnings.json');
-    let liveHistory = [];
-    if (fs.existsSync(liveLogPath)) {
-      try { liveHistory = JSON.parse(fs.readFileSync(liveLogPath, 'utf8')); } catch (e) {}
-    }
-    if (liveHistory.length === 0) {
+    const liveHistory = getCachedLiveHistory();
+    if (!liveHistory || liveHistory.length === 0) {
       return res.json({ alerts: [] });
     }
 
@@ -351,8 +384,11 @@ function parseOptionSymbol(symbolStr) {
     s = s.replace(/^NSE:/, '');
   }
 
+  // Normalize "NIFTY 50" to "NIFTY"
+  s = s.replace(/^NIFTY\s+50\b/i, 'NIFTY').trim();
+
   // Quick check: must have indicators of option contract
-  const hasOptIndicators = /(CE|PE|CE\/PE|CALL|PUT|[0-9]+[CP])$/i.test(s) || /\s+(CE|PE|CE\/PE)$/i.test(s) || /^[A-Z&-]+?\d{6}[CP]\d+$/i.test(s);
+  const hasOptIndicators = /(CE|PE|CE\/PE|CALL|PUT|[0-9]+[CP])$/i.test(s) || /\s+(CE|PE|CE\/PE|CALL|PUT)\b/i.test(s) || /^[A-Z&-]+?\d{6}[CP]\d+$/i.test(s);
   if (!hasOptIndicators) return null;
 
   const getUnderlying = (raw) => {
@@ -361,8 +397,25 @@ function parseOptionSymbol(symbolStr) {
     return `${exchange}:${code}`;
   };
 
-  // Pattern 1: Space separated e.g. "NIFTY 23400 CE", "BANKNIFTY 56500 CE/PE", "NIFTY 26SEP 23400 CE"
-  const p1 = s.match(/^([A-Z&-]+?)\s+(?:([0-9]{1,2}[A-Z]{3}[0-9]{0,4})\s+)?(\d+(?:\.\d+)?)\s+(CE|PE|CE\/PE|CALL|PUT|C|P)$/i);
+  // Pattern 0: "NIFTY 13 OCT 2026 CALL 22600" or "NIFTY CALL 22600"
+  const p0 = s.match(/^([A-Z&-]+?)\s+(?:(\d{1,2}\s+[A-Z]{3}(?:\s+\d{2,4})?|\d{1,2}[A-Z]{3}\d{0,4})\s+)?(CALL|PUT|CE|PE)\s+(\d+(?:\.\d+)?)$/i);
+  if (p0) {
+    const raw = p0[1];
+    let optType = p0[3].toUpperCase();
+    if (optType === 'CALL') optType = 'CE';
+    if (optType === 'PUT') optType = 'PE';
+    return {
+      exchange,
+      underlying: getUnderlying(raw),
+      rawUnderlying: raw,
+      expiry: p0[2] ? p0[2].replace(/\s+/g, '') : '',
+      strike: parseFloat(p0[4]),
+      optType
+    };
+  }
+
+  // Pattern 1: Space separated e.g. "NIFTY 23400 CE", "NIFTY 13 OCT 2026 22600 CALL", "BANKNIFTY 56500 CE/PE", "NIFTY 26SEP 23400 CE"
+  const p1 = s.match(/^([A-Z&-]+?)\s+(?:(\d{1,2}\s+[A-Z]{3}(?:\s+\d{2,4})?|\d{1,2}[A-Z]{3}\d{0,4})\s+)?(\d+(?:\.\d+)?)\s+(CE|PE|CE\/PE|CALL|PUT|C|P)$/i);
   if (p1) {
     const raw = p1[1];
     let optType = p1[4].toUpperCase();
@@ -372,7 +425,7 @@ function parseOptionSymbol(symbolStr) {
       exchange,
       underlying: getUnderlying(raw),
       rawUnderlying: raw,
-      expiry: p1[2] || '',
+      expiry: p1[2] ? p1[2].replace(/\s+/g, '') : '',
       strike: parseFloat(p1[3]),
       optType
     };
@@ -711,16 +764,47 @@ export function isNSEMarketHours() {
   const ist = getISTDate();
   const day = ist.getDay();
   if (day === 0 || day === 6) return false;
-  const timeNum = ist.getHours() * 100 + ist.getMinutes();
-  return timeNum >= 915 && timeNum <= 1530;
+  const timeSec = ist.getHours() * 3600 + ist.getMinutes() * 60 + ist.getSeconds();
+  // 9:15:00 AM (33300 sec) to 15:15:00 PM (54900 sec) IST
+  return timeSec >= 33300 && timeSec <= 54900;
 }
 
 export function isMcxMarketHours() {
   const ist = getISTDate();
   const day = ist.getDay();
   if (day === 0 || day === 6) return false;
-  const timeNum = ist.getHours() * 100 + ist.getMinutes();
-  return timeNum >= 900 && timeNum <= 2345;
+  const timeSec = ist.getHours() * 3600 + ist.getMinutes() * 60 + ist.getSeconds();
+  // 9:00:00 AM (32400 sec) to 23:30:00 PM (84600 sec) IST
+  return timeSec >= 32400 && timeSec <= 84600;
+}
+
+export function filterCandlesByMarketHours(candles, symbol, timeframe) {
+  if (!candles || !Array.isArray(candles) || candles.length === 0) return candles;
+  const tf = String(timeframe || '').trim().toUpperCase();
+  if (tf === 'D' || tf === '1D' || tf === 'W' || tf === '1W' || tf === 'M' || tf === '1M') {
+    return candles;
+  }
+
+  const isMcx = symbol && (symbol.startsWith('MCX:') || symbol.includes('CRUDE') || symbol.includes('NATURALGAS') || symbol.includes('GOLD') || symbol.includes('SILVER') || symbol.includes('COPPER') || symbol.includes('ZINC') || symbol.includes('LEAD') || symbol.includes('ALUMINIUM') || symbol.includes('NICKEL'));
+
+  return candles.filter(c => {
+    if (!c || typeof c.time !== 'number' || isNaN(c.time)) return false;
+    const secOfDay = ((c.time + 19800) % 86400 + 86400) % 86400;
+    const istDate = new Date((c.time + 19800) * 1000);
+    const day = istDate.getUTCDay();
+    if (day === 0 || day === 6) return false;
+
+    if (isMcx) {
+      // MCX: 09:00:00 to 23:30:00 IST
+      return secOfDay >= 32400 && secOfDay <= 84600;
+    } else {
+      // NSE/BSE: 09:15:00 to 15:15:00 IST
+      // 9:00 AM–9:15 AM: Pre-open session — do not form or display candles.
+      // After 3:15 PM: Stop candle formation for the trading day.
+      // Any candle starting at or after 15:15:00 (54900 sec) is excluded.
+      return secOfDay >= 33300 && secOfDay < 54900;
+    }
+  });
 }
 
 function stitchLiveCandles(candles, symbol, livePrice, timeframe) {
@@ -729,17 +813,18 @@ function stitchLiveCandles(candles, symbol, livePrice, timeframe) {
 
   const tfSeconds = getTfSeconds(timeframe);
   const nowSec = Math.floor(Date.now() / 1000);
-  const last = candles[candles.length - 1];
-
   const isMcx = symbol && (symbol.startsWith('MCX:') || symbol.includes('CRUDE') || symbol.includes('NATURALGAS') || symbol.includes('GOLD') || symbol.includes('SILVER'));
   const isMarketOpen = isMcx ? isMcxMarketHours() : isNSEMarketHours();
 
+  // Strict enforcement: Outside regular market hours (pre-open 9:00-9:15 AM, post-market after 3:30 PM, or weekends):
+  // 1. Do not form or append new candles.
+  // 2. Do not modify existing completed candles (do NOT touch last.close/high/low).
+  // Return candles completely untouched!
   if (!isMarketOpen) {
-    last.close = livePrice;
-    if (livePrice > last.high) last.high = livePrice;
-    if (livePrice < last.low) last.low = livePrice;
     return candles;
   }
+
+  const last = candles[candles.length - 1];
 
   // Daily timeframe
   if (tfSeconds >= 86400) {
@@ -751,7 +836,7 @@ function stitchLiveCandles(candles, symbol, livePrice, timeframe) {
       if (livePrice < last.low) last.low = livePrice;
     } else {
       candles.push({
-        time: Math.floor(nowSec / 86400) * 86400,
+        time: Math.floor((nowSec + 19800) / 86400) * 86400 - 19800,
         open: livePrice,
         high: livePrice,
         low: livePrice,
@@ -762,33 +847,46 @@ function stitchLiveCandles(candles, symbol, livePrice, timeframe) {
     return candles;
   }
 
-  // Intraday timeframe
+  // Intraday timeframe - strictly during open market hours (09:15:00 <= now <= 15:30:00 IST for NSE)
   const lastDate = new Date((last.time + 19800) * 1000).toISOString().slice(0, 10);
   const todayDate = new Date((nowSec + 19800) * 1000).toISOString().slice(0, 10);
 
+  const openTimeStr = `${todayDate}T${isMcx ? '09:00:00' : '09:15:00'}+05:30`;
+  const todayOpenSec = Math.floor(new Date(openTimeStr).getTime() / 1000);
+  const closeTimeStr = `${todayDate}T${isMcx ? '23:30:00' : '15:15:00'}+05:30`;
+  const todayCloseSec = Math.floor(new Date(closeTimeStr).getTime() / 1000);
+
+  // If last candle in array is from a previous trading session:
   if (lastDate !== todayDate) {
-    const openTimeStr = `${todayDate}T${isMcx ? '09:00:00' : '09:15:00'}+05:30`;
-    const todayOpenSec = Math.floor(new Date(openTimeStr).getTime() / 1000);
-    const formingTime = todayOpenSec + Math.floor(Math.max(0, nowSec - todayOpenSec) / tfSeconds) * tfSeconds;
-    candles.push({
-      time: formingTime,
-      open: livePrice,
-      high: livePrice,
-      low: livePrice,
-      close: livePrice,
-      volume: 100
-    });
+    // Current time is >= 09:15:00 today.
+    // First candle of the session starts exactly at 09:15:00 IST sharp.
+    const elapsedSinceOpen = Math.max(0, nowSec - todayOpenSec);
+    const formingTime = todayOpenSec + Math.floor(elapsedSinceOpen / tfSeconds) * tfSeconds;
+
+    if (formingTime < todayCloseSec) {
+      candles.push({
+        time: formingTime,
+        open: livePrice,
+        high: livePrice,
+        low: livePrice,
+        close: livePrice,
+        volume: 100
+      });
+    }
     return candles;
   }
 
+  // Last candle is from TODAY:
   const diff = nowSec - last.time;
   if (diff < tfSeconds) {
+    // Current candle is still actively forming
     last.close = livePrice;
     if (livePrice > last.high) last.high = livePrice;
     if (livePrice < last.low) last.low = livePrice;
   } else {
+    // Current candle period elapsed, start next candle
     const formingTime = last.time + Math.floor(diff / tfSeconds) * tfSeconds;
-    if (formingTime > last.time) {
+    if (formingTime > last.time && formingTime < todayCloseSec) {
       candles.push({
         time: formingTime,
         open: livePrice,
@@ -857,6 +955,9 @@ app.get('/api/candles', async (req, res) => {
     let candles = cached.candles ? cached.candles.map(c => ({ ...c })) : [];
     let source = cached.source || 'Angel One SmartAPI';
 
+    // Strict Market Hours Filter (before live stitch)
+    candles = filterCandlesByMarketHours(candles, symbol, timeframe);
+
     // Inject 0ms live tick and stitch forming bar for true zero delay
     if (candles.length > 0) {
       try {
@@ -886,6 +987,9 @@ app.get('/api/candles', async (req, res) => {
         }
       } catch (e) {}
     }
+
+    // Strict Market Hours Filter (after live stitch)
+    candles = filterCandlesByMarketHours(candles, symbol, timeframe);
 
     if (candles && candles.length > 0) {
       const allZeroVol = candles.every(c => !c.volume || c.volume === 0);
@@ -1960,7 +2064,7 @@ app.post('/api/auth/verify', (req, res) => {
     if (match) {
       match.lastLogin = new Date().toISOString();
       saveUsersToDisk(users);
-      const userFavs = Array.isArray(match.favorites) ? match.favorites : ['Charts'];
+      const userFavs = Array.isArray(match.favorites) ? match.favorites : ['chart', 'test'];
       const ctrl = loadSessionControl();
       const currentNow = Date.now();
       res.json({
@@ -1976,7 +2080,7 @@ app.post('/api/auth/verify', (req, res) => {
   }
 });
 
-// User Favorites Persistence Endpoints (Per-user section favorites)
+// User Favorites Persistence Endpoints (Per-user tab favorites)
 app.get('/api/user/favorites', (req, res) => {
   try {
     const rawUser = req.query.username || req.headers['x-auth-user'] || '';
@@ -1987,10 +2091,10 @@ app.get('/api/user/favorites', (req, res) => {
     const users = loadUsersFromDisk();
     const match = users.find(u => u.username.toLowerCase() === cleanUser || (u.name && u.name.toLowerCase() === cleanUser));
     if (match) {
-      const favorites = Array.isArray(match.favorites) ? match.favorites : ['Charts'];
+      const favorites = Array.isArray(match.favorites) ? match.favorites : ['chart', 'test'];
       return res.json({ success: true, username: match.username, favorites });
     }
-    return res.json({ success: true, username: cleanUser, favorites: ['Charts'] });
+    return res.json({ success: true, username: cleanUser, favorites: ['chart', 'test'] });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -2167,27 +2271,32 @@ wss.on('connection', (ws) => {
     console.error('[Node Backend] Client WebSocket error:', err);
   });
   
-  let unsubscribePromise = null;
+  let activeSubId = 0;
+  let activeIntervalId = null;
+
+  const cleanupActiveSubscription = () => {
+    activeSubId++;
+    if (activeIntervalId) {
+      clearInterval(activeIntervalId);
+      activeIntervalId = null;
+    }
+  };
  
   ws.on('message', async (message) => {
     try {
       const payload = JSON.parse(message);
-      console.log('Received WebSocket message:', payload);
+      
+      if (payload.type === 'unsubscribe') {
+        cleanupActiveSubscription();
+        return;
+      }
       
       if (payload.type === 'subscribe') {
         const { symbol, timeframe } = payload;
         
-        // Clean up previous subscription for this connection
-        if (unsubscribePromise) {
-          try {
-            if (typeof unsubscribePromise === 'function') unsubscribePromise();
-            else {
-              const p = await unsubscribePromise;
-              if (typeof p === 'function') p();
-            }
-          } catch (e) {}
-          unsubscribePromise = null;
-        }
+        // Clean up previous subscription for this connection immediately
+        cleanupActiveSubscription();
+        const currentSubId = activeSubId;
 
         if (!symbol || !timeframe) {
           ws.send(JSON.stringify({ type: 'error', message: 'Symbol and timeframe are required.' }));
@@ -2248,32 +2357,53 @@ wss.on('connection', (ws) => {
           }
         } catch (e) {}
 
-        if (ws.readyState === ws.OPEN && currentCandles.length > 0) {
+        // Ensure this subscription was not superseded while awaiting async operations
+        if (currentSubId !== activeSubId || ws.readyState !== ws.OPEN) {
+          return;
+        }
+
+        if (currentCandles.length > 0) {
+          const filtered = filterCandlesByMarketHours(currentCandles, symbol, timeframe);
           ws.send(JSON.stringify({
             type: 'data',
             source: 'Angel One SmartAPI',
             symbol,
             timeframe,
             isSnapshot: true,
-            candles: currentCandles,
+            candles: filtered,
             matrixHistory: levels || undefined
           }));
         }
 
+        if (currentSubId !== activeSubId || ws.readyState !== ws.OPEN) {
+          return;
+        }
+
         // Setup ultra-fast 500ms ticker interval for zero delay streaming
         const intervalId = setInterval(async () => {
-          if (ws.readyState !== ws.OPEN) {
+          if (currentSubId !== activeSubId || ws.readyState !== ws.OPEN) {
             clearInterval(intervalId);
+            if (activeIntervalId === intervalId) activeIntervalId = null;
             return;
           }
 
           try {
+            const isMcx = symbol && (symbol.startsWith('MCX:') || symbol.includes('CRUDE') || symbol.includes('NATURALGAS') || symbol.includes('GOLD') || symbol.includes('SILVER'));
+            const isMarketOpen = isMcx ? isMcxMarketHours() : isNSEMarketHours();
+
+            // Strict Market Hours Enforcement:
+            // Pre-open (09:00 - 09:15) or Post-market (> 15:30) or Weekend:
+            // Do NOT form or send candle updates outside market hours!
+            if (!isMarketOpen) {
+              return;
+            }
+
             if (currentCandles.length === 0) {
               const fc = fastCandlesCache?.get ? fastCandlesCache.get(cacheKey) : null;
               if (fc?.candles?.length > 0) {
-                currentCandles = fc.candles.map(c => ({ ...c }));
+                currentCandles = filterCandlesByMarketHours(fc.candles.map(c => ({ ...c })), symbol, timeframe);
               } else if (angelOneBridge.candleCache?.[cacheKey]?.candles?.length > 0) {
-                currentCandles = angelOneBridge.candleCache[cacheKey].candles.map(c => ({ ...c }));
+                currentCandles = filterCandlesByMarketHours(angelOneBridge.candleCache[cacheKey].candles.map(c => ({ ...c })), symbol, timeframe);
               }
             }
 
@@ -2281,13 +2411,71 @@ wss.on('connection', (ws) => {
             const fallbackPrice = lastCandle ? lastCandle.close : null;
             let livePrice = await getRealtimeLtp(symbol, fallbackPrice);
 
-            if (livePrice && !isNaN(livePrice)) {
+            if (livePrice && !isNaN(livePrice) && currentCandles.length > 0) {
               const nowSec = Math.floor(Date.now() / 1000);
               let tfSeconds = getTfSeconds(timeframe);
 
-              if (currentCandles.length > 0) {
+              // Daily timeframe
+              if (tfSeconds >= 86400) {
                 const last = currentCandles[currentCandles.length - 1];
-                if (nowSec - last.time < tfSeconds) {
+                const lastDate = new Date((last.time + 19800) * 1000).toISOString().slice(0, 10);
+                const todayDate = new Date((nowSec + 19800) * 1000).toISOString().slice(0, 10);
+                if (lastDate === todayDate) {
+                  last.close = livePrice;
+                  if (livePrice > last.high) last.high = livePrice;
+                  if (livePrice < last.low) last.low = livePrice;
+                  ws.send(JSON.stringify({
+                    type: 'data',
+                    source: 'Angel One SmartAPI',
+                    symbol,
+                    timeframe,
+                    isSnapshot: false,
+                    candles: [last],
+                    matrixHistory: levels || undefined
+                  }));
+                }
+                return;
+              }
+
+              // Intraday timeframe strictly within market hours (09:15:00 to 15:30:00 IST)
+              const last = currentCandles[currentCandles.length - 1];
+              const lastDate = new Date((last.time + 19800) * 1000).toISOString().slice(0, 10);
+              const todayDate = new Date((nowSec + 19800) * 1000).toISOString().slice(0, 10);
+
+              const openTimeStr = `${todayDate}T${isMcx ? '09:00:00' : '09:15:00'}+05:30`;
+              const todayOpenSec = Math.floor(new Date(openTimeStr).getTime() / 1000);
+              const closeTimeStr = `${todayDate}T${isMcx ? '23:30:00' : '15:15:00'}+05:30`;
+              const todayCloseSec = Math.floor(new Date(closeTimeStr).getTime() / 1000);
+
+              if (lastDate !== todayDate) {
+                // First candle of the session: starts exactly at 09:15:00 IST
+                const elapsedSinceOpen = Math.max(0, nowSec - todayOpenSec);
+                const formingTime = todayOpenSec + Math.floor(elapsedSinceOpen / tfSeconds) * tfSeconds;
+
+                if (formingTime < todayCloseSec) {
+                  const newCandle = {
+                    time: formingTime,
+                    open: livePrice,
+                    high: livePrice,
+                    low: livePrice,
+                    close: livePrice,
+                    volume: 100
+                  };
+                  currentCandles.push(newCandle);
+                  ws.send(JSON.stringify({
+                    type: 'data',
+                    source: 'Angel One SmartAPI',
+                    symbol,
+                    timeframe,
+                    isSnapshot: false,
+                    candles: [newCandle],
+                    matrixHistory: levels || undefined
+                  }));
+                }
+              } else {
+                // Last candle is from today
+                const diff = nowSec - last.time;
+                if (diff < tfSeconds) {
                   last.close = livePrice;
                   if (livePrice > last.high) last.high = livePrice;
                   if (livePrice < last.low) last.low = livePrice;
@@ -2302,50 +2490,34 @@ wss.on('connection', (ws) => {
                     matrixHistory: levels || undefined
                   }));
                 } else {
-                  const newCandleTime = last ? (last.time + Math.floor((nowSec - last.time) / tfSeconds) * tfSeconds) : (Math.floor(nowSec / tfSeconds) * tfSeconds);
-                  const newCandle = {
-                    time: newCandleTime,
-                    open: livePrice,
-                    high: livePrice,
-                    low: livePrice,
-                    close: livePrice,
-                    volume: 0
-                  };
-                  currentCandles.push(newCandle);
-                  ws.send(JSON.stringify({
-                    type: 'data',
-                    source: 'Angel One SmartAPI',
-                    symbol,
-                    timeframe,
-                    isSnapshot: false,
-                    candles: [newCandle],
-                    matrixHistory: levels || undefined
-                  }));
+                  const formingTime = last.time + Math.floor(diff / tfSeconds) * tfSeconds;
+                  if (formingTime > last.time && formingTime < todayCloseSec) {
+                    const newCandle = {
+                      time: formingTime,
+                      open: livePrice,
+                      high: livePrice,
+                      low: livePrice,
+                      close: livePrice,
+                      volume: 50
+                    };
+                    currentCandles.push(newCandle);
+                    ws.send(JSON.stringify({
+                      type: 'data',
+                      source: 'Angel One SmartAPI',
+                      symbol,
+                      timeframe,
+                      isSnapshot: false,
+                      candles: [newCandle],
+                      matrixHistory: levels || undefined
+                    }));
+                  }
                 }
-              } else {
-                // If candles still forming or loading, send instant tick payload
-                ws.send(JSON.stringify({
-                  type: 'data',
-                  source: 'Angel One SmartAPI',
-                  symbol,
-                  timeframe,
-                  isSnapshot: false,
-                  candles: [{
-                    time: nowSec,
-                    open: livePrice,
-                    high: livePrice,
-                    low: livePrice,
-                    close: livePrice,
-                    volume: 1
-                  }],
-                  matrixHistory: levels || undefined
-                }));
               }
             }
           } catch (err) {}
         }, 500);
 
-        unsubscribePromise = () => clearInterval(intervalId);
+        activeIntervalId = intervalId;
       }
     } catch (err) {
       console.error('Error handling WebSocket message:', err);
@@ -2358,18 +2530,7 @@ wss.on('connection', (ws) => {
   ws.on('close', async () => {
     console.log('Client disconnected');
     broadcastOnlineUsers();
-    if (unsubscribePromise) {
-      try {
-        if (typeof unsubscribePromise === 'function') unsubscribePromise();
-        else {
-          const cleanup = await unsubscribePromise;
-          if (typeof cleanup === 'function') cleanup();
-        }
-      } catch (err) {
-        console.error('Error cleaning up subscription on close:', err);
-      }
-      unsubscribePromise = null;
-    }
+    cleanupActiveSubscription();
   });
 });
 
@@ -2971,7 +3132,13 @@ app.get('/api/scanner/weekly-200-ema', async (req, res) => {
 // Helper to get 1st 5-minute candle of the day
 const get1st5MinCandle = async (symbol) => {
   try {
-    const candles = await fetchCandlesForSymbol(symbol, '5', 100);
+    const cacheKey = `${symbol}_5`;
+    let candles = angelOneBridge.candleCache?.[cacheKey]?.candles;
+    if (!candles || candles.length === 0) {
+      const candlesPromise = fetchCandlesForSymbol(symbol, '5', 100);
+      const timeoutPromise = new Promise(resolve => setTimeout(() => resolve(null), 600));
+      candles = await Promise.race([candlesPromise, timeoutPromise]);
+    }
     if (!candles || candles.length === 0) return null;
     const sorted = [...candles].sort((a, b) => a.time - b.time);
     
@@ -3084,27 +3251,19 @@ app.get('/api/scanner/opening-bias', async (req, res) => {
       if (cacheObj && cacheObj.currentPrice) {
         // Check if there is an update timestamp or verify if we should bypass to force a fresh TV bridge snapshot.
         // We will default to fresh unless it is known to be stalled. Let's look up liveHistory to see if price has been frozen.
-        const liveLogPath = path.join(__dirname, 'data/live_market_learnings.json');
-        if (fs.existsSync(liveLogPath)) {
-          try {
-            const rawLog = fs.readFileSync(liveLogPath, 'utf8').trim();
-            if (rawLog.length > 0) {
-              const liveHistory = JSON.parse(rawLog.endsWith(']') ? rawLog : (rawLog.lastIndexOf('}') !== -1 ? rawLog.slice(0, rawLog.lastIndexOf('}') + 1) + ']' : '[]'));
-              const todayStr = new Date().toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' });
-              const todayPoints = liveHistory.filter(pt => pt.date === todayStr);
-              if (todayPoints.length > 15) {
-                const recent = todayPoints.slice(-15);
-                const firstSpot = recent[0][symKey === 'NIFTY' ? 'niftySpot' : 'bankniftySpot'];
-                const allSame = recent.every(pt => pt[symKey === 'NIFTY' ? 'niftySpot' : 'bankniftySpot'] === firstSpot);
-                if (!allSame) {
-                  isCacheFresh = true; // Spot price is actively moving, cache is active and working
-                }
-              } else {
-                isCacheFresh = true; // Not enough points, assume fresh
-              }
+        const liveHistory = getCachedLiveHistory();
+        if (liveHistory && liveHistory.length > 0) {
+          const todayStr = new Date().toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' });
+          const todayPoints = liveHistory.filter(pt => pt.date === todayStr);
+          if (todayPoints.length > 15) {
+            const recent = todayPoints.slice(-15);
+            const firstSpot = recent[0][symKey === 'NIFTY' ? 'niftySpot' : 'bankniftySpot'];
+            const allSame = recent.every(pt => pt[symKey === 'NIFTY' ? 'niftySpot' : 'bankniftySpot'] === firstSpot);
+            if (!allSame) {
+              isCacheFresh = true; // Spot price is actively moving, cache is active and working
             }
-          } catch (e) {
-            isCacheFresh = true;
+          } else {
+            isCacheFresh = true; // Not enough points, assume fresh
           }
         } else {
           isCacheFresh = true;
@@ -3257,8 +3416,10 @@ app.get('/api/scanner/opening-bias', async (req, res) => {
         const ceSym = `NFO:${cleanSym}${tradExpiry}${atmStrike}CE`;
         const peSym = `NFO:${cleanSym}${tradExpiry}${atmStrike}PE`;
 
-        const ceCandles = await getLiveOptionCandles(ceSym);
-        const peCandles = await getLiveOptionCandles(peSym);
+        const [ceCandles, peCandles] = await Promise.all([
+          getLiveOptionCandles(ceSym),
+          getLiveOptionCandles(peSym)
+        ]);
         let ceLtp = (ceCandles && ceCandles.length > 0) ? ceCandles[ceCandles.length - 1].close : null;
         let peLtp = (peCandles && peCandles.length > 0) ? peCandles[peCandles.length - 1].close : null;
 
@@ -3496,17 +3657,25 @@ app.get('/api/scanner/opening-bias', async (req, res) => {
       };
     };
 
-    const firstCandleNifty = await get1st5MinCandle('NSE:NIFTY');
-    const firstCandleBankNifty = await get1st5MinCandle('NSE:BANKNIFTY');
+    const [firstCandleNifty, firstCandleBankNifty] = await Promise.all([
+      get1st5MinCandle('NSE:NIFTY'),
+      get1st5MinCandle('NSE:BANKNIFTY')
+    ]);
 
-    if (niftyBias) {
-      niftyBias.straddleSkew = await calculateStraddleSkewAndGamma('NSE:NIFTY', niftyBias.currentPrice || niftyBias.openPrice);
-      niftyBias.optionPremiumLevels = calculateOptionPremiumLevels('NSE:NIFTY', firstCandleNifty);
-    }
-    if (bankniftyBias) {
-      bankniftyBias.straddleSkew = await calculateStraddleSkewAndGamma('NSE:BANKNIFTY', bankniftyBias.currentPrice || bankniftyBias.openPrice);
-      bankniftyBias.optionPremiumLevels = calculateOptionPremiumLevels('NSE:BANKNIFTY', firstCandleBankNifty);
-    }
+    await Promise.all([
+      (async () => {
+        if (niftyBias) {
+          niftyBias.straddleSkew = await calculateStraddleSkewAndGamma('NSE:NIFTY', niftyBias.currentPrice || niftyBias.openPrice);
+          niftyBias.optionPremiumLevels = calculateOptionPremiumLevels('NSE:NIFTY', firstCandleNifty);
+        }
+      })(),
+      (async () => {
+        if (bankniftyBias) {
+          bankniftyBias.straddleSkew = await calculateStraddleSkewAndGamma('NSE:BANKNIFTY', bankniftyBias.currentPrice || bankniftyBias.openPrice);
+          bankniftyBias.optionPremiumLevels = calculateOptionPremiumLevels('NSE:BANKNIFTY', firstCandleBankNifty);
+        }
+      })()
+    ]);
 
     // Top High-Liquidity F&O Leaders
     const TOP_FO_STOCKS = [
@@ -3585,11 +3754,7 @@ app.get('/api/scanner/opening-bias', async (req, res) => {
     let hourlyTimeline = [];
     let forensicReports = [];
     try {
-      const liveLogPath = path.join(__dirname, 'data/live_market_learnings.json');
-      let liveHistory = [];
-      if (fs.existsSync(liveLogPath)) {
-        try { liveHistory = JSON.parse(fs.readFileSync(liveLogPath, 'utf8')); } catch (e) {}
-      }
+      const liveHistory = getCachedLiveHistory();
       
       const nowIST = new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour12: false });
       const todayDate = new Date().toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' });
@@ -3612,10 +3777,17 @@ app.get('/api/scanner/opening-bias', async (req, res) => {
         actionableTakeaway: niftyBias?.straddleSkew?.skewSpreadPct > 15 ? 'Bullish CE Bloat' : (niftyBias?.straddleSkew?.skewSpreadPct < -15 ? 'Bearish PE Bloat' : 'Equilibrium Rotation')
       };
 
-      // Append snapshot and maintain full daily session history
-      liveHistory.push(logSnapshot);
-      if (liveHistory.length > 10000) liveHistory.shift();
-      fs.writeFileSync(liveLogPath, JSON.stringify(liveHistory, null, 2), 'utf8');
+      // Append snapshot and maintain full daily session history (throttled to avoid blocking disk I/O)
+      const nowMs = Date.now();
+      if (!global._lastLearningsLogWrite || (nowMs - global._lastLearningsLogWrite > 30000)) {
+        global._lastLearningsLogWrite = nowMs;
+        liveHistory.push(logSnapshot);
+        if (liveHistory.length > 10000) liveHistory.shift();
+        cachedLiveHistory = liveHistory;
+        lastLiveHistoryReadMs = nowMs;
+        const liveLogPath = path.join(__dirname, 'data/live_market_learnings.json');
+        fs.writeFile(liveLogPath, JSON.stringify(liveHistory, null, 2), 'utf8', () => {});
+      }
 
       // Precise 30-Minute TPO Market Period Slots (09:15 AM - 03:30 PM IST)
       const timeSlots = [
@@ -4151,6 +4323,68 @@ app.post('/api/mp-3day-patterns/scan', async (req, res) => {
       scanMp3DayPatterns();
     }
     res.json({ success: true, message: 'Scan initiated', isScanning: mp3DayCache.isScanning });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get('/api/mp-3day-patterns/download-backtest', (req, res) => {
+  try {
+    const candidates = [
+      path.join(__dirname, 'data/Market_Profile_3Day_Compression_Backtest_20Days.xlsx'),
+      path.join(__dirname, '../frontend/public/downloads/Market_Profile_3Day_Compression_Backtest_20Days.xlsx'),
+      path.join(__dirname, '../frontend/dist/downloads/Market_Profile_3Day_Compression_Backtest_20Days.xlsx')
+    ];
+    let filePath = candidates.find(p => fs.existsSync(p));
+    if (!filePath) {
+      return res.status(404).json({ success: false, error: 'Backtest Excel file not found' });
+    }
+    res.setHeader('Content-Disposition', 'attachment; filename="Market_Profile_3Day_Compression_Backtest_20Days.xlsx"');
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    fs.createReadStream(filePath).pipe(res);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get('/api/mp-3day-patterns/backtest-data', (req, res) => {
+  try {
+    const jsonPath = path.join(__dirname, 'data/mp_3day_backtest_20days.json');
+    if (!fs.existsSync(jsonPath)) {
+      return res.status(404).json({ success: false, error: 'Backtest data not found' });
+    }
+    const data = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+    res.json({ success: true, ...data });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+app.get('/api/mp-3day-patterns/download-backtest-100d', (req, res) => {
+  try {
+    const candidates = [
+      path.join(__dirname, 'data/Market_Profile_3Day_Compression_Backtest_100Days.xlsx'),
+      path.join(__dirname, '../frontend/public/downloads/Market_Profile_3Day_Compression_Backtest_100Days.xlsx'),
+      path.join(__dirname, '../frontend/dist/downloads/Market_Profile_3Day_Compression_Backtest_100Days.xlsx')
+    ];
+    let filePath = candidates.find(p => fs.existsSync(p));
+    if (!filePath) {
+      return res.status(404).json({ success: false, error: '100-Day Backtest Excel file not found' });
+    }
+    res.setHeader('Content-Disposition', 'attachment; filename="Market_Profile_3Day_Compression_Backtest_100Days.xlsx"');
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    fs.createReadStream(filePath).pipe(res);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get('/api/mp-3day-patterns/backtest-data-100d', (req, res) => {
+  try {
+    const jsonPath = path.join(__dirname, 'data/mp_3day_backtest_100days.json');
+    if (!fs.existsSync(jsonPath)) {
+      return res.status(404).json({ success: false, error: '100-Day Backtest data not found' });
+    }
+    const data = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+    res.json({ success: true, ...data });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

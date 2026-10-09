@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Zap, Volume2, VolumeX, AlertTriangle, ArrowUpRight, ArrowDownRight, ShieldCheck, Target, Activity, RefreshCw } from 'lucide-react';
+import { getBackendHttpUrl, getBackendHttpUrlSync } from '../utils/tvStreamer';
 
 interface LiveSignal {
   id: string;
   timestamp: string;
+  lastUpdated?: string;
+  lastUpdatedMs?: number;
   symbol: string;
   action: 'BUY CE' | 'BUY PE' | 'EXIT' | 'SHORT STRADDLE';
   strike: string;
+  entryPrice?: number;
   currentOptionPrice: number;
   entryRange: string;
   spotPrice: number;
@@ -14,6 +18,9 @@ interface LiveSignal {
   optionSL: number;
   target1: number;
   target2: number;
+  target1Hit?: boolean;
+  target2Hit?: boolean;
+  pnlPct?: number;
   confidence: number;
   mathTrigger: string;
   conceptUsed: string;
@@ -23,16 +30,20 @@ interface LiveSignal {
 export function BacktestResultsContainer() {
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [activeSignals, setActiveSignals] = useState<LiveSignal[]>([]);
-  const backendUrl = (window.location.port && window.location.port !== '3002')
-    ? 'http://localhost:3002'
-    : window.location.origin;
-
+  const [backendUrl, setBackendUrl] = useState<string>(getBackendHttpUrlSync());
   const [historicalSignals, setHistoricalSignals] = useState<LiveSignal[]>([]);
+
+  useEffect(() => {
+    getBackendHttpUrl().then(url => {
+      if (url) setBackendUrl(url);
+    });
+  }, []);
 
   useEffect(() => {
     const loadHistoricalSignals = async () => {
       try {
-        const response = await fetch(`${backendUrl}/api/scanner/historical-signals`);
+        const currentBackend = await getBackendHttpUrl();
+        const response = await fetch(`${currentBackend}/api/scanner/historical-signals`);
         if (response.ok) {
           const data = await response.json();
           setHistoricalSignals(data);
@@ -44,24 +55,24 @@ export function BacktestResultsContainer() {
     loadHistoricalSignals();
   }, [backendUrl]);
 
-  const [niftySpot, setNiftySpot] = useState<number>(24435.95);
-  const [bankSpot, setBankSpot] = useState<number>(57885.85);
-  const [niftySkew, setNiftySkew] = useState<number>(-26.8);
-  const [bankSkew, setBankSkew] = useState<number>(12.4);
-  const [niftyGamma, setNiftyGamma] = useState<number>(1.77);
-  const [bankGamma, setBankGamma] = useState<number>(1.15);
-  const [niftyStraddle, setNiftyStraddle] = useState<number>(235.00);
-  const [bankStraddle, setBankStraddle] = useState<number>(1065.50);
+  const [niftySpot, setNiftySpot] = useState<number>(0);
+  const [bankSpot, setBankSpot] = useState<number>(0);
+  const [niftySkew, setNiftySkew] = useState<number>(0);
+  const [bankSkew, setBankSkew] = useState<number>(0);
+  const [niftyGamma, setNiftyGamma] = useState<number>(1.0);
+  const [bankGamma, setBankGamma] = useState<number>(1.0);
+  const [niftyStraddle, setNiftyStraddle] = useState<number>(0);
+  const [bankStraddle, setBankStraddle] = useState<number>(0);
   
   // Specific Live Contract Symbols & LTPs
-  const [niftyCeSym, setNiftyCeSym] = useState<string>('NIFTY260818C24450');
+  const [niftyCeSym, setNiftyCeSym] = useState<string>('Detecting ATM CE...');
   const [niftyCeLtp, setNiftyCeLtp] = useState<number>(0);
-  const [niftyPeSym, setNiftyPeSym] = useState<string>('NIFTY260818P24450');
+  const [niftyPeSym, setNiftyPeSym] = useState<string>('Detecting ATM PE...');
   const [niftyPeLtp, setNiftyPeLtp] = useState<number>(0);
 
-  const [bankCeSym, setBankCeSym] = useState<string>('BANKNIFTY260825C57900');
+  const [bankCeSym, setBankCeSym] = useState<string>('Detecting ATM CE...');
   const [bankCeLtp, setBankCeLtp] = useState<number>(0);
-  const [bankPeSym, setBankPeSym] = useState<string>('BANKNIFTY260825P57900');
+  const [bankPeSym, setBankPeSym] = useState<string>('Detecting ATM PE...');
   const [bankPeLtp, setBankPeLtp] = useState<number>(0);
 
 
@@ -155,7 +166,8 @@ export function BacktestResultsContainer() {
     let isMounted = true;
     const fetchLiveSignals = async () => {
       try {
-        const res = await fetch(`${backendUrl}/api/scanner/opening-bias?_t=${Date.now()}`, {
+        const currentBackend = await getBackendHttpUrl();
+        const res = await fetch(`${currentBackend}/api/scanner/opening-bias?_t=${Date.now()}`, {
           cache: 'no-store',
           headers: { 'Pragma': 'no-cache', 'Cache-Control': 'no-cache' }
         });
@@ -207,6 +219,7 @@ export function BacktestResultsContainer() {
               }
             };
 
+            const nowTimeStr = new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit' });
             const signals: LiveSignal[] = [];
             const currentHistory = historicalSignalsRef.current.length > 0 ? historicalSignalsRef.current : getSavedSignals();
 
@@ -214,115 +227,142 @@ export function BacktestResultsContainer() {
             if (Math.abs(bSkew) > 8.0 || bSkewData?.earlyWarningConfidence > 75) {
               const isCall = bSkew > 0;
               const expectedAction = isCall ? 'BUY CE' : 'BUY PE';
+              const atmStrike = Math.round(currentBank / 100) * 100;
+              const optLtp = isCall ? (Number(bSkewData?.ceLtp) || 720) : (Number(bSkewData?.peLtp) || 500);
+              const spotRisk = 120;
               const existingSig = currentHistory.find(s => s.symbol === 'BANKNIFTY' && s.action === expectedAction);
 
-              if (existingSig) {
-                signals.push(existingSig);
-              } else {
-                const atmStrike = Math.round(currentBank / 100) * 100;
-                const optLtp = isCall ? (Number(bSkewData?.ceLtp) || 720) : (Number(bSkewData?.peLtp) || 500);
-                const spotRisk = 120;
-                const optSL = Math.max(1, optLtp - (spotRisk * 0.5));
+              const entryPrice = existingSig?.entryPrice || existingSig?.currentOptionPrice || optLtp;
+              const optSL = Math.max(1, entryPrice - (spotRisk * 0.5));
+              const t1 = existingSig?.target1 || Number((entryPrice * 1.25).toFixed(2));
+              const t2 = existingSig?.target2 || Number((entryPrice * 1.60).toFixed(2));
+              const pnl = Number((((optLtp - entryPrice) / entryPrice) * 100).toFixed(1));
 
-                signals.push({
-                  id: `BN-LIVE-${isCall ? 'CE' : 'PE'}-${atmStrike}`,
-                  timestamp: 'LIVE ACTIVE',
-                  symbol: 'BANKNIFTY',
-                  action: expectedAction,
-                  strike: `${atmStrike} ${isCall ? 'CE' : 'PE'}`,
-                  currentOptionPrice: Number(optLtp.toFixed(2)),
-                  entryRange: `₹${(optLtp * 0.97).toFixed(1)} - ₹${(optLtp * 1.02).toFixed(1)}`,
-                  spotPrice: currentBank,
-                  spotSL: isCall ? (currentBank - spotRisk) : (currentBank + spotRisk),
-                  optionSL: Number(optSL.toFixed(2)),
-                  target1: Number((optLtp * 1.25).toFixed(2)),
-                  target2: Number((optLtp * 1.60).toFixed(2)),
-                  confidence: bSkewData?.earlyWarningConfidence || 92,
-                  mathTrigger: `Bank Nifty Skew (${bSkew > 0 ? '+' : ''}${bSkew.toFixed(1)}%) with ${bSkewData?.earlyWarningSignal || 'Institutional Call Bloat'}.`,
-                  conceptUsed: 'Skew Velocity Drift + Asymmetry Rebound',
-                  isUrgent: Math.abs(bSkew) > 15
-                });
-              }
+              signals.push({
+                id: existingSig?.id || `BN-LIVE-${isCall ? 'CE' : 'PE'}-${atmStrike}`,
+                timestamp: existingSig?.timestamp || nowTimeStr,
+                lastUpdated: nowTimeStr,
+                lastUpdatedMs: Date.now(),
+                symbol: 'BANKNIFTY',
+                action: expectedAction,
+                strike: existingSig?.strike || `${atmStrike} ${isCall ? 'CE' : 'PE'}`,
+                entryPrice: Number(entryPrice.toFixed(2)),
+                currentOptionPrice: Number(optLtp.toFixed(2)),
+                entryRange: existingSig?.entryRange || `₹${(entryPrice * 0.97).toFixed(1)} - ₹${(entryPrice * 1.02).toFixed(1)}`,
+                spotPrice: currentBank,
+                spotSL: isCall ? (currentBank - spotRisk) : (currentBank + spotRisk),
+                optionSL: Number(optSL.toFixed(2)),
+                target1: t1,
+                target2: t2,
+                target1Hit: optLtp >= t1,
+                target2Hit: optLtp >= t2,
+                pnlPct: pnl,
+                confidence: bSkewData?.earlyWarningConfidence || 92,
+                mathTrigger: `Bank Nifty Skew (${bSkew > 0 ? '+' : ''}${bSkew.toFixed(1)}%) with ${bSkewData?.earlyWarningSignal || 'Institutional Call Bloat'}.`,
+                conceptUsed: 'Skew Velocity Drift + Asymmetry Rebound',
+                isUrgent: Math.abs(bSkew) > 15
+              });
             }
 
             // 2. Nifty Live Trade Signal (Skew-based)
             if (Math.abs(nSkew) > 5.0 || nSkewData?.earlyWarningConfidence > 75) {
               const isCall = nSkew > 0;
               const expectedAction = isCall ? 'BUY CE' : 'BUY PE';
+              const atmStrike = Math.round(currentNifty / 50) * 50;
+              const optLtp = isCall ? (Number(nSkewData?.ceLtp) || 75) : (Number(nSkewData?.peLtp) || 65);
+              const spotRisk = 25;
               const existingSig = currentHistory.find(s => s.symbol === 'NIFTY 50' && s.action === expectedAction);
 
-              if (existingSig) {
-                signals.push(existingSig);
-              } else {
-                const atmStrike = Math.round(currentNifty / 50) * 50;
-                const optLtp = isCall ? (Number(nSkewData?.ceLtp) || 75) : (Number(nSkewData?.peLtp) || 65);
-                const spotRisk = 25;
-                const optSL = Math.max(1, optLtp - (spotRisk * 0.5));
+              const entryPrice = existingSig?.entryPrice || existingSig?.currentOptionPrice || optLtp;
+              const optSL = Math.max(1, entryPrice - (spotRisk * 0.5));
+              const t1 = existingSig?.target1 || Number((entryPrice * 1.30).toFixed(2));
+              const t2 = existingSig?.target2 || Number((entryPrice * 1.70).toFixed(2));
+              const pnl = Number((((optLtp - entryPrice) / entryPrice) * 100).toFixed(1));
 
-                signals.push({
-                  id: `NIFTY-LIVE-${isCall ? 'CE' : 'PE'}-${atmStrike}`,
-                  timestamp: 'LIVE ACTIVE',
-                  symbol: 'NIFTY 50',
-                  action: expectedAction,
-                  strike: `${atmStrike} ${isCall ? 'CE' : 'PE'}`,
-                  currentOptionPrice: Number(optLtp.toFixed(2)),
-                  entryRange: `₹${(optLtp * 0.96).toFixed(1)} - ₹${(optLtp * 1.02).toFixed(1)}`,
-                  spotPrice: currentNifty,
-                  spotSL: isCall ? (currentNifty - spotRisk) : (currentNifty + spotRisk),
-                  optionSL: Number(optSL.toFixed(2)),
-                  target1: Number((optLtp * 1.30).toFixed(2)),
-                  target2: Number((optLtp * 1.70).toFixed(2)),
-                  confidence: nSkewData?.earlyWarningConfidence || 88,
-                  mathTrigger: `Nifty Skew (${nSkew > 0 ? '+' : ''}${nSkew.toFixed(1)}%) with ${nSkewData?.earlyWarningSignal || 'S5 Demand Zone Defense'}.`,
-                  conceptUsed: 'Premium Elasticity + Put-Call Asymmetry',
-                  isUrgent: Math.abs(nSkew) > 10
-                });
-              }
+              signals.push({
+                id: existingSig?.id || `NIFTY-LIVE-${isCall ? 'CE' : 'PE'}-${atmStrike}`,
+                timestamp: existingSig?.timestamp || nowTimeStr,
+                lastUpdated: nowTimeStr,
+                lastUpdatedMs: Date.now(),
+                symbol: 'NIFTY 50',
+                action: expectedAction,
+                strike: existingSig?.strike || `${atmStrike} ${isCall ? 'CE' : 'PE'}`,
+                entryPrice: Number(entryPrice.toFixed(2)),
+                currentOptionPrice: Number(optLtp.toFixed(2)),
+                entryRange: existingSig?.entryRange || `₹${(entryPrice * 0.96).toFixed(1)} - ₹${(entryPrice * 1.02).toFixed(1)}`,
+                spotPrice: currentNifty,
+                spotSL: isCall ? (currentNifty - spotRisk) : (currentNifty + spotRisk),
+                optionSL: Number(optSL.toFixed(2)),
+                target1: t1,
+                target2: t2,
+                target1Hit: optLtp >= t1,
+                target2Hit: optLtp >= t2,
+                pnlPct: pnl,
+                confidence: nSkewData?.earlyWarningConfidence || 88,
+                mathTrigger: `Nifty Skew (${nSkew > 0 ? '+' : ''}${nSkew.toFixed(1)}%) with ${nSkewData?.earlyWarningSignal || 'S5 Demand Zone Defense'}.`,
+                conceptUsed: 'Premium Elasticity + Put-Call Asymmetry',
+                isUrgent: Math.abs(nSkew) > 10
+              });
             }
-
-
 
             // 3. F&O High-Skew Stock Signals
             if (json.stockSignals && Array.isArray(json.stockSignals)) {
               json.stockSignals.forEach((stk: any) => {
                 const existingSig = currentHistory.find(s => s.symbol === stk.symbol && s.action === stk.action);
+                const entryPrice = existingSig?.entryPrice || existingSig?.currentOptionPrice || stk.currentOptionPrice;
+                const liveOptPrice = Number(stk.currentOptionPrice);
+                const pnl = Number((((liveOptPrice - entryPrice) / entryPrice) * 100).toFixed(1));
 
-                if (existingSig) {
-                  signals.push(existingSig);
-                } else {
-                  signals.push({
-                    id: `STK-${stk.id}`,
-                    timestamp: 'LIVE ACTIVE',
-                    symbol: stk.symbol,
-                    action: stk.action,
-                    strike: stk.strike,
-                    currentOptionPrice: stk.currentOptionPrice,
-                    entryRange: stk.entryRange,
-                    spotPrice: stk.spotPrice,
-                    spotSL: stk.spotSL,
-                    optionSL: stk.optionSL,
-                    target1: stk.target1,
-                    target2: stk.target2,
-                    confidence: stk.confidence,
-                    mathTrigger: stk.mathTrigger,
-                    conceptUsed: stk.conceptUsed,
-                    isUrgent: Math.abs(stk.skewSpreadPct || 0) > 20
-                  });
-                }
+                signals.push({
+                  id: existingSig?.id || `STK-${stk.id}`,
+                  timestamp: existingSig?.timestamp || stk.timestamp || nowTimeStr,
+                  lastUpdated: nowTimeStr,
+                  lastUpdatedMs: Date.now(),
+                  symbol: stk.symbol,
+                  action: stk.action,
+                  strike: existingSig?.strike || stk.strike,
+                  entryPrice: Number(entryPrice.toFixed(2)),
+                  currentOptionPrice: Number(liveOptPrice.toFixed(2)),
+                  entryRange: existingSig?.entryRange || stk.entryRange,
+                  spotPrice: stk.spotPrice,
+                  spotSL: stk.spotSL,
+                  optionSL: stk.optionSL,
+                  target1: stk.target1,
+                  target2: stk.target2,
+                  target1Hit: liveOptPrice >= stk.target1,
+                  target2Hit: liveOptPrice >= stk.target2,
+                  pnlPct: pnl,
+                  confidence: stk.confidence,
+                  mathTrigger: stk.mathTrigger,
+                  conceptUsed: stk.conceptUsed,
+                  isUrgent: Math.abs(stk.skewSpreadPct || 0) > 20
+                });
               });
             }
 
-
-            // Merge new signals into cumulative history so no trade is ever lost
+            // Merge new signals into cumulative history with fresh live updates
             setHistoricalSignals(prev => {
               const map = new Map<string, LiveSignal>();
               // Keep previous signals
               prev.forEach(s => map.set(s.id, s));
-              // Add/update with new signals
+              // Update with live dynamic signals
               signals.forEach(s => {
                 const existing = map.get(s.id);
                 if (existing) {
-                  map.set(s.id, { ...existing, currentOptionPrice: s.currentOptionPrice });
+                  map.set(s.id, {
+                    ...existing,
+                    ...s,
+                    entryPrice: existing.entryPrice || existing.currentOptionPrice,
+                    entryRange: existing.entryRange,
+                    timestamp: existing.timestamp || s.timestamp,
+                    currentOptionPrice: s.currentOptionPrice,
+                    spotPrice: s.spotPrice,
+                    target1Hit: s.target1Hit,
+                    target2Hit: s.target2Hit,
+                    pnlPct: s.pnlPct,
+                    lastUpdated: s.lastUpdated,
+                    lastUpdatedMs: s.lastUpdatedMs
+                  });
                 } else {
                   map.set(s.id, s);
                 }
@@ -601,20 +641,23 @@ export function BacktestResultsContainer() {
           </h3>
         </div>
         {[...historicalSignals].reverse().map((sig, idx) => {
-
           // Find if there is a live active price update for this signal
           const activeSig = activeSignals.find(s => s.id === sig.id);
           let livePrice = activeSig ? activeSig.currentOptionPrice : sig.currentOptionPrice;
           if (sig.symbol === 'NIFTY 50') {
-            livePrice = sig.action.includes('CE') ? niftyCeLtp : niftyPeLtp;
+            livePrice = sig.action.includes('CE') ? (niftyCeLtp || sig.currentOptionPrice) : (niftyPeLtp || sig.currentOptionPrice);
           } else if (sig.symbol === 'BANKNIFTY') {
-            livePrice = sig.action.includes('CE') ? bankCeLtp : bankPeLtp;
+            livePrice = sig.action.includes('CE') ? (bankCeLtp || sig.currentOptionPrice) : (bankPeLtp || sig.currentOptionPrice);
           }
 
+          const entryBase = sig.entryPrice || sig.currentOptionPrice;
+          const currentPnl = entryBase > 0 && livePrice > 0 ? Number((((livePrice - entryBase) / entryBase) * 100).toFixed(1)) : 0;
+          const isT1Hit = livePrice >= sig.target1;
+          const isT2Hit = livePrice >= sig.target2;
 
           return (
             <div 
-              key={idx}
+              key={sig.id || idx}
               style={{
                 padding: '24px',
                 borderRadius: '16px',
@@ -630,28 +673,58 @@ export function BacktestResultsContainer() {
             >
               {/* Card Header Row */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                   <span style={{
                     fontSize: '15px',
                     fontWeight: '900',
                     padding: '8px 16px',
                     borderRadius: '10px',
                     background: sig.action.includes('CE') ? '#10b981' : '#ef4444',
-                    color: 'white'
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
                   }}>
+                    {sig.action.includes('CE') ? <ArrowUpRight size={18} /> : <ArrowDownRight size={18} />}
                     {sig.action}
                   </span>
                   <span style={{ fontSize: '22px', fontWeight: '900', color: 'white' }}>
                     {sig.symbol} {sig.strike}
                   </span>
+                  
+                  {/* Real-Time Live Status Badge */}
+                  {isT2Hit ? (
+                    <span style={{ fontSize: '12px', fontWeight: '900', background: 'linear-gradient(135deg, #f59e0b, #ef4444)', color: 'white', padding: '6px 14px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(245, 158, 11, 0.5)' }}>
+                      🚀 TARGET 2 HIT (+60%+)
+                    </span>
+                  ) : isT1Hit ? (
+                    <span style={{ fontSize: '12px', fontWeight: '900', background: 'linear-gradient(135deg, #10b981, #059669)', color: 'white', padding: '6px 14px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(16, 185, 129, 0.5)' }}>
+                      🎯 TARGET 1 HIT (+25%)
+                    </span>
+                  ) : currentPnl > 0 ? (
+                    <span style={{ fontSize: '12px', fontWeight: '900', background: 'rgba(16, 185, 129, 0.25)', color: '#86efac', border: '1px solid #10b981', padding: '6px 12px', borderRadius: '8px' }}>
+                      🟢 RUNNING +{currentPnl}%
+                    </span>
+                  ) : currentPnl < 0 ? (
+                    <span style={{ fontSize: '12px', fontWeight: '900', background: 'rgba(239, 68, 68, 0.25)', color: '#fca5a5', border: '1px solid #ef4444', padding: '6px 12px', borderRadius: '8px' }}>
+                      🔴 {currentPnl}% ROI
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: '12px', fontWeight: '900', background: 'rgba(59, 130, 246, 0.25)', color: '#93c5fd', border: '1px solid #3b82f6', padding: '6px 12px', borderRadius: '8px' }}>
+                      ⚡ LIVE ACTIVE
+                    </span>
+                  )}
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ fontSize: '12px', fontWeight: '800', background: 'rgba(255,255,255,0.1)', color: '#fef08a', padding: '6px 14px', borderRadius: '8px' }}>
-                    ⚡ PRE-MOVE CONFIDENCE: {sig.confidence}%
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '800', background: 'rgba(59, 130, 246, 0.2)', color: '#93c5fd', padding: '5px 10px', borderRadius: '6px', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
+                    ⏰ Triggered: {sig.timestamp}
                   </span>
-                  <span style={{ fontSize: '11px', fontWeight: '800', background: 'rgba(239, 68, 68, 0.2)', color: '#f87171', padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.4)' }}>
-                    🔔 NOISE ALERT ACTIVE
+                  <span style={{ fontSize: '11px', fontWeight: '800', background: 'rgba(16, 185, 129, 0.15)', color: '#86efac', padding: '5px 10px', borderRadius: '6px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                    🔄 Updated: {sig.lastUpdated || 'Live'}
+                  </span>
+                  <span style={{ fontSize: '12px', fontWeight: '800', background: 'rgba(255,255,255,0.1)', color: '#fef08a', padding: '5px 12px', borderRadius: '6px' }}>
+                    ⚡ CONFIDENCE: {sig.confidence}%
                   </span>
                 </div>
               </div>
@@ -661,24 +734,26 @@ export function BacktestResultsContainer() {
                 
                 {/* Live Spot Price */}
                 <div style={{ padding: '12px 16px', borderRadius: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>LIVE STOCK SPOT</div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>LIVE UNDERLYING SPOT</div>
                   <div style={{ fontSize: '18px', fontWeight: '900', color: '#60a5fa', marginTop: '2px' }}>
                     ₹{(activeSig ? activeSig.spotPrice : sig.spotPrice).toFixed(2)}
                   </div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Live NSE Price</div>
+                  <div style={{ fontSize: '10px', color: '#86efac' }}>● Real-time tick</div>
                 </div>
 
-                {/* Locked Option Entry Range */}
-                <div style={{ padding: '12px 16px', borderRadius: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>OPTION ENTRY ZONE</div>
-                  <div style={{ fontSize: '18px', fontWeight: '900', color: '#10b981', marginTop: '2px' }}>
-                    {sig.entryRange}
+                {/* Live Option LTP */}
+                <div style={{ padding: '12px 16px', borderRadius: '10px', background: 'rgba(0,0,0,0.35)', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                  <div style={{ fontSize: '11px', color: '#86efac', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>LIVE OPTION LTP</span>
+                    <span style={{ fontSize: '9px', background: '#10b981', color: 'black', padding: '1px 5px', borderRadius: '4px', fontWeight: '900' }}>NFO LIVE</span>
                   </div>
-                  <div style={{ fontSize: '10px', color: '#86efac' }}>LTP: {livePrice > 0 ? `₹${livePrice.toFixed(2)}` : 'Loading...'}</div>
-
+                  <div style={{ fontSize: '18px', fontWeight: '900', color: '#86efac', marginTop: '2px' }}>
+                    ₹{livePrice > 0 ? livePrice.toFixed(2) : (sig.currentOptionPrice || 0).toFixed(2)}
+                  </div>
+                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Entry: {sig.entryRange}</div>
                 </div>
 
-                {/* Locked Option Stop Loss */}
+                {/* Option Stop Loss */}
                 <div style={{ padding: '12px 16px', borderRadius: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>OPTION STOP LOSS</div>
                   <div style={{ fontSize: '18px', fontWeight: '900', color: '#ef4444', marginTop: '2px' }}>
@@ -687,22 +762,26 @@ export function BacktestResultsContainer() {
                   <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Spot SL: ₹{sig.spotSL.toFixed(1)}</div>
                 </div>
 
-                {/* Locked Target 1 */}
-                <div style={{ padding: '12px 16px', borderRadius: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>TARGET 1 (MOMENTUM)</div>
-                  <div style={{ fontSize: '18px', fontWeight: '900', color: '#fef08a', marginTop: '2px' }}>
+                {/* Target 1 */}
+                <div style={{ padding: '12px 16px', borderRadius: '10px', background: isT1Hit ? 'rgba(16, 185, 129, 0.15)' : 'rgba(0,0,0,0.3)', border: isT1Hit ? '1px solid #10b981' : '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ fontSize: '11px', color: isT1Hit ? '#86efac' : 'var(--text-muted)' }}>TARGET 1 (MOMENTUM)</div>
+                  <div style={{ fontSize: '18px', fontWeight: '900', color: isT1Hit ? '#86efac' : '#fef08a', marginTop: '2px' }}>
                     ₹{sig.target1.toFixed(2)}
                   </div>
-                  <div style={{ fontSize: '10px', color: '#86efac' }}>+15% to +20% ROI</div>
+                  <div style={{ fontSize: '10px', color: isT1Hit ? '#86efac' : '#fef08a', fontWeight: isT1Hit ? '800' : 'normal' }}>
+                    {isT1Hit ? '✅ TARGET 1 HIT' : '+20% to +30% ROI'}
+                  </div>
                 </div>
 
-                {/* Locked Target 2 */}
-                <div style={{ padding: '12px 16px', borderRadius: '10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>TARGET 2 (TREND)</div>
-                  <div style={{ fontSize: '18px', fontWeight: '900', color: '#60a5fa', marginTop: '2px' }}>
+                {/* Target 2 */}
+                <div style={{ padding: '12px 16px', borderRadius: '10px', background: isT2Hit ? 'rgba(245, 158, 11, 0.15)' : 'rgba(0,0,0,0.3)', border: isT2Hit ? '1px solid #f59e0b' : '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ fontSize: '11px', color: isT2Hit ? '#fde047' : 'var(--text-muted)' }}>TARGET 2 (RUNNER)</div>
+                  <div style={{ fontSize: '18px', fontWeight: '900', color: isT2Hit ? '#fde047' : '#60a5fa', marginTop: '2px' }}>
                     ₹{sig.target2.toFixed(2)}
                   </div>
-                  <div style={{ fontSize: '10px', color: '#93c5fd' }}>+35% to +50% ROI</div>
+                  <div style={{ fontSize: '10px', color: isT2Hit ? '#fde047' : '#93c5fd', fontWeight: isT2Hit ? '800' : 'normal' }}>
+                    {isT2Hit ? '🚀 TARGET 2 HIT' : '+50% to +70% ROI'}
+                  </div>
                 </div>
 
               </div>

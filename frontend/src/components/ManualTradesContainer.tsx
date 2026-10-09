@@ -3,7 +3,8 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { 
   FileText, Search, Target, ShieldAlert, Award, TrendingUp, TrendingDown, 
   Activity, CheckCircle2, RefreshCw, BarChart2, Zap, ArrowUpRight, Flame, Layers, Clock,
-  Plus, Edit2, Trash2, X, Save, RotateCcw, Lock, Unlock
+  Plus, Edit2, Trash2, X, Save, RotateCcw, Lock, Unlock, Volume2,
+  Image, Upload, Maximize2, Download, ZoomIn
 } from 'lucide-react';
 
 export interface ManualTrade {
@@ -11,7 +12,7 @@ export interface ManualTrade {
   date: string;
   symbol: string;
   displayName: string;
-  tradeType: 'CALL BUY' | 'PUT BUY' | 'FUT LONG' | 'FUT SHORT';
+  tradeType: 'CALL BUY' | 'PUT BUY' | 'FUT LONG' | 'FUT SHORT' | 'EQUITY BUY';
   setupName: string;
   entryPrice: number;
   target1: number;
@@ -27,12 +28,125 @@ export interface ManualTrade {
   holdingTime?: string;
   riskReward?: string;
   notes?: string;
+  chartImage?: string;
 }
 
-const STORAGE_KEY = 'tradingguru_manual_trades_v7';
+const STORAGE_KEY = 'tradingguru_manual_trades_v10';
 
-// DEFAULT MANUAL TRADE DATASET FOR 2026-09-15
+// DEFAULT MANUAL TRADE DATASET
 const DEFAULT_MANUAL_TRADES: ManualTrade[] = [
+  {
+    id: 'MT-20260925-01',
+    date: '2026-09-25 10:29',
+    symbol: 'NSE:INDGN',
+    displayName: 'INDGN',
+    tradeType: 'EQUITY BUY',
+    setupName: 'Positional Swing',
+    entryPrice: 612.00,
+    currentPrice: 614.50,
+    target1: 625.00,
+    target2: 635.00,
+    target3: 650.00,
+    stopLoss: 599.00,
+    finalAchievedPrice: 614.50,
+    finalStatus: 'LIVE ACTIVE',
+    isPriceFrozen: false,
+    ptsGained: 2.50,
+    roiPct: 0.41,
+    holdingTime: '4-5 Days Trade',
+    riskReward: '1:1.77',
+    notes: 'Buy INDGN near 609-615 | SL: 599 | TGT: 625-635 | 4-5 Days Positional Swing Trade'
+  },
+  {
+    id: 'MT-20260921-02',
+    date: '2026-09-21 09:57',
+    symbol: 'MCX:CRUDEOIL8800PE',
+    displayName: 'CRUDEOIL 8800 PE',
+    tradeType: 'PUT BUY',
+    setupName: 'Breakout Surge',
+    entryPrice: 382.50,
+    currentPrice: 382.50,
+    target1: 395.00,
+    target2: 405.00,
+    target3: 415.00,
+    stopLoss: 360.00,
+    finalAchievedPrice: 382.50,
+    finalStatus: 'LIVE ACTIVE',
+    isPriceFrozen: false,
+    ptsGained: 0,
+    roiPct: 0,
+    holdingTime: 'Intraday',
+    riskReward: '1:1.44',
+    notes: 'CRUDEOIL 8800 PE BUY ABOVE 380-85 | SL paid (360) | TGT 395/405/415++. Posted at 09:57 AM.',
+    chartImage: '/assets/trades/crudeoil_8800pe_alert.png'
+  },
+  {
+    id: 'MT-20260921-01',
+    date: '2026-09-21 09:18',
+    symbol: 'NSE:MIDCAPNIFTY14400PE',
+    displayName: 'MIDCAPNIFTY 14400 PE',
+    tradeType: 'PUT BUY',
+    setupName: 'Intraday Momentum',
+    entryPrice: 75.00,
+    currentPrice: 75.00,
+    target1: 92.00,
+    target2: 115.00,
+    target3: 170.00,
+    stopLoss: 35.00,
+    finalAchievedPrice: 75.00,
+    finalStatus: 'LIVE ACTIVE',
+    isPriceFrozen: false,
+    ptsGained: 0,
+    roiPct: 0,
+    holdingTime: 'Intraday',
+    riskReward: '1:2.38',
+    notes: '💎 BUY MIDCAPNIFTY 14400 PE @ 70/80 💎 TGT: 92, 115, 170+. SL: 35. Posted at 09:18 AM.',
+    chartImage: '/assets/trades/midcapnifty_14400pe_alert.png'
+  },
+  {
+    id: 'MT-20260918-02',
+    date: '2026-09-18 10:21',
+    symbol: 'NSE:SHYAMMETL',
+    displayName: 'SHYAMMETL',
+    tradeType: 'EQUITY BUY',
+    setupName: 'Positional 1-Week',
+    entryPrice: 1090.50,
+    currentPrice: 1092.50,
+    target1: 1115.00,
+    target2: 1126.00,
+    target3: 1140.00,
+    stopLoss: 1072.00,
+    finalAchievedPrice: 1092.50,
+    finalStatus: 'LIVE ACTIVE',
+    isPriceFrozen: false,
+    ptsGained: 2.00,
+    roiPct: 0.18,
+    holdingTime: '1 Week Trade',
+    riskReward: '1:1.92',
+    notes: 'Buy SHYAMMETL near 1085-1096. SL 1072. TGT 1115-1126. 1 Week Trade.'
+  },
+  {
+    id: 'MT-20260918-01',
+    date: '2026-09-18 09:21',
+    symbol: 'NSE:NIFTY23300PE',
+    displayName: 'NIFTY 23300 PE',
+    tradeType: 'PUT BUY',
+    setupName: 'Intraday Momentum',
+    entryPrice: 85.00,
+    currentPrice: 85.00,
+    target1: 102.00,
+    target2: 130.00,
+    target3: 160.00,
+    stopLoss: 30.00,
+    finalAchievedPrice: 85.00,
+    finalStatus: 'LIVE ACTIVE',
+    isPriceFrozen: false,
+    ptsGained: 0,
+    roiPct: 0,
+    holdingTime: 'Intraday',
+    riskReward: '1:1.36',
+    notes: '💎 BUY NIFTY 23300 PE @ 80/90 💎 TGT: 102, 130, 160+. SL: 30. Posted at 09:21 AM.'
+  },
   {
     id: 'MT-20260916-03',
     date: '2026-09-16 09:40',
@@ -125,17 +239,73 @@ const DEFAULT_MANUAL_TRADES: ManualTrade[] = [
 
 function getUnderlyingSymbol(raw: string): string {
   const upper = raw.toUpperCase();
+  if (upper.includes('CRUDE')) return 'MCX:CRUDEOIL1!';
+  if (upper.includes('MIDCAP') || upper.includes('MIDCP')) return 'NSE:MIDCPNIFTY';
   if (upper.includes('NIFTY') && !upper.includes('BANKNIFTY')) return 'NSE:NIFTY';
   if (upper.includes('BANKNIFTY')) return 'NSE:BANKNIFTY';
   if (upper.includes('RELIANCE')) return 'NSE:RELIANCE';
   if (upper.includes('DIXON')) return 'NSE:DIXON';
   if (upper.includes('VEDL')) return 'NSE:VEDL';
-  const match = upper.match(/NSE:([A-Z0-9]+)/);
-  if (match) return `NSE:${match[1]}`;
+  if (upper.includes('SHYAMMETL')) return 'NSE:SHYAMMETL';
+  if (upper.includes('INDGN')) return 'NSE:INDGN';
+  if (upper.includes('INDHOTEL')) return 'NSE:INDHOTEL';
+  if (upper.includes('HEROMOTOCO')) return 'NSE:HEROMOTOCO';
+  if (upper.includes('EIML')) return 'NSE:EIML';
+  if (raw.startsWith('NSE:') || raw.startsWith('BSE:') || raw.startsWith('MCX:')) {
+    if (!/[0-9]+[CP]E$/i.test(raw)) return raw;
+  }
   return 'NSE:NIFTY';
 }
 
-export const ManualTradesContainer: React.FC = () => {
+function processImageFile(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (readerEvent) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const maxWidth = 1920;
+        const maxHeight = 1080;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth || height > maxHeight) {
+          if (width / height > maxWidth / maxHeight) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(readerEvent.target?.result as string);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        resolve(dataUrl);
+      };
+      img.onerror = () => {
+        resolve(readerEvent.target?.result as string);
+      };
+      img.src = readerEvent.target?.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+export interface ManualTradesContainerProps {
+  onSymbolSelect?: (symbol: string) => void;
+  onSwitchToChart?: () => void;
+}
+
+export const ManualTradesContainer: React.FC<ManualTradesContainerProps> = ({ onSymbolSelect, onSwitchToChart }) => {
   // Load trades from localStorage (default to DEFAULT_MANUAL_TRADES)
   const [trades, setTrades] = useState<ManualTrade[]>(() => {
     try {
@@ -161,67 +331,122 @@ export const ManualTradesContainer: React.FC = () => {
     }
   }, [trades]);
 
-  const [livePrices, setLivePrices] = useState<Record<string, number>>({});
-
+  // Sync with backend API on mount
   useEffect(() => {
     let isMounted = true;
-    const fetchLivePrices = async () => {
+    const syncBackendTrades = async () => {
       try {
         const backendHttp = await getBackendHttpUrl();
-        const newPrices: Record<string, number> = {};
-
-        await Promise.all(
-          trades.map(async (t) => {
-            try {
-              // If trade price update is stopped/frozen by radio button, preserve existing price
-              if (t.isPriceFrozen) {
-                newPrices[t.id] = t.currentPrice ?? t.finalAchievedPrice ?? t.entryPrice ?? 0;
-                return;
-              }
-
-              // 1. Try contract symbol directly first
-              const res = await fetch(`${backendHttp}/api/candles?symbol=${encodeURIComponent(t.symbol)}&timeframe=5&limit=1`);
-              if (res.ok) {
-                const data = await res.json();
-                if (data.candles && data.candles.length > 0) {
-                  newPrices[t.id] = data.candles[data.candles.length - 1].close;
-                  return;
-                }
-              }
-
-              // 2. Fallback to underlying spot symbol candle
-              const spotSym = getUnderlyingSymbol(t.displayName || t.symbol);
-              const spotRes = await fetch(`${backendHttp}/api/candles?symbol=${encodeURIComponent(spotSym)}&timeframe=5&limit=1`);
-              if (spotRes.ok) {
-                const spotData = await spotRes.json();
-                if (spotData.candles && spotData.candles.length > 0) {
-                  const spotPrice = spotData.candles[spotData.candles.length - 1].close;
-                  
-                  if (t.currentPrice) {
-                    // Micro live tick fluctuation around latest traded price
-                    const jitter = (Math.random() - 0.5) * 0.10;
-                    newPrices[t.id] = Number(Math.max(0.5, t.currentPrice + jitter).toFixed(2));
-                  } else {
-                    newPrices[t.id] = spotPrice;
-                  }
-                }
-              }
-            } catch (e) {
-              // Ignore single trade fetch error
-            }
-          })
-        );
-
-        if (isMounted && Object.keys(newPrices).length > 0) {
-          setLivePrices((prev) => ({ ...prev, ...newPrices }));
+        const res = await fetch(`${backendHttp}/api/manual-trades`);
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data && Array.isArray(data.trades) && data.trades.length > 0) {
+            setTrades(prev => {
+              const backendMap = new Map(data.trades.map((t: ManualTrade) => [t.id, t]));
+              const merged = [...data.trades];
+              prev.forEach(t => {
+                if (!backendMap.has(t.id)) merged.push(t);
+              });
+              return merged;
+            });
+          }
         }
-      } catch (err) {
-        console.error('Failed to fetch live prices for manual trades:', err);
+      } catch (e) {
+        // Fall back to local trades
+      }
+    };
+    syncBackendTrades();
+    return () => { isMounted = false; };
+  }, []);
+
+  const [livePrices, setLivePrices] = useState<Record<string, number>>({});
+  const [priceFlash, setPriceFlash] = useState<Record<string, 'up' | 'down' | null>>({});
+  const livePricesRef = React.useRef<Record<string, number>>({});
+
+  useEffect(() => {
+    livePricesRef.current = livePrices;
+  }, [livePrices]);
+
+  // 1. WebSocket Live Quotes Listener for instant 0ms broadcast ticks
+  useEffect(() => {
+    tvStreamer.setManualTradesQuotesListener((quotes: Record<string, any>) => {
+      setLivePrices((prev) => {
+        const next = { ...prev };
+        const flashes: Record<string, 'up' | 'down' | null> = {};
+        let changed = false;
+
+        for (const [id, q] of Object.entries(quotes)) {
+          if (q && q.ltp !== undefined && q.ltp !== null) {
+            const oldP = prev[id] ?? q.ltp;
+            if (q.ltp !== oldP) {
+              flashes[id] = q.ltp > oldP ? 'up' : 'down';
+              changed = true;
+            }
+            next[id] = q.ltp;
+          }
+        }
+
+        if (changed && Object.keys(flashes).length > 0) {
+          setPriceFlash(flashes);
+          setTimeout(() => setPriceFlash({}), 600);
+        }
+        return next;
+      });
+    });
+  }, []);
+
+  // 2. Continuous Real-Time Price Engine & REST Fallback Poller (1000ms)
+  useEffect(() => {
+    let isMounted = true;
+
+    // Fetch real-time live quotes directly from backend
+    const pollBackendQuotes = async () => {
+      try {
+        const backendHttp = await getBackendHttpUrl();
+        const res = await fetch(`${backendHttp}/api/manual-trades/live-quotes`, {
+          headers: { 'bypass-tunnel-reminder': 'true' }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data && data.quotes) {
+            setLivePrices((prev) => {
+              const next = { ...prev };
+              const flashes: Record<string, 'up' | 'down' | null> = {};
+              let changed = false;
+
+              for (const [id, q] of Object.entries(data.quotes as Record<string, any>)) {
+                if (q && q.ltp !== undefined && q.ltp !== null) {
+                  const oldP = prev[id] ?? q.ltp;
+                  if (q.ltp !== oldP) {
+                    flashes[id] = q.ltp > oldP ? 'up' : 'down';
+                    changed = true;
+                  }
+                  next[id] = q.ltp;
+                }
+              }
+
+              if (changed && Object.keys(flashes).length > 0) {
+                setPriceFlash(flashes);
+                setTimeout(() => {
+                  if (isMounted) setPriceFlash({});
+                }, 600);
+              }
+              return next;
+            });
+            return;
+          }
+        }
+      } catch (e) {
+        // Backend offline or static HF Space
       }
     };
 
-    fetchLivePrices();
-    const interval = setInterval(fetchLivePrices, 4000);
+    // Initial instant fetch
+    pollBackendQuotes();
+
+    // High frequency interval (every 1000ms) ensures continuous live pricing
+    const interval = setInterval(pollBackendQuotes, 1000);
+
     return () => {
       isMounted = false;
       clearInterval(interval);
@@ -275,11 +500,25 @@ export const ManualTradesContainer: React.FC = () => {
       prev.map((t) => {
         if (t.id === tradeId) {
           const frozenPrice = livePrices[t.id] ?? t.currentPrice ?? t.finalAchievedPrice ?? t.entryPrice ?? 0;
+          const gain = Number((frozenPrice - (t.entryPrice || 0)).toFixed(1));
+          let status = t.finalStatus;
+          if (freeze) {
+            if (t.target3 > 0 && frozenPrice >= t.target3) status = 'TARGET 3 HIT';
+            else if (t.target2 > 0 && frozenPrice >= t.target2) status = 'TARGET 2 HIT';
+            else if (t.target1 > 0 && frozenPrice >= t.target1) status = 'TARGET 1 HIT';
+            else if (t.stopLoss > 0 && frozenPrice <= t.stopLoss) status = 'STOP LOSS HIT';
+            else status = 'STOPPED';
+          } else {
+            status = 'LIVE ACTIVE';
+          }
+
           const updatedTrade: ManualTrade = {
             ...t,
             isPriceFrozen: freeze,
             currentPrice: Number(frozenPrice.toFixed(2)),
-            finalAchievedPrice: freeze ? Number(frozenPrice.toFixed(2)) : t.finalAchievedPrice
+            finalAchievedPrice: Number(frozenPrice.toFixed(2)),
+            ptsGained: gain,
+            finalStatus: status
           };
           // Post to backend REST API to sync freeze state across all connected users
           getBackendHttpUrl().then((backendHttp) => {
@@ -296,6 +535,52 @@ export const ManualTradesContainer: React.FC = () => {
     );
   };
 
+  // State for visual pulse when a voice alert is broadcasting
+  const [announcingTradeId, setAnnouncingTradeId] = useState<string | null>(null);
+
+  // Subscribe to real-time voice alert broadcasts from any open dashboard
+  useEffect(() => {
+    tvStreamer.addVoiceAnnouncementListener((alert) => {
+      if (alert && alert.tradeId) {
+        setAnnouncingTradeId(alert.tradeId);
+        setTimeout(() => setAnnouncingTradeId(null), 3500);
+      }
+    });
+  }, []);
+
+  // Broadcast Voice Alert Announcement to all open dashboards
+  const handlePushVoiceAlert = async (trade: ManualTrade) => {
+    setAnnouncingTradeId(trade.id);
+    setTimeout(() => setAnnouncingTradeId(null), 3500);
+
+    const tradeTypeClean = (trade.tradeType || 'Call Buy').replace('BUY', 'Buy').replace('SHORT', 'Short').replace('LONG', 'Long');
+    const nameClean = trade.displayName || trade.symbol || 'Contract';
+    const entryClean = Number(trade.entryPrice || 0).toFixed(2);
+    const slClean = Number(trade.stopLoss || 0).toFixed(2);
+    const t1Clean = Number(trade.target1 || 0).toFixed(2);
+    const t2Clean = Number(trade.target2 || 0).toFixed(2);
+    const t3Clean = Number(trade.target3 || 0).toFixed(2);
+    const currentLtp = livePrices[trade.id] ?? trade.currentPrice ?? trade.entryPrice ?? 0;
+
+    const message = `Attention traders! Live Trade Alert: ${tradeTypeClean} ${nameClean}. Entry triggered at ${entryClean} rupees. Target 1: ${t1Clean}. Target 2: ${t2Clean}. Target 3: ${t3Clean}. Stop Loss: ${slClean}. Current LTP is ${Number(currentLtp).toFixed(2)} rupees.`;
+
+    try {
+      const backendHttp = await getBackendHttpUrl();
+      await fetch(`${backendHttp}/api/manual-trades/voice-alert`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tradeId: trade.id,
+          trade,
+          message,
+          currentLtp
+        })
+      });
+    } catch (err) {
+      console.error('Failed to broadcast voice alert to backend:', err);
+    }
+  };
+
 
   const [filterStatus, setFilterStatus] = useState<'ALL' | 'NIFTY' | 'BANKNIFTY' | 'LIVE_ACTIVE' | 'TARGET_HIT'>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -303,6 +588,10 @@ export const ManualTradesContainer: React.FC = () => {
   // Form Modal state
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
   const [editingTradeId, setEditingTradeId] = useState<string | null>(null);
+
+  // Marked Chart Inspection Modal state
+  const [selectedTradeForModal, setSelectedTradeForModal] = useState<ManualTrade | null>(null);
+  const [isChartFullscreen, setIsChartFullscreen] = useState<boolean>(false);
 
   // Form Field State
   const [formData, setFormData] = useState<{
@@ -320,6 +609,7 @@ export const ManualTradesContainer: React.FC = () => {
     finalStatus: 'TARGET 3 HIT' | 'TARGET 2 HIT' | 'TARGET 1 HIT' | 'LIVE ACTIVE' | 'STOP LOSS HIT';
     isPriceFrozen: boolean;
     notes: string;
+    chartImage: string;
     date: string;
   }>({
     displayName: '',
@@ -336,6 +626,7 @@ export const ManualTradesContainer: React.FC = () => {
     finalStatus: 'LIVE ACTIVE',
     isPriceFrozen: false,
     notes: '',
+    chartImage: '',
     date: new Date().toISOString().replace('T', ' ').substring(0, 16)
   });
 
@@ -356,6 +647,7 @@ export const ManualTradesContainer: React.FC = () => {
       finalStatus: 'LIVE ACTIVE',
       isPriceFrozen: false,
       notes: '',
+      chartImage: '',
       date: nowStr
     });
     setEditingTradeId(null);
@@ -383,9 +675,62 @@ export const ManualTradesContainer: React.FC = () => {
       finalStatus: t.finalStatus || 'LIVE ACTIVE',
       isPriceFrozen: Boolean(t.isPriceFrozen),
       notes: t.notes || '',
+      chartImage: t.chartImage || '',
       date: t.date || new Date().toISOString().replace('T', ' ').substring(0, 16)
     });
     setIsFormOpen(true);
+  };
+
+  const handleFormImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const dataUrl = await processImageFile(file);
+      setFormData(prev => ({ ...prev, chartImage: dataUrl }));
+    } catch (err) {
+      console.error('Failed to process image:', err);
+    }
+  };
+
+  const handleModalChartUpload = async (tradeId: string, file: File) => {
+    try {
+      const dataUrl = await processImageFile(file);
+      setTrades(prev => prev.map(t => t.id === tradeId ? { ...t, chartImage: dataUrl } : t));
+      setSelectedTradeForModal(prev => prev && prev.id === tradeId ? { ...prev, chartImage: dataUrl } : prev);
+
+      const updatedTrade = trades.find(t => t.id === tradeId);
+      if (updatedTrade) {
+        const payload = { ...updatedTrade, chartImage: dataUrl };
+        getBackendHttpUrl().then(backendHttp => {
+          fetch(`${backendHttp}/api/manual-trades`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          }).catch(() => {});
+        });
+      }
+    } catch (err) {
+      console.error('Failed to process image:', err);
+    }
+  };
+
+  const handleRemoveModalChart = (tradeId: string) => {
+    if (window.confirm('Remove the marked chart from this trade?')) {
+      setTrades(prev => prev.map(t => t.id === tradeId ? { ...t, chartImage: undefined } : t));
+      setSelectedTradeForModal(prev => prev && prev.id === tradeId ? { ...prev, chartImage: undefined } : prev);
+
+      const updatedTrade = trades.find(t => t.id === tradeId);
+      if (updatedTrade) {
+        const payload = { ...updatedTrade, chartImage: '' };
+        getBackendHttpUrl().then(backendHttp => {
+          fetch(`${backendHttp}/api/manual-trades`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          }).catch(() => {});
+        });
+      }
+    }
   };
 
   const handleDeleteTrade = (id: string) => {
@@ -445,7 +790,8 @@ export const ManualTradesContainer: React.FC = () => {
       roiPct: Number(roi.toFixed(2)),
       holdingTime: 'Intraday',
       riskReward: sl !== entry ? `1:${((t1 - entry) / Math.abs(entry - sl)).toFixed(1)}` : '1:2.0',
-      notes: formData.notes.trim()
+      notes: formData.notes.trim(),
+      chartImage: formData.chartImage || ''
     };
 
     if (editingTradeId) {
@@ -491,16 +837,37 @@ export const ManualTradesContainer: React.FC = () => {
   // Performance Summary
   const summaryStats = useMemo(() => {
     const total = trades.length;
-    const targetHits = trades.filter(t => t.finalStatus && t.finalStatus.startsWith('TARGET')).length;
-    const target3Hits = trades.filter(t => t.finalStatus === 'TARGET 3 HIT').length;
-    const liveActive = trades.filter(t => t.finalStatus === 'LIVE ACTIVE').length;
+    let targetHits = 0;
+    let target3Hits = 0;
+    let liveActive = 0;
+    let totalPts = 0;
+
+    trades.forEach((t) => {
+      const isLiveUpdating = !t.isPriceFrozen;
+      const liveLtp = isLiveUpdating
+        ? (livePrices[t.id] ?? t.currentPrice ?? t.entryPrice ?? 0)
+        : (t.currentPrice ?? t.finalAchievedPrice ?? t.entryPrice ?? 0);
+      const achieved = isLiveUpdating ? liveLtp : (t.finalAchievedPrice ?? liveLtp);
+      const pts = (achieved && t.entryPrice) ? (achieved - t.entryPrice) : (t.ptsGained ?? 0);
+      totalPts += pts;
+
+      const isT3 = (t.target3 > 0 && achieved >= t.target3) || t.finalStatus === 'TARGET 3 HIT';
+      const isT2 = !isT3 && ((t.target2 > 0 && achieved >= t.target2) || t.finalStatus === 'TARGET 2 HIT');
+      const isT1 = !isT3 && !isT2 && ((t.target1 > 0 && achieved >= t.target1) || t.finalStatus === 'TARGET 1 HIT');
+      const isSL = (t.stopLoss > 0 && achieved <= t.stopLoss) || t.finalStatus === 'STOP LOSS HIT';
+
+      if (isT3) {
+        target3Hits++;
+        targetHits++;
+      } else if (isT2 || isT1) {
+        targetHits++;
+      } else if (!isSL) {
+        liveActive++;
+      }
+    });
+
     const denominator = total - liveActive;
     const winRate = denominator > 0 ? Math.round((targetHits / denominator) * 1000) / 10 : (targetHits > 0 ? 100 : 0);
-    
-    const totalPts = trades.reduce((acc, t) => {
-      const pts = t.ptsGained ?? (t.finalAchievedPrice && t.entryPrice ? t.finalAchievedPrice - t.entryPrice : 0);
-      return acc + pts;
-    }, 0);
     const avgPts = total > 0 ? Math.round((totalPts / total) * 10) / 10 : 0;
 
     return {
@@ -512,7 +879,7 @@ export const ManualTradesContainer: React.FC = () => {
       totalPts: Math.round(totalPts * 10) / 10,
       avgPts
     };
-  }, [trades]);
+  }, [trades, livePrices]);
 
   return (
     <div className="glass-panel animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%', padding: '20px', boxSizing: 'border-box' }}>
@@ -787,6 +1154,7 @@ export const ManualTradesContainer: React.FC = () => {
                       fontSize: '12px'
                     }}
                   >
+                    <option value="EQUITY BUY">EQUITY BUY 📈</option>
                     <option value="CALL BUY">CALL BUY 📈</option>
                     <option value="PUT BUY">PUT BUY 📉</option>
                     <option value="FUT LONG">FUT LONG 🚀</option>
@@ -1111,6 +1479,81 @@ export const ManualTradesContainer: React.FC = () => {
                 </div>
               </div>
 
+              {/* Upload Marked Chart in Form */}
+              <div style={{ background: 'rgba(16, 185, 129, 0.04)', padding: '14px', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px', flexWrap: 'wrap', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Image size={15} color="#10b981" />
+                    <label style={{ fontSize: '11px', color: '#34d399', fontWeight: '800' }}>
+                      Marked Chart Screenshot (Optional)
+                    </label>
+                  </div>
+                  {formData.chartImage && (
+                    <span style={{ fontSize: '10px', color: '#10b981', fontWeight: '800', background: 'rgba(16, 185, 129, 0.2)', padding: '2px 6px', borderRadius: '4px' }}>
+                      ✓ Image Attached
+                    </span>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginTop: '8px' }}>
+                  <label style={{
+                    background: 'rgba(16, 185, 129, 0.2)',
+                    border: '1px solid #10b981',
+                    color: '#34d399',
+                    padding: '6px 14px',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '11px',
+                    fontWeight: '700',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}>
+                    <Upload size={14} />
+                    <span>{formData.chartImage ? 'Replace Image' : 'Upload Marked Chart File'}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={handleFormImageUpload}
+                    />
+                  </label>
+
+                  {formData.chartImage && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{
+                        width: '48px',
+                        height: '32px',
+                        borderRadius: '4px',
+                        overflow: 'hidden',
+                        border: '1px solid #10b981',
+                        background: '#000'
+                      }}>
+                        <img src={formData.chartImage} alt="Chart preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, chartImage: '' })}
+                        style={{
+                          background: 'rgba(239, 68, 68, 0.2)',
+                          border: '1px solid rgba(239, 68, 68, 0.4)',
+                          color: '#ef4444',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          fontSize: '10px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '6px' }}>
+                  Upload a TradingView/Angel One marked chart screenshot showing entry level, stop loss, or target zones.
+                </div>
+              </div>
+
               {/* Submit Buttons */}
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
                 <button
@@ -1222,14 +1665,23 @@ export const ManualTradesContainer: React.FC = () => {
             </thead>
             <tbody>
               {filteredTrades.map((t) => {
-                const liveLtp = livePrices[t.id] ?? t.currentPrice ?? t.finalAchievedPrice ?? t.entryPrice ?? 0;
-                
-                // Determine dynamic status based on live price
-                const isT3 = t.finalStatus === 'TARGET 3 HIT' || (t.target3 > 0 && liveLtp >= t.target3);
-                const isT2 = !isT3 && (t.finalStatus === 'TARGET 2 HIT' || (t.target2 > 0 && liveLtp >= t.target2));
-                const isT1 = !isT3 && !isT2 && (t.finalStatus === 'TARGET 1 HIT' || (t.target1 > 0 && liveLtp >= t.target1));
-                const isSL = t.finalStatus === 'STOP LOSS HIT' || (t.stopLoss > 0 && liveLtp <= t.stopLoss);
-                const isLive = !isT3 && !isT2 && !isT1 && !isSL;
+                const isLiveUpdating = !t.isPriceFrozen;
+                const liveLtp = isLiveUpdating
+                  ? (livePrices[t.id] ?? t.currentPrice ?? t.entryPrice ?? 0)
+                  : (t.currentPrice ?? t.finalAchievedPrice ?? t.entryPrice ?? 0);
+
+                // When Live is active, achievedPrice dynamically tracks liveLtp. When Stopped/Frozen, it holds the locked exit price.
+                const achievedPrice = isLiveUpdating ? liveLtp : (t.finalAchievedPrice ?? liveLtp);
+                const gainPts = (achievedPrice && t.entryPrice) ? (achievedPrice - t.entryPrice) : (t.ptsGained ?? 0);
+                const roiPct = (t.entryPrice && t.entryPrice > 0) ? (gainPts / t.entryPrice) * 100 : 0;
+
+                // Dynamic target/SL evaluation
+                const isT3 = (t.target3 > 0 && achievedPrice >= t.target3) || (!isLiveUpdating && t.finalStatus === 'TARGET 3 HIT');
+                const isT2 = !isT3 && ((t.target2 > 0 && achievedPrice >= t.target2) || (!isLiveUpdating && t.finalStatus === 'TARGET 2 HIT'));
+                const isT1 = !isT3 && !isT2 && ((t.target1 > 0 && achievedPrice >= t.target1) || (!isLiveUpdating && t.finalStatus === 'TARGET 1 HIT'));
+                const isSL = !isT3 && !isT2 && !isT1 && ((t.stopLoss > 0 && achievedPrice <= t.stopLoss) || (!isLiveUpdating && t.finalStatus === 'STOP LOSS HIT'));
+                const isLive = isLiveUpdating && !isT3 && !isT2 && !isT1 && !isSL;
+                const isFrozen = !isLiveUpdating;
 
                 return (
                   <tr
@@ -1240,15 +1692,77 @@ export const ManualTradesContainer: React.FC = () => {
                         ? 'rgba(245, 158, 11, 0.05)'
                         : isLive 
                           ? 'rgba(0, 240, 255, 0.08)' 
-                          : isT3 ? 'rgba(16, 185, 129, 0.06)' : 'transparent'
+                          : isT3 ? 'rgba(16, 185, 129, 0.06)' : isT2 ? 'rgba(16, 185, 129, 0.04)' : 'transparent'
                     }}
                   >
                     {/* Symbol & Date */}
                     <td style={{ padding: '12px', textAlign: 'left' }}>
                       <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontSize: '13px', fontWeight: '900', color: '#ffffff' }}>
-                          {t.displayName}
-                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span 
+                            onClick={() => setSelectedTradeForModal(t)}
+                            title={`Click to view Details & Marked Chart for ${t.displayName}`}
+                            style={{ 
+                              fontSize: '13px', 
+                              fontWeight: '900', 
+                              color: '#ffffff',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            {t.displayName}
+                          </span>
+                          {t.chartImage && (
+                            <span 
+                              onClick={() => setSelectedTradeForModal(t)}
+                              title="Marked Chart Attached - Click to inspect"
+                              style={{
+                                background: 'rgba(16, 185, 129, 0.2)',
+                                border: '1px solid rgba(16, 185, 129, 0.4)',
+                                color: '#34d399',
+                                padding: '1px 5px',
+                                borderRadius: '4px',
+                                fontSize: '9px',
+                                fontWeight: '800',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '3px'
+                              }}
+                            >
+                              <Image size={10} />
+                              <span>CHART</span>
+                            </span>
+                          )}
+                          {(onSymbolSelect || onSwitchToChart) && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (onSymbolSelect) onSymbolSelect(t.symbol);
+                                if (onSwitchToChart) onSwitchToChart();
+                              }}
+                              title={`View Candlestick Chart for ${t.displayName}`}
+                              style={{
+                                background: 'rgba(59, 130, 246, 0.15)',
+                                border: '1px solid rgba(59, 130, 246, 0.35)',
+                                color: '#60a5fa',
+                                padding: '2px 5px',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '2px',
+                                fontSize: '10px',
+                                fontWeight: '700'
+                              }}
+                            >
+                              <BarChart2 size={11} />
+                              <span>Chart</span>
+                            </button>
+                          )}
+                        </div>
                         <span style={{ fontSize: '10px', color: '#94a3b8', fontFamily: 'monospace' }}>
                           {t.date} · <strong style={{ color: '#10b981' }}>{t.symbol}</strong>
                         </span>
@@ -1306,16 +1820,18 @@ export const ManualTradesContainer: React.FC = () => {
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '5px',
-                            color: '#00f0ff',
+                            color: priceFlash[t.id] === 'up' ? '#10b981' : priceFlash[t.id] === 'down' ? '#ef4444' : '#00f0ff',
                             fontWeight: '900',
                             fontFamily: 'monospace',
                             fontSize: '13px',
-                            background: 'rgba(0, 240, 255, 0.1)',
+                            background: priceFlash[t.id] === 'up' ? 'rgba(16, 185, 129, 0.25)' : priceFlash[t.id] === 'down' ? 'rgba(239, 68, 68, 0.25)' : 'rgba(0, 240, 255, 0.1)',
                             padding: '3px 8px',
                             borderRadius: '6px',
-                            border: '1px solid rgba(0, 240, 255, 0.25)'
+                            border: priceFlash[t.id] === 'up' ? '1px solid #10b981' : priceFlash[t.id] === 'down' ? '1px solid #ef4444' : '1px solid rgba(0, 240, 255, 0.25)',
+                            boxShadow: priceFlash[t.id] === 'up' ? '0 0 10px rgba(16, 185, 129, 0.5)' : priceFlash[t.id] === 'down' ? '0 0 10px rgba(239, 68, 68, 0.5)' : 'none',
+                            transition: 'all 0.25s ease-in-out'
                           }}>
-                            <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#00f0ff', boxShadow: '0 0 8px #00f0ff' }} className="animate-pulse" />
+                            <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: priceFlash[t.id] === 'up' ? '#10b981' : priceFlash[t.id] === 'down' ? '#ef4444' : '#00f0ff', boxShadow: '0 0 8px currentColor' }} className="animate-pulse" />
                             ₹{liveLtp.toFixed(2)}
                           </span>
                         )}
@@ -1393,17 +1909,19 @@ export const ManualTradesContainer: React.FC = () => {
                       ₹{(t.stopLoss ?? 0).toFixed(2)}
                     </td>
 
-                    {/* Achieved Price */}
-                    <td style={{ padding: '12px', fontFamily: 'monospace', fontWeight: '900', color: isT3 || isT2 ? '#10b981' : isLive ? '#00f0ff' : '#ffffff', fontSize: '13px' }}>
-                      ₹{(t.finalAchievedPrice ?? 0).toFixed(2)}
+                    {/* Achieved Exit Price */}
+                    <td style={{ padding: '12px', fontFamily: 'monospace', fontWeight: '900', color: isT3 || isT2 ? '#10b981' : isLiveUpdating ? '#00f0ff' : '#ffffff', fontSize: '13px' }}>
+                      ₹{achievedPrice.toFixed(2)}
                     </td>
 
-                    {/* Points Gained */}
-                    <td style={{ padding: '12px', fontWeight: '900', color: (t.ptsGained ?? (t.finalAchievedPrice - t.entryPrice) ?? 0) >= 0 ? '#10b981' : '#ef4444', fontFamily: 'monospace', fontSize: '13px' }}>
-                      {(() => {
-                        const pts = t.ptsGained ?? ((t.finalAchievedPrice && t.entryPrice) ? t.finalAchievedPrice - t.entryPrice : 0);
-                        return pts >= 0 ? `+${pts.toFixed(1)} pts` : `${pts.toFixed(1)} pts`;
-                      })()}
+                    {/* Points Gained & ROI */}
+                    <td style={{ padding: '12px', fontWeight: '900', color: gainPts >= 0 ? '#10b981' : '#ef4444', fontFamily: 'monospace', fontSize: '13px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <span>{gainPts >= 0 ? `+${gainPts.toFixed(1)} pts` : `${gainPts.toFixed(1)} pts`}</span>
+                        <span style={{ fontSize: '10px', opacity: 0.85, color: gainPts >= 0 ? '#34d399' : '#f87171' }}>
+                          ({roiPct >= 0 ? `+${roiPct.toFixed(1)}%` : `${roiPct.toFixed(1)}%`})
+                        </span>
+                      </div>
                     </td>
 
                     {/* Final Status */}
@@ -1414,19 +1932,23 @@ export const ManualTradesContainer: React.FC = () => {
                         </span>
                       ) : isT3 ? (
                         <span style={{ background: 'rgba(245, 158, 11, 0.2)', color: '#facc15', border: '1px solid #f59e0b', padding: '3px 8px', borderRadius: '4px', fontWeight: '900', fontSize: '10px' }}>
-                          🎯 TARGET 3 HIT
+                          🎯 TARGET 3 HIT {isFrozen && '🔒'}
                         </span>
                       ) : isT2 ? (
                         <span style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', border: '1px solid #10b981', padding: '3px 8px', borderRadius: '4px', fontWeight: '800', fontSize: '10px' }}>
-                          🚀 TARGET 2 HIT
+                          🚀 TARGET 2 HIT {isFrozen && '🔒'}
+                        </span>
+                      ) : isT1 ? (
+                        <span style={{ background: 'rgba(59, 130, 246, 0.2)', color: '#60a5fa', border: '1px solid #3b82f6', padding: '3px 8px', borderRadius: '4px', fontWeight: '800', fontSize: '10px' }}>
+                          ✅ TARGET 1 HIT {isFrozen && '🔒'}
                         </span>
                       ) : isSL ? (
                         <span style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', border: '1px solid #ef4444', padding: '3px 8px', borderRadius: '4px', fontWeight: '800', fontSize: '10px' }}>
-                          🛑 STOP LOSS HIT
+                          🛑 STOP LOSS HIT {isFrozen && '🔒'}
                         </span>
                       ) : (
-                        <span style={{ background: 'rgba(59, 130, 246, 0.2)', color: '#60a5fa', border: '1px solid #3b82f6', padding: '3px 8px', borderRadius: '4px', fontWeight: '800', fontSize: '10px' }}>
-                          ✅ TARGET 1 HIT
+                        <span style={{ background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', border: '1px solid #f59e0b', padding: '3px 8px', borderRadius: '4px', fontWeight: '800', fontSize: '10px' }}>
+                          ⏸️ FROZEN
                         </span>
                       )}
                     </td>
@@ -1434,6 +1956,77 @@ export const ManualTradesContainer: React.FC = () => {
                     {/* Actions */}
                     <td style={{ padding: '12px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                        {/* Marked Chart Popup Button */}
+                        <button
+                          onClick={() => setSelectedTradeForModal(t)}
+                          title={t.chartImage ? `View Marked Chart & Details for ${t.displayName}` : `Upload Marked Chart for ${t.displayName}`}
+                          style={{
+                            background: t.chartImage ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.06)',
+                            border: t.chartImage ? '1px solid #10b981' : '1px dashed rgba(255, 255, 255, 0.25)',
+                            color: t.chartImage ? '#34d399' : '#cbd5e1',
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            fontWeight: '700',
+                            fontSize: '11px',
+                            transition: 'all 0.15s'
+                          }}
+                        >
+                          <Image size={13} color={t.chartImage ? '#34d399' : '#94a3b8'} />
+                          <span>{t.chartImage ? 'Marked' : '+ Chart'}</span>
+                        </button>
+
+                        {/* Candlestick Chart Button */}
+                        <button
+                          onClick={() => {
+                            if (onSymbolSelect) onSymbolSelect(t.symbol);
+                            if (onSwitchToChart) onSwitchToChart();
+                          }}
+                          title={`Open Candlestick Chart for ${t.displayName} (${t.symbol})`}
+                          style={{
+                            background: 'rgba(59, 130, 246, 0.2)',
+                            border: '1px solid #3b82f6',
+                            color: '#93c5fd',
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            fontWeight: '700',
+                            fontSize: '11px',
+                            transition: 'all 0.15s'
+                          }}
+                        >
+                          <BarChart2 size={13} color="#60a5fa" />
+                          <span>Chart</span>
+                        </button>
+
+                        {/* Voice Alert Announcement Speaker Button */}
+                        <button
+                          onClick={() => handlePushVoiceAlert(t)}
+                          title="🔊 Broadcast Voice Announcement to all open dashboards"
+                          style={{
+                            background: announcingTradeId === t.id ? 'rgba(245, 158, 11, 0.45)' : 'rgba(245, 158, 11, 0.15)',
+                            border: announcingTradeId === t.id ? '1px solid #f59e0b' : '1px solid rgba(245, 158, 11, 0.3)',
+                            color: '#f59e0b',
+                            padding: '4px 6px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: announcingTradeId === t.id ? '0 0 12px rgba(245, 158, 11, 0.8)' : 'none',
+                            transform: announcingTradeId === t.id ? 'scale(1.15)' : 'scale(1)',
+                            transition: 'all 0.2s ease-in-out'
+                          }}
+                        >
+                          <Volume2 size={13} className={announcingTradeId === t.id ? 'animate-bounce' : ''} />
+                        </button>
+
                         <button
                           onClick={() => handleTogglePriceFreeze(t.id, !t.isPriceFrozen)}
                           title={t.isPriceFrozen ? 'Resume Live Price Streaming' : 'Stop / Freeze Current Price'}
@@ -1483,6 +2076,550 @@ export const ManualTradesContainer: React.FC = () => {
               })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* TRADE DETAILS & MARKED CHART INSPECTION MODAL */}
+      {selectedTradeForModal && (() => {
+        const t = selectedTradeForModal;
+        const isLiveUpdating = !t.isPriceFrozen;
+        const liveLtp = isLiveUpdating
+          ? (livePrices[t.id] ?? t.currentPrice ?? t.entryPrice ?? 0)
+          : (t.currentPrice ?? t.finalAchievedPrice ?? t.entryPrice ?? 0);
+        const achievedPrice = isLiveUpdating ? liveLtp : (t.finalAchievedPrice ?? liveLtp);
+        const gainPts = (achievedPrice && t.entryPrice) ? (achievedPrice - t.entryPrice) : (t.ptsGained ?? 0);
+        const roiPct = (t.entryPrice && t.entryPrice > 0) ? (gainPts / t.entryPrice) * 100 : 0;
+
+        return (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.82)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '20px'
+          }} onClick={() => setSelectedTradeForModal(null)}>
+            <div style={{
+              background: 'linear-gradient(135deg, #0f172a, #0b0f17)',
+              border: '1px solid rgba(16, 185, 129, 0.4)',
+              borderRadius: '16px',
+              maxWidth: '1240px',
+              width: '95%',
+              padding: '24px',
+              maxHeight: '92vh',
+              overflowY: 'auto',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 40px rgba(16, 185, 129, 0.15)'
+            }} onClick={(e) => e.stopPropagation()}>
+              
+              {/* Modal Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <h3 style={{ fontSize: '22px', fontWeight: '800', margin: 0, color: '#fff' }}>
+                      {t.displayName}
+                    </h3>
+                    <span style={{
+                      fontSize: '11px',
+                      fontWeight: '700',
+                      padding: '2px 8px',
+                      borderRadius: '6px',
+                      background: t.tradeType.includes('BUY') || t.tradeType.includes('LONG') ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+                      color: t.tradeType.includes('BUY') || t.tradeType.includes('LONG') ? '#10b981' : '#ef4444',
+                      border: t.tradeType.includes('BUY') || t.tradeType.includes('LONG') ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)'
+                    }}>
+                      {t.tradeType}
+                    </span>
+                    <span style={{
+                      fontSize: '11px',
+                      fontWeight: '700',
+                      padding: '2px 8px',
+                      borderRadius: '6px',
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      color: '#cbd5e1',
+                      border: '1px solid rgba(255, 255, 255, 0.1)'
+                    }}>
+                      {t.setupName}
+                    </span>
+                    <span style={{
+                      fontSize: '11px',
+                      fontWeight: '700',
+                      padding: '2px 8px',
+                      borderRadius: '6px',
+                      background: t.finalStatus.startsWith('TARGET') ? 'rgba(16, 185, 129, 0.2)' : t.finalStatus === 'STOP LOSS HIT' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(0, 240, 255, 0.2)',
+                      color: t.finalStatus.startsWith('TARGET') ? '#10b981' : t.finalStatus === 'STOP LOSS HIT' ? '#ef4444' : '#00f0ff',
+                      border: t.finalStatus.startsWith('TARGET') ? '1px solid rgba(16, 185, 129, 0.3)' : t.finalStatus === 'STOP LOSS HIT' ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(0, 240, 255, 0.3)'
+                    }}>
+                      {t.finalStatus} {t.isPriceFrozen && '🔒'}
+                    </span>
+                  </div>
+                  <p style={{ fontSize: '13px', color: '#94a3b8', margin: '4px 0 0 0' }}>
+                    {t.date} · <strong style={{ color: '#10b981' }}>{t.symbol}</strong> | LTP: <strong style={{ color: '#00f0ff' }}>₹{liveLtp.toFixed(2)}</strong> ({gainPts >= 0 ? `+${gainPts.toFixed(2)} pts` : `${gainPts.toFixed(2)} pts`} / {roiPct >= 0 ? `+${roiPct.toFixed(2)}%` : `${roiPct.toFixed(2)}%`})
+                  </p>
+                </div>
+                <button 
+                  onClick={() => setSelectedTradeForModal(null)}
+                  style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '4px' }}
+                >
+                  <X size={22} />
+                </button>
+              </div>
+
+              {/* Side-by-Side Responsive Layout */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))',
+                gap: '20px',
+                alignItems: 'start'
+              }}>
+                {/* Left Column: Execution, Targets & Notes */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {/* Execution Levels Card */}
+                  <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '12px', padding: '16px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: '800', color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      🎯 Trade Execution & Target Levels
+                    </span>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginTop: '14px' }}>
+                      <div style={{ background: 'rgba(0, 0, 0, 0.3)', padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                        <div style={{ fontSize: '11px', color: '#94a3b8' }}>Entry Trigger Price</div>
+                        <div style={{ fontSize: '18px', fontWeight: '800', color: '#ffffff', marginTop: '2px' }}>
+                          ₹{(t.entryPrice ?? 0).toFixed(2)}
+                        </div>
+                        <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>Execution Level</div>
+                      </div>
+
+                      <div style={{ background: 'rgba(0, 0, 0, 0.3)', padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                        <div style={{ fontSize: '11px', color: '#94a3b8' }}>Stop Loss</div>
+                        <div style={{ fontSize: '18px', fontWeight: '800', color: '#ef4444', marginTop: '2px' }}>
+                          ₹{(t.stopLoss ?? 0).toFixed(2)}
+                        </div>
+                        <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>Risk: ₹{Math.abs((t.entryPrice ?? 0) - (t.stopLoss ?? 0)).toFixed(2)} pts</div>
+                      </div>
+
+                      <div style={{ background: 'rgba(0, 0, 0, 0.3)', padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+                        <div style={{ fontSize: '11px', color: '#94a3b8' }}>Target 1</div>
+                        <div style={{ fontSize: '18px', fontWeight: '800', color: '#60a5fa', marginTop: '2px' }}>
+                          ₹{(t.target1 ?? 0).toFixed(2)}
+                        </div>
+                        <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>Reward: ₹{((t.target1 ?? 0) - (t.entryPrice ?? 0)).toFixed(2)} pts</div>
+                      </div>
+
+                      <div style={{ background: 'rgba(0, 0, 0, 0.3)', padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                        <div style={{ fontSize: '11px', color: '#94a3b8' }}>Target 2</div>
+                        <div style={{ fontSize: '18px', fontWeight: '800', color: '#34d399', marginTop: '2px' }}>
+                          ₹{(t.target2 ?? 0).toFixed(2)}
+                        </div>
+                        <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>Reward: ₹{((t.target2 ?? 0) - (t.entryPrice ?? 0)).toFixed(2)} pts</div>
+                      </div>
+
+                      <div style={{ background: 'rgba(0, 0, 0, 0.3)', padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+                        <div style={{ fontSize: '11px', color: '#94a3b8' }}>Target 3</div>
+                        <div style={{ fontSize: '18px', fontWeight: '800', color: '#facc15', marginTop: '2px' }}>
+                          ₹{(t.target3 ?? 0).toFixed(2)}
+                        </div>
+                        <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>Extended Runner</div>
+                      </div>
+
+                      <div style={{ background: 'rgba(0, 0, 0, 0.3)', padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(0, 240, 255, 0.2)' }}>
+                        <div style={{ fontSize: '11px', color: '#94a3b8' }}>Current / Exit LTP</div>
+                        <div style={{ fontSize: '18px', fontWeight: '800', color: '#00f0ff', marginTop: '2px' }}>
+                          ₹{liveLtp.toFixed(2)}
+                        </div>
+                        <div style={{ fontSize: '10px', color: gainPts >= 0 ? '#10b981' : '#ef4444', marginTop: '2px', fontWeight: '700' }}>
+                          {gainPts >= 0 ? `+${gainPts.toFixed(2)} pts (+${roiPct.toFixed(2)}%)` : `${gainPts.toFixed(2)} pts (${roiPct.toFixed(2)}%)`}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Notes & Setup Summary Card */}
+                  <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.06)', borderRadius: '12px', padding: '16px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '8px' }}>
+                      📝 Strategy Rationale & Notes
+                    </div>
+                    <div style={{ fontSize: '13px', color: '#cbd5e1', lineHeight: '1.5', background: 'rgba(0, 0, 0, 0.25)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.04)' }}>
+                      {t.notes || 'No custom notes provided for this trade entry.'}
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginTop: '12px', textAlign: 'center' }}>
+                      <div style={{ background: 'rgba(0, 0, 0, 0.2)', padding: '8px', borderRadius: '6px' }}>
+                        <div style={{ fontSize: '10px', color: '#94a3b8' }}>Risk : Reward</div>
+                        <div style={{ fontSize: '13px', fontWeight: '800', color: '#fff', marginTop: '2px' }}>{t.riskReward || '1:2.0'}</div>
+                      </div>
+                      <div style={{ background: 'rgba(0, 0, 0, 0.2)', padding: '8px', borderRadius: '6px' }}>
+                        <div style={{ fontSize: '10px', color: '#94a3b8' }}>Holding Period</div>
+                        <div style={{ fontSize: '13px', fontWeight: '800', color: '#fff', marginTop: '2px' }}>{t.holdingTime || 'Intraday'}</div>
+                      </div>
+                      <div style={{ background: 'rgba(0, 0, 0, 0.2)', padding: '8px', borderRadius: '6px' }}>
+                        <div style={{ fontSize: '10px', color: '#94a3b8' }}>Price State</div>
+                        <div style={{ fontSize: '13px', fontWeight: '800', color: t.isPriceFrozen ? '#f59e0b' : '#00f0ff', marginTop: '2px' }}>
+                          {t.isPriceFrozen ? 'Frozen 🔒' : 'Live Ticks ⚡'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column: Uploaded Marked Chart View */}
+                <div style={{
+                  background: 'rgba(16, 185, 129, 0.04)',
+                  border: '1px solid rgba(16, 185, 129, 0.25)',
+                  borderRadius: '12px',
+                  padding: '16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Image size={18} color="#10b981" />
+                      <span style={{ fontSize: '13px', fontWeight: '800', color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        Marked Chart Analysis
+                      </span>
+                      {t.chartImage && (
+                        <span style={{ fontSize: '10px', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', padding: '2px 6px', borderRadius: '4px', fontWeight: '700' }}>
+                          ATTACHED
+                        </span>
+                      )}
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      <label style={{
+                        background: 'rgba(16, 185, 129, 0.2)',
+                        border: '1px solid #10b981',
+                        color: '#34d399',
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}>
+                        <Upload size={12} />
+                        <span>{t.chartImage ? 'Replace Chart' : 'Upload Chart'}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          style={{ display: 'none' }}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleModalChartUpload(t.id, file);
+                          }}
+                        />
+                      </label>
+
+                      {t.chartImage && (
+                        <>
+                          <button
+                            onClick={() => setIsChartFullscreen(true)}
+                            title="View Fullscreen"
+                            style={{
+                              background: 'rgba(255, 255, 255, 0.08)',
+                              border: '1px solid rgba(255, 255, 255, 0.15)',
+                              color: '#fff',
+                              padding: '4px 8px',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: '11px'
+                            }}
+                          >
+                            <Maximize2 size={12} />
+                            <span>Fullscreen</span>
+                          </button>
+                          <button
+                            onClick={() => handleRemoveModalChart(t.id)}
+                            title="Remove Chart"
+                            style={{
+                              background: 'rgba(239, 68, 68, 0.15)',
+                              border: '1px solid rgba(239, 68, 68, 0.3)',
+                              color: '#f87171',
+                              padding: '4px 8px',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: '11px'
+                            }}
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Chart Container / Dropzone */}
+                  {t.chartImage ? (
+                    <div
+                      style={{
+                        position: 'relative',
+                        borderRadius: '8px',
+                        overflow: 'hidden',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        background: '#070a12',
+                        cursor: 'zoom-in',
+                        maxHeight: '480px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                      onClick={() => setIsChartFullscreen(true)}
+                    >
+                      <img
+                        src={t.chartImage}
+                        alt={`Marked Chart for ${t.displayName}`}
+                        style={{
+                          width: '100%',
+                          maxHeight: '480px',
+                          objectFit: 'contain',
+                          display: 'block'
+                        }}
+                      />
+                      <div style={{
+                        position: 'absolute',
+                        bottom: '8px',
+                        right: '8px',
+                        background: 'rgba(0, 0, 0, 0.75)',
+                        color: '#94a3b8',
+                        padding: '3px 8px',
+                        borderRadius: '4px',
+                        fontSize: '10px',
+                        pointerEvents: 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}>
+                        <ZoomIn size={11} /> Click to expand
+                      </div>
+                    </div>
+                  ) : (
+                    /* Dropzone when no chart uploaded */
+                    <label style={{
+                      border: '2px dashed rgba(16, 185, 129, 0.35)',
+                      borderRadius: '12px',
+                      padding: '40px 20px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '12px',
+                      cursor: 'pointer',
+                      background: 'rgba(0, 0, 0, 0.25)',
+                      transition: 'all 0.2s',
+                      minHeight: '340px'
+                    }}>
+                      <div style={{
+                        width: '56px',
+                        height: '56px',
+                        borderRadius: '50%',
+                        background: 'rgba(16, 185, 129, 0.15)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: '1px solid rgba(16, 185, 129, 0.3)'
+                      }}>
+                        <Upload size={24} color="#10b981" />
+                      </div>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '14px', fontWeight: '700', color: '#fff' }}>
+                          Upload Marked Chart for {t.displayName}
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px', maxWidth: '340px' }}>
+                          Attach TradingView / Angel One chart screenshots with your marked entry, support/resistance, TPO levels, or stop loss.
+                        </div>
+                      </div>
+                      <span style={{
+                        background: 'linear-gradient(135deg, #10b981, #059669)',
+                        color: '#000',
+                        padding: '6px 16px',
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        fontWeight: '800',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}>
+                        <Upload size={13} /> Select Image File (PNG, JPG, WebP)
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleModalChartUpload(t.id, file);
+                        }}
+                      />
+                    </label>
+                  )}
+                </div>
+              </div>
+
+              {/* Modal Footer Actions */}
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '20px', paddingTop: '16px', borderTop: '1px solid rgba(255, 255, 255, 0.08)', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => setSelectedTradeForModal(null)}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    color: '#94a3b8',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '8px',
+                    padding: '8px 16px',
+                    fontSize: '12px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Close
+                </button>
+
+                <button
+                  onClick={() => {
+                    handleEditTrade(t);
+                    setSelectedTradeForModal(null);
+                  }}
+                  style={{
+                    background: 'rgba(59, 130, 246, 0.15)',
+                    color: '#60a5fa',
+                    border: '1px solid rgba(59, 130, 246, 0.35)',
+                    borderRadius: '8px',
+                    padding: '8px 16px',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <Edit2 size={14} /> Edit Trade
+                </button>
+
+                {(onSymbolSelect || onSwitchToChart) && (
+                  <button
+                    onClick={() => {
+                      if (onSymbolSelect) onSymbolSelect(t.symbol);
+                      if (onSwitchToChart) onSwitchToChart();
+                      setSelectedTradeForModal(null);
+                    }}
+                    style={{
+                      background: 'linear-gradient(135deg, #06b6d4, #0284c7)',
+                      color: '#000',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '8px 18px',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <BarChart2 size={14} /> Open Candlestick Chart
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* FULLSCREEN CHART LIGHTBOX */}
+      {isChartFullscreen && selectedTradeForModal?.chartImage && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.95)',
+          zIndex: 100000,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }} onClick={() => setIsChartFullscreen(false)}>
+          <div style={{
+            position: 'absolute',
+            top: '20px',
+            right: '20px',
+            display: 'flex',
+            gap: '12px',
+            zIndex: 10
+          }}>
+            <a
+              href={selectedTradeForModal.chartImage}
+              download={`${selectedTradeForModal.displayName}_marked_chart.jpg`}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: 'rgba(255, 255, 255, 0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                color: '#fff',
+                padding: '8px 14px',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '12px',
+                fontWeight: '700'
+              }}
+            >
+              <Download size={15} /> Download
+            </a>
+            <button
+              onClick={() => setIsChartFullscreen(false)}
+              style={{
+                background: 'rgba(239, 68, 68, 0.3)',
+                border: '1px solid #ef4444',
+                color: '#fff',
+                padding: '8px 14px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '12px',
+                fontWeight: '700'
+              }}
+            >
+              <X size={16} /> Close
+            </button>
+          </div>
+          <div style={{
+            position: 'absolute',
+            top: '20px',
+            left: '20px',
+            color: '#fff',
+            fontSize: '16px',
+            fontWeight: '800'
+          }}>
+            {selectedTradeForModal.displayName} · Marked Chart
+          </div>
+          <img
+            src={selectedTradeForModal.chartImage}
+            alt="Fullscreen Marked Chart"
+            style={{
+              maxWidth: '96vw',
+              maxHeight: '90vh',
+              objectFit: 'contain',
+              boxShadow: '0 0 50px rgba(0, 0, 0, 0.9)',
+              borderRadius: '8px'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
 

@@ -2379,18 +2379,6 @@
       "isFno": true
     },
     {
-      "symbol": "NSE:ULTRACEMCO",
-      "levelName": "S6 (VAL Capitulation)",
-      "levelVal": 11507.693449555536,
-      "low": 11541,
-      "close": 11681,
-      "bounceStrengthPct": 1.2130664587124167,
-      "pattern": "Bullish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 11587.0, close 11681.0) | Double Top Breakdown",
-      "touchTime": "03:18 pm",
-      "optionPremium": 161.8,
-      "isFno": true
-    },
-    {
       "symbol": "NSE:GLAXO",
       "levelName": "S3 (VAL Reversion)",
       "levelVal": 2675.3250000000003,
@@ -7434,18 +7422,6 @@
       "isFno": false
     },
     {
-      "symbol": "NSE:NAVINFLUOR",
-      "levelName": "S6 (VAL Capitulation)",
-      "levelVal": 8102.145074881286,
-      "low": 8110,
-      "close": 8151,
-      "bounceStrengthPct": 0.5055487053020962,
-      "pattern": "Three Black Crows (Bearish Initiation)",
-      "touchTime": "03:28 pm",
-      "optionPremium": null,
-      "isFno": false
-    },
-    {
       "symbol": "NSE:SHREECEM",
       "levelName": "S2 (VAL Reversion)",
       "levelVal": 24666.666666666668,
@@ -8846,18 +8822,6 @@
       "bounceStrengthPct": 0.6915254237288166,
       "pattern": "Neutral Candle",
       "touchTime": "10:22 am",
-      "optionPremium": null,
-      "isFno": false
-    },
-    {
-      "symbol": "NSE:ATHERENERG",
-      "levelName": "S5 (VAL Extreme)",
-      "levelVal": 1477.4360800000004,
-      "low": 1475,
-      "close": 1485.2,
-      "bounceStrengthPct": 0.6915254237288166,
-      "pattern": "Neutral Candle",
-      "touchTime": "03:24 pm",
       "optionPremium": null,
       "isFno": false
     },
@@ -10448,30 +10412,6 @@
       "isFno": false
     },
     {
-      "symbol": "NSE:PWL",
-      "levelName": "R3 (VAH Reversion)",
-      "levelVal": 118.22550000000001,
-      "high": 128.37,
-      "close": 119.97,
-      "rejectStrengthPct": 6.54358494975462,
-      "pattern": "Bullish Engulfing (Momentum Shift) | Volume Climax Bearish Rejection (20.2x Vol) | SSL Sweep Reversal (Low swept 115.6, close 120.0)",
-      "touchTime": "03:24 pm",
-      "optionPremium": null,
-      "isFno": false
-    },
-    {
-      "symbol": "NSE:PWL",
-      "levelName": "R2 (VAH Reversion)",
-      "levelVal": 117.857,
-      "high": 128.37,
-      "close": 119.97,
-      "rejectStrengthPct": 6.54358494975462,
-      "pattern": "Bullish Engulfing (Momentum Shift) | Volume Climax Bearish Rejection (20.2x Vol) | SSL Sweep Reversal (Low swept 115.6, close 120.0)",
-      "touchTime": "03:24 pm",
-      "optionPremium": null,
-      "isFno": false
-    },
-    {
       "symbol": "NSE:SAIL",
       "levelName": "R2 (VAH Reversion)",
       "levelVal": 171.8695,
@@ -10660,18 +10600,6 @@
       "rejectStrengthPct": 0.3859649122807097,
       "pattern": "Cup & Handle Breakout (24% Handle retracement)",
       "touchTime": "12:25 pm",
-      "optionPremium": null,
-      "isFno": false
-    },
-    {
-      "symbol": "NSE:KPRMILL",
-      "levelName": "R6 (VAH Exhaustion)",
-      "levelVal": 1143.4714642493757,
-      "high": 1140,
-      "close": 1135.6,
-      "rejectStrengthPct": 0.3859649122807097,
-      "pattern": "Cup & Handle Breakout (24% Handle retracement)",
-      "touchTime": "03:18 pm",
       "optionPremium": null,
       "isFno": false
     },
@@ -13654,18 +13582,6 @@
       "rejectStrengthPct": 0.5612998522895126,
       "pattern": "SSL Sweep Reversal (Low swept 6645.0, close 6732.0)",
       "touchTime": "03:13 pm",
-      "optionPremium": null,
-      "isFno": false
-    },
-    {
-      "symbol": "NSE:LINDEINDIA",
-      "levelName": "R6 (VAH Exhaustion)",
-      "levelVal": 6786.690744920993,
-      "high": 6770,
-      "close": 6732,
-      "rejectStrengthPct": 0.5612998522895126,
-      "pattern": "SSL Sweep Reversal (Low swept 6645.0, close 6732.0)",
-      "touchTime": "03:18 pm",
       "optionPremium": null,
       "isFno": false
     },
@@ -17144,18 +17060,6 @@
       "pattern": "Hammer (Bullish Rejection)",
       "touchTime": "09:23 am",
       "optionPremium": 1.63,
-      "isFno": true
-    },
-    {
-      "symbol": "NSE:IRFC",
-      "levelName": "R2 (VAH Reversion)",
-      "levelVal": 87.75333333333333,
-      "high": 87.53,
-      "close": 87.05,
-      "rejectStrengthPct": 0.5483834114018096,
-      "pattern": "Hammer (Bullish Rejection)",
-      "touchTime": "03:18 pm",
-      "optionPremium": 1.15,
       "isFno": true
     },
     {

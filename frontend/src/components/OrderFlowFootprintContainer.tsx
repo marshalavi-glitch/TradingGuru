@@ -20,6 +20,7 @@ import {
   calculateAllOrderFlowSignals,
   OrderFlowStockSignal,
 } from '../utils/orderFlowFootprintCalculator';
+import { filterMarketHoursCandles } from '../utils/marketHours';
 
 interface OrderFlowFootprintContainerProps {
   onSymbolSelect?: (symbol: string) => void;
@@ -63,7 +64,7 @@ export const OrderFlowFootprintContainer: React.FC<OrderFlowFootprintContainerPr
           if (res.ok) {
             const data = await res.json();
             if (data.candles && data.candles.length > 0) {
-              newMap[sym] = data.candles;
+              newMap[sym] = filterMarketHoursCandles(data.candles, sym, '5');
             }
           }
         } catch (e) {
@@ -88,7 +89,7 @@ export const OrderFlowFootprintContainer: React.FC<OrderFlowFootprintContainerPr
         if (payload.candles && payload.candles.length > 0) {
           setCandlesMap((prev) => ({
             ...prev,
-            [payload.symbol]: payload.candles,
+            [payload.symbol]: filterMarketHoursCandles(payload.candles, payload.symbol, '5'),
           }));
         }
       }

@@ -225,6 +225,9 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
   // Persistent user scroll position trackers to prevent snapback when inspecting history
   const initialFitDoneRef = useRef<boolean>(false);
   const isAtRightEdgeRef = useRef<boolean>(true);
+  const prevTopPriceRef = useRef<number | null>(null);
+  const isProgrammaticScrollRef = useRef<boolean>(false);
+  const isSyncingScrollRef = useRef<boolean>(false);
 
   // Tick Size & Imbalance interactive configuration (initialized from URL if popped out)
   const [customTick, setCustomTick] = useState<number | null>(() => {
@@ -312,6 +315,10 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
           document.exitFullscreen().catch(() => {});
         }
       }
+      if ((e.key === 'f' || e.key === 'F') && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
+        setAutoScroll(true);
+        centerOnLiveTrade(true);
+      }
     };
     document.addEventListener('fullscreenchange', handleFsChange);
     window.addEventListener('keydown', handleKeyDown);
@@ -331,7 +338,6 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
         setSymbol(clean);
         setCustomTick(null);
         setTickInput('');
-        setData(null);
         setLoading(true);
       }
     }
@@ -345,7 +351,6 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
         initialFitDoneRef.current = false;
         isAtRightEdgeRef.current = true;
         setTimeframe(cleanTf);
-        setData(null);
         setLoading(true);
       }
     }
@@ -378,7 +383,21 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
       if (!res.ok) return;
       const json: OrderflowState = await res.json();
       if (json && json.success) {
-        setData(json);
+        setData(prev => {
+          if (!prev) return json;
+          if (prev.lastPrice === json.lastPrice && 
+              prev.candles?.length === json.candles?.length && 
+              prev.compositeProfile?.length === json.compositeProfile?.length) {
+            const prevLastC = prev.candles?.[prev.candles.length - 1];
+            const nextLastC = json.candles?.[json.candles.length - 1];
+            if (prevLastC?.close === nextLastC?.close && 
+                prevLastC?.volume === nextLastC?.volume && 
+                prevLastC?.priceLevels?.length === nextLastC?.priceLevels?.length) {
+              return prev; // Same data, prevent re-render!
+            }
+          }
+          return json;
+        });
       }
     } catch (err) {
       // Polling fallback
@@ -387,10 +406,10 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
     }
   }, [backendUrl, symbol, timeframe, customTick]);
 
-  // Main polling interval
+  // Main polling interval (2s smooth polling)
   useEffect(() => {
     fetchOrderflowState();
-    const interval = setInterval(fetchOrderflowState, 1000);
+    const interval = setInterval(fetchOrderflowState, 2000);
     return () => clearInterval(interval);
   }, [fetchOrderflowState]);
 
@@ -401,7 +420,6 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
     isAtRightEdgeRef.current = true;
     setTimeframe(cleanTf);
     if (onTimeframeChange) onTimeframeChange(cleanTf);
-    setData(null);
     setLoading(true);
     setShowTimeframeDropdown(false);
   };
@@ -414,7 +432,6 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
     setSymbol(newSym);
     setCustomTick(null);
     setTickInput('');
-    setData(null);
     setLoading(true);
     setShowSymbolDropdown(false);
 
@@ -452,23 +469,47 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
   // Bin & aggregate candle price levels dynamically to effective tickSize
   const displayCandles = useMemo(() => {
     if (!data?.candles || data.candles.length === 0) return [];
+    const decimals = tickSize < 0.1 ? 3 : (tickSize < 1 ? 2 : (tickSize < 10 ? 1 : 0));
     return data.candles.map(c => {
       const aggregatedLevels = aggregateLevelsToTick(c.priceLevels || [], tickSize);
       let pocLvl = aggregatedLevels[0];
+      const levelMap = new Map<number, PriceLevel>();
+
       for (const lvl of aggregatedLevels) {
+        const key = parseFloat(lvl.price.toFixed(decimals));
+        levelMap.set(key, lvl);
         const curVol = lvl.totalVol || ((lvl.bidVol || 0) + (lvl.askVol || 0));
         const maxVol = pocLvl ? (pocLvl.totalVol || ((pocLvl.bidVol || 0) + (pocLvl.askVol || 0))) : 0;
         if (curVol > maxVol) {
           pocLvl = lvl;
         }
       }
+
+      // Pre-compute diagonal imbalance per level to avoid millions of linear scans during render
+      const enrichedLevels = aggregatedLevels.map(lvl => {
+        const p = parseFloat(lvl.price.toFixed(decimals));
+        const lowerKey = parseFloat((p - tickSize).toFixed(decimals));
+        const higherKey = parseFloat((p + tickSize).toFixed(decimals));
+        const nextLower = levelMap.get(lowerKey);
+        const nextHigher = levelMap.get(higherKey);
+
+        const isAskImbalance = (chartMode === 'Bid/Ask Imbalance') && !!nextLower && (lvl.askVol || 0) >= (nextLower.bidVol || 0) * imbalanceRatio && (lvl.askVol || 0) > 0;
+        const isBidImbalance = (chartMode === 'Bid/Ask Imbalance') && !!nextHigher && (lvl.bidVol || 0) >= (nextHigher.askVol || 0) * imbalanceRatio && (lvl.bidVol || 0) > 0;
+
+        return {
+          ...lvl,
+          isAskImbalance,
+          isBidImbalance
+        };
+      });
+
       return {
         ...c,
         pocPrice: pocLvl ? pocLvl.price : c.pocPrice,
-        priceLevels: aggregatedLevels
+        priceLevels: enrichedLevels
       };
     });
-  }, [data?.candles, tickSize]);
+  }, [data?.candles, tickSize, chartMode, imbalanceRatio]);
 
   // Bin & aggregate composite session profile dynamically to effective tickSize
   const compositeProfile = useMemo(() => {
@@ -486,6 +527,17 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
     }
     return Array.from(map.values()).sort((a, b) => b.price - a.price);
   }, [data?.compositeProfile, tickSize]);
+
+  // Fast O(1) lookup map for composite profile volume
+  const compositeProfileMap = useMemo(() => {
+    const map = new Map<number, number>();
+    const decimals = tickSize < 0.1 ? 3 : (tickSize < 1 ? 2 : (tickSize < 10 ? 1 : 0));
+    if (!compositeProfile) return map;
+    for (const cp of compositeProfile) {
+      map.set(parseFloat(cp.price.toFixed(decimals)), cp.volume);
+    }
+    return map;
+  }, [compositeProfile, tickSize]);
 
   // Compute price scale rungs
   const priceRungs = useMemo(() => {
@@ -517,6 +569,13 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
     }
     return rungs;
   }, [displayCandles, data?.lastPrice, tickSize]);
+
+  // Unified Horizontal Layout Geometry for 1:1 Pixel Lockstep Alignment
+  const LEFT_GUTTER_WIDTH = showProfile ? 110 : 90;
+  const RIGHT_GUTTER_WIDTH = 88;
+  const RIGHT_SCROLL_PAD = 180;
+  const candleTrackWidth = (displayCandles?.length || 0) * candleWidth;
+  const totalScrollTrackWidth = Math.max(1000, candleTrackWidth + RIGHT_SCROLL_PAD);
 
   // Compute Max Volume & Value Area for Session Profile
   const { maxCompVolume, vahPrice, valPrice } = useMemo(() => {
@@ -649,66 +708,171 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
     return extensions;
   }, [displayCandles]);
 
-  // Scroll to live candle (right edge)
-  const scrollToLiveCandle = useCallback(() => {
-    if (!chartScrollRef.current) return;
-    const maxScroll = chartScrollRef.current.scrollWidth - chartScrollRef.current.clientWidth;
-    if (maxScroll > 0) {
-      chartScrollRef.current.scrollLeft = maxScroll;
-      if (tableScrollRef.current) tableScrollRef.current.scrollLeft = maxScroll;
-      if (timeBarScrollRef.current) timeBarScrollRef.current.scrollLeft = maxScroll;
-      if (miniCandlesScrollRef.current) miniCandlesScrollRef.current.scrollLeft = maxScroll;
+  // Master Synchronizer: keeps Candle Ladder, Statistics Table, Mini Candlesticks, and Time Scale 100% aligned
+  const syncAllHorizontalScroll = useCallback((sLeft: number, skipChart = false) => {
+    if (isSyncingScrollRef.current) return;
+    isSyncingScrollRef.current = true;
+
+    if (!skipChart && chartScrollRef.current && Math.abs(chartScrollRef.current.scrollLeft - sLeft) > 0.5) {
+      chartScrollRef.current.scrollLeft = sLeft;
     }
+    if (tableScrollRef.current && Math.abs(tableScrollRef.current.scrollLeft - sLeft) > 0.5) {
+      tableScrollRef.current.scrollLeft = sLeft;
+    }
+    if (timeBarScrollRef.current && Math.abs(timeBarScrollRef.current.scrollLeft - sLeft) > 0.5) {
+      timeBarScrollRef.current.scrollLeft = sLeft;
+    }
+    if (miniCandlesScrollRef.current && Math.abs(miniCandlesScrollRef.current.scrollLeft - sLeft) > 0.5) {
+      miniCandlesScrollRef.current.scrollLeft = sLeft;
+    }
+
+    requestAnimationFrame(() => {
+      isSyncingScrollRef.current = false;
+    });
   }, []);
 
-  // Fit price scale to screen
-  const fitPriceScale = useCallback(() => {
-    if (!chartScrollRef.current || !data?.lastPrice || priceRungs.length === 0) return;
-    const lastPrice = data.lastPrice;
-    const rungIdx = Math.max(0, Math.min(priceRungs.length - 1, Math.round((priceRungs[0] - lastPrice) / tickSize)));
-    if (rungIdx >= 0) {
-      const targetY = (rungIdx * rungHeight) - (chartScrollRef.current.clientHeight / 2);
-      chartScrollRef.current.scrollTop = Math.max(0, targetY);
-      if (priceScrollRef.current) priceScrollRef.current.scrollTop = Math.max(0, targetY);
-      if (profileScrollRef.current) profileScrollRef.current.scrollTop = Math.max(0, targetY);
-    }
-  }, [data?.lastPrice, priceRungs, rungHeight, tickSize]);
-
-  // Fit both Price and Time (User pressed [ F ] Fit button)
-  const fitAll = useCallback(() => {
-    isAtRightEdgeRef.current = true;
-    fitPriceScale();
-    scrollToLiveCandle();
-  }, [fitPriceScale, scrollToLiveCandle]);
-
-  // Handle Initial Load and Live Polling Updates WITHOUT jerking or resetting user scroll
+  // Sync all horizontal rows immediately when candle width / zoom scale changes
   useEffect(() => {
-    if (!data?.candles?.length) return;
+    if (!chartScrollRef.current) return;
+    const sLeft = chartScrollRef.current.scrollLeft;
+    syncAllHorizontalScroll(sLeft, false);
+  }, [candleWidth, syncAllHorizontalScroll]);
 
-    // 1. Initial Load for this symbol/timeframe: center price and jump to live candle
+  // Pin and center view on where the market is trading right now (live candle + current price)
+  const centerOnLiveTrade = useCallback((smooth = false) => {
+    if (!chartScrollRef.current) return;
+    const el = chartScrollRef.current;
+
+    isProgrammaticScrollRef.current = true;
+    setTimeout(() => {
+      isProgrammaticScrollRef.current = false;
+    }, smooth ? 450 : 80);
+
+    // 1. Horizontal: Pin to right edge (forming candle)
+    const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
+    if (maxScroll >= 0) {
+      if (smooth) {
+        el.scrollTo({ left: maxScroll, behavior: 'smooth' });
+      } else {
+        el.scrollLeft = maxScroll;
+      }
+      syncAllHorizontalScroll(maxScroll, true);
+    }
+
+    // 2. Vertical: Center on current live trading price (LTP)
+    const curPrice = data?.lastPrice || (displayCandles.length > 0 ? displayCandles[displayCandles.length - 1].close : null);
+    if (curPrice && priceRungs.length > 0) {
+      const topPrice = priceRungs[0];
+      const rungIdx = Math.max(0, Math.min(priceRungs.length - 1, Math.round((topPrice - curPrice) / tickSize)));
+      const viewH = el.clientHeight || 600;
+      const targetY = Math.max(0, (rungIdx * rungHeight) - (viewH / 2) + (rungHeight / 2));
+
+      if (smooth) {
+        el.scrollTo({ top: targetY, behavior: 'smooth' });
+      } else {
+        el.scrollTop = targetY;
+      }
+      if (priceScrollRef.current) priceScrollRef.current.scrollTop = targetY;
+      if (profileScrollRef.current) profileScrollRef.current.scrollTop = targetY;
+    }
+
+    isAtRightEdgeRef.current = true;
+    setAutoScroll(true);
+  }, [data?.lastPrice, displayCandles, priceRungs, rungHeight, tickSize, syncAllHorizontalScroll]);
+
+  // Backward compatibility alias for [ F ] fit button
+  const fitPriceScale = useCallback(() => {
+    centerOnLiveTrade(true);
+  }, [centerOnLiveTrade]);
+
+  // Fit both Price and Time to live trade
+  const fitAll = useCallback(() => {
+    centerOnLiveTrade(true);
+  }, [centerOnLiveTrade]);
+
+  // Compensate scrollTop when price ladder expands at the top, preventing canvas visual jump
+  useEffect(() => {
+    if (!priceRungs || priceRungs.length === 0) return;
+    const currentTop = priceRungs[0];
+    if (prevTopPriceRef.current !== null && chartScrollRef.current) {
+      const delta = currentTop - prevTopPriceRef.current;
+      if (Math.abs(delta) > 0.0001) {
+        const deltaPx = Math.round((delta / tickSize) * rungHeight);
+        isProgrammaticScrollRef.current = true;
+        chartScrollRef.current.scrollTop += deltaPx;
+        if (priceScrollRef.current) priceScrollRef.current.scrollTop += deltaPx;
+        if (profileScrollRef.current) profileScrollRef.current.scrollTop += deltaPx;
+        setTimeout(() => {
+          isProgrammaticScrollRef.current = false;
+        }, 50);
+      }
+    }
+    prevTopPriceRef.current = currentTop;
+  }, [priceRungs, tickSize, rungHeight]);
+
+  // Re-center on live trade when toggling fullscreen or resizing (only if user hasn't scrolled away)
+  useEffect(() => {
+    if (autoScroll && initialFitDoneRef.current) {
+      const timer = setTimeout(() => {
+        centerOnLiveTrade(false);
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [isExpanded, autoScroll, centerOnLiveTrade]);
+
+  // Continuous Live Trade Tracking: ensures the chart ALWAYS shows where it's trading right now IF autoScroll is active
+  useEffect(() => {
+    if (!data?.candles?.length || priceRungs.length === 0) return;
+
+    // 1. Initial Load for this symbol/timeframe: snap to live trade
     if (!initialFitDoneRef.current) {
       initialFitDoneRef.current = true;
       requestAnimationFrame(() => {
-        fitPriceScale();
-        scrollToLiveCandle();
+        centerOnLiveTrade(false);
       });
       return;
     }
 
-    // 2. Periodic Live Polling (every 1s):
-    // NEVER touch scrollTop so user's vertical panning is completely stable.
-    // ONLY stick to right edge IF autoScroll is active AND user is currently at the right edge!
-    if (autoScroll && isAtRightEdgeRef.current && chartScrollRef.current && !isDragging) {
+    // 2. Periodic Live Polling (only if autoScroll is enabled and user is NOT dragging):
+    if (autoScroll && !isDragging && chartScrollRef.current) {
       const el = chartScrollRef.current;
-      const maxScroll = el.scrollWidth - el.clientWidth;
-      if (maxScroll > 0) {
+
+      // Keep live candle (right edge) pinned
+      const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
+      if (maxScroll >= 0) {
+        isProgrammaticScrollRef.current = true;
         el.scrollLeft = maxScroll;
-        if (tableScrollRef.current) tableScrollRef.current.scrollLeft = maxScroll;
-        if (timeBarScrollRef.current) timeBarScrollRef.current.scrollLeft = maxScroll;
-        if (miniCandlesScrollRef.current) miniCandlesScrollRef.current.scrollLeft = maxScroll;
+        syncAllHorizontalScroll(maxScroll, true);
+        setTimeout(() => {
+          isProgrammaticScrollRef.current = false;
+        }, 50);
+      }
+
+      // Keep live trading price vertically centered within comfortable view
+      const curPrice = data.lastPrice || (displayCandles.length > 0 ? displayCandles[displayCandles.length - 1].close : null);
+      if (curPrice && priceRungs.length > 0) {
+        const topPrice = priceRungs[0];
+        const rungIdx = Math.max(0, Math.min(priceRungs.length - 1, Math.round((topPrice - curPrice) / tickSize)));
+        const currentPriceY = (rungIdx * rungHeight) + (rungHeight / 2);
+        const viewH = el.clientHeight || 600;
+        const currentViewportTop = el.scrollTop;
+        const currentViewportBottom = currentViewportTop + viewH;
+
+        // If price moves outside the middle 50% band, adjust scrollTop to keep it centered
+        const buffer = viewH * 0.25;
+        if (currentPriceY < (currentViewportTop + buffer) || currentPriceY > (currentViewportBottom - buffer)) {
+          const targetY = Math.max(0, currentPriceY - (viewH / 2));
+          isProgrammaticScrollRef.current = true;
+          el.scrollTop = targetY;
+          if (priceScrollRef.current) priceScrollRef.current.scrollTop = targetY;
+          if (profileScrollRef.current) profileScrollRef.current.scrollTop = targetY;
+          setTimeout(() => {
+            isProgrammaticScrollRef.current = false;
+          }, 50);
+        }
       }
     }
-  }, [data?.candles?.length, autoScroll, fitPriceScale, scrollToLiveCandle, isDragging]);
+  }, [data, autoScroll, isDragging, centerOnLiveTrade, priceRungs, displayCandles, rungHeight, tickSize, syncAllHorizontalScroll]);
 
   // Synchronized Vertical & Horizontal Scrolling between Profile, Chart Grid, Table, and Time Ladder
   const handleChartScroll = () => {
@@ -717,18 +881,53 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
     const sTop = el.scrollTop;
     const sLeft = el.scrollLeft;
 
-    // Detect if user has scrolled away from the live candle to inspect history
-    const maxScroll = el.scrollWidth - el.clientWidth;
-    isAtRightEdgeRef.current = maxScroll <= 0 || (maxScroll - sLeft) <= 60;
+    // Detect if user has scrolled by themselves (wheel, trackpad, scrollbar, touch)
+    if (!isProgrammaticScrollRef.current) {
+      if (autoScroll) {
+        setAutoScroll(false);
+      }
+      isAtRightEdgeRef.current = (el.scrollWidth - el.clientWidth - sLeft) < 5;
+    }
 
     if (profileScrollRef.current) profileScrollRef.current.scrollTop = sTop;
     if (priceScrollRef.current) priceScrollRef.current.scrollTop = sTop;
-    if (tableScrollRef.current) tableScrollRef.current.scrollLeft = sLeft;
-    if (timeBarScrollRef.current) timeBarScrollRef.current.scrollLeft = sLeft;
-    if (miniCandlesScrollRef.current) miniCandlesScrollRef.current.scrollLeft = sLeft;
+
+    // Synchronize statistics table, time bar, and mini candles immediately
+    syncAllHorizontalScroll(sLeft, true);
   };
 
-  // Wheel zoom handler
+  // Bidirectional scroll sync for bottom statistics & time bars
+  const handleHorizontalScrollerScroll = (e: React.UIEvent<HTMLDivElement>, _source?: string) => {
+    if (isSyncingScrollRef.current || isProgrammaticScrollRef.current) return;
+    const sLeft = e.currentTarget.scrollLeft;
+    if (autoScroll) setAutoScroll(false);
+    isAtRightEdgeRef.current = false;
+    syncAllHorizontalScroll(sLeft, false);
+  };
+
+  // Wheel handler for bottom panels to scroll chart horizontally
+  const handleBottomWheel = (e: React.WheelEvent) => {
+    if (!chartScrollRef.current) return;
+    if (e.shiftKey) {
+      e.preventDefault();
+      if (e.deltaY < 0) {
+        setCandleWidth(w => Math.min(220, w + 6));
+      } else {
+        setCandleWidth(w => Math.max(85, w - 6));
+      }
+    } else {
+      if (autoScroll) {
+        setAutoScroll(false);
+      }
+      isAtRightEdgeRef.current = false;
+      const delta = e.deltaX !== 0 ? e.deltaX : e.deltaY;
+      const newLeft = chartScrollRef.current.scrollLeft + delta;
+      chartScrollRef.current.scrollLeft = newLeft;
+      syncAllHorizontalScroll(newLeft, false);
+    }
+  };
+
+  // Wheel zoom handler & scroll detection
   const handleWheel = (e: React.WheelEvent) => {
     if (e.ctrlKey) {
       e.preventDefault();
@@ -744,6 +943,12 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
       } else {
         setCandleWidth(w => Math.max(85, w - 6));
       }
+    } else {
+      // Normal wheel/trackpad scrolling by user: stop auto-follow so chart stays where user scrolled
+      if (autoScroll) {
+        setAutoScroll(false);
+      }
+      isAtRightEdgeRef.current = false;
     }
   };
 
@@ -763,19 +968,23 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
     if (isDragging && dragRef.current && chartScrollRef.current) {
       const dx = e.clientX - dragRef.current.startX;
       const dy = e.clientY - dragRef.current.startY;
+
+      // User manually moved the chart by dragging: immediately stop auto-follow so it stays in place!
+      if (Math.abs(dx) > 2 || Math.abs(dy) > 2) {
+        if (autoScroll) {
+          setAutoScroll(false);
+        }
+        isAtRightEdgeRef.current = false;
+      }
+
       const newLeft = dragRef.current.scrollLeft - dx;
       const newTop = dragRef.current.scrollTop - dy;
 
       chartScrollRef.current.scrollLeft = newLeft;
       chartScrollRef.current.scrollTop = newTop;
-      if (tableScrollRef.current) tableScrollRef.current.scrollLeft = newLeft;
-      if (timeBarScrollRef.current) timeBarScrollRef.current.scrollLeft = newLeft;
-      if (miniCandlesScrollRef.current) miniCandlesScrollRef.current.scrollLeft = newLeft;
+      syncAllHorizontalScroll(newLeft, true);
       if (profileScrollRef.current) profileScrollRef.current.scrollTop = newTop;
       if (priceScrollRef.current) priceScrollRef.current.scrollTop = newTop;
-
-      const maxScroll = chartScrollRef.current.scrollWidth - chartScrollRef.current.clientWidth;
-      isAtRightEdgeRef.current = maxScroll <= 0 || (maxScroll - newLeft) <= 60;
       return;
     }
 
@@ -874,7 +1083,7 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
         bottom: isExpanded ? 0 : 'auto',
         zIndex: isExpanded ? 999999 : 'auto',
         width: isExpanded ? '100vw' : '100%',
-        height: isExpanded || isStandalone ? '100vh' : 'calc(100vh - 265px)',
+        height: isExpanded || isStandalone ? '100vh' : 'calc(100vh - 165px)',
         backgroundColor: '#000000',
         color: '#ffffff',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -1477,9 +1686,44 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
         {/* Right Toolbar Items: Controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
 
+          {/* Live Follow Mode Toggle */}
+          <button
+            onClick={() => {
+              setAutoScroll(true);
+              centerOnLiveTrade(true);
+            }}
+            style={{
+              backgroundColor: autoScroll ? '#064e3b' : '#333333',
+              color: autoScroll ? '#34d399' : '#94a3b8',
+              border: autoScroll ? '1px solid #059669' : '1px solid #484848',
+              borderRadius: '2px',
+              padding: '2px 8px',
+              height: '22px',
+              fontSize: '11px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px',
+              transition: 'all 0.15s'
+            }}
+            title={autoScroll ? "Live Tracking Active: locked to current candle & price (Click to re-center)" : "Click to lock and follow live trade"}
+          >
+            <span
+              style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                backgroundColor: autoScroll ? '#10b981' : '#64748b',
+                boxShadow: autoScroll ? '0 0 6px #10b981' : 'none'
+              }}
+            />
+            <span>{autoScroll ? 'Live' : 'Go Live'}</span>
+          </button>
+
           {/* F (Fit) Button */}
           <button
-            onClick={fitPriceScale}
+            onClick={fitAll}
             style={{
               backgroundColor: '#333333',
               color: '#ffffff',
@@ -1494,7 +1738,7 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
               fontWeight: 900,
               cursor: 'pointer'
             }}
-            title="Fit Scale (F)"
+            title="Recenter & Fit Live Scale (F)"
           >
             F
           </button>
@@ -1544,6 +1788,17 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
       </div>
 
       {/* 2. MAIN CHART AREA (Left Volume Profile + Center Footprint Canvas + Right Price Scale) */}
+      <style>{`
+        .orderflow-no-scrollbar::-webkit-scrollbar {
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
+        }
+        .orderflow-no-scrollbar {
+          -ms-overflow-style: none !important;
+          scrollbar-width: none !important;
+        }
+      `}</style>
       <div
         style={{
           display: 'flex',
@@ -1556,12 +1811,15 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
         onWheel={handleWheel}
       >
         {/* Left Side: Session Volume Profile (TPO Profile with Volume Counts) */}
-        {showProfile && (
+        {showProfile ? (
           <div
             ref={profileScrollRef}
+            className="orderflow-no-scrollbar"
             style={{
-              width: '110px',
-              minWidth: '110px',
+              width: `${LEFT_GUTTER_WIDTH}px`,
+              minWidth: `${LEFT_GUTTER_WIDTH}px`,
+              maxWidth: `${LEFT_GUTTER_WIDTH}px`,
+              boxSizing: 'border-box',
               backgroundColor: '#000000',
               borderRight: '1px solid #222222',
               display: 'flex',
@@ -1574,8 +1832,7 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
           >
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               {priceRungs.map((price) => {
-                const profileItem = data?.compositeProfile?.find((cp) => Math.abs(cp.price - price) < tickSize / 2);
-                const vol = profileItem?.volume || 0;
+                const vol = compositeProfileMap.get(price) || 0;
                 const isPoc = Math.abs(price - (data?.compositePoc || 0)) < tickSize / 2;
                 const isInVa = price <= vahPrice && price >= valPrice;
                 const barWidthPct = (vol / maxCompVolume) * 100;
@@ -1646,16 +1903,57 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
               })}
             </div>
           </div>
+        ) : (
+          <div
+            style={{
+              width: `${LEFT_GUTTER_WIDTH}px`,
+              minWidth: `${LEFT_GUTTER_WIDTH}px`,
+              maxWidth: `${LEFT_GUTTER_WIDTH}px`,
+              boxSizing: 'border-box',
+              backgroundColor: '#050505',
+              borderRight: '1px solid #222222',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              position: 'relative',
+              userSelect: 'none'
+            }}
+          >
+            <button
+              onClick={() => setShowProfile(true)}
+              style={{
+                backgroundColor: '#1a1a1a',
+                color: '#71717a',
+                border: '1px solid #333333',
+                borderRadius: '3px',
+                padding: '4px 6px',
+                fontSize: '9px',
+                cursor: 'pointer',
+                fontWeight: 700
+              }}
+              title="Click to show Volume Profile"
+            >
+              + PROFILE
+            </button>
+          </div>
         )}
 
-        {/* Center: Footprint Chart Grid Canvas */}
-        <div
-          ref={chartScrollRef}
-          onScroll={handleChartScroll}
+        {/* Center: Footprint Chart Grid Canvas Viewport Wrapper */}
+        <div style={{ flex: 1, height: '100%', position: 'relative', overflow: 'hidden', display: 'flex' }}>
+          <div
+            ref={chartScrollRef}
+            className="orderflow-no-scrollbar"
+            onScroll={handleChartScroll}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseLeave}
+          onDoubleClick={() => {
+            setAutoScroll(true);
+            centerOnLiveTrade(true);
+          }}
           style={{
             flex: 1,
             height: '100%',
@@ -1672,7 +1970,7 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
           <div
             style={{
               position: 'relative',
-              width: `${Math.max(1200, (displayCandles.length || 0) * candleWidth + 200)}px`,
+              width: `${totalScrollTrackWidth}px`,
               height: `${priceRungs.length * rungHeight}px`
             }}
           >
@@ -1765,80 +2063,83 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
             })}
 
             {/* Footprint Candle Columns */}
-            <div style={{ display: 'flex', position: 'relative', zIndex: 10 }}>
-              {displayCandles.map((candle, cIdx) => {
-                const isBull = candle.close >= candle.open;
-                const sortedLevels = [...(candle.priceLevels || [])].sort((a, b) => b.price - a.price);
+            <div style={{ display: 'flex', position: 'relative', zIndex: 10, width: `${totalScrollTrackWidth}px` }}>
+              <div style={{ display: 'flex', width: `${candleTrackWidth}px`, flexShrink: 0 }}>
+                {displayCandles.map((candle, cIdx) => {
+                  const isBull = candle.close >= candle.open;
+                  const sortedLevels = [...(candle.priceLevels || [])].sort((a, b) => b.price - a.price);
 
-                const topLevel = sortedLevels.length > 0 ? sortedLevels[0] : null;
-                const btmLevel = sortedLevels.length > 0 ? sortedLevels[sortedLevels.length - 1] : null;
+                  const topLevel = sortedLevels.length > 0 ? sortedLevels[0] : null;
+                  const btmLevel = sortedLevels.length > 0 ? sortedLevels[sortedLevels.length - 1] : null;
 
-                const topVol = topLevel ? topLevel.totalVol : 0;
-                let topCR = '0.02';
-                if (candle.cot?.top?.cotIndex !== undefined) {
-                  topCR = (candle.cot.top.cotIndex >= 10 ? (candle.cot.top.cotIndex / 100) : candle.cot.top.cotIndex).toFixed(2);
-                } else if (topLevel && topLevel.bidVol > 0) {
-                  topCR = (topLevel.askVol / topLevel.bidVol).toFixed(2);
-                } else if (topLevel && topLevel.totalVol > 0) {
-                  topCR = (topLevel.askVol / topLevel.totalVol).toFixed(2);
-                }
+                  const topVol = topLevel ? topLevel.totalVol : 0;
+                  let topCR = '0.02';
+                  if (candle.cot?.top?.cotIndex !== undefined) {
+                    topCR = (candle.cot.top.cotIndex >= 10 ? (candle.cot.top.cotIndex / 100) : candle.cot.top.cotIndex).toFixed(2);
+                  } else if (topLevel && topLevel.bidVol > 0) {
+                    topCR = (topLevel.askVol / topLevel.bidVol).toFixed(2);
+                  } else if (topLevel && topLevel.totalVol > 0) {
+                    topCR = (topLevel.askVol / topLevel.totalVol).toFixed(2);
+                  }
 
-                const btmVol = btmLevel ? btmLevel.totalVol : 0;
-                let btmCR = '98.90';
-                if (candle.cot?.btm?.cotIndex !== undefined) {
-                  btmCR = (candle.cot.btm.cotIndex >= 10 ? (candle.cot.btm.cotIndex / 100) : candle.cot.btm.cotIndex).toFixed(2);
-                } else if (btmLevel && btmLevel.bidVol > 0) {
-                  btmCR = (btmLevel.totalVol / btmLevel.bidVol).toFixed(2);
-                } else if (btmLevel && btmLevel.totalVol > 0) {
-                  btmCR = (btmLevel.askVol / btmLevel.totalVol).toFixed(2);
-                }
+                  const btmVol = btmLevel ? btmLevel.totalVol : 0;
+                  let btmCR = '98.90';
+                  if (candle.cot?.btm?.cotIndex !== undefined) {
+                    btmCR = (candle.cot.btm.cotIndex >= 10 ? (candle.cot.btm.cotIndex / 100) : candle.cot.btm.cotIndex).toFixed(2);
+                  } else if (btmLevel && btmLevel.bidVol > 0) {
+                    btmCR = (btmLevel.totalVol / btmLevel.bidVol).toFixed(2);
+                  } else if (btmLevel && btmLevel.totalVol > 0) {
+                    btmCR = (btmLevel.askVol / btmLevel.totalVol).toFixed(2);
+                  }
 
-                const topRungIdx = priceRungs.length > 0 ? Math.max(0, Math.round((priceRungs[0] - candle.high) / tickSize)) : -1;
-                const btmRungIdx = priceRungs.length > 0 ? Math.min(priceRungs.length - 1, Math.round((priceRungs[0] - candle.low) / tickSize)) : -1;
+                  const topRungIdx = priceRungs.length > 0 ? Math.max(0, Math.round((priceRungs[0] - candle.high) / tickSize)) : -1;
+                  const btmRungIdx = priceRungs.length > 0 ? Math.min(priceRungs.length - 1, Math.round((priceRungs[0] - candle.low) / tickSize)) : -1;
 
-                // Exact Candlestick Spine Coordinates (in-between the ladder)
-                const padMax = priceRungs.length > 0 ? priceRungs[0] : 0;
-                const candleHighY = padMax > 0 ? ((padMax - candle.high) / tickSize) * rungHeight : 0;
-                const candleLowY = padMax > 0 ? ((padMax - candle.low) / tickSize) * rungHeight : 0;
-                const openCloseMax = Math.max(candle.open, candle.close);
-                const openCloseMin = Math.min(candle.open, candle.close);
-                const bodyTopY = padMax > 0 ? ((padMax - openCloseMax) / tickSize) * rungHeight : 0;
-                const bodyBtmY = padMax > 0 ? ((padMax - openCloseMin) / tickSize) * rungHeight : 0;
-                const bodyHeight = Math.max(2, bodyBtmY - bodyTopY);
-                const candleColor = isBull ? '#22c55e' : '#ef4444';
-                const wickColor = isBull ? '#4ade80' : '#f87171';
+                  // Exact Candlestick Spine Coordinates (in-between the ladder)
+                  const padMax = priceRungs.length > 0 ? priceRungs[0] : 0;
+                  const candleHighY = padMax > 0 ? ((padMax - candle.high) / tickSize) * rungHeight : 0;
+                  const candleLowY = padMax > 0 ? ((padMax - candle.low) / tickSize) * rungHeight : 0;
+                  const openCloseMax = Math.max(candle.open, candle.close);
+                  const openCloseMin = Math.min(candle.open, candle.close);
+                  const bodyTopY = padMax > 0 ? ((padMax - openCloseMax) / tickSize) * rungHeight : 0;
+                  const bodyBtmY = padMax > 0 ? ((padMax - openCloseMin) / tickSize) * rungHeight : 0;
+                  const bodyHeight = Math.max(2, bodyBtmY - bodyTopY);
+                  const candleColor = isBull ? '#22c55e' : '#ef4444';
+                  const wickColor = isBull ? '#4ade80' : '#f87171';
 
-                // Exact Ladder Y-bounds: ladder starts at topRungIdx * rungHeight and ends after sortedLevels
-                const ladderTopY = topRungIdx >= 0 ? topRungIdx * rungHeight : 0;
-                const ladderBtmY = ladderTopY + (sortedLevels.length * rungHeight);
-                const trueTopY = Math.min(ladderTopY, candleHighY > 0 ? candleHighY : ladderTopY);
-                const trueBtmY = Math.max(ladderBtmY, candleLowY > 0 ? candleLowY : ladderBtmY);
+                  // Exact Ladder Y-bounds: ladder starts at topRungIdx * rungHeight and ends after sortedLevels
+                  const ladderTopY = topRungIdx >= 0 ? topRungIdx * rungHeight : 0;
+                  const ladderBtmY = ladderTopY + (sortedLevels.length * rungHeight);
+                  const trueTopY = Math.min(ladderTopY, candleHighY > 0 ? candleHighY : ladderTopY);
+                  const trueBtmY = Math.max(ladderBtmY, candleLowY > 0 ? candleLowY : ladderBtmY);
 
-                // Top Box Y (strictly ABOVE the ladder and upper wick, with 4px clear margin)
-                const topBoxTop = Math.max(2, trueTopY - 32);
+                  // Top Box Y (strictly ABOVE the ladder and upper wick, with 4px clear margin)
+                  const topBoxTop = Math.max(2, trueTopY - 32);
 
-                // Bottom Box Y (strictly BELOW the ladder and lower wick, with 4px clear margin)
-                const btmBoxTop = trueBtmY + 4;
+                  // Bottom Box Y (strictly BELOW the ladder and lower wick, with 4px clear margin)
+                  const btmBoxTop = trueBtmY + 4;
 
-                const prevCandle = cIdx > 0 ? displayCandles[cIdx - 1] : undefined;
-                const isNewDay = checkIfNewDay(candle, prevCandle);
-                const candleDateStr = getCandleDateStr(candle);
+                  const prevCandle = cIdx > 0 ? displayCandles[cIdx - 1] : undefined;
+                  const isNewDay = checkIfNewDay(candle, prevCandle);
+                  const candleDateStr = getCandleDateStr(candle);
 
-                return (
-                  <div
-                    key={candle.timestamp || cIdx}
-                    style={{
-                      width: `${candleWidth}px`,
-                      minWidth: `${candleWidth}px`,
-                      position: 'relative',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      borderRight: '1px solid #1a1a1a',
-                      borderLeft: isNewDay ? '2px dashed #0284c7' : 'none',
-                      backgroundColor: isNewDay ? 'rgba(2, 132, 199, 0.03)' : 'transparent',
-                      boxSizing: 'border-box'
-                    }}
-                  >
+                  return (
+                    <div
+                      key={candle.timestamp || cIdx}
+                      style={{
+                        width: `${candleWidth}px`,
+                        minWidth: `${candleWidth}px`,
+                        maxWidth: `${candleWidth}px`,
+                        flexShrink: 0,
+                        position: 'relative',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        borderRight: '1px solid #1a1a1a',
+                        borderLeft: isNewDay ? '2px dashed #0284c7' : 'none',
+                        backgroundColor: isNewDay ? 'rgba(2, 132, 199, 0.03)' : 'transparent',
+                        boxSizing: 'border-box'
+                      }}
+                    >
                     {/* New Day Session Boundary Header Tag */}
                     {isNewDay && (
                       <div
@@ -2044,12 +2345,9 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
                       const bidVol = level.bidVol || 0;
                       const askVol = level.askVol || 0;
 
-                      // Diagonal Imbalance calculation
-                      const nextLowerLevel = candle.priceLevels?.find(l => Math.abs(l.price - (price - tickSize)) < tickSize / 2);
-                      const nextHigherLevel = candle.priceLevels?.find(l => Math.abs(l.price - (price + tickSize)) < tickSize / 2);
-
-                      const isAskImbalance = (chartMode === 'Bid/Ask Imbalance') && nextLowerLevel && askVol >= nextLowerLevel.bidVol * imbalanceRatio && askVol > 0;
-                      const isBidImbalance = (chartMode === 'Bid/Ask Imbalance') && nextHigherLevel && bidVol >= nextHigherLevel.askVol * imbalanceRatio && bidVol > 0;
+                      // Use precomputed diagonal imbalance flags (O(1))
+                      const isAskImbalance = !!level.isAskImbalance;
+                      const isBidImbalance = !!level.isBidImbalance;
 
                       // UFB Check: Left side 0 and right side number on candle low
                       const isCandleLowLevel = (Math.abs(price - candle.low) < tickSize / 2) || (level === btmLevel);
@@ -2170,6 +2468,9 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
                   </div>
                 );
               })}
+              </div>
+              {/* Trailing Spacer matching all other rows */}
+              <div style={{ width: `${RIGHT_SCROLL_PAD}px`, minWidth: `${RIGHT_SCROLL_PAD}px`, flexShrink: 0 }} />
             </div>
 
             {/* Interactive Crosshair Guideline */}
@@ -2204,13 +2505,52 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
           </div>
         </div>
 
+          {/* Floating Jump to Live Button when user scrolled away */}
+          {!autoScroll && (
+            <button
+              onClick={() => {
+                setAutoScroll(true);
+                centerOnLiveTrade(true);
+              }}
+              style={{
+                position: 'absolute',
+                bottom: '16px',
+                right: '16px',
+                backgroundColor: 'rgba(6, 78, 59, 0.95)',
+                color: '#34d399',
+                border: '1px solid #059669',
+                borderRadius: '20px',
+                padding: '6px 14px',
+                fontSize: '11px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.8), 0 0 10px rgba(16, 185, 129, 0.4)',
+                zIndex: 60,
+                backdropFilter: 'blur(4px)',
+                transition: 'all 0.15s ease'
+              }}
+              title="Click to jump back to live candle & follow market (or press F)"
+            >
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981', boxShadow: '0 0 6px #10b981' }} />
+              <span>Jump to Live Candle</span>
+              <span style={{ fontSize: '12px' }}>➔</span>
+            </button>
+          )}
+        </div>
+
         {/* Right Side: Price Ladder & Real-Time LTP Tag with Two-Way Resize Handle */}
         <div
           ref={priceScrollRef}
+          className="orderflow-no-scrollbar"
           onMouseDown={handlePriceScaleDragStart}
           style={{
-            width: '88px',
-            minWidth: '88px',
+            width: `${RIGHT_GUTTER_WIDTH}px`,
+            minWidth: `${RIGHT_GUTTER_WIDTH}px`,
+            maxWidth: `${RIGHT_GUTTER_WIDTH}px`,
+            boxSizing: 'border-box',
             backgroundColor: '#000000',
             borderLeft: '1px solid #222222',
             display: 'flex',
@@ -2347,35 +2687,38 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
             display: 'flex',
             alignItems: 'center'
           }}
+          onWheel={handleBottomWheel}
         >
-          {/* Left spacing to align with profile */}
-          {showProfile && (
-            <div
-              style={{
-                width: '110px',
-                minWidth: '110px',
-                backgroundColor: '#000000',
-                borderRight: '1px solid #222222',
-                height: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '9px',
-                fontWeight: 700,
-                color: '#666666'
-              }}
-            >
-              Candlestick
-            </div>
-          )}
+          {/* Left spacing to align with profile / table labels */}
+          <div
+            style={{
+              width: `${LEFT_GUTTER_WIDTH}px`,
+              minWidth: `${LEFT_GUTTER_WIDTH}px`,
+              maxWidth: `${LEFT_GUTTER_WIDTH}px`,
+              boxSizing: 'border-box',
+              backgroundColor: '#000000',
+              borderRight: '1px solid #222222',
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '9px',
+              fontWeight: 700,
+              color: '#666666',
+              flexShrink: 0
+            }}
+          >
+            Candlestick
+          </div>
 
           {/* Mini Candlesticks Scroller */}
           <div
             ref={miniCandlesScrollRef}
+            className="orderflow-no-scrollbar"
+            onScroll={(e) => handleHorizontalScrollerScroll(e, 'mini')}
             style={{
               flex: 1,
               overflowX: 'hidden',
-              display: 'flex',
               height: '100%',
               backgroundColor: '#000000',
               scrollbarWidth: 'none',
@@ -2384,85 +2727,97 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
           >
             <div
               style={{
-                display: 'flex'
+                display: 'flex',
+                width: `${totalScrollTrackWidth}px`,
+                height: '100%'
               }}
             >
-              {displayCandles.map((c, idx) => {
-                const isBull = c.close >= c.open;
-                const candleRange = Math.max(1, c.high - c.low);
-                const bodyRange = Math.max(1, Math.abs(c.close - c.open));
-                const bodyHeight = Math.max(4, Math.min(22, (bodyRange / candleRange) * 24));
-                const prevC = idx > 0 ? displayCandles[idx - 1] : undefined;
-                const isNewDay = checkIfNewDay(c, prevC);
+              <div style={{ display: 'flex', width: `${candleTrackWidth}px`, flexShrink: 0, height: '100%' }}>
+                {displayCandles.map((c, idx) => {
+                  const isBull = c.close >= c.open;
+                  const candleRange = Math.max(1, c.high - c.low);
+                  const bodyRange = Math.max(1, Math.abs(c.close - c.open));
+                  const bodyHeight = Math.max(4, Math.min(22, (bodyRange / candleRange) * 24));
+                  const prevC = idx > 0 ? displayCandles[idx - 1] : undefined;
+                  const isNewDay = checkIfNewDay(c, prevC);
 
-                return (
-                  <div
-                    key={`mini-${c.timestamp || idx}`}
-                    style={{
-                      width: `${candleWidth}px`,
-                      minWidth: `${candleWidth}px`,
-                      height: '32px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      position: 'relative',
-                      borderLeft: isNewDay ? '2px solid #0284c7' : '1px solid rgba(255, 255, 255, 0.05)',
-                      backgroundColor: isNewDay ? 'rgba(2, 132, 199, 0.08)' : 'transparent',
-                      boxSizing: 'border-box'
-                    }}
-                  >
-                    {/* Wick */}
+                  return (
                     <div
+                      key={`mini-${c.timestamp || idx}`}
                       style={{
-                        position: 'absolute',
-                        top: '4px',
-                        bottom: '4px',
-                        width: '1px',
-                        backgroundColor: isBull ? '#00e676' : '#ff5252'
+                        width: `${candleWidth}px`,
+                        minWidth: `${candleWidth}px`,
+                        maxWidth: `${candleWidth}px`,
+                        flexShrink: 0,
+                        height: '32px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        position: 'relative',
+                        borderRight: '1px solid #1a1a1a',
+                        borderLeft: isNewDay ? '2px solid #0284c7' : 'none',
+                        backgroundColor: isNewDay ? 'rgba(2, 132, 199, 0.08)' : 'transparent',
+                        boxSizing: 'border-box'
                       }}
-                    />
-                    {/* Body */}
-                    <div
-                      style={{
-                        width: '7px',
-                        height: `${bodyHeight}px`,
-                        backgroundColor: isBull ? '#00e676' : '#ff5252',
-                        borderRadius: '1px',
-                        zIndex: 2
-                      }}
-                    />
-                  </div>
-                );
-              })}
+                    >
+                      {/* Wick */}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '4px',
+                          bottom: '4px',
+                          width: '1px',
+                          backgroundColor: isBull ? '#00e676' : '#ff5252'
+                        }}
+                      />
+                      {/* Body */}
+                      <div
+                        style={{
+                          width: '7px',
+                          height: `${bodyHeight}px`,
+                          backgroundColor: isBull ? '#00e676' : '#ff5252',
+                          borderRadius: '1px',
+                          zIndex: 2
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+              {/* Trailing Spacer matching all other rows */}
+              <div style={{ width: `${RIGHT_SCROLL_PAD}px`, minWidth: `${RIGHT_SCROLL_PAD}px`, flexShrink: 0 }} />
             </div>
           </div>
 
-          {/* Right spacing for price ladder */}
-          <div style={{ width: '84px', minWidth: '84px', backgroundColor: '#000000', borderLeft: '1px solid #222222' }} />
+          {/* Right spacing for price ladder alignment */}
+          <div style={{ width: `${RIGHT_GUTTER_WIDTH}px`, minWidth: `${RIGHT_GUTTER_WIDTH}px`, maxWidth: `${RIGHT_GUTTER_WIDTH}px`, boxSizing: 'border-box', backgroundColor: '#000000', borderLeft: '1px solid #222222', flexShrink: 0 }} />
         </div>
       )}
 
-      {/* 4. THE BELL ORDERFLOW TABLE (COMPACT 5 ROWS: Period, Delta, Max Delta, Min Delta, Cum Delta) */}
+      {/* 4. THE BELL ORDERFLOW TABLE (6 SYNCHRONIZED ROWS: Period, Delta, Max Delta, Min Delta, Cum Delta, Volume) */}
       {showTable && (
         <div
           style={{
-            height: '78px',
-            minHeight: '78px',
+            height: '102px',
+            minHeight: '102px',
             backgroundColor: '#0a0a0a',
             borderBottom: '1px solid #222222',
             display: 'flex'
           }}
+          onWheel={handleBottomWheel}
         >
           {/* Row Labels (Left Column) */}
           <div
             style={{
-              width: showProfile ? '110px' : '90px',
-              minWidth: showProfile ? '110px' : '90px',
+              width: `${LEFT_GUTTER_WIDTH}px`,
+              minWidth: `${LEFT_GUTTER_WIDTH}px`,
+              maxWidth: `${LEFT_GUTTER_WIDTH}px`,
+              boxSizing: 'border-box',
               backgroundColor: '#0f0f0f',
               borderRight: '1px solid #222222',
               display: 'flex',
               flexDirection: 'column',
-              fontSize: '9.5px',
+              fontSize: '9px',
               fontWeight: 800,
               color: '#aaaaaa',
               flexShrink: 0
@@ -2472,150 +2827,349 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', paddingLeft: '8px', borderBottom: '1px solid #1a1a1a' }}>Delta</div>
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', paddingLeft: '8px', borderBottom: '1px solid #1a1a1a' }}>Max Delta</div>
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', paddingLeft: '8px', borderBottom: '1px solid #1a1a1a' }}>Min Delta</div>
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', paddingLeft: '8px' }}>Cum Delta</div>
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', paddingLeft: '8px', borderBottom: '1px solid #1a1a1a' }}>Cum Delta</div>
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', paddingLeft: '8px' }}>Volume</div>
           </div>
 
           {/* Data Columns (Scrollable and synchronized with chart) */}
           <div
             ref={tableScrollRef}
+            className="orderflow-no-scrollbar"
+            onScroll={(e) => handleHorizontalScrollerScroll(e, 'table')}
             style={{
               flex: 1,
               overflowX: 'hidden',
-              display: 'flex',
+              height: '100%',
               scrollbarWidth: 'none',
               msOverflowStyle: 'none'
             }}
           >
-            {displayCandles.map((c, idx) => {
-              const isBull = c.close >= c.open;
-              const periodChar = c.period ? c.period.charAt(0).toUpperCase() : String.fromCharCode(65 + (idx % 26));
-              const prevC = idx > 0 ? displayCandles[idx - 1] : undefined;
-              const isNewDay = checkIfNewDay(c, prevC);
+            <div
+              style={{
+                display: 'flex',
+                width: `${totalScrollTrackWidth}px`,
+                height: '100%'
+              }}
+            >
+              <div style={{ display: 'flex', width: `${candleTrackWidth}px`, flexShrink: 0, height: '100%' }}>
+                {displayCandles.map((c, idx) => {
+                  const isBull = c.close >= c.open;
+                  const periodChar = c.period ? c.period.charAt(0).toUpperCase() : String.fromCharCode(65 + (idx % 26));
+                  const prevC = idx > 0 ? displayCandles[idx - 1] : undefined;
+                  const isNewDay = checkIfNewDay(c, prevC);
+                  const totalVol = c.volume || (c.priceLevels?.reduce((sum, lvl) => sum + (lvl.totalVol || 0), 0) || 0);
 
-              return (
-                <div
-                  key={`tbl-${c.timestamp || idx}`}
-                  style={{
-                    width: `${candleWidth}px`,
-                    minWidth: `${candleWidth}px`,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    borderRight: '1px solid #1e1e1e',
-                    borderLeft: isNewDay ? '2px solid #0284c7' : 'none',
-                    textAlign: 'center',
-                    fontSize: '9.5px',
-                    fontWeight: 700,
-                    boxSizing: 'border-box'
-                  }}
-                >
-                  {/* Row 1: Period Header (Soft Mint for Bull, Soft Coral for Bear) */}
-                  <div
-                    style={{
-                      flex: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: isBull ? '#81c784' : '#e57373',
-                      color: '#000000',
-                      fontWeight: 900,
-                      borderBottom: '1px solid #222222'
-                    }}
-                  >
-                    {periodChar}
-                  </div>
+                  return (
+                    <div
+                      key={`tbl-${c.timestamp || idx}`}
+                      style={{
+                        width: `${candleWidth}px`,
+                        minWidth: `${candleWidth}px`,
+                        maxWidth: `${candleWidth}px`,
+                        flexShrink: 0,
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        borderRight: '1px solid #1e1e1e',
+                        borderLeft: isNewDay ? '2px solid #0284c7' : 'none',
+                        textAlign: 'center',
+                        fontSize: '9px',
+                        fontWeight: 700,
+                        boxSizing: 'border-box'
+                      }}
+                    >
+                      {/* Row 1: Period Header */}
+                      <div
+                        style={{
+                          flex: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backgroundColor: isBull ? '#81c784' : '#e57373',
+                          color: '#000000',
+                          fontWeight: 900,
+                          borderBottom: '1px solid #222222',
+                          overflow: 'hidden',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        {periodChar}
+                      </div>
 
-                  {/* Row 2: Bar Delta */}
-                  <div
-                    style={{
-                      flex: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: c.delta >= 0 ? '#a5d6a7' : '#ef9a9a',
-                      color: '#000000',
-                      borderBottom: '1px solid #222222'
-                    }}
-                  >
-                    {c.delta}
-                  </div>
+                      {/* Row 2: Bar Delta */}
+                      <div
+                        style={{
+                          flex: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backgroundColor: c.delta >= 0 ? '#a5d6a7' : '#ef9a9a',
+                          color: '#000000',
+                          borderBottom: '1px solid #222222',
+                          overflow: 'hidden',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        {c.delta}
+                      </div>
 
-                  {/* Row 3: Max Delta */}
-                  <div
-                    style={{
-                      flex: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: '#a5d6a7',
-                      color: '#000000',
-                      borderBottom: '1px solid #222222'
-                    }}
-                  >
-                    {c.maxDelta}
-                  </div>
+                      {/* Row 3: Max Delta */}
+                      <div
+                        style={{
+                          flex: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backgroundColor: '#a5d6a7',
+                          color: '#000000',
+                          borderBottom: '1px solid #222222',
+                          overflow: 'hidden',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        {c.maxDelta}
+                      </div>
 
-                  {/* Row 4: Min Delta */}
-                  <div
-                    style={{
-                      flex: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: c.minDelta < 0 ? '#ef9a9a' : '#a5d6a7',
-                      color: '#000000',
-                      borderBottom: '1px solid #222222'
-                    }}
-                  >
-                    {c.minDelta}
-                  </div>
+                      {/* Row 4: Min Delta */}
+                      <div
+                        style={{
+                          flex: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backgroundColor: c.minDelta < 0 ? '#ef9a9a' : '#a5d6a7',
+                          color: '#000000',
+                          borderBottom: '1px solid #222222',
+                          overflow: 'hidden',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        {c.minDelta}
+                      </div>
 
-                  {/* Row 5: Cumulative Delta (CVD) */}
-                  <div
-                    style={{
-                      flex: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: c.cvd >= 0 ? '#a5d6a7' : '#ef9a9a',
-                      color: '#000000'
-                    }}
-                  >
-                    {c.cvd}
-                  </div>
-                </div>
-              );
-            })}
+                      {/* Row 5: Cumulative Delta (CVD) */}
+                      <div
+                        style={{
+                          flex: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backgroundColor: c.cvd >= 0 ? '#a5d6a7' : '#ef9a9a',
+                          color: '#000000',
+                          borderBottom: '1px solid #222222',
+                          overflow: 'hidden',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        {c.cvd}
+                      </div>
+
+                      {/* Row 6: Total Volume */}
+                      <div
+                        style={{
+                          flex: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backgroundColor: '#161922',
+                          color: '#e2e8f0',
+                          fontWeight: 800,
+                          overflow: 'hidden',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        {totalVol}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {/* Trailing Spacer matching all other rows */}
+              <div style={{ width: `${RIGHT_SCROLL_PAD}px`, minWidth: `${RIGHT_SCROLL_PAD}px`, flexShrink: 0 }} />
+            </div>
           </div>
 
           {/* Right filler for price ladder alignment */}
-          <div style={{ width: '84px', minWidth: '84px', backgroundColor: '#0f0f0f', borderLeft: '1px solid #222222' }} />
+          <div style={{ width: `${RIGHT_GUTTER_WIDTH}px`, minWidth: `${RIGHT_GUTTER_WIDTH}px`, maxWidth: `${RIGHT_GUTTER_WIDTH}px`, boxSizing: 'border-box', backgroundColor: '#0f0f0f', borderLeft: '1px solid #222222', flexShrink: 0 }} />
         </div>
       )}
 
-      {/* 5. BOTTOM STATUS BAR & TIME AXIS FOOTER */}
+      {/* 5. TIME AXIS (EXACTLY ALIGNED WITH CANDLES & TABLE) */}
       <div
         style={{
-          height: '34px',
-          minHeight: '34px',
-          backgroundColor: '#181818',
-          borderTop: '1px solid #282828',
+          height: '28px',
+          minHeight: '28px',
+          backgroundColor: '#121212',
+          borderBottom: '1px solid #242424',
+          display: 'flex',
+          alignItems: 'center'
+        }}
+        onWheel={handleBottomWheel}
+      >
+        {/* Left: Interactive Time Scale Handle */}
+        <div
+          onMouseDown={handleTimeScaleDragStart}
+          onDoubleClick={(e) => { e.stopPropagation(); setCandleWidth(85); }}
+          style={{
+            width: `${LEFT_GUTTER_WIDTH}px`,
+            minWidth: `${LEFT_GUTTER_WIDTH}px`,
+            maxWidth: `${LEFT_GUTTER_WIDTH}px`,
+            boxSizing: 'border-box',
+            height: '100%',
+            backgroundColor: isDraggingTimeScale ? '#0284c7' : '#181818',
+            borderRight: '1px solid #282828',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '4px',
+            fontSize: '9px',
+            fontWeight: 800,
+            color: isDraggingTimeScale ? '#ffffff' : '#00e5ff',
+            cursor: 'ew-resize',
+            userSelect: 'none',
+            flexShrink: 0
+          }}
+          title="↔ Drag horizontally to resize Time Scale / Candle Width (Double-click to reset)"
+        >
+          <MoveHorizontal size={12} strokeWidth={2.5} />
+          <span>TIME SCALE</span>
+        </div>
+
+        {/* Center: Scrollable Time Ticks */}
+        <div
+          ref={timeBarScrollRef}
+          className="orderflow-no-scrollbar"
+          onScroll={(e) => handleHorizontalScrollerScroll(e, 'time')}
+          onMouseDown={handleTimeScaleDragStart}
+          style={{
+            flex: 1,
+            overflowX: 'hidden',
+            height: '100%',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            cursor: 'ew-resize',
+            userSelect: 'none'
+          }}
+          title="Time Scale (X-axis): Drag left/right to scale candle width. Double-click to reset."
+        >
+          <div
+            style={{
+              display: 'flex',
+              width: `${totalScrollTrackWidth}px`,
+              height: '100%'
+            }}
+          >
+            <div style={{ display: 'flex', width: `${candleTrackWidth}px`, flexShrink: 0, height: '100%' }}>
+              {displayCandles.map((c, idx) => {
+                const prevC = idx > 0 ? displayCandles[idx - 1] : undefined;
+                const isNewDay = checkIfNewDay(c, prevC);
+                const dateStr = getCandleDateStr(c);
+                const timeOnly = c.timeStr || '';
+
+                return (
+                  <div
+                    key={`time-${c.timestamp || idx}`}
+                    style={{
+                      width: `${candleWidth}px`,
+                      minWidth: `${candleWidth}px`,
+                      maxWidth: `${candleWidth}px`,
+                      flexShrink: 0,
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRight: '1px solid #1e1e1e',
+                      borderLeft: isNewDay ? '2px solid #0284c7' : 'none',
+                      backgroundColor: isNewDay ? 'rgba(2, 132, 199, 0.15)' : 'transparent',
+                      boxSizing: 'border-box',
+                      padding: '1px 0'
+                    }}
+                  >
+                    {isNewDay ? (
+                      <>
+                        <div
+                          style={{
+                            backgroundColor: '#0284c7',
+                            color: '#ffffff',
+                            fontSize: '8px',
+                            fontWeight: 900,
+                            padding: '1px 4px',
+                            borderRadius: '2px',
+                            lineHeight: 1.1,
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          📅 {dateStr}
+                        </div>
+                        <span style={{ fontSize: '8px', color: '#38bdf8', fontWeight: 800, marginTop: '1px', fontFamily: 'monospace' }}>
+                          {timeOnly}
+                        </span>
+                      </>
+                    ) : (
+                      <span
+                        style={{
+                          fontSize: '9px',
+                          color: '#94a3b8',
+                          fontFamily: 'monospace',
+                          fontWeight: 600
+                        }}
+                      >
+                        {timeOnly}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            {/* Trailing Spacer matching all other rows */}
+            <div style={{ width: `${RIGHT_SCROLL_PAD}px`, minWidth: `${RIGHT_SCROLL_PAD}px`, flexShrink: 0 }} />
+          </div>
+        </div>
+
+        {/* Right spacing for price ladder alignment */}
+        <div
+          style={{
+            width: `${RIGHT_GUTTER_WIDTH}px`,
+            minWidth: `${RIGHT_GUTTER_WIDTH}px`,
+            maxWidth: `${RIGHT_GUTTER_WIDTH}px`,
+            boxSizing: 'border-box',
+            backgroundColor: '#181818',
+            borderLeft: '1px solid #282828',
+            flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '9px',
+            color: '#666666'
+          }}
+        >
+          UTC+5:30
+        </div>
+      </div>
+
+      {/* 6. BOTTOM STATUS BAR FOOTER */}
+      <div
+        style={{
+          height: '26px',
+          minHeight: '26px',
+          backgroundColor: '#0f0f0f',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           fontSize: '10px',
           color: '#888888',
-          padding: '0 6px',
+          padding: '0 10px',
           zIndex: 40
         }}
       >
-        {/* Left: Tab selectors & Copyright */}
+        {/* Left: Tab selectors */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {/* Active Symbol Tab */}
           <div
             style={{
               backgroundColor: '#0284c7',
               color: '#ffffff',
-              padding: '2px 8px',
+              padding: '1px 8px',
               borderRadius: '2px',
               fontSize: '10px',
               fontWeight: 800
@@ -2628,7 +3182,7 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
             style={{
               backgroundColor: '#262626',
               color: '#888888',
-              padding: '2px 8px',
+              padding: '1px 8px',
               borderRadius: '2px',
               fontSize: '10px',
               fontWeight: 600
@@ -2639,117 +3193,6 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
 
           <div style={{ color: '#666666', cursor: 'pointer', padding: '0 4px', fontWeight: 900 }}>
             +
-          </div>
-
-          {/* Two-Way Resize Handle for Time Scale (X-axis) */}
-          <div
-            onMouseDown={handleTimeScaleDragStart}
-            onDoubleClick={(e) => { e.stopPropagation(); setCandleWidth(85); }}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '4px',
-              padding: '2px 8px',
-              backgroundColor: isDraggingTimeScale ? '#0284c7' : '#1e1e1e',
-              border: `1px solid ${isDraggingTimeScale ? '#38bdf8' : '#333333'}`,
-              borderRadius: '2px',
-              color: isDraggingTimeScale ? '#ffffff' : '#00e5ff',
-              fontSize: '9.5px',
-              fontWeight: 800,
-              cursor: 'ew-resize',
-              userSelect: 'none',
-              boxShadow: isDraggingTimeScale ? '0 0 8px rgba(0, 229, 255, 0.6)' : 'none',
-              marginLeft: '8px',
-              flexShrink: 0
-            }}
-            title="↔ Drag horizontally to resize Time Scale / Candle Width (Double-click to reset)"
-          >
-            <MoveHorizontal size={13} strokeWidth={2.5} />
-            <span>TIME SCALE</span>
-          </div>
-        </div>
-
-        {/* Center: Scrollable Time Ticks with Interactive Horizontal Scaling & New Day Dates */}
-        <div
-          ref={timeBarScrollRef}
-          onMouseDown={handleTimeScaleDragStart}
-          style={{
-            flex: 1,
-            overflowX: 'hidden',
-            display: 'flex',
-            margin: '0 12px',
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-            cursor: 'ew-resize',
-            userSelect: 'none'
-          }}
-          title="Time Scale (X-axis): Drag left/right to scale candle width. Double-click to reset."
-        >
-          <div
-            style={{
-              display: 'flex'
-            }}
-          >
-            {displayCandles.map((c, idx) => {
-              const prevC = idx > 0 ? displayCandles[idx - 1] : undefined;
-              const isNewDay = checkIfNewDay(c, prevC);
-              const dateStr = getCandleDateStr(c);
-              const timeOnly = c.timeStr || '';
-
-              return (
-                <div
-                  key={`time-${c.timestamp || idx}`}
-                  style={{
-                    width: `${candleWidth}px`,
-                    minWidth: `${candleWidth}px`,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderLeft: isNewDay ? '2px solid #0284c7' : '1px solid rgba(255, 255, 255, 0.05)',
-                    backgroundColor: isNewDay ? 'rgba(2, 132, 199, 0.20)' : 'transparent',
-                    boxSizing: 'border-box',
-                    padding: '1px 0',
-                    flexShrink: 0
-                  }}
-                >
-                  {isNewDay ? (
-                    <>
-                      <div
-                        style={{
-                          backgroundColor: '#0284c7',
-                          color: '#ffffff',
-                          fontSize: '8.5px',
-                          fontWeight: 900,
-                          padding: '1px 5px',
-                          borderRadius: '2px',
-                          lineHeight: 1.1,
-                          boxShadow: '0 0 6px rgba(2, 132, 199, 0.6)',
-                          whiteSpace: 'nowrap',
-                          letterSpacing: '0.3px'
-                        }}
-                      >
-                        📅 {dateStr}
-                      </div>
-                      <span style={{ fontSize: '8px', color: '#38bdf8', fontWeight: 800, marginTop: '1px', fontFamily: 'monospace' }}>
-                        {timeOnly}
-                      </span>
-                    </>
-                  ) : (
-                    <span
-                      style={{
-                        fontSize: '9.5px',
-                        color: '#94a3b8',
-                        fontFamily: 'monospace',
-                        fontWeight: 600
-                      }}
-                    >
-                      {timeOnly}
-                    </span>
-                  )}
-                </div>
-              );
-            })}
           </div>
         </div>
 

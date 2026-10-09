@@ -497,7 +497,7 @@ async function runIntradayBacktestAndLearnings(tvBridge, bounces, rejections) {
         } else {
           finalOptPremium = optEntry + (entryPrice - lastCandle.close) * 0.5;
         }
-        exitTime = '15:30';
+        exitTime = '15:15';
       }
 
       let roiPct;

@@ -1,12 +1,10 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { TradingViewBridge } from './tradingview.js';
+import { angelOneBridge } from './angelone_bridge.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-const volumeTvBridge = new TradingViewBridge();
 
 export const volumeCache = {
   lastScanTime: null,
@@ -52,69 +50,17 @@ function loadVolumeCacheFromDisk() {
   }
 }
 
-// Helper to fetch candles
-function fetchCandlesForSymbol(tvBridge, symbol, timeframe, limit) {
-  let cleanupFn = null;
-  let resolved = false;
-  let cachedData = null;
-
-  return new Promise((resolve) => {
-    const timeout = setTimeout(async () => {
-      if (!resolved) {
-        resolved = true;
-        if (cleanupFn) {
-          try { await cleanupFn(); } catch (e) {}
-        }
-        resolve([]);
-      }
-    }, 3000);
-
-    const onData = async (data) => {
-      if (data.isSnapshot && !resolved) {
-        if (cleanupFn) {
-          resolved = true;
-          clearTimeout(timeout);
-          try { await cleanupFn(); } catch (err) {}
-          resolve(data.candles || []);
-        } else {
-          cachedData = data.candles || [];
-        }
-      }
-    };
-
-    const onError = async () => {
-      if (!resolved) {
-        resolved = true;
-        clearTimeout(timeout);
-        if (cleanupFn) {
-          try { await cleanupFn(); } catch (e) {}
-        }
-        resolve([]);
-      }
-    };
-
-    tvBridge.subscribeSymbol(symbol, timeframe, onData, onError, limit)
-      .then(async (fn) => {
-        cleanupFn = fn;
-        if (resolved) {
-          try { await cleanupFn(); } catch (e) {}
-          return;
-        }
-        if (cachedData && !resolved) {
-          resolved = true;
-          clearTimeout(timeout);
-          try { await cleanupFn(); } catch (err) {}
-          resolve(cachedData);
-        }
-      })
-      .catch(() => {
-        if (!resolved) {
-          resolved = true;
-          clearTimeout(timeout);
-          resolve([]);
-        }
-      });
-  });
+// Helper to fetch candles via Angel One SmartAPI
+async function fetchCandlesForSymbol(symbol, timeframe, limit) {
+  try {
+    const angelRes = await angelOneBridge.getNormalizedCandles({ symbol, timeframe, limit });
+    if (angelRes && angelRes.status && Array.isArray(angelRes.candles) && angelRes.candles.length > 0) {
+      return angelRes.candles;
+    }
+  } catch (err) {
+    console.warn(`[Volume Scanner] Angel One fetch error for ${symbol}:`, err.message);
+  }
+  return [];
 }
 
 // Get upcoming expiry date (YYMMDD) based on day of week (3=Wednesday, 4=Thursday)
@@ -130,8 +76,8 @@ function getNearestExpiry(dayOfWeek) {
     const d = new Date(today);
     d.setDate(today.getDate() + i);
     if (d.getDay() === dayOfWeek) {
-      // If it is today but past market hours (after 3:30 PM), skip to next week
-      if (i === 0 && timeVal > 1530) {
+      // If it is today but past market hours (after 3:15 PM), skip to next week
+      if (i === 0 && timeVal > 1515) {
         continue;
       }
       const yy = String(d.getFullYear()).slice(-2);
@@ -153,7 +99,7 @@ function getScanSymbols() {
   }
 }
 
-export async function scanVolumeBreakouts(tvBridge) {
+export async function scanVolumeBreakouts() {
   if (volumeCache.isScanning) return;
   volumeCache.isScanning = true;
   volumeCache.lastScanTime = new Date().toISOString();
@@ -181,10 +127,10 @@ export async function scanVolumeBreakouts(tvBridge) {
   let bankSpot = 0;
 
   try {
-    const niftyCandles = await fetchCandlesForSymbol(volumeTvBridge, 'NSE:NIFTY', 'D', 2);
+    const niftyCandles = await fetchCandlesForSymbol('NSE:NIFTY', 'D', 2);
     if (niftyCandles.length > 0) niftySpot = niftyCandles[niftyCandles.length - 1].close;
 
-    const bankCandles = await fetchCandlesForSymbol(volumeTvBridge, 'NSE:BANKNIFTY', 'D', 2);
+    const bankCandles = await fetchCandlesForSymbol('NSE:BANKNIFTY', 'D', 2);
     if (bankCandles.length > 0) bankSpot = bankCandles[bankCandles.length - 1].close;
   } catch (e) {
     // Spot fetch failed
@@ -226,7 +172,7 @@ export async function scanVolumeBreakouts(tvBridge) {
     const batch = symbols.slice(i, i + BATCH_SIZE);
     await Promise.all(batch.map(async (symbol) => {
       try {
-        const candles = await fetchCandlesForSymbol(volumeTvBridge, symbol, '5', 100);
+        const candles = await fetchCandlesForSymbol(symbol, '5', 100);
         if (!candles || candles.length < 2) return;
 
         // Filter today's candles
@@ -272,7 +218,7 @@ export async function scanVolumeBreakouts(tvBridge) {
     const batch = optionSymbols.slice(i, i + BATCH_SIZE);
     await Promise.all(batch.map(async (opt) => {
       try {
-        const candles = await fetchCandlesForSymbol(volumeTvBridge, opt.symbol, '5', 100);
+        const candles = await fetchCandlesForSymbol(opt.symbol, '5', 100);
         if (!candles || candles.length < 2) return;
 
         const todayCandles = candles.filter(c => {
@@ -308,13 +254,13 @@ export async function scanVolumeBreakouts(tvBridge) {
           }
         }
       } catch (err) {
-        // Ignore
+        // Ignore errors
       }
     }));
     await new Promise(r => setTimeout(r, 350));
   }
 
-  // 3. Scan Futures
+  // 3. Scan Key Liquid Index & Stock Futures
   const futuresSymbols = [
     'NSE:NIFTY1!', 'NSE:BANKNIFTY1!', 'NSE:FINNIFTY1!',
     'NSE:RELIANCE1!', 'NSE:HDFCBANK1!', 'NSE:ICICIBANK1!', 'NSE:SBIN1!',
@@ -325,7 +271,7 @@ export async function scanVolumeBreakouts(tvBridge) {
     const batch = futuresSymbols.slice(i, i + BATCH_SIZE);
     await Promise.all(batch.map(async (symbol) => {
       try {
-        const candles = await fetchCandlesForSymbol(volumeTvBridge, symbol, '5', 100);
+        const candles = await fetchCandlesForSymbol(symbol, '5', 100);
         if (!candles || candles.length < 2) return;
 
         const todayCandles = candles.filter(c => {
@@ -359,7 +305,7 @@ export async function scanVolumeBreakouts(tvBridge) {
           }
         }
       } catch (err) {
-        // Ignore
+        // Ignore errors
       }
     }));
     await new Promise(r => setTimeout(r, 350));
@@ -367,6 +313,10 @@ export async function scanVolumeBreakouts(tvBridge) {
 
   // Append new breakouts, avoiding duplicates (same symbol and time)
   breakouts.forEach(b => {
+    // Strictly enforce 3:15 PM IST cutoff (15:15:00) for non-commodities
+    const isMcx = b.symbol.startsWith('MCX:') || b.symbol.includes('CRUDE') || b.symbol.includes('NATURALGAS') || b.symbol.includes('GOLD') || b.symbol.includes('SILVER');
+    if (!isMcx && b.time > '15:15:00') return;
+
     const exists = volumeCache.results.some(existing => existing.symbol === b.symbol && existing.time === b.time);
     if (!exists) {
       volumeCache.results.push(b);
@@ -380,31 +330,17 @@ export async function scanVolumeBreakouts(tvBridge) {
   
   // Save updated results to disk backup
   saveVolumeCacheToDisk();
-  
-  // Close the dedicated session after 10 seconds to allow all pending cleanups to finish safely
-  const sessionToClose = volumeTvBridge.sharedSession;
-  volumeTvBridge.sharedSession = null;
-  volumeTvBridge.sessionPromise = null;
-  
-  if (sessionToClose) {
-    setTimeout(async () => {
-      console.log('[Volume Scanner] Closing dedicated WebSocket session to release resources.');
-      try {
-        await sessionToClose.close();
-      } catch (e) {}
-    }, 10000);
-  }
 
   volumeCache.isScanning = false;
 }
 
-export function startVolumeScanner(tvBridge) {
+export function startVolumeScanner() {
   // Restore backup from disk if available
   loadVolumeCacheFromDisk();
 
   // Run volume scan 2 minutes after server boot to avoid startup congestion
   setTimeout(async () => {
-    await scanVolumeBreakouts(tvBridge);
+    await scanVolumeBreakouts();
   }, 120000);
 
   // Repeat scan every 3 minutes to capture volume expansions in real-time
@@ -418,10 +354,10 @@ export function startVolumeScanner(tvBridge) {
     const [hours, minutes] = istTimeStr.split(':').map(Number);
     const timeVal = hours * 100 + minutes;
 
-    // Run only during active market hours (9:15 AM - 3:30 PM IST)
-    if (timeVal >= 915 && timeVal <= 1530) {
+    // Run only during active market hours (9:15 AM - 3:15 PM IST)
+    if (timeVal >= 915 && timeVal <= 1515) {
       console.log(`[Volume Scanner] Running scheduled volume scan...`);
-      await scanVolumeBreakouts(tvBridge);
+      await scanVolumeBreakouts();
     }
   }, 3 * 60 * 1000);
 }

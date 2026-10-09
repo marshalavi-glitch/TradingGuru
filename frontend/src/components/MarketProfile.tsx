@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import type { DayProfile, TPOBin } from '../utils/profileCalculator';
+import { Pin, PinOff, X } from 'lucide-react';
 
 interface MarketProfileProps {
   activeProfile: DayProfile | null;
@@ -45,8 +46,35 @@ export const MarketProfile: React.FC<MarketProfileProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const [hoveredBin, setHoveredBin] = useState<{ bin: TPOBin; y: number; x: number; date?: string } | null>(null);
+  const [pinnedBin, setPinnedBin] = useState<{ bin: TPOBin; y: number; x: number; date?: string } | null>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [compareMode, setCompareMode] = useState<'single' | 'compare'>('compare');
+
+  // Keyboard shortcut listener: P toggles Pin/Unpin, Escape unpins
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName)) return;
+      if (e.key === 'p' || e.key === 'P') {
+        if (pinnedBin) {
+          setPinnedBin(null);
+        } else if (hoveredBin) {
+          setPinnedBin(hoveredBin);
+        } else if (activeProfile && activeProfile.bins.length > 0) {
+          const pocBin = activeProfile.bins.find(b => b.price === activeProfile.pocPrice) || activeProfile.bins[0];
+          setPinnedBin({
+            bin: pocBin,
+            x: 80,
+            y: 120,
+            date: `Session: ${activeProfile.dateStr}`
+          });
+        }
+      } else if (e.key === 'Escape') {
+        setPinnedBin(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [pinnedBin, hoveredBin, activeProfile]);
 
   // Monitor resize of the canvas container to match candlestick chart canvas height
   useEffect(() => {
@@ -466,7 +494,7 @@ export const MarketProfile: React.FC<MarketProfileProps> = ({
   };
 
   const handleMouseLeave = () => {
-    setHoveredBin(null);
+    if (!pinnedBin) setHoveredBin(null);
   };
 
   return (
@@ -485,7 +513,7 @@ export const MarketProfile: React.FC<MarketProfileProps> = ({
           </div>
 
           {/* Toggle buttons */}
-          <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', padding: '2px', borderRadius: '6px' }}>
+          <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', padding: '2px', borderRadius: '6px', gap: '3px' }}>
             <button
               onClick={() => setCompareMode('single')}
               style={{
@@ -518,6 +546,41 @@ export const MarketProfile: React.FC<MarketProfileProps> = ({
             >
               2-Day Compare
             </button>
+            <button
+              onClick={() => {
+                if (pinnedBin) {
+                  setPinnedBin(null);
+                } else if (hoveredBin) {
+                  setPinnedBin(hoveredBin);
+                } else if (activeProfile && activeProfile.bins.length > 0) {
+                  const pocBin = activeProfile.bins.find(b => b.price === activeProfile.pocPrice) || activeProfile.bins[0];
+                  setPinnedBin({
+                    bin: pocBin,
+                    x: 80,
+                    y: 120,
+                    date: `Session: ${activeProfile.dateStr}`
+                  });
+                }
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                background: pinnedBin ? 'rgba(16, 185, 129, 0.25)' : 'transparent',
+                color: pinnedBin ? '#10b981' : 'var(--text-secondary)',
+                border: pinnedBin ? '1px solid #10b981' : 'none',
+                padding: '4px 8px',
+                fontSize: '11px',
+                fontWeight: '600',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+              title={pinnedBin ? "Unpin Info Tooltip (Shortcut: P or Esc)" : "Pin Session Info on Screen for Screenshot (Shortcut: P)"}
+            >
+              {pinnedBin ? <PinOff size={12} /> : <Pin size={12} />}
+              {pinnedBin ? 'Unpin' : 'Pin (P)'}
+            </button>
           </div>
         </div>
         <div style={{ display: 'flex', gap: '10px', fontSize: '10px' }}>
@@ -542,39 +605,77 @@ export const MarketProfile: React.FC<MarketProfileProps> = ({
           ref={canvasRef}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
+          onClick={() => {
+            if (pinnedBin) {
+              setPinnedBin(null);
+            } else if (hoveredBin) {
+              setPinnedBin(hoveredBin);
+            }
+          }}
           style={{ cursor: 'crosshair', display: 'block' }}
         />
 
         {/* Custom Tooltip */}
-        {hoveredBin && (
-          <div 
-            className="tooltip-custom"
-            style={{ 
-              position: 'absolute', 
-              top: `${hoveredBin.y}px`, 
-              left: `${hoveredBin.x}px`,
-              pointerEvents: 'none',
-              transform: 'translateY(-50%)',
-              zIndex: 1000
-            }}
-          >
-            <div style={{ fontWeight: 'bold', color: hoveredBin.bin.price === activeProfile?.pocPrice ? '#00f0ff' : 'white', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '4px', marginBottom: '4px' }}>
-              Price: {hoveredBin.bin.price.toFixed(2)}
+        {(pinnedBin || hoveredBin) && (() => {
+          const activeDisplay = pinnedBin || hoveredBin;
+          if (!activeDisplay) return null;
+          const isItemPinned = !!pinnedBin;
+
+          return (
+            <div 
+              className="tooltip-custom"
+              style={{ 
+                position: 'absolute', 
+                top: `${activeDisplay.y}px`, 
+                left: `${activeDisplay.x}px`,
+                pointerEvents: isItemPinned ? 'auto' : 'none',
+                transform: 'translateY(-50%)',
+                zIndex: 1000,
+                border: isItemPinned ? '1.5px solid #10b981' : undefined,
+                boxShadow: isItemPinned ? '0 4px 20px rgba(16, 185, 129, 0.35)' : undefined
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '4px', marginBottom: '4px' }}>
+                <span style={{ fontWeight: 'bold', color: activeDisplay.bin.price === activeProfile?.pocPrice ? '#00f0ff' : 'white' }}>
+                  Price: {activeDisplay.bin.price.toFixed(2)}
+                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  {isItemPinned && (
+                    <span style={{ fontSize: '9px', background: '#10b981', color: '#000', padding: '1px 4px', borderRadius: '3px', fontWeight: 'bold' }}>
+                      📌 PINNED
+                    </span>
+                  )}
+                  {isItemPinned && (
+                    <button
+                      onClick={() => setPinnedBin(null)}
+                      style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '1px' }}
+                      title="Close Pin"
+                    >
+                      <X size={12} />
+                    </button>
+                  )}
+                </div>
+              </div>
+              {activeDisplay.date && (
+                <div style={{ color: '#f59e0b', fontSize: '10px', fontWeight: 'bold', marginBottom: '4px' }}>
+                  📅 Date: {activeDisplay.date}
+                </div>
+              )}
+              <div>TPOs: <span style={{ color: 'var(--color-poc)' }}>{activeDisplay.bin.tpos.length}</span> ({activeDisplay.bin.tpos.join(', ') || 'None'})</div>
+              <div>Volume: <span style={{ color: '#3b82f6' }}>{Math.round(activeDisplay.bin.volume).toLocaleString()}</span></div>
+              {activeDisplay.bin.price === activeProfile?.pocPrice && (
+                <div style={{ color: '#00f0ff', fontSize: '9px', fontWeight: 'bold', marginTop: '4px', textTransform: 'uppercase' }}>
+                  ⭐ Point of Control (POC)
+                </div>
+              )}
+              {isItemPinned && (
+                <div style={{ marginTop: '6px', paddingTop: '4px', borderTop: '1px dashed rgba(255,255,255,0.15)', fontSize: '9px', color: '#94a3b8', textAlign: 'center' }}>
+                  📸 Press Win+Shift+S for Screenshot | Esc to Unpin
+                </div>
+              )}
             </div>
-            {hoveredBin.date && (
-              <div style={{ color: '#f59e0b', fontSize: '10px', fontWeight: 'bold', marginBottom: '4px' }}>
-                📅 Date: {hoveredBin.date}
-              </div>
-            )}
-            <div>TPOs: <span style={{ color: 'var(--color-poc)' }}>{hoveredBin.bin.tpos.length}</span> ({hoveredBin.bin.tpos.join(', ') || 'None'})</div>
-            <div>Volume: <span style={{ color: '#3b82f6' }}>{Math.round(hoveredBin.bin.volume).toLocaleString()}</span></div>
-            {hoveredBin.bin.price === activeProfile?.pocPrice && (
-              <div style={{ color: '#00f0ff', fontSize: '9px', fontWeight: 'bold', marginTop: '4px', textTransform: 'uppercase' }}>
-                ⭐ Point of Control (POC)
-              </div>
-            )}
-          </div>
-        )}
+          );
+        })()}
       </div>
     </div>
   );

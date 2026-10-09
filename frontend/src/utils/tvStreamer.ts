@@ -19,9 +19,11 @@ type OnDataCallback = (data: TVDataMessage) => void;
 type OnErrorCallback = (error: string) => void;
 type OnStatusCallback = (status: 'connecting' | 'connected' | 'disconnected') => void;
 type OnOnlineUsersCallback = (count: number) => void;
-type OnManualTradeAddedCallback = (trade: any) => void;
-type OnManualTradeDeletedCallback = (id: string) => void;
-type OnManualTradesClearedCallback = () => void;
+export type OnManualTradeAddedCallback = (trade: any) => void;
+export type OnManualTradeDeletedCallback = (id: string) => void;
+export type OnManualTradesClearedCallback = () => void;
+export type OnVoiceAnnouncementCallback = (alert: any) => void;
+export type OnManualTradesQuotesCallback = (quotes: Record<string, any>) => void;
 
 class TVWebSocketStreamer {
   private ws: WebSocket | null = null;
@@ -31,9 +33,18 @@ class TVWebSocketStreamer {
   private onErrorCallback: OnErrorCallback | null = null;
   private onStatusCallback: OnStatusCallback | null = null;
   private onOnlineUsersCallback: OnOnlineUsersCallback | null = null;
-  private onManualTradeAddedCallback: OnManualTradeAddedCallback | null = null;
-  private onManualTradeDeletedCallback: OnManualTradeDeletedCallback | null = null;
-  private onManualTradesClearedCallback: OnManualTradesClearedCallback | null = null;
+  private onManualTradeAddedCallbacks: OnManualTradeAddedCallback[] = [];
+  private onManualTradeDeletedCallbacks: OnManualTradeDeletedCallback[] = [];
+  private onManualTradesClearedCallbacks: OnManualTradesClearedCallback[] = [];
+  private onVoiceAnnouncementCallbacks: OnVoiceAnnouncementCallback[] = [];
+  private onManualTradesQuotesCallbacks: OnManualTradesQuotesCallback[] = [];
+  private onSrBreakoutsQuotesCallbacks: ((quotes: Record<string, any>) => void)[] = [];
+  private onMarketIndicesCallbacks: ((data: any) => void)[] = [];
+  private onStatusCallbacks: OnStatusCallback[] = [];
+  private onTickCallbacks: Array<(tick: { symbol: string; ltp: number; timestamp: number }) => void> = [];
+  private dataListeners: Map<string, { symbol: string; timeframe?: string; callback: OnDataCallback }> = new Map();
+  private latestQuotesCache: Record<string, { ltp: number; timestamp: number }> = {};
+  private lastPolledVoiceId: string | null = null;
   private reconnectTimeout: number | null = null;
   private fallbackPollInterval: number | null = null;
   private statusTimer: number | null = null;
@@ -78,22 +89,151 @@ class TVWebSocketStreamer {
   }
 
   public setManualTradeAddedListener(callback: OnManualTradeAddedCallback) {
-    this.onManualTradeAddedCallback = callback;
+    if (!this.onManualTradeAddedCallbacks.includes(callback)) {
+      this.onManualTradeAddedCallbacks.push(callback);
+    }
+  }
+
+  public addManualTradeAddedListener(callback: OnManualTradeAddedCallback) {
+    this.setManualTradeAddedListener(callback);
   }
 
   public setManualTradeDeletedListener(callback: OnManualTradeDeletedCallback) {
-    this.onManualTradeDeletedCallback = callback;
+    if (!this.onManualTradeDeletedCallbacks.includes(callback)) {
+      this.onManualTradeDeletedCallbacks.push(callback);
+    }
+  }
+
+  public addManualTradeDeletedListener(callback: OnManualTradeDeletedCallback) {
+    this.setManualTradeDeletedListener(callback);
   }
 
   public setManualTradesClearedListener(callback: OnManualTradesClearedCallback) {
-    this.onManualTradesClearedCallback = callback;
+    if (!this.onManualTradesClearedCallbacks.includes(callback)) {
+      this.onManualTradesClearedCallbacks.push(callback);
+    }
+  }
+
+  public addManualTradesClearedListener(callback: OnManualTradesClearedCallback) {
+    this.setManualTradesClearedListener(callback);
+  }
+
+  public setVoiceAnnouncementListener(callback: OnVoiceAnnouncementCallback) {
+    if (!this.onVoiceAnnouncementCallbacks.includes(callback)) {
+      this.onVoiceAnnouncementCallbacks.push(callback);
+    }
+  }
+
+  public addVoiceAnnouncementListener(callback: OnVoiceAnnouncementCallback) {
+    this.setVoiceAnnouncementListener(callback);
+  }
+
+  public setManualTradesQuotesListener(callback: OnManualTradesQuotesCallback) {
+    if (!this.onManualTradesQuotesCallbacks.includes(callback)) {
+      this.onManualTradesQuotesCallbacks.push(callback);
+    }
+  }
+
+  public addManualTradesQuotesListener(callback: OnManualTradesQuotesCallback) {
+    this.setManualTradesQuotesListener(callback);
+  }
+
+  public setSrBreakoutsQuotesListener(callback: (quotes: Record<string, any>) => void) {
+    if (!this.onSrBreakoutsQuotesCallbacks.includes(callback)) {
+      this.onSrBreakoutsQuotesCallbacks.push(callback);
+    }
+  }
+
+  public addSrBreakoutsQuotesListener(callback: (quotes: Record<string, any>) => void) {
+    this.setSrBreakoutsQuotesListener(callback);
+  }
+
+  public removeSrBreakoutsQuotesListener(callback: (quotes: Record<string, any>) => void) {
+    this.onSrBreakoutsQuotesCallbacks = this.onSrBreakoutsQuotesCallbacks.filter(cb => cb !== callback);
+  }
+
+  public setMarketIndicesListener(callback: (data: any) => void) {
+    if (!this.onMarketIndicesCallbacks.includes(callback)) {
+      this.onMarketIndicesCallbacks.push(callback);
+    }
+  }
+
+  public addMarketIndicesListener(callback: (data: any) => void) {
+    this.setMarketIndicesListener(callback);
+  }
+
+  public removeMarketIndicesListener(callback: (data: any) => void) {
+    this.onMarketIndicesCallbacks = this.onMarketIndicesCallbacks.filter(cb => cb !== callback);
+  }
+
+  public getStatus(): 'connecting' | 'connected' | 'disconnected' {
+    return this.status;
+  }
+
+  public addStatusListener(callback: OnStatusCallback): () => void {
+    if (!this.onStatusCallbacks.includes(callback)) {
+      this.onStatusCallbacks.push(callback);
+    }
+    try { callback(this.status); } catch (e) {}
+    return () => {
+      this.onStatusCallbacks = this.onStatusCallbacks.filter(cb => cb !== callback);
+    };
+  }
+
+  public getLatestLtp(symbol: string): { ltp: number; timestamp: number } | null {
+    if (!symbol) return null;
+    const clean = symbol.trim().toUpperCase();
+    const noPrefix = clean.replace(/^(NSE:|BSE:|MCX:|NFO:)/, '');
+    const stripped = noPrefix.replace(/(1!|\.FUT|FUT|-FUT)$/, '').trim();
+    return this.latestQuotesCache[clean] ||
+           this.latestQuotesCache[noPrefix] ||
+           this.latestQuotesCache[`NSE:${noPrefix}`] ||
+           this.latestQuotesCache[`MCX:${noPrefix}`] ||
+           this.latestQuotesCache[`BSE:${noPrefix}`] ||
+           this.latestQuotesCache[stripped] ||
+           this.latestQuotesCache[`NSE:${stripped}`] ||
+           this.latestQuotesCache[`MCX:${stripped}`] ||
+           null;
+  }
+
+  public addTickListener(callback: (tick: { symbol: string; ltp: number; timestamp: number }) => void): () => void {
+    this.onTickCallbacks.push(callback);
+    return () => {
+      this.onTickCallbacks = this.onTickCallbacks.filter(cb => cb !== callback);
+    };
+  }
+
+  public isSymbolMatch(a: string, b: string): boolean {
+    if (a === b) return true;
+    const cleanA = a.replace(/^(NSE:|BSE:|MCX:|NFO:)/, '').trim().toUpperCase();
+    const cleanB = b.replace(/^(NSE:|BSE:|MCX:|NFO:)/, '').trim().toUpperCase();
+    return cleanA === cleanB;
+  }
+
+  public updateLtpCache(symbol: string, ltp: number) {
+    if (!symbol || typeof ltp !== 'number' || isNaN(ltp)) return;
+    const now = Date.now();
+    const clean = symbol.trim().toUpperCase();
+    const noPrefix = clean.replace(/^(NSE:|BSE:|MCX:|NFO:)/, '');
+    const entry = { ltp, timestamp: now };
+    this.latestQuotesCache[clean] = entry;
+    this.latestQuotesCache[noPrefix] = entry;
+    this.latestQuotesCache[`NSE:${noPrefix}`] = entry;
+    this.latestQuotesCache[`MCX:${noPrefix}`] = entry;
+
+    this.onTickCallbacks.forEach(cb => {
+      try { cb({ symbol: clean, ltp, timestamp: now }); } catch (e) {}
+    });
   }
 
   private setStatus(newStatus: 'connecting' | 'connected' | 'disconnected') {
     this.status = newStatus;
     if (this.onStatusCallback) {
-      this.onStatusCallback(newStatus);
+      try { this.onStatusCallback(newStatus); } catch (e) {}
     }
+    this.onStatusCallbacks.forEach(cb => {
+      try { cb(newStatus); } catch (e) {}
+    });
   }
 
   public async connect(forceFreshUrl = false) {
@@ -172,24 +312,99 @@ class TVWebSocketStreamer {
           
           if (payload.type === 'data') {
             this.setStatus('connected');
-            if (this.onDataCallback) {
-              this.onDataCallback(payload);
+            if (payload.candles && payload.candles.length > 0) {
+              const last = payload.candles[payload.candles.length - 1];
+              if (last && typeof last.close === 'number') {
+                this.updateLtpCache(payload.symbol, last.close);
+              }
             }
+            if (this.onDataCallback && this.currentSubscription && this.isSymbolMatch(this.currentSubscription.symbol, payload.symbol)) {
+              try { this.onDataCallback(payload); } catch (e) {}
+            }
+            this.dataListeners.forEach((listener) => {
+              if (listener.callback !== this.onDataCallback) {
+                if (!listener.symbol || this.isSymbolMatch(listener.symbol, payload.symbol)) {
+                  try { listener.callback(payload); } catch (e) {}
+                }
+              }
+            });
           } else if (payload.type === 'online_users') {
             if (this.onOnlineUsersCallback && typeof payload.count === 'number') {
               this.onOnlineUsersCallback(payload.count);
             }
           } else if (payload.type === 'manual_trade_added') {
-            if (this.onManualTradeAddedCallback && payload.trade) {
-              this.onManualTradeAddedCallback(payload.trade);
+            if (payload.trade) {
+              this.onManualTradeAddedCallbacks.forEach(cb => {
+                try { cb(payload.trade); } catch (e) {}
+              });
             }
           } else if (payload.type === 'manual_trade_deleted') {
-            if (this.onManualTradeDeletedCallback && payload.id) {
-              this.onManualTradeDeletedCallback(payload.id);
+            if (payload.id) {
+              this.onManualTradeDeletedCallbacks.forEach(cb => {
+                try { cb(payload.id); } catch (e) {}
+              });
             }
           } else if (payload.type === 'manual_trades_cleared') {
-            if (this.onManualTradesClearedCallback) {
-              this.onManualTradesClearedCallback();
+            this.onManualTradesClearedCallbacks.forEach(cb => {
+              try { cb(); } catch (e) {}
+            });
+          } else if (payload.type === 'manual_trades_quotes') {
+            if (payload.quotes) {
+              Object.keys(payload.quotes).forEach(sym => {
+                const q = payload.quotes[sym];
+                if (q && typeof q.ltp === 'number') {
+                  this.updateLtpCache(sym, q.ltp);
+                }
+              });
+              this.onManualTradesQuotesCallbacks.forEach(cb => {
+                try { cb(payload.quotes); } catch (e) { console.error('Manual trades quotes callback error:', e); }
+              });
+            }
+          } else if (payload.type === 'sr_breakouts_quotes') {
+            if (payload.quotes) {
+              Object.keys(payload.quotes).forEach(sym => {
+                const q = payload.quotes[sym];
+                if (q && typeof q.ltp === 'number') {
+                  this.updateLtpCache(sym, q.ltp);
+                }
+              });
+              this.onSrBreakoutsQuotesCallbacks.forEach(cb => {
+                try { cb(payload.quotes); } catch (e) { console.error('SR Breakouts quotes callback error:', e); }
+              });
+            }
+          } else if (payload.type === 'mcx_quotes') {
+            if (payload.quotes) {
+              Object.keys(payload.quotes).forEach(sym => {
+                const q = payload.quotes[sym];
+                if (q && typeof q.ltp === 'number') {
+                  this.updateLtpCache(sym, q.ltp);
+                }
+              });
+            }
+          } else if (payload.type === 'market_indices') {
+            if (typeof payload.nifty === 'number') this.updateLtpCache('NSE:NIFTY', payload.nifty);
+            if (typeof payload.niftyFut === 'number') this.updateLtpCache('NSE:NIFTY1!', payload.niftyFut);
+            if (typeof payload.banknifty === 'number') this.updateLtpCache('NSE:BANKNIFTY', payload.banknifty);
+            if (typeof payload.bankniftyFut === 'number') this.updateLtpCache('NSE:BANKNIFTY1!', payload.bankniftyFut);
+            if (typeof payload.sensex === 'number') this.updateLtpCache('BSE:SENSEX', payload.sensex);
+            if (Array.isArray(payload.items)) {
+              payload.items.forEach((item: any) => {
+                if (item && item.symbol && typeof item.ltp === 'number') {
+                  this.updateLtpCache(item.symbol, item.ltp);
+                }
+              });
+            }
+            if (payload.items) {
+              this.onMarketIndicesCallbacks.forEach(cb => {
+                try { cb(payload); } catch (e) { console.error('Market indices callback error:', e); }
+              });
+            }
+          } else if (payload.type === 'voice_announcement') {
+            if (payload.alert) {
+              this.lastPolledVoiceId = payload.alert.id;
+              this.onVoiceAnnouncementCallbacks.forEach(cb => {
+                try { cb(payload.alert); } catch (e) { console.error('Voice callback error:', e); }
+              });
             }
           } else if (payload.type === 'error') {
             console.error('WebSocket error from server:', payload.message);
@@ -235,7 +450,7 @@ class TVWebSocketStreamer {
     this.pollHttpCandles();
     this.fallbackPollInterval = window.setInterval(() => {
       this.pollHttpCandles();
-    }, 2000);
+    }, 750);
   }
 
   private stopHttpPollingFallback() {
@@ -250,23 +465,83 @@ class TVWebSocketStreamer {
     const { symbol, timeframe } = this.currentSubscription;
 
     try {
-      const httpUrl = getBackendHttpUrlSync();
+      const httpUrl = await resolveBackendUrl();
       const url = `${httpUrl}/api/candles?symbol=${encodeURIComponent(symbol)}&timeframe=${timeframe}&limit=300`;
       const res = await fetch(url, {
         headers: { 'bypass-tunnel-reminder': 'true' }
       });
       if (res.ok) {
+        if (!this.currentSubscription || !this.isSymbolMatch(this.currentSubscription.symbol, symbol)) {
+          return;
+        }
         const data = await res.json();
-        if (data.candles && data.candles.length > 0 && this.onDataCallback) {
+        if (data.candles && data.candles.length > 0) {
+          const sym = data.symbol || symbol;
+          if (!this.isSymbolMatch(sym, symbol)) {
+            return;
+          }
+          const last = data.candles[data.candles.length - 1];
+          if (last && typeof last.close === 'number') {
+            this.updateLtpCache(sym, last.close);
+          }
           this.setStatus('connected');
-          this.onDataCallback({
-            symbol: data.symbol || symbol,
+          const payload: TVDataMessage = {
+            symbol: sym,
             timeframe: data.timeframe || timeframe,
             isSnapshot: true,
             candles: data.candles
+          };
+          if (this.onDataCallback && this.currentSubscription && this.isSymbolMatch(this.currentSubscription.symbol, sym)) {
+            try { this.onDataCallback(payload); } catch (e) {}
+          }
+          this.dataListeners.forEach((listener) => {
+            if (listener.callback !== this.onDataCallback) {
+              if (!listener.symbol || this.isSymbolMatch(listener.symbol, sym)) {
+                try { listener.callback(payload); } catch (e) {}
+              }
+            }
           });
         }
       }
+
+      // Check for MCX live quotes fallback
+      if (symbol.includes('MCX') || symbol.includes('CRUDE') || symbol.includes('NATURALGAS') || symbol.includes('GOLD') || symbol.includes('SILVER')) {
+        try {
+          const mcxRes = await fetch(`${httpUrl}/api/mcx/live-quotes`, {
+            headers: { 'bypass-tunnel-reminder': 'true' }
+          });
+          if (mcxRes.ok) {
+            const mData = await mcxRes.json();
+            if (mData.quotes) {
+              Object.keys(mData.quotes).forEach(sym => {
+                const q = mData.quotes[sym];
+                if (q && typeof q.ltp === 'number') {
+                  this.updateLtpCache(sym, q.ltp);
+                }
+              });
+            }
+          }
+        } catch (e) {}
+      }
+
+      // Refresh live market indices and futures quotes
+      try {
+        const indRes = await fetch(`${httpUrl}/api/market-indices`, {
+          headers: { 'bypass-tunnel-reminder': 'true' }
+        });
+        if (indRes.ok) {
+          const iData = await indRes.json();
+          if (typeof iData.nifty === 'number') this.updateLtpCache('NSE:NIFTY', iData.nifty);
+          if (typeof iData.niftyFut === 'number') this.updateLtpCache('NSE:NIFTY1!', iData.niftyFut);
+          if (typeof iData.banknifty === 'number') this.updateLtpCache('NSE:BANKNIFTY', iData.banknifty);
+          if (typeof iData.bankniftyFut === 'number') this.updateLtpCache('NSE:BANKNIFTY1!', iData.bankniftyFut);
+          if (typeof iData.finnifty === 'number') this.updateLtpCache('NSE:FINNIFTY', iData.finnifty);
+          if (typeof iData.finniftyFut === 'number') this.updateLtpCache('NSE:FINNIFTY1!', iData.finniftyFut);
+          if (typeof iData.midcpnifty === 'number') this.updateLtpCache('NSE:MIDCPNIFTY', iData.midcpnifty);
+          if (typeof iData.midcpniftyFut === 'number') this.updateLtpCache('NSE:MIDCPNIFTY1!', iData.midcpniftyFut);
+          if (typeof iData.sensex === 'number') this.updateLtpCache('BSE:SENSEX', iData.sensex);
+        }
+      } catch (e) {}
     } catch (e) {
       // Retain connected status during transient network hiccups
       this.setStatus('connected');
@@ -295,21 +570,47 @@ class TVWebSocketStreamer {
     }
   }
 
+  public sendUnsubscribe(symbol?: string) {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      const msg = JSON.stringify({
+        type: 'unsubscribe',
+        symbol
+      });
+      try { this.ws.send(msg); } catch (e) {}
+    }
+  }
+
   public subscribe(
     symbol: string,
     timeframe: string,
     onData: OnDataCallback,
     onError?: OnErrorCallback
-  ) {
+  ): () => void {
+    const subId = 'sub_' + Math.random().toString(36).substring(2, 9);
+    this.dataListeners.set(subId, { symbol, timeframe, callback: onData });
     this.currentSubscription = { symbol, timeframe };
     this.onDataCallback = onData;
     if (onError) this.onErrorCallback = onError;
 
     this.connect();
     this.sendSubscription(symbol, timeframe);
+
+    return () => {
+      this.dataListeners.delete(subId);
+      if (this.onDataCallback === onData) {
+        const remaining = Array.from(this.dataListeners.values());
+        this.onDataCallback = remaining.length > 0 ? remaining[remaining.length - 1].callback : null;
+      }
+      if (this.dataListeners.size === 0) {
+        this.sendUnsubscribe(symbol);
+        this.currentSubscription = null;
+      }
+    };
   }
 
   public unsubscribe() {
+    this.sendUnsubscribe(this.currentSubscription?.symbol);
+    this.dataListeners.clear();
     this.currentSubscription = null;
     this.onDataCallback = null;
     this.onErrorCallback = null;

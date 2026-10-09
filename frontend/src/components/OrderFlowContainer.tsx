@@ -21,6 +21,7 @@ import {
   OrderFlowAnalysisResult,
 } from '../utils/orderFlowCalculator';
 import { resolveSymbol, SymbolInfo } from '../utils/symbolResolver';
+import { filterMarketHoursCandles, isWithinMarketHours } from '../utils/marketHours';
 
 interface OrderFlowContainerProps {
   candles?: Candle[];
@@ -112,8 +113,9 @@ export const OrderFlowContainer: React.FC<OrderFlowContainerProps> = ({
         }
 
         if (data.candles && data.candles.length > 0) {
-          // Sort candles chronologically
-          const validCandles: Candle[] = data.candles.sort((a: Candle, b: Candle) => a.time - b.time);
+          // Sort candles chronologically and filter strictly by official exchange market hours
+          const filtered = filterMarketHoursCandles(data.candles, targetSymbol, timeframe);
+          const validCandles: Candle[] = filtered.sort((a: Candle, b: Candle) => a.time - b.time);
           setCandles(validCandles);
 
           const now = new Date();
@@ -121,12 +123,14 @@ export const OrderFlowContainer: React.FC<OrderFlowContainerProps> = ({
           setLastUpdateTime(timeStr);
 
           // Determine market status based on timestamp of latest candle
-          const latestTime = validCandles[validCandles.length - 1].time * 1000;
-          const isStale = (Date.now() - latestTime) > 24 * 3600 * 1000; // > 24h
-          setDataStatus(isStale ? 'MARKET_CLOSED' : 'LIVE');
+          if (validCandles.length > 0) {
+            const latestTime = validCandles[validCandles.length - 1].time * 1000;
+            const isStale = (Date.now() - latestTime) > 24 * 3600 * 1000; // > 24h
+            setDataStatus(isStale ? 'MARKET_CLOSED' : 'LIVE');
 
-          const latestClose = validCandles[validCandles.length - 1].close;
-          console.log(`[Lucky Flow Audit Log] Successfully loaded ${validCandles.length} candles for ${targetSymbol}. Live Price: ₹${latestClose}`);
+            const latestClose = validCandles[validCandles.length - 1].close;
+            console.log(`[Lucky Flow Audit Log] Successfully loaded ${validCandles.length} candles for ${targetSymbol}. Live Price: ₹${latestClose}`);
+          }
         } else {
           setDataStatus('UNAVAILABLE');
           setErrorMessage(`No candle data returned from market data provider for ${targetSymbol}`);
@@ -137,7 +141,7 @@ export const OrderFlowContainer: React.FC<OrderFlowContainerProps> = ({
         
         // If propCandles provided as fallback matching symbol
         if (propCandles && propCandles.length > 0) {
-          setCandles(propCandles);
+          setCandles(filterMarketHoursCandles(propCandles, targetSymbol, timeframe));
           setDataStatus('LIVE');
         } else {
           setDataStatus('ERROR');
@@ -163,9 +167,13 @@ export const OrderFlowContainer: React.FC<OrderFlowContainerProps> = ({
         if (payload.candles && payload.candles.length > 0) {
           setCandles((prevCandles) => {
             if (payload.isSnapshot) {
-              return payload.candles.sort((a, b) => a.time - b.time);
+              const filtered = filterMarketHoursCandles(payload.candles, targetSymbol, timeframe);
+              return filtered.sort((a, b) => a.time - b.time);
             } else {
               const tick = payload.candles[0];
+              if (!isWithinMarketHours(tick.time, targetSymbol, timeframe)) {
+                return prevCandles; // Drop ticks outside market hours
+              }
               const index = prevCandles.findIndex((c) => c.time === tick.time);
               if (index !== -1) {
                 const updated = [...prevCandles];
@@ -479,7 +487,7 @@ export const OrderFlowContainer: React.FC<OrderFlowContainerProps> = ({
           <AlertCircle size={36} style={{ marginBottom: '12px' }} />
           <h3 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>REAL-TIME DATA UNAVAILABLE</h3>
           <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)' }}>
-            {errorMessage || `Unable to retrieve live market data for ${symbolInfo.formattedSymbol} from TradingView feed.`}
+            {errorMessage || `Unable to retrieve live market data for ${symbolInfo.formattedSymbol} from Angel One feed.`}
           </p>
           <button
             onClick={() => handleSymbolChange(selectedSymbol)}
@@ -703,7 +711,7 @@ export const OrderFlowContainer: React.FC<OrderFlowContainerProps> = ({
                     cursor: 'pointer',
                   }}
                 >
-                  View Full TradingView Chart ↗
+                  View Main Live Chart ↗
                 </button>
               )}
             </div>

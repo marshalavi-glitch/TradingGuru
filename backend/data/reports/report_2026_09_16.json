@@ -705,18 +705,6 @@
       "isFno": true
     },
     {
-      "symbol": "NSE:APOLLOHOSP",
-      "levelName": "Buy Reversal (S3)",
-      "levelVal": 8648.9625,
-      "low": 8672.5,
-      "close": 8696.5,
-      "bounceStrengthPct": 0.2767368117613145,
-      "pattern": "Neutral Candle",
-      "touchTime": "03:19 pm",
-      "optionPremium": 118.5,
-      "isFno": true
-    },
-    {
       "symbol": "NSE:NMDC",
       "levelName": "Support (S2)",
       "levelVal": 80.06183333333334,
@@ -2415,18 +2403,6 @@
     },
     {
       "symbol": "NSE:BPCL",
-      "levelName": "Breakout (R4)",
-      "levelVal": 303.875,
-      "high": 304,
-      "close": 303.35,
-      "rejectStrengthPct": 0.21381578947367672,
-      "pattern": "SSL Sweep Reversal (Low swept 298.6, close 303.4)",
-      "touchTime": "03:24 pm",
-      "optionPremium": 6.75,
-      "isFno": true
-    },
-    {
-      "symbol": "NSE:BPCL",
       "levelName": "R4 (VAH Breakout Trigger)",
       "levelVal": 303.875,
       "high": 304,
@@ -2828,18 +2804,6 @@
       "pattern": "BSL Sweep Reversal (High swept 314.8, close 312.6)",
       "touchTime": "01:00 pm",
       "optionPremium": 5.95,
-      "isFno": true
-    },
-    {
-      "symbol": "NSE:RECLTD",
-      "levelName": "Breakout (R4)",
-      "levelVal": 311.96500000000003,
-      "high": 315.5,
-      "close": 312.65,
-      "rejectStrengthPct": 0.9033280507131609,
-      "pattern": "BSL Sweep Reversal (High swept 314.8, close 312.6)",
-      "touchTime": "03:29 pm",
-      "optionPremium": 6.25,
       "isFno": true
     },
     {
@@ -4376,18 +4340,6 @@
       "isFno": true
     },
     {
-      "symbol": "NSE:DIXON",
-      "levelName": "Resistance (R2)",
-      "levelVal": 13268.366666666667,
-      "high": 13260,
-      "close": 13181,
-      "rejectStrengthPct": 0.5957767722473605,
-      "pattern": "SSL Sweep Reversal (Low swept 13093.0, close 13181.0)",
-      "touchTime": "03:29 pm",
-      "optionPremium": 312.6,
-      "isFno": true
-    },
-    {
       "symbol": "NSE:POWERGRID",
       "levelName": "Target (R5)",
       "levelVal": 267.76583999999997,
@@ -4880,18 +4832,6 @@
       "pattern": "Bullish Spinning Top (Indecision) | SSL Sweep Reversal (Low swept 280.5, close 282.1)",
       "touchTime": "02:34 pm",
       "optionPremium": 5.55,
-      "isFno": true
-    },
-    {
-      "symbol": "NSE:PETRONET",
-      "levelName": "Sell reversal (R3)",
-      "levelVal": 286.1225,
-      "high": 284.95,
-      "close": 282.1,
-      "rejectStrengthPct": 1.000175469380581,
-      "pattern": "Bullish Spinning Top (Indecision) | SSL Sweep Reversal (Low swept 280.5, close 282.1)",
-      "touchTime": "03:29 pm",
-      "optionPremium": 5.7,
       "isFno": true
     },
     {

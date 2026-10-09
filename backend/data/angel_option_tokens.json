@@ -1,0 +1,252 @@
+{
+  "NSE:NIFTY 23400 CE": {
+    "tradingsymbol": "NIFTY22SEP2623400CE",
+    "symboltoken": "56999",
+    "exchange": "NFO"
+  },
+  "NSE:BANKNIFTY 56500 CE": {
+    "tradingsymbol": "BANKNIFTY29SEP2656500CE",
+    "symboltoken": "69801",
+    "exchange": "NFO"
+  },
+  "NSE:FINNIFTY 25500 CE": {
+    "tradingsymbol": "FINNIFTY29SEP2625500CE",
+    "symboltoken": "71779",
+    "exchange": "NFO"
+  },
+  "NSE:MIDCPNIFTY 14500 CE": {
+    "tradingsymbol": "MIDCPNIFTY29SEP2614500CE",
+    "symboltoken": "72938",
+    "exchange": "NFO"
+  },
+  "NSE:LICHSGFIN 570 CE": {
+    "tradingsymbol": "LICHSGFIN29SEP26570CE",
+    "symboltoken": "89455",
+    "exchange": "NFO"
+  },
+  "NSE:LAURUSLABS 2020 CE": {
+    "tradingsymbol": "LAURUSLABS29SEP262020CE",
+    "symboltoken": "89079",
+    "exchange": "NFO"
+  },
+  "NSE:BIOCON 395 CE": {
+    "tradingsymbol": "BIOCON29SEP26395CE",
+    "symboltoken": "58627",
+    "exchange": "NFO"
+  },
+  "NSE:ONGC 235 CE": {
+    "tradingsymbol": "ONGC29SEP26235CE",
+    "symboltoken": "134865",
+    "exchange": "NFO"
+  },
+  "NSE:LT 3900 CE": {
+    "tradingsymbol": "LT29SEP263900CE",
+    "symboltoken": "122726",
+    "exchange": "NFO"
+  },
+  "NSE:SBICARD 640 CE": {
+    "tradingsymbol": "SBICARD29SEP26400CE",
+    "symboltoken": "145600",
+    "exchange": "NFO"
+  },
+  "NSE:TATAPOWER 365 CE": {
+    "tradingsymbol": "TATAPOWER29SEP26365CE",
+    "symboltoken": "112220",
+    "exchange": "NFO"
+  },
+  "NSE:AUBANK 1040 CE": {
+    "tradingsymbol": "AUBANK29SEP261040CE",
+    "symboltoken": "86456",
+    "exchange": "NFO"
+  },
+  "NSE:PETRONET 290 CE": {
+    "tradingsymbol": "PETRONET29SEP26290CE",
+    "symboltoken": "136126",
+    "exchange": "NFO"
+  },
+  "NSE:ABCAPITAL 405 CE": {
+    "tradingsymbol": "ABCAPITAL29SEP26405CE",
+    "symboltoken": "52968",
+    "exchange": "NFO"
+  },
+  "NSE:LTF 310 CE": {
+    "tradingsymbol": "LTF29SEP26310CE",
+    "symboltoken": "123127",
+    "exchange": "NFO"
+  },
+  "NSE:COFORGE 1820 CE": {
+    "tradingsymbol": "COFORGE29SEP261820CE",
+    "symboltoken": "66421",
+    "exchange": "NFO"
+  },
+  "NSE:IEX 115 CE": {
+    "tradingsymbol": "IEX29SEP26115CE",
+    "symboltoken": "113717",
+    "exchange": "NFO"
+  },
+  "NSE:COALINDIA 415 CE": {
+    "tradingsymbol": "COALINDIA29SEP26415CE",
+    "symboltoken": "65618",
+    "exchange": "NFO"
+  },
+  "NSE:TATASTEEL 182.5 PE": {
+    "tradingsymbol": "TATASTEEL29SEP26182.5PE",
+    "symboltoken": "112726",
+    "exchange": "NFO"
+  },
+  "NSE:INDUSINDBK 960 CE": {
+    "tradingsymbol": "INDUSINDBK29SEP26960CE",
+    "symboltoken": "115056",
+    "exchange": "NFO"
+  },
+  "NSE:JINDALSTEL 1140 CE": {
+    "tradingsymbol": "JINDALSTEL29SEP261140CE",
+    "symboltoken": "85968",
+    "exchange": "NFO"
+  },
+  "NSE:CROMPTON 225 PE": {
+    "tradingsymbol": "CROMPTON29SEP26225PE",
+    "symboltoken": "67442",
+    "exchange": "NFO"
+  },
+  "NSE:CROMPTON 225 CE": {
+    "tradingsymbol": "CROMPTON29SEP26225CE",
+    "symboltoken": "67441",
+    "exchange": "NFO"
+  },
+  "NSE:UNIONBANK 177.5 CE": {
+    "tradingsymbol": "UNIONBANK29SEP26177.5CE",
+    "symboltoken": "116257",
+    "exchange": "NFO"
+  },
+  "NSE:ASHOKLEY 162.5 CE": {
+    "tradingsymbol": "ASHOKLEY29SEP26162.5CE",
+    "symboltoken": "54920",
+    "exchange": "NFO"
+  },
+  "NSE:SIEMENS 3900 CE": {
+    "tradingsymbol": "SIEMENS29SEP263900CE",
+    "symboltoken": "148355",
+    "exchange": "NFO"
+  },
+  "NSE:CUMMINSIND 5100 CE": {
+    "tradingsymbol": "CUMMINSIND29SEP265100CE",
+    "symboltoken": "67598",
+    "exchange": "NFO"
+  },
+  "NSE:PERSISTENT 5400 CE": {
+    "tradingsymbol": "PERSISTENT29SEP265400CE",
+    "symboltoken": "136058",
+    "exchange": "NFO"
+  },
+  "NSE:RECLTD 310 CE": {
+    "tradingsymbol": "RECLTD29SEP26310CE",
+    "symboltoken": "143679",
+    "exchange": "NFO"
+  },
+  "NSE:AXISBANK 1260 CE": {
+    "tradingsymbol": "AXISBANK29SEP261260CE",
+    "symboltoken": "56316",
+    "exchange": "NFO"
+  },
+  "NSE:JSWSTEEL 1260 CE": {
+    "tradingsymbol": "JSWSTEEL29SEP261260CE",
+    "symboltoken": "86799",
+    "exchange": "NFO"
+  },
+  "NSE:BRITANNIA 5000 CE": {
+    "tradingsymbol": "BRITANNIA29SEP265000CE",
+    "symboltoken": "93918",
+    "exchange": "NFO"
+  },
+  "NSE:ICICIBANK 1340 CE": {
+    "tradingsymbol": "ICICIBANK29SEP261340CE",
+    "symboltoken": "111537",
+    "exchange": "NFO"
+  },
+  "NSE:ASIANPAINT 2440 CE": {
+    "tradingsymbol": "ASIANPAINT29SEP262440CE",
+    "symboltoken": "85607",
+    "exchange": "NFO"
+  },
+  "NSE:MARUTI 12200 CE": {
+    "tradingsymbol": "MARUTI29SEP2612200CE",
+    "symboltoken": "126419",
+    "exchange": "NFO"
+  },
+  "NSE:BAJAJ-AUTO 11500 CE": {
+    "tradingsymbol": "BAJAJ-AUTO29SEP2611500CE",
+    "symboltoken": "56482",
+    "exchange": "NFO"
+  },
+  "NSE:TVSMOTOR 4150 CE": {
+    "tradingsymbol": "TVSMOTOR29SEP264150CE",
+    "symboltoken": "115473",
+    "exchange": "NFO"
+  },
+  "NSE:DIVISLAB 9400 CE": {
+    "tradingsymbol": "DIVISLAB29SEP269400CE",
+    "symboltoken": "68393",
+    "exchange": "NFO"
+  },
+  "NSE:POLYCAB 8400 CE": {
+    "tradingsymbol": "POLYCAB29SEP268400CE",
+    "symboltoken": "140292",
+    "exchange": "NFO"
+  },
+  "NSE:GODREJPROP 1700 CE": {
+    "tradingsymbol": "GODREJPROP29SEP261700CE",
+    "symboltoken": "76135",
+    "exchange": "NFO"
+  },
+  "NSE:ICICIPRULI 495 CE": {
+    "tradingsymbol": "ICICIPRULI29SEP26495CE",
+    "symboltoken": "81008",
+    "exchange": "NFO"
+  },
+  "NSE:SHRIRAMFIN 1020 CE": {
+    "tradingsymbol": "SHRIRAMFIN29SEP261020CE",
+    "symboltoken": "109062",
+    "exchange": "NFO"
+  },
+  "NSE:BAJAJFINSV 1840 PE": {
+    "tradingsymbol": "BAJAJFINSV29SEP261840PE",
+    "symboltoken": "88037",
+    "exchange": "NFO"
+  },
+  "NSE:BAJAJFINSV 1840 CE": {
+    "tradingsymbol": "BAJAJFINSV29SEP261840CE",
+    "symboltoken": "88036",
+    "exchange": "NFO"
+  },
+  "NSE:M&M 3050 CE": {
+    "tradingsymbol": "M&M29SEP263050CE",
+    "symboltoken": "91562",
+    "exchange": "NFO"
+  },
+  "NSE:KALYANKJIL 580 CE": {
+    "tradingsymbol": "KALYANKJIL29SEP26580CE",
+    "symboltoken": "43679",
+    "exchange": "NFO"
+  },
+  "NSE:CANBK 122.5 CE": {
+    "tradingsymbol": "CANBK29SEP26122.5CE",
+    "symboltoken": "61860",
+    "exchange": "NFO"
+  },
+  "NSE:JIOFIN 230 CE": {
+    "tradingsymbol": "JIOFIN29SEP26230CE",
+    "symboltoken": "118854",
+    "exchange": "NFO"
+  },
+  "NSE:SBIN 1000 CE": {
+    "tradingsymbol": "SBIN29SEP261000CE",
+    "symboltoken": "147157",
+    "exchange": "NFO"
+  },
+  "NSE:ABB 7300 CE": {
+    "tradingsymbol": "ABB29SEP267300CE",
+    "symboltoken": "52816",
+    "exchange": "NFO"
+  }
+}

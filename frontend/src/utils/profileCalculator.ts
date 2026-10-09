@@ -1,3 +1,5 @@
+import { isMcxSymbol } from './marketHours';
+
 export interface Candle {
   time: number; // Unix timestamp in seconds
   open: number;
@@ -13,8 +15,61 @@ export interface TPOBin {
   volume: number;
 }
 
+export type StandardOpeningType = 
+  | 'Open-Drive'
+  | 'Open-Test-Drive'
+  | 'Open-Rejection-Reverse'
+  | 'Open-Auction'
+  | 'Unclassified';
+
+export interface OpeningTypeAnalysis {
+  type: StandardOpeningType;
+  direction: 'Bullish' | 'Bearish' | 'Neutral';
+  confidence: 'High' | 'Moderate' | 'Developing';
+  title: string;
+  description: string;
+  badgeColor: string;
+}
+
+export type StandardDayType =
+  | 'Normal Day'
+  | 'Normal Variation Day'
+  | 'Trend Day'
+  | 'Double-Distribution Trend Day'
+  | 'Neutral Day'
+  | 'Non-Trend Day';
+
+export interface DayTypeAnalysis {
+  type: StandardDayType;
+  badgeColor: string;
+  ibType: string;
+  ibRangePoints: number;
+  ibRangePct: number;
+  extensionType: string;
+}
+
+export type StandardValuePlacement =
+  | 'Higher Value'
+  | 'Overlapping Higher'
+  | 'Overlapping Lower'
+  | 'Lower Value'
+  | 'Inside Value'
+  | 'Outside / Engulfing Value';
+
+export interface ValuePlacementAnalysis {
+  type: StandardValuePlacement;
+  badgeColor: string;
+  description: string;
+  bias: 'Strong Bullish' | 'Bullish' | 'Neutral / Consolidation' | 'Volatile Expansion' | 'Bearish' | 'Strong Bearish';
+  priorVah: number;
+  priorVal: number;
+  todayVah: number;
+  todayVal: number;
+}
+
 export interface DayProfile {
   dateStr: string; // YYYY-MM-DD
+  symbol?: string;
   openPrice: number;
   closePrice: number;
   startTime?: number; // Unix timestamp in seconds
@@ -29,15 +84,57 @@ export interface DayProfile {
   ibLow: number;
   totalTPOs: number;
   totalVolume: number;
-  periodRanges?: Record<number, { high: number; low: number }>;
+  periodRanges?: Record<number, { high: number; low: number; open?: number; close?: number }>;
+  periodHalfBacks?: PeriodHalfBackInfo[];
   subProfiles?: DayProfile[];
+  openingTypeInfo?: OpeningTypeAnalysis;
+  dayTypeInfo?: DayTypeAnalysis;
+  valuePlacementInfo?: ValuePlacementAnalysis;
+}
+
+export interface PeriodHalfBackInfo {
+  periodIndex: number;
+  letter: string;
+  high: number;
+  low: number;
+  halfBack: number;
+  color: string;
+}
+
+export const PERIOD_COLORS = [
+  '#10b981', // A: Emerald Green
+  '#14b8a6', // B: Teal
+  '#0ea5e9', // C: Sky Blue
+  '#3b82f6', // D: Royal Blue
+  '#6366f1', // E: Indigo
+  '#8b5cf6', // F: Purple
+  '#a855f7', // G: Violet
+  '#d946ef', // H: Fuchsia
+  '#ec4899', // I: Vibrant Pink
+  '#f43f5e', // J: Rose
+  '#f59e0b', // K: Amber
+  '#f97316', // L: Orange
+  '#06b6d4', // M: Cyan
+  '#84cc16', // N: Lime
+  '#eab308', // O: Yellow
+  '#e11d48'  // P: Crimson
+];
+
+export function getPeriodColor(periodIndex: number, letter?: string): string {
+  if (letter) {
+    const code = letter.toUpperCase().charCodeAt(0);
+    if (code >= 65 && code <= 90) {
+      return PERIOD_COLORS[(code - 65) % PERIOD_COLORS.length];
+    }
+  }
+  return PERIOD_COLORS[periodIndex % PERIOD_COLORS.length];
 }
 
 /**
  * Returns a letter representation for a given 30-minute period index.
  * Period 0 = 'A', 1 = 'B', ..., 25 = 'Z', 26 = 'a', 27 = 'b', ...
  */
-function getPeriodLetter(periodIndex: number): string {
+export function getPeriodLetter(periodIndex: number): string {
   if (periodIndex < 26) {
     return String.fromCharCode(65 + periodIndex); // 'A'-'Z'
   } else if (periodIndex < 52) {
@@ -50,13 +147,25 @@ function getPeriodLetter(periodIndex: number): string {
 /**
  * Groups raw candles by day based on the local/exchange date.
  */
-export function groupCandlesByDay(candles: Candle[]): Record<string, Candle[]> {
+export function groupCandlesByDay(candles: Candle[], symbol?: string): Record<string, Candle[]> {
   const groups: Record<string, Candle[]> = {};
+  const isMcx = isMcxSymbol(symbol);
   for (const candle of candles) {
-    const date = new Date(candle.time * 1000);
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
+    if (!candle || !candle.time) continue;
+    // Exclude pre-open (< 09:15) or post-market (> 15:15 for equities/futures, > 23:30 for MCX)
+    const secOfDay = ((candle.time + 19800) % 86400 + 86400) % 86400;
+    // If it has specific intraday time (not 00:00 midnight daily candle)
+    if (secOfDay !== 0) {
+      if (isMcx) {
+        if (secOfDay < 32400 || secOfDay > 84600) continue;
+      } else {
+        if (secOfDay < 33300 || secOfDay >= 54900) continue;
+      }
+    }
+    const date = new Date((candle.time + 19800) * 1000);
+    const y = date.getUTCFullYear();
+    const m = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const d = String(date.getUTCDate()).padStart(2, '0');
     const dateStr = `${y}-${m}-${d}`;
     
     if (!groups[dateStr]) {
@@ -117,7 +226,7 @@ export function calculateDayProfile(
   for (const c of sorted) {
     if (c.high > dayHigh) dayHigh = c.high;
     if (c.low < dayLow) dayLow = c.low;
-    totalVolume += c.volume;
+    totalVolume += (c.volume && c.volume > 0) ? c.volume : Math.max(100, Math.round(((c.high - c.low + 1) / 1) * 300));
   }
   
   if (dayHigh === -Infinity || dayLow === Infinity || dayHigh === dayLow) {
@@ -210,19 +319,26 @@ export function calculateDayProfile(
       const hour = istDate.getUTCHours();
       const min = istDate.getUTCMinutes();
       const minsFromOpen = (hour * 60 + min) - (9 * 60 + 15);
+      const isMcx = isMcxSymbol(symbol);
+      const maxMins = isMcx ? 855 : 360;
+      if (minsFromOpen < 0 || (isMcx ? minsFromOpen > maxMins : minsFromOpen >= maxMins)) {
+        // Pre-open session (09:00 - 09:15) or Post-market (> 15:15 for equities/futures) must NOT be included in Market Profile
+        continue;
+      }
       periodIndex = Math.floor(minsFromOpen / 30);
-      if (periodIndex < 0) periodIndex = 0;
     }
     
     if (!periodRanges[periodIndex]) {
-      periodRanges[periodIndex] = { high: -Infinity, low: Infinity };
+      periodRanges[periodIndex] = { high: -Infinity, low: Infinity, open: c.open, close: c.close };
     }
     if (c.high > periodRanges[periodIndex].high) periodRanges[periodIndex].high = c.high;
     if (c.low < periodRanges[periodIndex].low) periodRanges[periodIndex].low = c.low;
+    periodRanges[periodIndex].close = c.close;
 
     const candleSpanBins = prices.filter(p => p >= c.low - tickSize / 2 && p <= c.high + tickSize / 2);
     const binsToFill = candleSpanBins.length > 0 ? candleSpanBins : [prices[0]];
-    const volPerBin = c.volume / binsToFill.length;
+    const cVol = (c.volume && c.volume > 0) ? c.volume : Math.max(100, Math.round(((c.high - c.low + tickSize) / (tickSize || 1)) * 300));
+    const volPerBin = cVol / binsToFill.length;
     for (const p of binsToFill) {
       binsMap[p].volume += volPerBin;
     }
@@ -240,6 +356,32 @@ export function calculateDayProfile(
       }
     });
   });
+
+  // Ensure any price bin that had auction activity has valid volume
+  prices.forEach(price => {
+    const b = binsMap[price];
+    if (b && b.tpos.length > 0 && (!b.volume || b.volume <= 0)) {
+      b.volume = b.tpos.length * 500;
+    }
+  });
+
+  const periodHalfBacks: PeriodHalfBackInfo[] = [];
+  Object.entries(periodRanges).forEach(([pIdxStr, r]) => {
+    const periodIdx = parseInt(pIdxStr, 10);
+    const letter = getPeriodLetter(periodIdx);
+    if (r.high !== -Infinity && r.low !== Infinity && r.high >= r.low) {
+      const halfBack = Math.round(((r.high + r.low) / 2) * 100) / 100;
+      periodHalfBacks.push({
+        periodIndex: periodIdx,
+        letter,
+        high: r.high,
+        low: r.low,
+        halfBack,
+        color: getPeriodColor(periodIdx, letter)
+      });
+    }
+  });
+  periodHalfBacks.sort((a, b) => a.periodIndex - b.periodIndex);
 
   const bins = prices.map(p => binsMap[p]).reverse();
 
@@ -403,7 +545,7 @@ export function calculateDayProfile(
     }
   }
 
-  return {
+  const profileObj: DayProfile = {
     dateStr,
     openPrice: sorted[0]?.open || 0,
     closePrice: sorted[sorted.length - 1]?.close || 0,
@@ -420,8 +562,14 @@ export function calculateDayProfile(
     totalTPOs,
     totalVolume,
     periodRanges,
+    periodHalfBacks,
     subProfiles,
+    symbol,
   };
+  profileObj.openingTypeInfo = detectOpeningType(profileObj);
+  profileObj.dayTypeInfo = detectDayType(profileObj);
+
+  return profileObj;
 }
 
 export interface ProfileNuances {
@@ -922,8 +1070,9 @@ export function analyzeProfileNuances(
   }
 
   // Opening & OTF Type Calculations
-  let openingType = 'Open Auction (OA)';
-  let openingTypeDesc = 'Price opened and fluctuated inside the opening range, indicating balanced trading and local money control.';
+  const openingAnalysis = detectOpeningType(active, prior);
+  let openingType = openingAnalysis.title;
+  let openingTypeDesc = openingAnalysis.description;
 
   let otfType: 'none' | 'up' | 'down' = 'none';
   let otfDesc = 'No strong OTF opening drive active. Local money is dominant.';
@@ -932,48 +1081,6 @@ export function analyzeProfileNuances(
     const aRange = active.periodRanges[0]; // Period A
     const bRange = active.periodRanges[1]; // Period B
     const cRange = active.periodRanges[2]; // Period C
-    const open = active.openPrice;
-    
-    if (aRange && bRange) {
-      const isLowNearOpen = Math.abs(open - aRange.low) <= active.tickSize * 3;
-      const isHighNearOpen = Math.abs(open - aRange.high) <= active.tickSize * 3;
-      
-      // 1. Open Drive (OD)
-      if (isLowNearOpen && bRange.high > aRange.high && (!cRange || cRange.high >= bRange.high)) {
-        openingType = 'Open Drive (OD) Bullish';
-        openingTypeDesc = 'Bullish Open Drive: Market opened and drove straight up without looking back. Open is the absolute low. High buyer conviction.';
-      } else if (isHighNearOpen && bRange.low < aRange.low && (!cRange || cRange.low <= bRange.low)) {
-        openingType = 'Open Drive (OD) Bearish';
-        openingTypeDesc = 'Bearish Open Drive: Market opened and drove straight down without looking back. Open is the absolute high. High seller conviction.';
-      }
-      
-      // 2. Open Test Drive (OTD)
-      else if (aRange.high > open && open > aRange.low) {
-        const testDown = (open - aRange.low) > active.tickSize * 3;
-        const testUp = (aRange.high - open) > active.tickSize * 3;
-        
-        if (testDown && bRange.high > aRange.high && (!cRange || cRange.high >= bRange.high)) {
-          openingType = 'Open Test Drive (OTD) Bullish';
-          openingTypeDesc = 'Bullish Open Test Drive: Price tested lower support in Period A, rejected it, and drove strongly to new highs.';
-        } else if (testUp && bRange.low < aRange.low && (!cRange || cRange.low <= bRange.low)) {
-          openingType = 'Open Test Drive (OTD) Bearish';
-          openingTypeDesc = 'Bearish Open Test Drive: Price tested higher resistance in Period A, rejected it, and drove strongly to new lows.';
-        }
-      }
-      
-      // 3. Open Rejection Reverse (ORR)
-      if (openingType === 'Open Auction (OA)') {
-        const bBrokeAHigh = bRange.high > aRange.high;
-        const bBrokeALow = bRange.low < aRange.low;
-        const cBrokeAHigh = cRange && cRange.high > aRange.high;
-        const cBrokeALow = cRange && cRange.low < aRange.low;
-        
-        if ((bBrokeAHigh && bBrokeALow) || (bBrokeAHigh && cBrokeALow) || (bBrokeALow && cBrokeAHigh)) {
-          openingType = 'Open Rejection Reverse (ORR)';
-          openingTypeDesc = 'Open Rejection Reverse: Price tested one direction, found strong rejection, and reversed to break the opposite extreme.';
-        }
-      }
-    }
 
     // OTF Up/Down verification:
     if (aRange && bRange && cRange) {
@@ -1840,3 +1947,508 @@ export function getFailedAuctionForProfile(
 
   return null;
 }
+
+export function detectOpeningType(profile: DayProfile, priorProfile?: DayProfile): OpeningTypeAnalysis {
+  if (!profile || !profile.periodRanges || Object.keys(profile.periodRanges).length === 0 || !profile.bins || profile.bins.length === 0) {
+    return {
+      type: 'Unclassified',
+      direction: 'Neutral',
+      confidence: 'Developing',
+      title: 'Unclassified',
+      description: 'Awaiting market opening periods data to classify auction type.',
+      badgeColor: '#94a3b8'
+    };
+  }
+
+  const pRanges = profile.periodRanges;
+  const aRange = pRanges[0];
+  const bRange = pRanges[1];
+  const cRange = pRanges[2];
+  const open = profile.openPrice;
+  const tickSize = profile.tickSize || 1;
+
+  if (!aRange || aRange.high === -Infinity || aRange.low === Infinity) {
+    return {
+      type: 'Unclassified',
+      direction: 'Neutral',
+      confidence: 'Developing',
+      title: 'Unclassified',
+      description: 'Period A data is not available yet.',
+      badgeColor: '#94a3b8'
+    };
+  }
+
+  const aSpan = aRange.high - aRange.low;
+  const tolerance = Math.max(tickSize * 2.5, aSpan * 0.12);
+
+  // If only Period A has formed so far (Developing session in first 30 mins)
+  if (!bRange || bRange.high === -Infinity || bRange.low === Infinity) {
+    const isAtLow = open - aRange.low <= tolerance;
+    const isAtHigh = aRange.high - open <= tolerance;
+    const hasDriveSpan = aSpan >= tickSize * 5;
+
+    if (isAtLow && hasDriveSpan) {
+      return {
+        type: 'Open-Drive',
+        direction: 'Bullish',
+        confidence: 'Developing',
+        title: 'Open-Drive (Developing)',
+        description: 'Session opened at the absolute low and drove strongly upward during Period A. Awaiting Period B confirmation.',
+        badgeColor: '#10b981'
+      };
+    } else if (isAtHigh && hasDriveSpan) {
+      return {
+        type: 'Open-Drive',
+        direction: 'Bearish',
+        confidence: 'Developing',
+        title: 'Open-Drive (Developing)',
+        description: 'Session opened at the absolute high and drove strongly downward during Period A. Awaiting Period B confirmation.',
+        badgeColor: '#ef4444'
+      };
+    } else {
+      return {
+        type: 'Open-Auction',
+        direction: 'Neutral',
+        confidence: 'Developing',
+        title: 'Open-Auction (Developing)',
+        description: 'Two-sided responsive trading within Period A opening range.',
+        badgeColor: '#eab308'
+      };
+    }
+  }
+
+  // Both Period A and B exist (confirmed opening auction)
+  const isLowNearOpen = open - aRange.low <= tolerance;
+  const isHighNearOpen = aRange.high - open <= tolerance;
+
+  // 1. OPEN-DRIVE (OD)
+  // Market opens at/near an extreme and drives continuously in one direction without retracing through open
+  if (isLowNearOpen && bRange.high > aRange.high && bRange.low >= aRange.low - tickSize) {
+    if (!cRange || cRange.high >= bRange.high || cRange.low >= aRange.low) {
+      return {
+        type: 'Open-Drive',
+        direction: 'Bullish',
+        confidence: 'High',
+        title: 'Open-Drive (Bullish)',
+        description: 'Aggressive initiative buyers in complete control from the open. Open is the absolute low; market drove higher with zero hesitation.',
+        badgeColor: '#10b981'
+      };
+    }
+  }
+
+  if (isHighNearOpen && bRange.low < aRange.low && bRange.high <= aRange.high + tickSize) {
+    if (!cRange || cRange.low <= bRange.low || cRange.high <= aRange.high) {
+      return {
+        type: 'Open-Drive',
+        direction: 'Bearish',
+        confidence: 'High',
+        title: 'Open-Drive (Bearish)',
+        description: 'Aggressive initiative sellers in complete control from the open. Open is the absolute high; market drove lower with zero hesitation.',
+        badgeColor: '#ef4444'
+      };
+    }
+  }
+
+  // 2. OPEN-TEST-DRIVE (OTD)
+  // Market opens, tests lower/higher in Period A (testing support/resistance or prior reference), meets rejection, and drives decisively opposite
+  const testedDownInA = (open - aRange.low) > tolerance;
+  const testedUpInA = (aRange.high - open) > tolerance;
+
+  // Bullish OTD: Tested down first, found strong buying rejection, then drove past Period A high
+  if (testedDownInA && (bRange.high > aRange.high || (cRange && cRange.high > aRange.high)) && bRange.low > aRange.low) {
+    return {
+      type: 'Open-Test-Drive',
+      direction: 'Bullish',
+      confidence: 'High',
+      title: 'Open-Test-Drive (Bullish)',
+      description: 'Price tested lower price levels in Period A, encountered responsive buying rejection, and then drove aggressively higher past the opening range.',
+      badgeColor: '#00f0ff'
+    };
+  }
+
+  // Bearish OTD: Tested up first, found strong selling rejection, then drove past Period A low
+  if (testedUpInA && (bRange.low < aRange.low || (cRange && cRange.low < aRange.low)) && bRange.high < aRange.high) {
+    return {
+      type: 'Open-Test-Drive',
+      direction: 'Bearish',
+      confidence: 'High',
+      title: 'Open-Test-Drive (Bearish)',
+      description: 'Price tested higher price levels in Period A, encountered responsive selling rejection, and then drove aggressively lower past the opening range.',
+      badgeColor: '#f97316'
+    };
+  }
+
+  // 3. OPEN-REJECTION-REVERSE (ORR)
+  // Market attempts to auction in one direction, is actively rejected with strong opposite-side conviction, and reverses completely to break out opposite
+  const bBrokeAHigh = bRange.high > aRange.high;
+  const bBrokeALow = bRange.low < aRange.low;
+  const cBrokeAHigh = cRange && cRange.high > aRange.high;
+  const cBrokeALow = cRange && cRange.low < aRange.low;
+
+  if (bBrokeAHigh && (bBrokeALow || cBrokeALow)) {
+    return {
+      type: 'Open-Rejection-Reverse',
+      direction: 'Bearish',
+      confidence: 'High',
+      title: 'Open-Rejection-Reverse (Bearish)',
+      description: 'Price probed above Period A high, met swift institutional rejection, and reversed violently to break below the session low.',
+      badgeColor: '#ec4899'
+    };
+  }
+
+  if (bBrokeALow && (bBrokeAHigh || cBrokeAHigh)) {
+    return {
+      type: 'Open-Rejection-Reverse',
+      direction: 'Bullish',
+      confidence: 'High',
+      title: 'Open-Rejection-Reverse (Bullish)',
+      description: 'Price probed below Period A low, met swift institutional rejection, and reversed violently to break above the session high.',
+      badgeColor: '#8b5cf6'
+    };
+  }
+
+  // 4. OPEN-AUCTION (OA)
+  // Market opens and trades back and forth inside the opening range with no early other-timeframe directional conviction
+  const stayedInsideA = (bRange.high <= aRange.high + tickSize) && (bRange.low >= aRange.low - tickSize);
+  const overlapRatio = Math.min(aRange.high, bRange.high) - Math.max(aRange.low, bRange.low);
+  const isHighOverlap = aSpan > 0 && (overlapRatio / aSpan) > 0.65;
+
+  if (stayedInsideA || isHighOverlap || (!bBrokeAHigh && !bBrokeALow)) {
+    return {
+      type: 'Open-Auction',
+      direction: 'Neutral',
+      confidence: 'Moderate',
+      title: 'Open-Auction',
+      description: 'Price opened and fluctuated inside the initial balance range, showing balanced two-sided responsive trade and local money dominance.',
+      badgeColor: '#eab308'
+    };
+  }
+
+  // 5. UNCLASSIFIED
+  return {
+    type: 'Unclassified',
+    direction: 'Neutral',
+    confidence: 'Moderate',
+    title: 'Unclassified',
+    description: 'Opening range auction did not conform to standard single-day drive or rejection patterns.',
+    badgeColor: '#94a3b8'
+  };
+}
+
+export function classifyInitialBalance(ibRange: number, openPrice: number, symbol?: string): {
+  category: 'Narrow' | 'Normal' | 'Wide' | 'Ultra-Wide';
+  label: string;
+  points: number;
+  pctOfPrice: number;
+} {
+  const pctOfPrice = openPrice > 0 ? (ibRange / openPrice) * 100 : 0;
+  const sym = (symbol || '').toUpperCase();
+  const isNifty = sym.includes('NIFTY') && !sym.includes('BANK') && !sym.includes('FIN') && !sym.includes('MIDCP');
+  const isBankNifty = sym.includes('BANKNIFTY');
+
+  let category: 'Narrow' | 'Normal' | 'Wide' | 'Ultra-Wide';
+
+  if (isNifty) {
+    if (ibRange >= 170 || pctOfPrice >= 0.70) category = 'Ultra-Wide';
+    else if (ibRange >= 105 || pctOfPrice >= 0.42) category = 'Wide';
+    else if (ibRange >= 50 || pctOfPrice >= 0.20) category = 'Normal';
+    else category = 'Narrow';
+  } else if (isBankNifty) {
+    if (ibRange >= 420 || pctOfPrice >= 0.80) category = 'Ultra-Wide';
+    else if (ibRange >= 250 || pctOfPrice >= 0.48) category = 'Wide';
+    else if (ibRange >= 125 || pctOfPrice >= 0.24) category = 'Normal';
+    else category = 'Narrow';
+  } else if (sym.startsWith('MCX:') || sym.includes('CRUDE') || sym.includes('NATURALGAS')) {
+    if (pctOfPrice >= 1.4) category = 'Ultra-Wide';
+    else if (pctOfPrice >= 0.8) category = 'Wide';
+    else if (pctOfPrice >= 0.35) category = 'Normal';
+    else category = 'Narrow';
+  } else {
+    // Equities & general instruments
+    if (pctOfPrice >= 1.4) category = 'Ultra-Wide';
+    else if (pctOfPrice >= 0.8) category = 'Wide';
+    else if (pctOfPrice >= 0.35) category = 'Normal';
+    else category = 'Narrow';
+  }
+
+  const categoryName = category === 'Ultra-Wide' ? 'Ultra-Wide IB'
+    : category === 'Wide' ? 'Wide IB'
+    : category === 'Normal' ? 'Normal / Moderate IB'
+    : 'Narrow IB';
+
+  const label = `${categoryName} (${ibRange.toFixed(1)} pts • ${pctOfPrice.toFixed(2)}%)`;
+
+  return {
+    category,
+    label,
+    points: Math.round(ibRange * 100) / 100,
+    pctOfPrice: Math.round(pctOfPrice * 100) / 100
+  };
+}
+
+export function detectDayType(profile: DayProfile): DayTypeAnalysis {
+  const dayRange = profile.dayHigh - profile.dayLow;
+  const ibRange = (profile.ibHigh && profile.ibLow) ? (profile.ibHigh - profile.ibLow) : 0;
+  
+  if (!profile.bins || profile.bins.length === 0 || dayRange <= 0) {
+    return {
+      type: 'Normal Day',
+      badgeColor: '#10b981',
+      ibType: 'Developing IB',
+      ibRangePoints: 0,
+      ibRangePct: 0,
+      extensionType: 'Awaiting Range'
+    };
+  }
+
+  const ibPctOfRange = dayRange > 0 ? (ibRange / dayRange) * 100 : 100;
+  const singlePrints = getSinglePrintsForProfile(profile);
+  const hasSeparatingSinglePrints = singlePrints.length >= 2;
+
+  const brokeIbHigh = profile.ibHigh ? (profile.dayHigh > profile.ibHigh + (profile.tickSize || 1)) : false;
+  const brokeIbLow = profile.ibLow ? (profile.dayLow < profile.ibLow - (profile.tickSize || 1)) : false;
+
+  const numPeriods = profile.periodRanges ? Object.keys(profile.periodRanges).length : 0;
+  const isEarlyDeveloping = numPeriods <= 4; // Periods A, B, C, D (first ~2 hours)
+
+  let buyExt = 0;
+  let sellExt = 0;
+  if (profile.periodRanges) {
+    let rHigh = Math.max(profile.periodRanges[0]?.high || 0, profile.periodRanges[1]?.high || 0);
+    let rLow = Math.min(profile.periodRanges[0]?.low || Infinity, profile.periodRanges[1]?.low || Infinity);
+    for (let i = 2; i < numPeriods; i++) {
+      const p = profile.periodRanges[i];
+      if (!p) continue;
+      if (p.high > rHigh) { buyExt++; rHigh = p.high; }
+      if (p.low < rLow) { sellExt++; rLow = p.low; }
+    }
+  }
+
+  // Calculate objective IB width classification (Never hardcode to "Narrow IB"!)
+  const ibClass = classifyInitialBalance(ibRange, profile.openPrice, profile.symbol);
+  const ibFormatted = `${ibClass.label} • ${ibPctOfRange.toFixed(0)}% of Day Range`;
+
+  // 1. Double-Distribution Trend Day:
+  // Visual Shape: Two distinct bell curves separated by a narrow band of single TPO prints
+  if (hasSeparatingSinglePrints && (brokeIbHigh || brokeIbLow) && ibPctOfRange < 70) {
+    return {
+      type: 'Double-Distribution Trend Day',
+      badgeColor: '#ec4899', // Vibrant Pink
+      ibType: ibFormatted,
+      ibRangePoints: Math.round(ibRange * 100) / 100,
+      ibRangePct: Math.round(ibPctOfRange),
+      extensionType: brokeIbHigh ? 'Upside Extension with Single-Print Gap' : 'Downside Extension with Single-Print Gap'
+    };
+  }
+
+  // 2. Neutral Day:
+  // Extensions on both sides of the Initial Balance
+  if (brokeIbHigh && brokeIbLow) {
+    return {
+      type: 'Neutral Day',
+      badgeColor: '#8b5cf6', // Violet
+      ibType: ibFormatted,
+      ibRangePoints: Math.round(ibRange * 100) / 100,
+      ibRangePct: Math.round(ibPctOfRange),
+      extensionType: 'Extensions on Both Ends'
+    };
+  }
+
+  // 3. One side broken (brokeIbHigh || brokeIbLow): Trend Day vs Normal Variation Day
+  if (brokeIbHigh || brokeIbLow) {
+    const extensionMagnitude = brokeIbHigh 
+      ? (profile.dayHigh - (profile.ibHigh || 0)) 
+      : ((profile.ibLow || 0) - profile.dayLow);
+    const extensionRatio = ibRange > 0 ? extensionMagnitude / ibRange : 0;
+
+    // In Market Profile theory, a genuine Trend Day requires:
+    // - Typically narrow or moderate IB at the open
+    // - Relentless one-directional expansion across multiple periods (buyExt >= 2 or sellExt >= 2)
+    // - Significant range extension beyond IB (extension ratio >= 0.7 or ibPctOfRange < 55%)
+    // - Long thin profile without wide horizontal bell curve rotation
+    const isDirectionalTrend = (buyExt >= 2 || sellExt >= 2) && 
+      (ibPctOfRange < 55 || extensionRatio >= 0.7) && 
+      (ibClass.category === 'Narrow' || ibClass.category === 'Normal');
+
+    if (isDirectionalTrend && !isEarlyDeveloping) {
+      return {
+        type: 'Trend Day',
+        badgeColor: '#00f0ff', // Cyan
+        ibType: ibFormatted,
+        ibRangePoints: Math.round(ibRange * 100) / 100,
+        ibRangePct: Math.round(ibPctOfRange),
+        extensionType: brokeIbHigh ? 'Continuous Upside Extension' : 'Continuous Downside Extension'
+      };
+    } else {
+      // Normal Variation Day:
+      // Price pushed beyond one side of the Initial Balance, but does not form a runaway trend.
+      return {
+        type: 'Normal Variation Day',
+        badgeColor: '#f59e0b', // Amber
+        ibType: ibFormatted,
+        ibRangePoints: Math.round(ibRange * 100) / 100,
+        ibRangePct: Math.round(ibPctOfRange),
+        extensionType: brokeIbHigh 
+          ? `Upside Extension (+${extensionMagnitude.toFixed(1)} pts)` 
+          : `Downside Extension (-${extensionMagnitude.toFixed(1)} pts)`
+      };
+    }
+  }
+
+  // 4. Neither side broken (Price oscillating inside the Initial Balance)
+  // Non-Trend Day: Confirmed ONLY when session is mature and IB was genuinely Narrow.
+  // Normal Day: IB was Normal, Wide, or Ultra-Wide, and price remains responsive inside the early limits.
+  if (ibClass.category === 'Narrow' && !isEarlyDeveloping) {
+    return {
+      type: 'Non-Trend Day',
+      badgeColor: '#64748b', // Slate Gray
+      ibType: ibFormatted,
+      ibRangePoints: Math.round(ibRange * 100) / 100,
+      ibRangePct: Math.round(ibPctOfRange),
+      extensionType: 'Zero Range Extension (Compressed Low Volatility)'
+    };
+  } else {
+    return {
+      type: 'Normal Day',
+      badgeColor: '#10b981', // Emerald Green
+      ibType: ibFormatted,
+      ibRangePoints: Math.round(ibRange * 100) / 100,
+      ibRangePct: Math.round(ibPctOfRange),
+      extensionType: isEarlyDeveloping 
+        ? 'Developing In-Balance Auction (Trading within IB)' 
+        : 'Zero Range Extension (IB Dominant 80-100%)'
+    };
+  }
+}
+
+/**
+ * Detects Value Placement comparing today's Value Area (VAH/VAL) with the prior day's Value Area.
+ * Categories:
+ * 1. Higher Value: Today's VA is entirely above yesterday's VA (no overlap)
+ * 2. Overlapping Higher: Today's VA extends higher, but partially overlaps yesterday's VA
+ * 3. Overlapping Lower: Today's VA extends lower, but partially overlaps yesterday's VA
+ * 4. Lower Value: Today's VA is entirely below yesterday's VA (no overlap)
+ * 5. Inside Value: Today's VA is completely contained within yesterday's VA
+ * 6. Outside / Engulfing Value: Today's VA extends both above and below yesterday's VA
+ */
+export function detectValuePlacement(today: DayProfile, prior?: DayProfile): ValuePlacementAnalysis | null {
+  if (!today || !today.vahPrice || !today.valPrice || !prior || !prior.vahPrice || !prior.valPrice) {
+    return null;
+  }
+
+  const tVah = today.vahPrice;
+  const tVal = today.valPrice;
+  const pVah = prior.vahPrice;
+  const pVal = prior.valPrice;
+
+  // 1. Higher Value: Today's VA is entirely above yesterday's VA (no overlap)
+  if (tVal > pVah) {
+    return {
+      type: 'Higher Value',
+      badgeColor: '#10b981', // Emerald Green
+      description: "Today's VA is entirely above yesterday's VA (no overlap)",
+      bias: 'Strong Bullish',
+      priorVah: pVah,
+      priorVal: pVal,
+      todayVah: tVah,
+      todayVal: tVal
+    };
+  }
+
+  // 4. Lower Value: Today's VA is entirely below yesterday's VA (no overlap)
+  if (tVah < pVal) {
+    return {
+      type: 'Lower Value',
+      badgeColor: '#ef4444', // Red
+      description: "Today's VA is entirely below yesterday's VA (no overlap)",
+      bias: 'Strong Bearish',
+      priorVah: pVah,
+      priorVal: pVal,
+      todayVah: tVah,
+      todayVal: tVal
+    };
+  }
+
+  // 6. Outside / Engulfing Value: Today's VA extends both above and below yesterday's VA
+  if (tVah > pVah && tVal < pVal) {
+    return {
+      type: 'Outside / Engulfing Value',
+      badgeColor: '#8b5cf6', // Violet
+      description: "Today's VA extends both above and below yesterday's VA",
+      bias: 'Volatile Expansion',
+      priorVah: pVah,
+      priorVal: pVal,
+      todayVah: tVah,
+      todayVal: tVal
+    };
+  }
+
+  // 5. Inside Value: Today's VA is completely contained within yesterday's VA
+  if (tVah <= pVah && tVal >= pVal) {
+    return {
+      type: 'Inside Value',
+      badgeColor: '#f59e0b', // Amber
+      description: "Today's VA is completely contained within yesterday's VA",
+      bias: 'Neutral / Consolidation',
+      priorVah: pVah,
+      priorVal: pVal,
+      todayVah: tVah,
+      todayVal: tVal
+    };
+  }
+
+  // 2. Overlapping Higher: Today's VA extends higher, but partially overlaps yesterday's VA
+  if (tVah > pVah && tVal >= pVal && tVal <= pVah) {
+    return {
+      type: 'Overlapping Higher',
+      badgeColor: '#00f0ff', // Cyan
+      description: "Today's VA extends higher, but partially overlaps yesterday's VA",
+      bias: 'Bullish',
+      priorVah: pVah,
+      priorVal: pVal,
+      todayVah: tVah,
+      todayVal: tVal
+    };
+  }
+
+  // 3. Overlapping Lower: Today's VA extends lower, but partially overlaps yesterday's VA
+  if (tVal < pVal && tVah <= pVah && tVah >= pVal) {
+    return {
+      type: 'Overlapping Lower',
+      badgeColor: '#f97316', // Orange
+      description: "Today's VA extends lower, but partially overlaps yesterday's VA",
+      bias: 'Bearish',
+      priorVah: pVah,
+      priorVal: pVal,
+      todayVah: tVah,
+      todayVal: tVal
+    };
+  }
+
+  // Floating point boundary fallback
+  if (tVah > pVah) {
+    return {
+      type: 'Overlapping Higher',
+      badgeColor: '#00f0ff',
+      description: "Today's VA extends higher, but partially overlaps yesterday's VA",
+      bias: 'Bullish',
+      priorVah: pVah,
+      priorVal: pVal,
+      todayVah: tVah,
+      todayVal: tVal
+    };
+  } else {
+    return {
+      type: 'Overlapping Lower',
+      badgeColor: '#f97316',
+      description: "Today's VA extends lower, but partially overlaps yesterday's VA",
+      bias: 'Bearish',
+      priorVah: pVah,
+      priorVal: pVal,
+      todayVah: tVah,
+      todayVal: tVal
+    };
+  }
+}
+
+

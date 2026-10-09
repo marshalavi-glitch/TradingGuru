@@ -1,6 +1,6 @@
 import './patch_ws.js';
 import 'dotenv/config';
-import { TradingViewBridge } from './tradingview.js';
+import { angelOneBridge } from './angelone_bridge.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -10,56 +10,16 @@ const __dirname = path.dirname(__filename);
 
 const CACHE_FILE = path.join(__dirname, 'data/weekly_200_ema_cache.json');
 
-async function fetchWeeklyCandles(tvBridge, symbol, limit = 350) {
-  let cleanupFn = null;
-  let resolved = false;
-  let cachedData = null;
-
-  return new Promise((resolve) => {
-    const timeout = setTimeout(async () => {
-      if (!resolved) {
-        resolved = true;
-        if (cleanupFn) {
-          try { await cleanupFn(); } catch (e) {}
-        }
-        resolve(cachedData || []);
-      }
-    }, 4500);
-
-    const onData = async (data) => {
-      if (data.isSnapshot && !resolved) {
-        resolved = true;
-        clearTimeout(timeout);
-        if (cleanupFn) {
-          try { await cleanupFn(); } catch (err) {}
-        }
-        resolve(data.candles || []);
-      } else if (!resolved && data.candles && data.candles.length > 0) {
-        cachedData = data.candles;
-      }
-    };
-
-    const onError = async () => {
-      if (!resolved) {
-        resolved = true;
-        clearTimeout(timeout);
-        if (cleanupFn) {
-          try { await cleanupFn(); } catch (e) {}
-        }
-        resolve([]);
-      }
-    };
-
-    tvBridge.subscribeSymbol(symbol, 'W', onData, onError, limit).then(cleanup => {
-      cleanupFn = cleanup;
-      if (cachedData && !resolved) {
-        resolved = true;
-        clearTimeout(timeout);
-        try { cleanupFn(); } catch (e) {}
-        resolve(cachedData);
-      }
-    }).catch(onError);
-  });
+async function fetchWeeklyCandles(symbol, limit = 350) {
+  try {
+    const angelRes = await angelOneBridge.getNormalizedCandles({ symbol, timeframe: 'W', limit });
+    if (angelRes && angelRes.status && Array.isArray(angelRes.candles) && angelRes.candles.length >= 200) {
+      return angelRes.candles;
+    }
+  } catch (err) {
+    console.warn(`[Weekly 200 EMA] Angel One candle error for ${symbol}:`, err.message);
+  }
+  return [];
 }
 
 function calculateEMA(candles, period = 200) {
@@ -95,7 +55,7 @@ export function getCachedWeekly200EMASymbols() {
   return [];
 }
 
-export async function scanWeekly200EMASymbols(tvBridge, symbolsList) {
+export async function scanWeekly200EMASymbols(symbolsList) {
   console.log(`[Weekly 200 EMA Scanner] Scanning ${symbolsList.length} symbols for proximity to Weekly 200 EMA...`);
   
   const results = [];
@@ -107,7 +67,7 @@ export async function scanWeekly200EMASymbols(tvBridge, symbolsList) {
     const batchPromises = batch.map(async (item) => {
       const sym = item.value || item.symbol || item;
       try {
-        const candles = await fetchWeeklyCandles(tvBridge, sym, 320);
+        const candles = await fetchWeeklyCandles(sym, 320);
         if (!candles || candles.length < 205) return;
 
         const ema200 = calculateEMA(candles, 200);

@@ -103,7 +103,7 @@ export const SignalsContainer: React.FC<SignalsContainerProps> = ({
     let isMounted = true;
     const fetchBias = async () => {
       try {
-        const backendUrl = window.location.port === '5175' ? 'http://localhost:3002' : window.location.origin;
+        const backendUrl = await getBackendHttpUrl();
         const res = await fetch(`${backendUrl}/api/scanner/opening-bias`);
         if (res.ok) {
           const data = await res.json();
@@ -379,29 +379,77 @@ export const SignalsContainer: React.FC<SignalsContainerProps> = ({
                       )}
                     </div>
 
-                    <button
-                      onClick={() => handleSymbolClick(sig.symbol)}
-                      style={{
-                        background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-purple))',
-                        border: 'none',
-                        borderRadius: '8px',
-                        color: 'white',
-                        fontSize: '12px',
-                        fontWeight: '700',
-                        padding: '8px',
-                        cursor: 'pointer',
-                        textAlign: 'center',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                        marginTop: '4px',
-                        boxShadow: '0 4px 12px rgba(99, 102, 241, 0.2)'
-                      }}
-                    >
-                      <Play size={11} fill="white" />
-                      View Interactive Chart
-                    </button>
+                    {sig.isFno ? (
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '4px' }}>
+                        <button
+                          onClick={() => handleSymbolClick(`${sig.symbol} ${sig.strike} ${sig.isBullish ? 'CE' : 'PE'}`)}
+                          style={{
+                            background: 'linear-gradient(135deg, #06b6d4, #0284c7)',
+                            border: 'none',
+                            borderRadius: '8px',
+                            color: '#000',
+                            fontSize: '11px',
+                            fontWeight: '800',
+                            padding: '8px 6px',
+                            cursor: 'pointer',
+                            textAlign: 'center',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px',
+                            boxShadow: '0 4px 10px rgba(6, 182, 212, 0.25)'
+                          }}
+                        >
+                          <Play size={11} fill="#000" />
+                          Option Chart ({sig.strike} {sig.isBullish ? 'CE' : 'PE'})
+                        </button>
+
+                        <button
+                          onClick={() => handleSymbolClick(sig.symbol)}
+                          style={{
+                            background: 'rgba(255, 255, 255, 0.08)',
+                            border: '1px solid rgba(255, 255, 255, 0.15)',
+                            borderRadius: '8px',
+                            color: '#cbd5e1',
+                            fontSize: '11px',
+                            fontWeight: '700',
+                            padding: '8px 6px',
+                            cursor: 'pointer',
+                            textAlign: 'center',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          Spot Chart
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleSymbolClick(sig.symbol)}
+                        style={{
+                          background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-purple))',
+                          border: 'none',
+                          borderRadius: '8px',
+                          color: 'white',
+                          fontSize: '12px',
+                          fontWeight: '700',
+                          padding: '8px',
+                          cursor: 'pointer',
+                          textAlign: 'center',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                          marginTop: '4px',
+                          boxShadow: '0 4px 12px rgba(99, 102, 241, 0.2)'
+                        }}
+                      >
+                        <Play size={11} fill="white" />
+                        View Interactive Chart
+                      </button>
+                    )}
                   </div>
                 );
               })}

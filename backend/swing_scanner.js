@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { TradingViewBridge } from './tradingview.js';
+import { angelOneBridge } from './angelone_bridge.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -360,7 +361,18 @@ function analyzeCandlesForSwing(symbolItem, candles, timeframe) {
   };
 }
 
-function fetchCandlesForSymbol(tvBridge, symbol, timeframe, limit) {
+async function fetchCandlesForSymbol(tvBridge, symbol, timeframe, limit) {
+  // 1. Primary: Angel One SmartAPI
+  try {
+    const angelRes = await angelOneBridge.getNormalizedCandles({ symbol, timeframe, limit });
+    if (angelRes && angelRes.status && Array.isArray(angelRes.candles) && angelRes.candles.length >= 20) {
+      return angelRes.candles;
+    }
+  } catch (err) {}
+
+  // 2. Fallback: TradingView Bridge
+  if (!tvBridge) return null;
+
   return new Promise((resolve) => {
     let cleanupFn = null;
     let resolved = false;

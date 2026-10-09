@@ -6,6 +6,7 @@ import { ChartContainer } from './components/ChartContainer';
 import { tvStreamer, getBackendHttpUrl } from './utils/tvStreamer';
 import type { Candle } from './utils/profileCalculator';
 import { calculateMatrixSeriesData } from './utils/matrixCalculator';
+import { filterMarketHoursCandles, isWithinMarketHours } from './utils/marketHours';
 import { AlertCircle, Loader2, Layers, Zap, X, Volume2, Star } from 'lucide-react';
 import { TabErrorBoundary } from './components/TabErrorBoundary';
 import { useLevelAlerts, playCallingBellSound } from './utils/useLevelAlerts';
@@ -36,17 +37,19 @@ import { ValueBreakoutContainer } from './components/ValueBreakoutContainer';
 import { SrBreakoutContainer } from './components/SrBreakoutContainer';
 import { TestContainer } from './components/TestContainer';
 import { Test2Container } from './components/Test2Container';
+import { TestingContainer } from './components/TestingContainer';
+import { LogicTestContainer } from './components/LogicTestContainer';
 import { Mp3DayPatternContainer } from './components/Mp3DayPatternContainer';
 import { LoginScreen, getStoredAuthUser, clearStoredAuthUser, AUTH_EPOCH_KEY, CURRENT_AUTH_EPOCH } from './components/LoginScreen';
 import { UserManagementModal } from './components/UserManagementModal';
 import { WATCHLIST_DATA } from './data/watchlistData';
 
 export type TabType = 
-  | 'chart' | 'dada_thoughts' | 'fifteen_min' 
+  | 'chart' | 'logic_test' | 'dada_thoughts' | 'fifteen_min' 
   | 'scanner' | 'options' | 'signals' | 'doji' | 'doji_novol' | 'volume' 
   | 'opening_bias' | 'hourly_updates' | 'backtest_results' 
   | 'early_picks' | 'nr7_breakout' | 'order_flow' 
-  | 'cvd_adv' | 'heatmap' | 'market_profile' | 'pro_market_profile' | 'mp_3day_pattern' | 'value_breakout' | 'footprint_chart' | 'vsa' | 'high_beta' | 'manual_trades' | 'sr_breakout' | 'test' | 'test2';
+  | 'cvd_adv' | 'heatmap' | 'market_profile' | 'pro_market_profile' | 'mp_3day_pattern' | 'value_breakout' | 'footprint_chart' | 'vsa' | 'high_beta' | 'manual_trades' | 'sr_breakout' | 'test' | 'test2' | 'testing';
 
 interface TabItem {
   id: TabType;
@@ -66,6 +69,8 @@ const TOOL_GROUPS: ToolGroup[] = [
     name: 'Charts',
     items: [
       { id: 'chart', label: 'Candlestick' },
+      { id: 'testing', label: 'Testing' },
+      { id: 'logic_test', label: 'Logic Test' },
       { id: 'market_profile', label: 'Market Profile' },
       { id: 'pro_market_profile', label: 'Pro TPO' },
       { id: 'test', label: 'Orderflow Chart' }
@@ -117,7 +122,40 @@ const TOOL_GROUPS: ToolGroup[] = [
   }
 ];
 
+const ALL_VALID_TAB_IDS = new Set<string>(TOOL_GROUPS.flatMap(g => g.items.map(i => i.id)));
+
+const ALL_TABS_MAP = new Map<TabType, { id: TabType; label: string; groupName: string }>();
+TOOL_GROUPS.forEach(g => {
+  g.items.forEach(i => {
+    ALL_TABS_MAP.set(i.id, { ...i, groupName: g.name });
+  });
+});
+
+function sanitizeFavoriteTabs(raw: any): TabType[] {
+  if (!Array.isArray(raw)) return ['chart', 'test'];
+  const validTabs: TabType[] = [];
+  for (const item of raw) {
+    const str = String(item).trim();
+    if (ALL_VALID_TAB_IDS.has(str)) {
+      if (!validTabs.includes(str as TabType)) {
+        validTabs.push(str as TabType);
+      }
+    } else if (str === 'Charts') {
+      // Migrate legacy group favorites
+      if (!validTabs.includes('chart')) validTabs.push('chart');
+      if (!validTabs.includes('test')) validTabs.push('test');
+    } else if (str === 'Flow') {
+      if (!validTabs.includes('footprint_chart')) validTabs.push('footprint_chart');
+    } else if (str === 'Signals') {
+      if (!validTabs.includes('scanner')) validTabs.push('scanner');
+    }
+  }
+  return validTabs.length > 0 ? validTabs : ['chart', 'test'];
+}
+
 const TABS_LIST: TabItem[] = [
+  { id: 'logic_test', label: '🔬 Logic Test', color: '#00f0ff', badge: 'NEW' },
+  { id: 'testing', label: '🧪 Testing', color: '#ec4899', badge: 'NEW' },
   { id: 'manual_trades', label: '📝 Manual Trades', color: '#10b981' },
   { id: 'test', label: '📊 Orderflow Chart', color: '#38bdf8' },
   { id: 'test2', label: '🧪 Test 2', color: '#8b5cf6' },
@@ -230,6 +268,7 @@ function App() {
   const [matrixHistory, setMatrixHistory] = useState<Record<string, any> | null>(null);
   const [refreshKey, setRefreshKey] = useState<number>(0);
   const [loading, setLoading] = useState(true);
+  const [loadedSymbol, setLoadedSymbol] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
 
   // Check if opened as standalone workstation (e.g. via Pop Out button)
@@ -441,6 +480,7 @@ function App() {
     setError(null);
     setCandles([]);
     setMatrixHistory(null);
+    setLoadedSymbol('');
 
     let isMounted = true;
 
@@ -457,8 +497,10 @@ function App() {
         const res = await fetch(url);
         if (res.ok && isMounted) {
           const data = await res.json();
-          if (data.candles && data.candles.length > 0 && isMounted) {
-            setCandles(data.candles);
+          const sym = data.symbol || symbol;
+          if (data.candles && data.candles.length > 0 && isMounted && tvStreamer.isSymbolMatch(sym, symbol)) {
+            setCandles(filterMarketHoursCandles(data.candles, symbol, timeframe));
+            setLoadedSymbol(symbol);
             setLoading(false);
             setConnectionStatus('connected');
           }
@@ -470,12 +512,18 @@ function App() {
 
     fetchInitialCandles();
 
-    tvStreamer.subscribe(
+    const unsubscribe = tvStreamer.subscribe(
       symbol,
       timeframe,
       (data) => {
         if (!isMounted) return;
+        // Strictly verify symbol matches the currently active symbol
+        if (!tvStreamer.isSymbolMatch(data.symbol, symbol)) {
+          return;
+        }
+
         setLoading(false);
+        setLoadedSymbol(symbol);
         setConnectionStatus('connected');
         setError(null);
         if (data.matrixHistory) {
@@ -484,9 +532,17 @@ function App() {
         if (data.candles && data.candles.length > 0) {
           setCandles((prevCandles) => {
             if (data.isSnapshot) {
-              return [...data.candles].sort((a, b) => (a.time as number) - (b.time as number));
+              const filtered = filterMarketHoursCandles(data.candles, symbol, timeframe);
+              return [...filtered].sort((a, b) => (a.time as number) - (b.time as number));
             } else {
+              // Only append real-time ticks if base candles are already loaded for this symbol
+              if (prevCandles.length === 0) {
+                return prevCandles;
+              }
               const tick = data.candles[0];
+              if (!isWithinMarketHours(tick.time as number, symbol, timeframe)) {
+                return prevCandles; // Drop ticks outside market hours
+              }
               const index = prevCandles.findIndex((c) => c.time === tick.time);
               if (index !== -1) {
                 const updated = [...prevCandles];
@@ -508,16 +564,17 @@ function App() {
     );
 
     const safetyTimer = setTimeout(() => {
-      if (isMounted && loading) {
+      if (isMounted) {
         setLoading(false);
         setConnectionStatus('connected');
       }
-    }, 2000);
+    }, 2500);
 
     return () => {
       isMounted = false;
       clearTimeout(safetyTimer);
-      tvStreamer.unsubscribe();
+      unsubscribe();
+      tvStreamer.sendUnsubscribe(symbol);
     };
   }, [symbol, timeframe, refreshKey]);
 
@@ -614,18 +671,18 @@ function App() {
     Others: false
   });
 
-  const [favoriteSections, setFavoriteSections] = useState<string[]>(() => {
+  const [favoriteTabs, setFavoriteTabs] = useState<TabType[]>(() => {
     const currentAuth = getStoredAuthUser();
     if (currentAuth) {
       try {
         const cached = localStorage.getItem(`trading_guru_favorites_${currentAuth.toLowerCase()}`);
-        if (cached) return JSON.parse(cached);
+        if (cached) return sanitizeFavoriteTabs(JSON.parse(cached));
       } catch {}
     }
-    return ['Charts'];
+    return ['chart', 'test'];
   });
 
-  // Load and synchronize user's favorite sections from backend
+  // Load and synchronize user's favorite tabs from backend
   useEffect(() => {
     if (!authUser) return;
     const cleanUser = authUser.toLowerCase();
@@ -634,7 +691,7 @@ function App() {
     try {
       const cached = localStorage.getItem(`trading_guru_favorites_${cleanUser}`);
       if (cached) {
-        setFavoriteSections(JSON.parse(cached));
+        setFavoriteTabs(sanitizeFavoriteTabs(JSON.parse(cached)));
       }
     } catch {}
 
@@ -646,8 +703,9 @@ function App() {
         if (res.ok) {
           const data = await res.json();
           if (data.success && Array.isArray(data.favorites) && isMounted) {
-            setFavoriteSections(data.favorites);
-            localStorage.setItem(`trading_guru_favorites_${cleanUser}`, JSON.stringify(data.favorites));
+            const sanitized = sanitizeFavoriteTabs(data.favorites);
+            setFavoriteTabs(sanitized);
+            localStorage.setItem(`trading_guru_favorites_${cleanUser}`, JSON.stringify(sanitized));
           }
         }
       } catch (err) {
@@ -659,13 +717,13 @@ function App() {
     return () => { isMounted = false; };
   }, [authUser]);
 
-  const toggleFavoriteSection = async (sectionName: string) => {
-    const isFav = favoriteSections.includes(sectionName);
+  const toggleFavoriteTab = async (tabId: TabType) => {
+    const isFav = favoriteTabs.includes(tabId);
     const nextFavs = isFav
-      ? favoriteSections.filter(s => s !== sectionName)
-      : [...favoriteSections, sectionName];
+      ? favoriteTabs.filter(id => id !== tabId)
+      : [...favoriteTabs, tabId];
 
-    setFavoriteSections(nextFavs);
+    setFavoriteTabs(nextFavs);
 
     if (authUser) {
       const cleanUser = authUser.toLowerCase();
@@ -749,7 +807,7 @@ function App() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: isStandalone ? '0' : '12px', width: '100%', minHeight: '100vh', height: isStandalone ? '100vh' : 'auto', boxSizing: 'border-box', overflowY: isStandalone ? 'hidden' : 'auto' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: isStandalone ? '0' : '6px', width: '100%', minHeight: '100vh', height: (isStandalone || activeTab === 'chart' || activeTab === 'testing' || activeTab === 'logic_test') ? '100vh' : 'auto', maxHeight: (isStandalone || activeTab === 'chart' || activeTab === 'testing' || activeTab === 'logic_test') ? '100vh' : 'none', boxSizing: 'border-box', overflowY: (isStandalone || activeTab === 'chart' || activeTab === 'testing' || activeTab === 'logic_test') ? 'hidden' : 'auto' }}>
       
       {/* Real-time Voice Alert Broadcast Notification Banner */}
       {!isStandalone && liveTradeAlert && (
@@ -919,12 +977,13 @@ function App() {
       <div style={{ display: 'flex', flex: '1', minHeight: '0', gap: '8px', padding: '0 8px 8px 8px', width: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
         
         {/* LEFT SIDEBAR (~140px fixed): Collapsible tool groups matching media_1790927764907.png */}
-        <aside 
-          style={{ 
-            width: isMobile ? '0' : '140px', 
-            minWidth: isMobile ? '0' : '140px', 
-            maxWidth: isMobile ? '0' : '140px', 
-            display: isMobile ? 'none' : 'flex', 
+        {!isStandalone && (
+          <aside 
+            style={{ 
+              width: isMobile ? '0' : '140px', 
+              minWidth: isMobile ? '0' : '140px', 
+              maxWidth: isMobile ? '0' : '140px', 
+              display: isMobile ? 'none' : 'flex', 
             flexDirection: 'column', 
             background: isDark ? 'rgba(15, 23, 42, 0.45)' : '#ffffff', 
             border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0'}`, 
@@ -934,7 +993,7 @@ function App() {
             overflowY: 'auto' 
           }}
         >
-          {/* FAVORITES SECTION (Quick access for starred sections) */}
+          {/* FAVORITES SECTION (Direct access to starred tabs) */}
           <div style={{ marginBottom: '8px', paddingBottom: '6px', borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0'}` }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '2px 4px' }}>
               <button
@@ -958,59 +1017,80 @@ function App() {
                 <Star size={11} fill="#f59e0b" strokeWidth={1.5} />
                 <span>Favorites</span>
               </button>
-              {favoriteSections.length > 0 && (
+              {favoriteTabs.length > 0 && (
                 <span style={{ fontSize: '9px', fontWeight: '700', color: '#f59e0b', opacity: 0.85, background: 'rgba(245, 158, 11, 0.15)', padding: '0 4px', borderRadius: '4px' }}>
-                  {favoriteSections.length}
+                  {favoriteTabs.length}
                 </span>
               )}
             </div>
 
             {openGroups['Favorites'] !== false && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', paddingLeft: '6px', marginTop: '3px' }}>
-                {favoriteSections.length === 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', paddingLeft: '4px', marginTop: '3px' }}>
+                {favoriteTabs.length === 0 ? (
                   <span style={{ fontSize: '10px', color: 'var(--text-secondary)', padding: '3px 4px', fontStyle: 'italic', opacity: 0.75 }}>
-                    Star any section below for quick access
+                    Star any tab below for quick access
                   </span>
                 ) : (
-                  favoriteSections.map(secName => {
-                    const groupObj = TOOL_GROUPS.find(g => g.name === secName);
-                    if (!groupObj) return null;
+                  favoriteTabs.map(tabId => {
+                    const item = ALL_TABS_MAP.get(tabId);
+                    if (!item) return null;
+                    const isActive = activeTab === tabId;
                     return (
-                      <div key={`fav-group-${secName}`} style={{ marginBottom: '3px' }}>
-                        <div style={{ fontSize: '9px', fontWeight: '800', color: isDark ? 'rgba(255, 255, 255, 0.5)' : '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', padding: '1px 4px' }}>
-                          {secName}
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', paddingLeft: '4px' }}>
-                          {groupObj.items.map((item) => {
-                            const isActive = activeTab === item.id;
-                            return (
-                              <button
-                                key={`fav-${item.id}`}
-                                onClick={() => setActiveTab(item.id)}
-                                style={{
-                                  display: 'block',
-                                  width: '100%',
-                                  textAlign: 'left',
-                                  background: isActive ? (isDark ? 'rgba(56, 189, 248, 0.2)' : '#e0f2fe') : 'transparent',
-                                  color: isActive ? (isDark ? '#38bdf8' : '#0284c7') : 'var(--text-primary)',
-                                  fontWeight: isActive ? '800' : '500',
-                                  fontSize: '11px',
-                                  padding: '3px 6px',
-                                  borderRadius: '5px',
-                                  border: 'none',
-                                  cursor: 'pointer',
-                                  transition: 'all 0.15s ease',
-                                  whiteSpace: 'nowrap',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis'
-                                }}
-                                title={item.label}
-                              >
-                                {item.label}
-                              </button>
-                            );
-                          })}
-                        </div>
+                      <div
+                        key={`fav-tab-${tabId}`}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          width: '100%',
+                          borderRadius: '5px',
+                          background: isActive ? (isDark ? 'rgba(56, 189, 248, 0.2)' : '#e0f2fe') : 'transparent',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        <button
+                          onClick={() => setActiveTab(tabId)}
+                          style={{
+                            display: 'block',
+                            flex: 1,
+                            minWidth: 0,
+                            textAlign: 'left',
+                            background: 'transparent',
+                            color: isActive ? (isDark ? '#38bdf8' : '#0284c7') : 'var(--text-primary)',
+                            fontWeight: isActive ? '800' : '500',
+                            fontSize: '11px',
+                            padding: '3px 6px',
+                            borderRadius: '5px',
+                            border: 'none',
+                            cursor: 'pointer',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                          }}
+                          title={item.label}
+                        >
+                          {item.label}
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleFavoriteTab(tabId);
+                          }}
+                          title={`Remove "${item.label}" from Favorites`}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: '2px 4px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#f59e0b',
+                            flexShrink: 0
+                          }}
+                        >
+                          <Star size={10} fill="#f59e0b" strokeWidth={1.8} />
+                        </button>
                       </div>
                     );
                   })
@@ -1019,10 +1099,9 @@ function App() {
             )}
           </div>
 
-          {/* REGULAR SECTIONS with Star Button on each Section Header */}
+          {/* REGULAR SECTIONS with Star Button on each Tab */}
           {TOOL_GROUPS.map((group) => {
             const isOpen = openGroups[group.name] !== false;
-            const isFav = favoriteSections.includes(group.name);
             return (
               <div key={group.name} style={{ marginBottom: '6px' }}>
                 <div
@@ -1054,59 +1133,72 @@ function App() {
                     <span style={{ fontSize: '9px', opacity: 0.7 }}>{isOpen ? '⌵' : '›'}</span>
                     <span>{group.name}</span>
                   </button>
-
-                  {/* Section Star Toggle Button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleFavoriteSection(group.name);
-                    }}
-                    title={isFav ? `Remove "${group.name}" from Favorites` : `Add "${group.name}" section to Favorites`}
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      cursor: 'pointer',
-                      padding: '2px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: isFav ? '#f59e0b' : (isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.25)'),
-                      transition: 'all 0.15s ease'
-                    }}
-                  >
-                    <Star size={11} fill={isFav ? '#f59e0b' : 'transparent'} strokeWidth={1.8} />
-                  </button>
                 </div>
 
                 {isOpen && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', paddingLeft: '8px', marginTop: '2px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', paddingLeft: '4px', marginTop: '2px' }}>
                     {group.items.map((item) => {
                       const isActive = activeTab === item.id;
+                      const isFav = favoriteTabs.includes(item.id);
                       return (
-                        <button
+                        <div
                           key={item.id}
-                          onClick={() => setActiveTab(item.id)}
                           style={{
-                            display: 'block',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
                             width: '100%',
-                            textAlign: 'left',
+                            borderRadius: '5px',
                             background: isActive ? (isDark ? 'rgba(56, 189, 248, 0.2)' : '#e0f2fe') : 'transparent',
-                            color: isActive ? (isDark ? '#38bdf8' : '#0284c7') : 'var(--text-primary)',
-                            fontWeight: isActive ? '800' : '500',
-                            fontSize: '11px',
-                            padding: '4px 6px',
-                            borderRadius: '6px',
-                            border: 'none',
-                            cursor: 'pointer',
-                            transition: 'all 0.15s ease',
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis'
+                            transition: 'all 0.15s ease'
                           }}
-                          title={item.label}
                         >
-                          {item.label}
-                        </button>
+                          <button
+                            onClick={() => setActiveTab(item.id)}
+                            style={{
+                              display: 'block',
+                              flex: 1,
+                              minWidth: 0,
+                              textAlign: 'left',
+                              background: 'transparent',
+                              color: isActive ? (isDark ? '#38bdf8' : '#0284c7') : 'var(--text-primary)',
+                              fontWeight: isActive ? '800' : '500',
+                              fontSize: '11px',
+                              padding: '3px 6px',
+                              borderRadius: '5px',
+                              border: 'none',
+                              cursor: 'pointer',
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis'
+                            }}
+                            title={item.label}
+                          >
+                            {item.label}
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleFavoriteTab(item.id);
+                            }}
+                            title={isFav ? `Remove "${item.label}" from Favorites` : `Add "${item.label}" to Favorites`}
+                            style={{
+                              background: 'transparent',
+                              border: 'none',
+                              cursor: 'pointer',
+                              padding: '2px 4px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: isFav ? '#f59e0b' : (isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.25)'),
+                              opacity: isFav ? 1 : 0.65,
+                              transition: 'all 0.15s ease',
+                              flexShrink: 0
+                            }}
+                          >
+                            <Star size={10} fill={isFav ? '#f59e0b' : 'transparent'} strokeWidth={1.8} />
+                          </button>
+                        </div>
                       );
                     })}
                   </div>
@@ -1115,6 +1207,7 @@ function App() {
             );
           })}
         </aside>
+        )}
 
         {/* CENTER MAIN WORKSPACE: Takes all remaining width and height */}
         <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0, overflow: 'hidden' }}>
@@ -1181,8 +1274,14 @@ function App() {
           </div>
 
           {/* Active Workspace Component */}
-          <div style={{ flex: 1, minHeight: 0, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
-        {activeTab === 'manual_trades' ? (
+          <div style={{ flex: 1, minHeight: 0, overflow: (activeTab === 'chart' || activeTab === 'testing' || activeTab === 'logic_test') ? 'hidden' : 'auto', display: 'flex', flexDirection: 'column' }}>
+        {activeTab === 'logic_test' ? (
+          <TabErrorBoundary tabName="Logic Test">
+            <LogicTestContainer
+              onSwitchToChart={() => setActiveTab('chart')}
+            />
+          </TabErrorBoundary>
+        ) : activeTab === 'manual_trades' ? (
           <TabErrorBoundary tabName="Manual Trades">
             <ManualTradesContainer
               onSymbolSelect={setSymbol}
@@ -1192,6 +1291,16 @@ function App() {
         ) : activeTab === 'test' ? (
           <TabErrorBoundary tabName="Orderflow Chart">
             <TestContainer
+              selectedSymbol={symbol}
+              selectedTimeframe={timeframe}
+              onSymbolSelect={setSymbol}
+              onTimeframeChange={setTimeframe}
+              onSwitchToChart={() => setActiveTab('chart')}
+            />
+          </TabErrorBoundary>
+        ) : activeTab === 'testing' ? (
+          <TabErrorBoundary tabName="Testing">
+            <TestingContainer
               selectedSymbol={symbol}
               selectedTimeframe={timeframe}
               onSymbolSelect={setSymbol}
@@ -1394,15 +1503,16 @@ function App() {
               </div>
             )}
 
-            {loading ? (
+            {loading || loadedSymbol !== symbol || candles.length === 0 ? (
               <div className="glass-panel" style={{ flex: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px', minHeight: '400px' }}>
                 <Loader2 className="animate-spin" size={32} color="var(--accent-blue)" style={{ animation: 'spin 1.5s linear infinite' }} />
-                <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: 0 }}>Connecting to Angel One SmartAPI & streaming live data...</p>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: 0 }}>Connecting to Angel One SmartAPI & loading {symbol}...</p>
               </div>
             ) : (
-              <div style={{ flex: '1', display: 'flex', minHeight: '0' }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, minWidth: 0, height: '100%', width: '100%', overflow: 'hidden' }}>
                 <TabErrorBoundary tabName="Candlestick Chart">
                   <ChartContainer
+                    key={`${symbol}-${timeframe}`}
                     candles={candles}
                     symbol={symbol}
                     timeframe={timeframe}
@@ -1551,13 +1661,13 @@ function App() {
                   fontWeight: '800'
                 }}
               >
-                {favoriteSections.length > 0 && (
+                {favoriteTabs.length > 0 && (
                   <optgroup label="⭐ Favorites">
-                    {favoriteSections.flatMap(secName => {
-                      const grp = TOOL_GROUPS.find(g => g.name === secName);
-                      return grp ? grp.items.map(i => (
-                        <option key={`fav-mob-${i.id}`} value={i.id}>{grp.name}: {i.label}</option>
-                      )) : [];
+                    {favoriteTabs.map(tabId => {
+                      const item = ALL_TABS_MAP.get(tabId);
+                      return item ? (
+                        <option key={`fav-mob-${item.id}`} value={item.id}>⭐ {item.label}</option>
+                      ) : null;
                     })}
                   </optgroup>
                 )}

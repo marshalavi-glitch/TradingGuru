@@ -1,4 +1,5 @@
 import type { Candle, DayProfile } from './profileCalculator';
+import { filterMarketHoursCandles } from './marketHours';
 
 export interface VPBin {
   price: number;
@@ -96,7 +97,8 @@ export interface OrderFlowAnalysisResult {
 /**
  * Calculates Volume Profile from candles array
  */
-export function calculateVolumeProfile(candles: Candle[], tickSize: number = 0.5): VolumeProfileResult {
+export function calculateVolumeProfile(rawCandles: Candle[], tickSize: number = 0.5): VolumeProfileResult {
+  const candles = filterMarketHoursCandles(rawCandles);
   if (!candles || candles.length === 0) {
     return {
       vpocPrice: 0,

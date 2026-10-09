@@ -1,4 +1,5 @@
 import type { Candle } from './profileCalculator';
+import { filterMarketHoursCandles } from './marketHours';
 
 export type OrderFlowPatternType = 
   | 'ABSORPTION'
@@ -69,9 +70,10 @@ const FO_SYMBOLS_LIST = [
  * Evaluated mathematically across all 8 Order Flow Core Mechanics
  */
 export function calculateOrderFlowFootprintSignal(
-  candles: Candle[],
+  rawCandles: Candle[],
   symbolInfo: { symbol: string; name: string; subtitle: string; baseLtp?: number }
 ): OrderFlowStockSignal {
+  const candles = filterMarketHoursCandles(rawCandles, symbolInfo?.symbol);
   const ltp = candles && candles.length > 0 ? candles[candles.length - 1].close : (symbolInfo.baseLtp || 23400);
   const prevClose = candles && candles.length > 1 ? candles[0].close : ltp * 0.997;
   const changePct = ((ltp - prevClose) / prevClose) * 100;

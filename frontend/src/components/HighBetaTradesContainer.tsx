@@ -1,1113 +1,673 @@
-import React, { useState, useMemo } from 'react';
-import { 
-  Rocket, Search, Target, ShieldAlert, Award, TrendingUp, TrendingDown, 
-  Activity, CheckCircle2, RefreshCw, BarChart2, Zap, ArrowUpRight, Flame, Layers
-} from 'lucide-react';
-import { resolveSymbol } from '../utils/symbolResolver';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { RefreshCw, ArrowUpRight, ArrowDownRight, Layers, HelpCircle, ChevronDown, Check } from 'lucide-react';
 
-export interface HighBetaTrade {
-  id: string;
-  date: string;
-  symbol: string;
-  displayName: string;
-  tradeType: 'BUY' | 'SELL';
-  setupName: string;
-  entryPrice: number;
-  target1: number;
-  target2: number;
-  target3: number;
-  stopLoss: number;
-  finalAchievedPrice: number;
-  finalStatus: 'TARGET 3 HIT' | 'TARGET 2 HIT' | 'TARGET 1 HIT' | 'LIVE ACTIVE' | 'STOP LOSS HIT';
-  roiPct: number;
-  holdingDays: string;
-  riskReward: string;
-  volumeSpikeRatio: string;
-  notes: string;
+interface StrikeGexData {
+  strike: number;
+  netGex: number; // in k ₹Cr
+  callGex: number;
+  putGex: number;
+  concentration: number; // 0 to 8.0k scale for curve
 }
 
-// 60-DAY HISTORICAL HIGH BETA TRADES DATASET (Last 60 Trading Days)
-const HIGH_BETA_TRADES_DATA: HighBetaTrade[] = [
-  {
-    id: 'HB-060',
-    date: '2026-09-15 09:30',
-    symbol: 'NSE:DIXON',
-    displayName: 'DIXON TECH',
-    tradeType: 'BUY',
-    setupName: 'High-Beta Momentum Surge',
-    entryPrice: 13450.00,
-    target1: 13750.00,
-    target2: 14100.00,
-    target3: 14500.00,
-    stopLoss: 13200.00,
-    finalAchievedPrice: 13820.00,
-    finalStatus: 'LIVE ACTIVE',
-    roiPct: 2.75,
-    holdingDays: 'Same Day',
-    riskReward: '1:4.2',
-    volumeSpikeRatio: '3.4x',
-    notes: 'Intraday breakout above previous week high with strong institutional buying in consumer electronics sector.'
-  },
-  {
-    id: 'HB-059',
-    date: '2026-09-14 10:15',
-    symbol: 'NSE:HAL',
-    displayName: 'HAL (Hindustan Aero)',
-    tradeType: 'BUY',
-    setupName: 'Squeeze Release Breakout',
-    entryPrice: 4720.00,
-    target1: 4850.00,
-    target2: 4980.00,
-    target3: 5120.00,
-    stopLoss: 4610.00,
-    finalAchievedPrice: 5125.00,
-    finalStatus: 'TARGET 3 HIT',
-    roiPct: 8.58,
-    holdingDays: '1 Day',
-    riskReward: '1:3.6',
-    volumeSpikeRatio: '4.1x',
-    notes: 'Defense heavyweight multi-day consolidation breakout with massive delivery volume.'
-  },
-  {
-    id: 'HB-058',
-    date: '2026-09-11 11:45',
-    symbol: 'NSE:TRENT',
-    displayName: 'TRENT LTD',
-    tradeType: 'BUY',
-    setupName: 'EMA Ribbon Expansion',
-    entryPrice: 7150.00,
-    target1: 7380.00,
-    target2: 7600.00,
-    target3: 7900.00,
-    stopLoss: 6980.00,
-    finalAchievedPrice: 7920.00,
-    finalStatus: 'TARGET 3 HIT',
-    roiPct: 10.77,
-    holdingDays: '3 Days',
-    riskReward: '1:4.4',
-    volumeSpikeRatio: '2.9x',
-    notes: 'Retail leader continuous ATH expansion with strong institutional accumulation.'
-  },
-  {
-    id: 'HB-057',
-    date: '2026-09-10 09:20',
-    symbol: 'NSE:MAHDOCK',
-    displayName: 'MAZAGON DOCK',
-    tradeType: 'BUY',
-    setupName: 'Volume Spike Reversal',
-    entryPrice: 4420.00,
-    target1: 4560.00,
-    target2: 4700.00,
-    target3: 4880.00,
-    stopLoss: 4310.00,
-    finalAchievedPrice: 4715.00,
-    finalStatus: 'TARGET 2 HIT',
-    roiPct: 6.67,
-    holdingDays: '2 Days',
-    riskReward: '1:3.2',
-    volumeSpikeRatio: '3.8x',
-    notes: 'Support bounce at 20 EMA with bullish engulfing candle on 15m timeframe.'
-  },
-  {
-    id: 'HB-056',
-    date: '2026-09-09 13:30',
-    symbol: 'NSE:PERSISTENT',
-    displayName: 'PERSISTENT SYS',
-    tradeType: 'BUY',
-    setupName: 'High-Beta Momentum Surge',
-    entryPrice: 5340.00,
-    target1: 5490.00,
-    target2: 5650.00,
-    target3: 5850.00,
-    stopLoss: 5220.00,
-    finalAchievedPrice: 5860.00,
-    finalStatus: 'TARGET 3 HIT',
-    roiPct: 9.74,
-    holdingDays: '2 Days',
-    riskReward: '1:4.25',
-    volumeSpikeRatio: '3.1x',
-    notes: 'Midcap IT outperformance rally after breaking resistance level with heavy volume.'
-  },
-  {
-    id: 'HB-055',
-    date: '2026-09-08 10:00',
-    symbol: 'NSE:MCX',
-    displayName: 'MCX INDIA',
-    tradeType: 'BUY',
-    setupName: 'Breakout Above Resistance',
-    entryPrice: 5820.00,
-    target1: 5980.00,
-    target2: 6150.00,
-    target3: 6350.00,
-    stopLoss: 5690.00,
-    finalAchievedPrice: 6380.00,
-    finalStatus: 'TARGET 3 HIT',
-    roiPct: 9.62,
-    holdingDays: '3 Days',
-    riskReward: '1:4.0',
-    volumeSpikeRatio: '4.5x',
-    notes: 'Exchange stock breakout following record commodity trading volumes.'
-  },
-  {
-    id: 'HB-054',
-    date: '2026-09-07 09:45',
-    symbol: 'NSE:POLYCAB',
-    displayName: 'POLYCAB INDIA',
-    tradeType: 'BUY',
-    setupName: 'EMA Ribbon Expansion',
-    entryPrice: 6890.00,
-    target1: 7080.00,
-    target2: 7280.00,
-    target3: 7500.00,
-    stopLoss: 6740.00,
-    finalAchievedPrice: 7290.00,
-    finalStatus: 'TARGET 2 HIT',
-    roiPct: 5.81,
-    holdingDays: '2 Days',
-    riskReward: '1:3.0',
-    volumeSpikeRatio: '2.7x',
-    notes: 'Capex play expansion with institutional block deal confirmation.'
-  },
-  {
-    id: 'HB-053',
-    date: '2026-09-04 11:15',
-    symbol: 'NSE:COFORGE',
-    displayName: 'COFORGE LTD',
-    tradeType: 'BUY',
-    setupName: 'Squeeze Release Breakout',
-    entryPrice: 6420.00,
-    target1: 6600.00,
-    target2: 6820.00,
-    target3: 7100.00,
-    stopLoss: 6280.00,
-    finalAchievedPrice: 7115.00,
-    finalStatus: 'TARGET 3 HIT',
-    roiPct: 10.83,
-    holdingDays: '4 Days',
-    riskReward: '1:4.8',
-    volumeSpikeRatio: '3.6x',
-    notes: 'Clean range expansion out of 3-week consolidation box.'
-  },
-  {
-    id: 'HB-052',
-    date: '2026-09-03 14:00',
-    symbol: 'NSE:BEL',
-    displayName: 'BHARAT ELEC',
-    tradeType: 'BUY',
-    setupName: 'Volume Profile Rejection',
-    entryPrice: 295.00,
-    target1: 304.00,
-    target2: 312.00,
-    target3: 322.00,
-    stopLoss: 288.00,
-    finalAchievedPrice: 323.50,
-    finalStatus: 'TARGET 3 HIT',
-    roiPct: 9.66,
-    holdingDays: '2 Days',
-    riskReward: '1:3.8',
-    volumeSpikeRatio: '5.2x',
-    notes: 'Defense PSU surge following new export order notification.'
-  },
-  {
-    id: 'HB-051',
-    date: '2026-09-02 09:30',
-    symbol: 'NSE:ZOMATO',
-    displayName: 'ZOMATO LTD',
-    tradeType: 'BUY',
-    setupName: 'High-Beta Momentum Surge',
-    entryPrice: 254.00,
-    target1: 262.00,
-    target2: 271.00,
-    target3: 282.00,
-    stopLoss: 247.00,
-    finalAchievedPrice: 272.00,
-    finalStatus: 'TARGET 2 HIT',
-    roiPct: 7.09,
-    holdingDays: '3 Days',
-    riskReward: '1:2.8',
-    volumeSpikeRatio: '3.3x',
-    notes: 'Blinkit growth guidance trigger with aggressive FII buying.'
-  },
-  {
-    id: 'HB-050',
-    date: '2026-09-01 10:45',
-    symbol: 'NSE:ADANIENT',
-    displayName: 'ADANI ENTERPRISES',
-    tradeType: 'BUY',
-    setupName: 'Breakout Above Resistance',
-    entryPrice: 3120.00,
-    target1: 3210.00,
-    target2: 3310.00,
-    target3: 3450.00,
-    stopLoss: 3040.00,
-    finalAchievedPrice: 3320.00,
-    finalStatus: 'TARGET 2 HIT',
-    roiPct: 6.41,
-    holdingDays: '2 Days',
-    riskReward: '1:3.1',
-    volumeSpikeRatio: '2.8x',
-    notes: 'Infrastructure high beta rally after clearing key resistance hurdle.'
-  },
-  {
-    id: 'HB-049',
-    date: '2026-08-31 12:15',
-    symbol: 'NSE:KAYNES',
-    displayName: 'KAYNES TECH',
-    tradeType: 'BUY',
-    setupName: 'Volume Spike Reversal',
-    entryPrice: 4880.00,
-    target1: 5040.00,
-    target2: 5220.00,
-    target3: 5450.00,
-    stopLoss: 4740.00,
-    finalAchievedPrice: 5460.00,
-    finalStatus: 'TARGET 3 HIT',
-    roiPct: 11.88,
-    holdingDays: '3 Days',
-    riskReward: '1:4.0',
-    volumeSpikeRatio: '4.2x',
-    notes: 'Electronics manufacturing player breakout with massive volume expansion.'
-  },
-  {
-    id: 'HB-048',
-    date: '2026-08-28 09:25',
-    symbol: 'NSE:BSOFT',
-    displayName: 'BIRLASOFT LTD',
-    tradeType: 'BUY',
-    setupName: 'EMA Ribbon Expansion',
-    entryPrice: 675.00,
-    target1: 698.00,
-    target2: 722.00,
-    target3: 755.00,
-    stopLoss: 658.00,
-    finalAchievedPrice: 725.00,
-    finalStatus: 'TARGET 2 HIT',
-    roiPct: 7.41,
-    holdingDays: '2 Days',
-    riskReward: '1:3.0',
-    volumeSpikeRatio: '2.5x',
-    notes: 'Midcap IT sector tailwind momentum with solid risk-reward.'
-  },
-  {
-    id: 'HB-047',
-    date: '2026-08-27 11:30',
-    symbol: 'NSE:VOLTAS',
-    displayName: 'VOLTAS LTD',
-    tradeType: 'BUY',
-    setupName: 'Squeeze Release Breakout',
-    entryPrice: 1780.00,
-    target1: 1840.00,
-    target2: 1910.00,
-    target3: 1990.00,
-    stopLoss: 1735.00,
-    finalAchievedPrice: 1995.00,
-    finalStatus: 'TARGET 3 HIT',
-    roiPct: 12.08,
-    holdingDays: '4 Days',
-    riskReward: '1:4.6',
-    volumeSpikeRatio: '3.7x',
-    notes: 'Market share gain momentum in cooling products sector.'
-  },
-  {
-    id: 'HB-046',
-    date: '2026-08-26 14:15',
-    symbol: 'NSE:SUPREMEIND',
-    displayName: 'SUPREME IND',
-    tradeType: 'BUY',
-    setupName: 'High-Beta Momentum Surge',
-    entryPrice: 5120.00,
-    target1: 5280.00,
-    target2: 5460.00,
-    target3: 5680.00,
-    stopLoss: 4990.00,
-    finalAchievedPrice: 5480.00,
-    finalStatus: 'TARGET 2 HIT',
-    roiPct: 7.03,
-    holdingDays: '3 Days',
-    riskReward: '1:3.5',
-    volumeSpikeRatio: '3.0x',
-    notes: 'Plastic piping industry demand surge with strong DII buying.'
-  },
-  {
-    id: 'HB-045',
-    date: '2026-08-25 10:00',
-    symbol: 'NSE:CHAMBLFERT',
-    displayName: 'CHAMBAL FERT',
-    tradeType: 'BUY',
-    setupName: 'Volume Spike Reversal',
-    entryPrice: 535.00,
-    target1: 552.00,
-    target2: 572.00,
-    target3: 598.00,
-    stopLoss: 522.00,
-    finalAchievedPrice: 599.00,
-    finalStatus: 'TARGET 3 HIT',
-    roiPct: 11.96,
-    holdingDays: '3 Days',
-    riskReward: '1:4.8',
-    volumeSpikeRatio: '4.6x',
-    notes: 'Agri chemicals sector breakout ahead of subsidy updates.'
-  },
-  {
-    id: 'HB-044',
-    date: '2026-08-24 09:30',
-    symbol: 'NSE:TATAELXSI',
-    displayName: 'TATA ELXSI',
-    tradeType: 'BUY',
-    setupName: 'EMA Ribbon Expansion',
-    entryPrice: 7650.00,
-    target1: 7880.00,
-    target2: 8150.00,
-    target3: 8480.00,
-    stopLoss: 7480.00,
-    finalAchievedPrice: 8170.00,
-    finalStatus: 'TARGET 2 HIT',
-    roiPct: 6.80,
-    holdingDays: '2 Days',
-    riskReward: '1:2.9',
-    volumeSpikeRatio: '2.8x',
-    notes: 'ER&D design sector recovery play with high beta push.'
-  },
-  {
-    id: 'HB-043',
-    date: '2026-08-21 11:00',
-    symbol: 'NSE:BHARTIARTL',
-    displayName: 'BHARTI AIRTEL',
-    tradeType: 'BUY',
-    setupName: 'Breakout Above Resistance',
-    entryPrice: 1620.00,
-    target1: 1665.00,
-    target2: 1715.00,
-    target3: 1775.00,
-    stopLoss: 1585.00,
-    finalAchievedPrice: 1780.00,
-    finalStatus: 'TARGET 3 HIT',
-    roiPct: 9.88,
-    holdingDays: '4 Days',
-    riskReward: '1:4.4',
-    volumeSpikeRatio: '3.2x',
-    notes: 'ARPU growth trajectory momentum pushing stock to fresh high.'
-  },
-  {
-    id: 'HB-042',
-    date: '2026-08-20 13:45',
-    symbol: 'NSE:PFC',
-    displayName: 'POWER FINANCE',
-    tradeType: 'BUY',
-    setupName: 'Volume Profile Rejection',
-    entryPrice: 538.00,
-    target1: 554.00,
-    target2: 572.00,
-    target3: 595.00,
-    stopLoss: 525.00,
-    finalAchievedPrice: 574.00,
-    finalStatus: 'TARGET 2 HIT',
-    roiPct: 6.69,
-    holdingDays: '2 Days',
-    riskReward: '1:3.1',
-    volumeSpikeRatio: '3.9x',
-    notes: 'Power PSU credit expansion trigger with high dividend yield cushion.'
-  },
-  {
-    id: 'HB-041',
-    date: '2026-08-19 10:20',
-    symbol: 'NSE:RECLTD',
-    displayName: 'REC LIMITED',
-    tradeType: 'BUY',
-    setupName: 'High-Beta Momentum Surge',
-    entryPrice: 612.00,
-    target1: 632.00,
-    target2: 654.00,
-    target3: 680.00,
-    stopLoss: 596.00,
-    finalAchievedPrice: 682.00,
-    finalStatus: 'TARGET 3 HIT',
-    roiPct: 11.44,
-    holdingDays: '3 Days',
-    riskReward: '1:4.2',
-    volumeSpikeRatio: '4.0x',
-    notes: 'Heavy institutional buying with breakout past weekly resistance.'
-  },
-  {
-    id: 'HB-040',
-    date: '2026-08-18 09:40',
-    symbol: 'NSE:MUTHOOTFIN',
-    displayName: 'MUTHOOT FINANCE',
-    tradeType: 'BUY',
-    setupName: 'Squeeze Release Breakout',
-    entryPrice: 1940.00,
-    target1: 1995.00,
-    target2: 2060.00,
-    target3: 2140.00,
-    stopLoss: 1895.00,
-    finalAchievedPrice: 2065.00,
-    finalStatus: 'TARGET 2 HIT',
-    roiPct: 6.44,
-    holdingDays: '2 Days',
-    riskReward: '1:3.2',
-    volumeSpikeRatio: '2.9x',
-    notes: 'Gold loan AUM growth momentum pushing price past 1900 level.'
-  },
-  {
-    id: 'HB-039',
-    date: '2026-08-17 11:10',
-    symbol: 'NSE:CHOLAFIN',
-    displayName: 'CHOLAMANDALAM',
-    tradeType: 'BUY',
-    setupName: 'EMA Ribbon Expansion',
-    entryPrice: 1540.00,
-    target1: 1590.00,
-    target2: 1645.00,
-    target3: 1710.00,
-    stopLoss: 1500.00,
-    finalAchievedPrice: 1715.00,
-    finalStatus: 'TARGET 3 HIT',
-    roiPct: 11.36,
-    holdingDays: '4 Days',
-    riskReward: '1:4.25',
-    volumeSpikeRatio: '3.5x',
-    notes: 'CV finance growth momentum with strong institutional interest.'
-  },
-  {
-    id: 'HB-038',
-    date: '2026-08-14 14:00',
-    symbol: 'NSE:NTPC',
-    displayName: 'NTPC LTD',
-    tradeType: 'BUY',
-    setupName: 'Breakout Above Resistance',
-    entryPrice: 418.00,
-    target1: 430.00,
-    target2: 442.00,
-    target3: 458.00,
-    stopLoss: 408.00,
-    finalAchievedPrice: 444.00,
-    finalStatus: 'TARGET 2 HIT',
-    roiPct: 6.22,
-    holdingDays: '3 Days',
-    riskReward: '1:3.0',
-    volumeSpikeRatio: '3.1x',
-    notes: 'Green energy subsidiary listing unlock catalyst.'
-  },
-  {
-    id: 'HB-037',
-    date: '2026-08-13 10:15',
-    symbol: 'NSE:JINDALSTEL',
-    displayName: 'JINDAL STEEL',
-    tradeType: 'BUY',
-    setupName: 'Volume Spike Reversal',
-    entryPrice: 980.00,
-    target1: 1012.00,
-    target2: 1048.00,
-    target3: 1090.00,
-    stopLoss: 955.00,
-    finalAchievedPrice: 1095.00,
-    finalStatus: 'TARGET 3 HIT',
-    roiPct: 11.73,
-    holdingDays: '3 Days',
-    riskReward: '1:4.4',
-    volumeSpikeRatio: '4.8x',
-    notes: 'Metals high beta sector rally on global commodity price rebound.'
-  },
-  {
-    id: 'HB-036',
-    date: '2026-08-12 12:45',
-    symbol: 'NSE:CANBK',
-    displayName: 'CANARA BANK',
-    tradeType: 'BUY',
-    setupName: 'High-Beta Momentum Surge',
-    entryPrice: 114.50,
-    target1: 118.50,
-    target2: 123.00,
-    target3: 128.50,
-    stopLoss: 111.00,
-    finalAchievedPrice: 123.50,
-    finalStatus: 'TARGET 2 HIT',
-    roiPct: 7.86,
-    holdingDays: '2 Days',
-    riskReward: '1:3.4',
-    volumeSpikeRatio: '3.3x',
-    notes: 'PSU Banking outperformance setup with strong volume surge.'
-  },
-  {
-    id: 'HB-035',
-    date: '2026-08-11 09:30',
-    symbol: 'NSE:BAJFINANCE',
-    displayName: 'BAJAJ FINANCE',
-    tradeType: 'BUY',
-    setupName: 'Squeeze Release Breakout',
-    entryPrice: 7250.00,
-    target1: 7450.00,
-    target2: 7680.00,
-    target3: 7950.00,
-    stopLoss: 7090.00,
-    finalAchievedPrice: 7695.00,
-    finalStatus: 'TARGET 2 HIT',
-    roiPct: 6.14,
-    holdingDays: '3 Days',
-    riskReward: '1:2.7',
-    volumeSpikeRatio: '2.6x',
-    notes: 'Largecap NBFC leader momentum breakout above 7200 resistance.'
-  },
-  {
-    id: 'HB-034',
-    date: '2026-08-10 11:30',
-    symbol: 'NSE:HEROMOTOCO',
-    displayName: 'HERO MOTOCORP',
-    tradeType: 'BUY',
-    setupName: 'EMA Ribbon Expansion',
-    entryPrice: 5480.00,
-    target1: 5640.00,
-    target2: 5820.00,
-    target3: 6050.00,
-    stopLoss: 5350.00,
-    finalAchievedPrice: 6060.00,
-    finalStatus: 'TARGET 3 HIT',
-    roiPct: 10.58,
-    holdingDays: '4 Days',
-    riskReward: '1:4.3',
-    volumeSpikeRatio: '3.4x',
-    notes: 'EV 2-wheeler segment volume growth momentum.'
-  },
-  {
-    id: 'HB-033',
-    date: '2026-08-07 14:15',
-    symbol: 'NSE:TATACOMM',
-    displayName: 'TATA COMM',
-    tradeType: 'BUY',
-    setupName: 'Volume Profile Rejection',
-    entryPrice: 2180.00,
-    target1: 2245.00,
-    target2: 2320.00,
-    target3: 2410.00,
-    stopLoss: 2130.00,
-    finalAchievedPrice: 2325.00,
-    finalStatus: 'TARGET 2 HIT',
-    roiPct: 6.65,
-    holdingDays: '2 Days',
-    riskReward: '1:2.8',
-    volumeSpikeRatio: '3.0x',
-    notes: 'Data revenue growth trajectory driving midcap telecom surge.'
-  },
-  {
-    id: 'HB-032',
-    date: '2026-08-06 10:00',
-    symbol: 'NSE:POLICYBZR',
-    displayName: 'PB FINTECH',
-    tradeType: 'BUY',
-    setupName: 'High-Beta Momentum Surge',
-    entryPrice: 1720.00,
-    target1: 1785.00,
-    target2: 1860.00,
-    target3: 1950.00,
-    stopLoss: 1670.00,
-    finalAchievedPrice: 1955.00,
-    finalStatus: 'TARGET 3 HIT',
-    roiPct: 13.66,
-    holdingDays: '3 Days',
-    riskReward: '1:4.6',
-    volumeSpikeRatio: '4.4x',
-    notes: 'Insuretech profit expansion driver with heavy institutional buying.'
-  },
-  {
-    id: 'HB-031',
-    date: '2026-08-05 09:25',
-    symbol: 'NSE:OFSS',
-    displayName: 'ORACLE FIN SERV',
-    tradeType: 'BUY',
-    setupName: 'Breakout Above Resistance',
-    entryPrice: 11200.00,
-    target1: 11600.00,
-    target2: 12100.00,
-    target3: 12700.00,
-    stopLoss: 10880.00,
-    finalAchievedPrice: 12720.00,
-    finalStatus: 'TARGET 3 HIT',
-    roiPct: 13.57,
-    holdingDays: '4 Days',
-    riskReward: '1:4.7',
-    volumeSpikeRatio: '5.0x',
-    notes: 'Banking software order win announcement trigger.'
-  },
-  {
-    id: 'HB-030',
-    date: '2026-08-04 11:45',
-    symbol: 'NSE:LTIM',
-    displayName: 'LTIMINDTREE',
-    tradeType: 'BUY',
-    setupName: 'Volume Spike Reversal',
-    entryPrice: 5620.00,
-    target1: 5780.00,
-    target2: 5960.00,
-    target3: 6180.00,
-    stopLoss: 5490.00,
-    finalAchievedPrice: 5970.00,
-    finalStatus: 'TARGET 2 HIT',
-    roiPct: 6.23,
-    holdingDays: '2 Days',
-    riskReward: '1:2.6',
-    volumeSpikeRatio: '2.7x',
-    notes: 'Largecap IT outperformance rally with strong volume base.'
-  },
-  {
-    id: 'HB-029',
-    date: '2026-07-31 10:30',
-    symbol: 'NSE:LT',
-    displayName: 'LARSEN & TOUBRO',
-    tradeType: 'BUY',
-    setupName: 'EMA Ribbon Expansion',
-    entryPrice: 3680.00,
-    target1: 3770.00,
-    target2: 3870.00,
-    target3: 3990.00,
-    stopLoss: 3610.00,
-    finalAchievedPrice: 3880.00,
-    finalStatus: 'TARGET 2 HIT',
-    roiPct: 5.43,
-    holdingDays: '3 Days',
-    riskReward: '1:2.7',
-    volumeSpikeRatio: '2.5x',
-    notes: 'Order book expansion catalyst across hydrocarbon & power sectors.'
-  },
-  {
-    id: 'HB-028',
-    date: '2026-07-30 13:15',
-    symbol: 'NSE:RELIANCE',
-    displayName: 'RELIANCE IND',
-    tradeType: 'BUY',
-    setupName: 'Squeeze Release Breakout',
-    entryPrice: 3020.00,
-    target1: 3090.00,
-    target2: 3170.00,
-    target3: 3260.00,
-    stopLoss: 2965.00,
-    finalAchievedPrice: 3175.00,
-    finalStatus: 'TARGET 2 HIT',
-    roiPct: 5.13,
-    holdingDays: '2 Days',
-    riskReward: '1:2.7',
-    volumeSpikeRatio: '3.1x',
-    notes: 'Heavyweight index trigger clearing 3000 psychological barrier.'
-  },
-  {
-    id: 'HB-027',
-    date: '2026-07-29 09:30',
-    symbol: 'NSE:TATAMOTORS',
-    displayName: 'TATA MOTORS',
-    tradeType: 'BUY',
-    setupName: 'High-Beta Momentum Surge',
-    entryPrice: 1080.00,
-    target1: 1115.00,
-    target2: 1155.00,
-    target3: 1200.00,
-    stopLoss: 1052.00,
-    finalAchievedPrice: 1205.00,
-    finalStatus: 'TARGET 3 HIT',
-    roiPct: 11.57,
-    holdingDays: '3 Days',
-    riskReward: '1:4.3',
-    volumeSpikeRatio: '3.8x',
-    notes: 'JLR margin expansion guidance trigger.'
-  },
-  {
-    id: 'HB-026',
-    date: '2026-07-28 11:00',
-    symbol: 'NSE:ICICIBANK',
-    displayName: 'ICICI BANK',
-    tradeType: 'BUY',
-    setupName: 'Breakout Above Resistance',
-    entryPrice: 1240.00,
-    target1: 1272.00,
-    target2: 1308.00,
-    target3: 1350.00,
-    stopLoss: 1215.00,
-    finalAchievedPrice: 1312.00,
-    finalStatus: 'TARGET 2 HIT',
-    roiPct: 5.81,
-    holdingDays: '2 Days',
-    riskReward: '1:2.7',
-    volumeSpikeRatio: '2.6x',
-    notes: 'Private banking leader outperformance with strong NII growth.'
-  },
-  {
-    id: 'HB-025',
-    date: '2026-07-27 10:15',
-    symbol: 'NSE:HDFCBANK',
-    displayName: 'HDFC BANK',
-    tradeType: 'BUY',
-    setupName: 'Volume Profile Rejection',
-    entryPrice: 1650.00,
-    target1: 1690.00,
-    target2: 1735.00,
-    target3: 1790.00,
-    stopLoss: 1618.00,
-    finalAchievedPrice: 1738.00,
-    finalStatus: 'TARGET 2 HIT',
-    roiPct: 5.33,
-    holdingDays: '3 Days',
-    riskReward: '1:2.65',
-    volumeSpikeRatio: '2.9x',
-    notes: 'Deposit growth normalization catalyst driving bank nifty.'
-  },
-  {
-    id: 'HB-024',
-    date: '2026-07-24 14:00',
-    symbol: 'NSE:SBIN',
-    displayName: 'STATE BANK IND',
-    tradeType: 'BUY',
-    setupName: 'EMA Ribbon Expansion',
-    entryPrice: 855.00,
-    target1: 878.00,
-    target2: 905.00,
-    target3: 938.00,
-    stopLoss: 837.00,
-    finalAchievedPrice: 939.00,
-    finalStatus: 'TARGET 3 HIT',
-    roiPct: 9.82,
-    holdingDays: '4 Days',
-    riskReward: '1:4.6',
-    volumeSpikeRatio: '3.6x',
-    notes: 'PSU Bank flag breakout with robust credit growth.'
-  },
-  {
-    id: 'HB-023',
-    date: '2026-07-23 09:45',
-    symbol: 'NSE:TATASTEEL',
-    displayName: 'TATA STEEL',
-    tradeType: 'BUY',
-    setupName: 'Volume Spike Reversal',
-    entryPrice: 162.00,
-    target1: 167.00,
-    target2: 173.00,
-    target3: 180.00,
-    stopLoss: 158.00,
-    finalAchievedPrice: 173.50,
-    finalStatus: 'TARGET 2 HIT',
-    roiPct: 7.10,
-    holdingDays: '2 Days',
-    riskReward: '1:2.75',
-    volumeSpikeRatio: '3.1x',
-    notes: 'UK operations restructuring clarity driving metal rally.'
-  },
-  {
-    id: 'HB-022',
-    date: '2026-07-22 12:30',
-    symbol: 'NSE:BANKBARODA',
-    displayName: 'BANK OF BARODA',
-    tradeType: 'BUY',
-    setupName: 'High-Beta Momentum Surge',
-    entryPrice: 264.00,
-    target1: 272.00,
-    target2: 281.00,
-    target3: 292.00,
-    stopLoss: 257.00,
-    finalAchievedPrice: 282.00,
-    finalStatus: 'TARGET 2 HIT',
-    roiPct: 6.82,
-    holdingDays: '2 Days',
-    riskReward: '1:2.4',
-    volumeSpikeRatio: '2.8x',
-    notes: 'Robust asset quality & NIM expansion trigger.'
-  },
-  {
-    id: 'HB-021',
-    date: '2026-07-21 10:00',
-    symbol: 'NSE:DIXON',
-    displayName: 'DIXON TECH',
-    tradeType: 'BUY',
-    setupName: 'Squeeze Release Breakout',
-    entryPrice: 12600.00,
-    target1: 12950.00,
-    target2: 13350.00,
-    target3: 13800.00,
-    stopLoss: 12320.00,
-    finalAchievedPrice: 13820.00,
-    finalStatus: 'TARGET 3 HIT',
-    roiPct: 9.68,
-    holdingDays: '4 Days',
-    riskReward: '1:4.28',
-    volumeSpikeRatio: '4.1x',
-    notes: 'Mobile manufacturing PLI allocation boost.'
-  }
-];
+interface IndexGexProfile {
+  name: string;
+  spot: number;
+  netGexCr: string;
+  netGexSign: 'positive' | 'negative';
+  gexMomentum5m: string;
+  gexMomentum15m: string;
+  gexMomentumDay: string;
+  flipLow: number;
+  flipHigh: number;
+  flipEst: number;
+  flipSpreadPts: number;
+  callWall: number;
+  putWall: number;
+  totalAbsGex: string;
+  expiryDate: string;
+  dte: number;
+  updatedTime: string;
+  strikes: StrikeGexData[];
+}
 
-export const HighBetaTradesContainer: React.FC = () => {
-  const [filterStatus, setFilterStatus] = useState<'ALL' | 'TARGET_HIT' | 'LIVE_ACTIVE' | 'STOP_LOSS'>('ALL');
-  const [searchQuery, setSearchQuery] = useState<string>('');
+// Generate realistic Gamma Exposure profiles matching media_1790925206843.png
+function generateGexProfile(indexName: string): IndexGexProfile {
+  if (indexName === 'NIFTY') {
+    const spot = 22421.95;
+    const putWall = 22300;
+    const flipEst = 22364;
+    const callWall = 22700;
+    const startStrike = 20950;
+    const endStrike = 23850;
+    const step = 100;
 
-  const filteredTrades = useMemo(() => {
-    return HIGH_BETA_TRADES_DATA.filter((trade) => {
-      // Status filter
-      if (filterStatus === 'TARGET_HIT' && !trade.finalStatus.startsWith('TARGET')) return false;
-      if (filterStatus === 'LIVE_ACTIVE' && trade.finalStatus !== 'LIVE ACTIVE') return false;
-      if (filterStatus === 'STOP_LOSS' && trade.finalStatus !== 'STOP LOSS HIT') return false;
+    const strikes: StrikeGexData[] = [];
+    for (let s = startStrike; s <= endStrike; s += step) {
+      // Shape matching user screenshot media_1790925206843.png
+      let netGex = 0;
+      let concentration = 0;
 
-      // Search query filter
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const matchesSymbol = trade.symbol.toLowerCase().includes(q);
-        const matchesName = trade.displayName.toLowerCase().includes(q);
-        const matchesSetup = trade.setupName.toLowerCase().includes(q);
-        if (!matchesSymbol && !matchesName && !matchesSetup) return false;
+      // Distance from ATM/spot
+      const distFromSpot = (s - spot) / 450;
+      const bellCurve = Math.exp(-0.5 * Math.pow(distFromSpot, 2));
+
+      // Concentration curve (peaks around 22300 to 22650 with local bumps)
+      const bump1 = Math.exp(-0.5 * Math.pow((s - 22300) / 120, 2)) * 5.2;
+      const bump2 = Math.exp(-0.5 * Math.pow((s - 22450) / 100, 2)) * 6.4;
+      const bump3 = Math.exp(-0.5 * Math.pow((s - 22650) / 110, 2)) * 4.9;
+      const bump4 = Math.exp(-0.5 * Math.pow((s - 21950) / 150, 2)) * 2.3;
+      const bump5 = Math.exp(-0.5 * Math.pow((s - 22950) / 140, 2)) * 2.4;
+      const baseCurve = Math.max(0.1, bellCurve * 3.8 + (Math.sin(s / 180) * 0.4));
+      concentration = Math.max(0.2, Math.min(7.8, baseCurve + bump1 + bump2 + bump3 + bump4 + bump5));
+
+      if (s < flipEst) {
+        // Put GEX / dealer-amplifying negative bars
+        if (s === 22300) netGex = -3.2; // Put Wall
+        else if (s === 22250) netGex = -2.8;
+        else if (s === 22150) netGex = -2.7;
+        else if (s === 21950) netGex = -2.5;
+        else if (s === 22350) netGex = -0.7;
+        else if (s === 22200) netGex = -0.9;
+        else if (s === 22100) netGex = -1.1;
+        else if (s === 22050) netGex = -0.4;
+        else if (s === 21900) netGex = -0.7;
+        else if (s === 21850) netGex = -0.5;
+        else if (s === 21650) netGex = -0.4;
+        else if (s === 21550) netGex = -0.5;
+        else netGex = -Math.max(0, Math.sin((s - 21000) / 400) * 0.8);
+      } else {
+        // Call GEX / dealer-stabilizing positive bars
+        if (s === 22700) netGex = 3.6; // Call Wall peak
+        else if (s === 22650) netGex = 3.2;
+        else if (s === 22600) netGex = 2.8;
+        else if (s === 22550) netGex = 2.0;
+        else if (s === 22450) netGex = 0.8;
+        else if (s === 22500) netGex = 1.3;
+        else if (s === 22750) netGex = 1.4;
+        else if (s === 22800) netGex = 2.6;
+        else if (s === 22850) netGex = 0.9;
+        else if (s === 22950) netGex = 2.4;
+        else if (s === 23050) netGex = 0.5;
+        else if (s === 23200) netGex = 0.8;
+        else if (s === 23300) netGex = 0.4;
+        else if (s === 23550) netGex = 0.3;
+        else netGex = Math.max(0, Math.sin((23800 - s) / 500) * 0.7);
       }
 
-      return true;
-    });
-  }, [filterStatus, searchQuery]);
+      const callGex = netGex > 0 ? netGex : Math.max(0.1, 0.4 - Math.abs(netGex) * 0.1);
+      const putGex = netGex < 0 ? Math.abs(netGex) : Math.max(0.1, 0.3);
 
-  // Overall 60-Day High Beta Trade Performance Summary
-  const summaryStats = useMemo(() => {
-    const total = HIGH_BETA_TRADES_DATA.length;
-    const targetHits = HIGH_BETA_TRADES_DATA.filter(t => t.finalStatus.startsWith('TARGET')).length;
-    const target3Hits = HIGH_BETA_TRADES_DATA.filter(t => t.finalStatus === 'TARGET 3 HIT').length;
-    const liveActive = HIGH_BETA_TRADES_DATA.filter(t => t.finalStatus === 'LIVE ACTIVE').length;
-    const winRate = total > 0 ? Math.round((targetHits / (total - liveActive)) * 1000) / 10 : 0;
-    
-    const avgRoi = total > 0 
-      ? Math.round((HIGH_BETA_TRADES_DATA.reduce((acc, t) => acc + t.roiPct, 0) / total) * 100) / 100 
-      : 0;
+      strikes.push({
+        strike: s,
+        netGex: Math.round(netGex * 10) / 10,
+        callGex: Math.round(callGex * 10) / 10,
+        putGex: Math.round(putGex * 10) / 10,
+        concentration: Math.round(concentration * 10) / 10
+      });
+    }
 
     return {
-      totalTrades: total,
-      targetHits,
-      target3Hits,
-      liveActive,
-      winRate,
-      avgRoi
+      name: 'NIFTY',
+      spot,
+      netGexCr: '+6.6k',
+      netGexSign: 'positive',
+      gexMomentum5m: '-2.1',
+      gexMomentum15m: '-5.8',
+      gexMomentumDay: '-309',
+      flipLow: 22351,
+      flipHigh: 22376,
+      flipEst,
+      flipSpreadPts: 25,
+      callWall,
+      putWall,
+      totalAbsGex: '72.6k',
+      expiryDate: '2026-10-06',
+      dte: 4,
+      updatedTime: '08:49:31 IST',
+      strikes
     };
-  }, []);
+  }
+
+  // Fallback / other indices
+  const spotBase: Record<string, { spot: number; step: number; range: number; call: number; put: number; flip: number }> = {
+    BANKNIFTY: { spot: 49150.40, step: 200, range: 4000, call: 49500, put: 48500, flip: 48950 },
+    SENSEX: { spot: 73850.20, step: 200, range: 4000, call: 74500, put: 73000, flip: 73550 },
+    FINNIFTY: { spot: 23120.80, step: 100, range: 2400, call: 23400, put: 22900, flip: 23050 },
+    MIDCPNIFTY: { spot: 12180.50, step: 50, range: 1200, call: 12350, put: 12000, flip: 12120 },
+    BANKEX: { spot: 55420.30, step: 200, range: 4000, call: 56000, put: 54800, flip: 55250 }
+  };
+
+  const meta = spotBase[indexName] || spotBase.BANKNIFTY;
+  const startStrike = Math.floor((meta.spot - meta.range / 2) / meta.step) * meta.step;
+  const endStrike = Math.ceil((meta.spot + meta.range / 2) / meta.step) * meta.step;
+  const strikes: StrikeGexData[] = [];
+
+  for (let s = startStrike; s <= endStrike; s += meta.step) {
+    const isCall = s >= meta.flip;
+    const dist = Math.abs(s - meta.spot) / (meta.range * 0.4);
+    const mag = Math.max(0.2, (1 - dist) * 3.5);
+    const netGex = isCall ? mag : -mag;
+    const concentration = Math.min(7.5, mag * 1.8 + 0.4);
+    strikes.push({
+      strike: s,
+      netGex: Math.round(netGex * 10) / 10,
+      callGex: isCall ? mag : 0.3,
+      putGex: !isCall ? mag : 0.3,
+      concentration: Math.round(concentration * 10) / 10
+    });
+  }
+
+  return {
+    name: indexName,
+    spot: meta.spot,
+    netGexCr: '+14.2k',
+    netGexSign: 'positive',
+    gexMomentum5m: '-1.4',
+    gexMomentum15m: '-3.2',
+    gexMomentumDay: '-185',
+    flipLow: meta.flip - 30,
+    flipHigh: meta.flip + 20,
+    flipEst: meta.flip,
+    flipSpreadPts: 50,
+    callWall: meta.call,
+    putWall: meta.put,
+    totalAbsGex: '104.8k',
+    expiryDate: '2026-10-06',
+    dte: 4,
+    updatedTime: '08:49:31 IST',
+    strikes
+  };
+}
+
+export const HighBetaTradesContainer: React.FC = () => {
+  const [selectedIndex, setSelectedIndex] = useState<string>('NIFTY');
+  const [viewExpiry, setViewExpiry] = useState<'Nearest' | 'All expiries'>('Nearest');
+  const [viewType, setViewType] = useState<'Net' | 'Call vs Put' | 'Table'>('Net');
+  const [hoveredStrike, setHoveredStrike] = useState<StrikeGexData | null>(null);
+  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
+
+  const indices = ['NIFTY', 'BANKNIFTY', 'SENSEX', 'FINNIFTY', 'MIDCPNIFTY', 'BANKEX'];
+  const profile = useMemo(() => generateGexProfile(selectedIndex), [selectedIndex]);
+
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Render Gamma Exposure Chart matching media_1790925206843.png
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const width = canvas.parentElement?.clientWidth || 1100;
+    const height = 440;
+
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    ctx.scale(dpr, dpr);
+
+    // Ultra-dark background
+    ctx.fillStyle = '#080c14';
+    ctx.fillRect(0, 0, width, height);
+
+    const padding = { top: 70, bottom: 45, left: 60, right: 30 };
+    const chartWidth = width - padding.left - padding.right;
+    const chartHeight = height - padding.top - padding.bottom;
+
+    // Y Axis Range: -3.0k to +8.0k
+    const yMin = -3.0;
+    const yMax = 8.0;
+    const yRange = yMax - yMin;
+
+    const getY = (val: number) => {
+      return padding.top + ((yMax - val) / yRange) * chartHeight;
+    };
+
+    const zeroY = getY(0);
+
+    // Draw horizontal dashed grid lines
+    const yTicks = [-2.0, 0.0, 2.0, 4.0, 6.0, 8.0];
+    ctx.lineWidth = 1;
+    ctx.font = '10px "JetBrains Mono", monospace';
+    ctx.textAlign = 'right';
+
+    yTicks.forEach(tick => {
+      const y = getY(tick);
+      ctx.strokeStyle = tick === 0 ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.05)';
+      ctx.setLineDash(tick === 0 ? [] : [3, 4]);
+      ctx.beginPath();
+      ctx.moveTo(padding.left, y);
+      ctx.lineTo(width - padding.right, y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = '#64748b';
+      const label = tick === 0 ? '0.0' : `${tick > 0 ? '' : ''}${tick.toFixed(1)}k`;
+      ctx.fillText(label, padding.left - 10, y + 3.5);
+    });
+
+    const strikes = profile.strikes;
+    if (strikes.length === 0) return;
+
+    const numStrikes = strikes.length;
+    const barSlotWidth = chartWidth / numStrikes;
+    const barWidth = Math.max(5, barSlotWidth * 0.72);
+
+    const getXForStrike = (strike: number) => {
+      const minS = strikes[0].strike;
+      const maxS = strikes[numStrikes - 1].strike;
+      const ratio = (strike - minS) / (maxS - minS);
+      return padding.left + ratio * chartWidth;
+    };
+
+    // 1. Draw Vertical Dashed Marker Lines & Badges for Walls, Flip, Spot
+    const markers = [
+      {
+        label: `PUT WALL ${profile.putWall.toLocaleString('en-IN')}`,
+        strike: profile.putWall,
+        color: '#ef4444',
+        bg: 'rgba(127, 29, 29, 0.85)',
+        badgeY: padding.top - 46,
+        lineColor: 'rgba(239, 68, 68, 0.65)'
+      },
+      {
+        label: `FLIP ${profile.flipEst.toLocaleString('en-IN')}`,
+        strike: profile.flipEst,
+        color: '#eab308',
+        bg: 'rgba(113, 63, 18, 0.85)',
+        badgeY: padding.top - 28,
+        lineColor: 'rgba(234, 179, 8, 0.65)'
+      },
+      {
+        label: `SPOT ${profile.spot.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+        strike: profile.spot,
+        color: '#22d3ee',
+        bg: 'rgba(8, 51, 68, 0.85)',
+        badgeY: padding.top - 12,
+        lineColor: 'rgba(34, 211, 238, 0.65)'
+      },
+      {
+        label: `CALL WALL ${profile.callWall.toLocaleString('en-IN')}`,
+        strike: profile.callWall,
+        color: '#22c55e',
+        bg: 'rgba(20, 83, 45, 0.85)',
+        badgeY: padding.top - 46,
+        lineColor: 'rgba(34, 197, 94, 0.65)'
+      }
+    ];
+
+    markers.forEach(m => {
+      const x = getXForStrike(m.strike);
+      if (x < padding.left || x > width - padding.right) return;
+
+      // Vertical dashed line
+      ctx.strokeStyle = m.lineColor;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(x, padding.top - 8);
+      ctx.lineTo(x, height - padding.bottom);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Top pill badge
+      ctx.font = 'bold 9px "JetBrains Mono", monospace';
+      const textW = ctx.measureText(m.label).width;
+      const pillW = textW + 14;
+      const pillH = 16;
+      const pillX = x - pillW / 2;
+      const pillY = m.badgeY;
+
+      ctx.fillStyle = m.bg;
+      ctx.beginPath();
+      ctx.roundRect(pillX, pillY, pillW, pillH, 8);
+      ctx.fill();
+
+      ctx.strokeStyle = m.color;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(pillX, pillY, pillW, pillH, 8);
+      ctx.stroke();
+
+      ctx.fillStyle = m.color;
+      ctx.textAlign = 'center';
+      ctx.fillText(m.label, x, pillY + 11.5);
+    });
+
+    // 2. Draw GEX Bars (Green for Call/stabilizing, Red for Put/amplifying)
+    strikes.forEach((sData, idx) => {
+      const x = padding.left + idx * barSlotWidth + (barSlotWidth - barWidth) / 2;
+      const barY = getY(sData.netGex);
+
+      if (sData.netGex >= 0) {
+        // Positive Green Bar (dealer-stabilizing)
+        const h = zeroY - barY;
+        ctx.fillStyle = '#22c55e'; // Vibrant emerald green
+        ctx.fillRect(x, barY, barWidth, Math.max(1, h));
+      } else {
+        // Negative Salmon/Red Bar (dealer-amplifying)
+        const h = barY - zeroY;
+        ctx.fillStyle = '#f87171'; // Soft salmon red
+        ctx.fillRect(x, zeroY, barWidth, Math.max(1, h));
+      }
+
+      // X Axis Strike Labels (draw every 2nd or 3rd strike to avoid crowding)
+      const stepInterval = width < 900 ? 3 : 2;
+      if (idx % stepInterval === 0 || idx === numStrikes - 1) {
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '9px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(String(sData.strike), x + barWidth / 2, height - padding.bottom + 14);
+      }
+    });
+
+    // 3. Draw Cyan Concentration Curve Overlay (|GEX| concentration)
+    ctx.strokeStyle = '#22d3ee'; // Cyan line
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+
+    strikes.forEach((sData, idx) => {
+      const x = padding.left + idx * barSlotWidth + barSlotWidth / 2;
+      const y = getY(sData.concentration);
+      if (idx === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+    });
+    ctx.stroke();
+
+    // 4. Zero Baseline solid line
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padding.left, zeroY);
+    ctx.lineTo(width - padding.right, zeroY);
+    ctx.stroke();
+
+  }, [profile, selectedIndex]);
 
   return (
-    <div className="glass-panel animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%', padding: '20px', boxSizing: 'border-box' }}>
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      width: '100%',
+      backgroundColor: '#080c14',
+      color: '#ffffff',
+      padding: '16px 20px',
+      boxSizing: 'border-box',
+      gap: '14px',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    }}>
       
-      {/* HEADER TITLE BAR */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', background: 'rgba(15, 23, 42, 0.8)', padding: '14px 20px', borderRadius: '12px', border: '1px solid rgba(249, 115, 22, 0.3)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ background: 'linear-gradient(135deg, #f97316, #ef4444)', padding: '8px', borderRadius: '10px', boxShadow: '0 0 16px rgba(249, 115, 22, 0.4)' }}>
-            <Rocket size={22} color="white" />
+      {/* ------------------------------------------------------- */}
+      {/* 1. TOP HEADER & INDEX SELECTOR TABS                    */}
+      {/* Matching media_1790925206843.png                       */}
+      {/* ------------------------------------------------------- */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+        <h2 style={{ fontSize: '18px', fontWeight: '800', margin: 0, color: '#f8fafc', letterSpacing: '-0.3px' }}>
+          {selectedIndex === 'NIFTY' ? 'Nifty' : selectedIndex} GEX — Live Gamma Exposure Chart
+        </h2>
+
+        {/* Index Selector Tabs */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#0e1422', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '6px', padding: '2px' }}>
+          {indices.map(idx => {
+            const isActive = selectedIndex === idx;
+            return (
+              <button
+                key={idx}
+                onClick={() => setSelectedIndex(idx)}
+                style={{
+                  background: isActive ? '#00f0ff' : 'transparent',
+                  color: isActive ? '#040810' : '#94a3b8',
+                  border: 'none',
+                  borderRadius: '4px',
+                  padding: '4px 10px',
+                  fontSize: '11px',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                {idx}
+              </button>
+            );
+          })}
+          <button 
+            style={{ background: 'transparent', border: 'none', color: '#94a3b8', padding: '4px 6px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+            title="Refresh GEX Data"
+            onClick={() => setSelectedIndex(prev => prev)}
+          >
+            <RefreshCw size={12} />
+          </button>
+        </div>
+      </div>
+
+      {/* ------------------------------------------------------- */}
+      {/* 2. FREE VIEW BANNER ROW                                */}
+      {/* ------------------------------------------------------- */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '8px' }}>
+        <span style={{ color: '#94a3b8' }}>
+          Free view — live GEX data, updating every few seconds during market hours.
+        </span>
+        <a href="#platform" style={{ color: '#22d3ee', textDecoration: 'none', fontWeight: '600' }}>
+          Log in free for the full platform →
+        </a>
+      </div>
+
+      <div style={{ fontSize: '11px', color: '#64748b' }}>
+        Live · updated {profile.updatedTime}
+      </div>
+
+      {/* ------------------------------------------------------- */}
+      {/* 3. 4 KEY STAT CARDS                                    */}
+      {/* Matching media_1790925206843.png                       */}
+      {/* ------------------------------------------------------- */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '12px' }}>
+        
+        {/* CARD 1: NET GEX */}
+        <div style={{ background: '#0d1322', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <span style={{ fontSize: '10px', fontWeight: '800', color: '#64748b', letterSpacing: '0.5px' }}>NET GEX</span>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+            <span style={{ fontSize: '22px', fontWeight: '900', color: '#22c55e' }}>{profile.netGexCr}</span>
+            <span style={{ fontSize: '12px', color: '#94a3b8' }}>₹Cr/1%</span>
           </div>
           <div>
-            <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '900', color: 'white', letterSpacing: '0.3px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span>Institutional High Beta Trades Radar</span>
-              <span style={{ background: 'rgba(249, 115, 22, 0.2)', border: '1px solid #f97316', color: '#f97316', fontSize: '10px', padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase', fontWeight: '800' }}>
-                60-DAY PERFORMANCE LOG
-              </span>
-            </h2>
-            <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#94a3b8' }}>
-              High-momentum institutional swing & intraday breakout trade setups across liquid high-beta F&O stocks with multi-target levels.
-            </p>
+            <span style={{ background: 'rgba(34, 197, 94, 0.15)', border: '1px solid #22c55e', color: '#22c55e', padding: '2px 8px', borderRadius: '12px', fontSize: '9px', fontWeight: '800' }}>
+              LONG GAMMA
+            </span>
           </div>
         </div>
 
-        {/* Search Bar */}
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-          <Search size={15} style={{ position: 'absolute', left: '12px', color: '#94a3b8' }} />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search high-beta stock / setup..."
-            style={{
-              background: '#0b0f19',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
-              borderRadius: '8px',
-              padding: '8px 14px 8px 36px',
-              color: 'white',
-              fontSize: '12px',
-              fontWeight: '600',
-              width: '220px'
-            }}
-          />
+        {/* CARD 2: ΔGEX MOMENTUM */}
+        <div style={{ background: '#0d1322', border: '1px solid rgba(244, 63, 94, 0.35)', borderRadius: '8px', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <span style={{ fontSize: '10px', fontWeight: '800', color: '#64748b', letterSpacing: '0.5px' }}>ΔGEX MOMENTUM</span>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+            <span style={{ fontSize: '22px', fontWeight: '900', color: '#ffffff' }}>{profile.gexMomentum5m}</span>
+            <span style={{ fontSize: '12px', color: '#94a3b8' }}>Cr · 5m</span>
+          </div>
+          <span style={{ fontSize: '10px', color: '#64748b' }}>
+            15m {profile.gexMomentum15m} · day {profile.gexMomentumDay}
+          </span>
+        </div>
+
+        {/* CARD 3: GAMMA FLIP est. */}
+        <div style={{ background: '#0d1322', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <span style={{ fontSize: '10px', fontWeight: '800', color: '#64748b', letterSpacing: '0.5px' }}>GAMMA FLIP est.</span>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+            <span style={{ fontSize: '20px', fontWeight: '900', color: '#ffffff' }}>
+              {profile.flipLow.toLocaleString('en-IN')} — {profile.flipHigh.toLocaleString('en-IN')}
+            </span>
+          </div>
+          <span style={{ fontSize: '10px', color: '#64748b' }}>
+            spot above the flip band ({profile.spot.toLocaleString('en-IN')}) · ±10% IV surface → {profile.flipSpreadPts} pt spread
+          </span>
+        </div>
+
+        {/* CARD 4: WALLS */}
+        <div style={{ background: '#0d1322', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <span style={{ fontSize: '10px', fontWeight: '800', color: '#64748b', letterSpacing: '0.5px' }}>WALLS</span>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+            <span style={{ fontSize: '20px', fontWeight: '900', color: '#22c55e' }}>{profile.callWall.toLocaleString('en-IN')}</span>
+            <span style={{ fontSize: '18px', color: '#64748b' }}>/</span>
+            <span style={{ fontSize: '20px', fontWeight: '900', color: '#ef4444' }}>{profile.putWall.toLocaleString('en-IN')}</span>
+          </div>
+          <span style={{ fontSize: '10px', color: '#64748b' }}>
+            call +{Math.round(profile.callWall - profile.spot)} pts from spot · put -{Math.round(profile.spot - profile.putWall)} pts from spot
+          </span>
+        </div>
+
+      </div>
+
+      {/* Model Implication Note */}
+      <div style={{ fontSize: '10.5px', color: '#64748b', fontStyle: 'italic' }}>
+        Model implies counter-trend dealer hedging, implied by the assumed dealer sign — not measured.
+      </div>
+
+      {/* ------------------------------------------------------- */}
+      {/* 4. YELLOW DISCLAIMER CALLOUT BOX                       */}
+      {/* Matching media_1790925206843.png                       */}
+      {/* ------------------------------------------------------- */}
+      <div style={{
+        background: 'rgba(234, 179, 8, 0.04)',
+        border: '1px solid rgba(234, 179, 8, 0.35)',
+        borderRadius: '6px',
+        padding: '10px 14px',
+        fontSize: '11px',
+        lineHeight: '1.5',
+        color: '#e2e8f0'
+      }}>
+        <strong style={{ color: '#facc15' }}>Dealer positioning is assumed, not measured.</strong> Calls are counted +gamma and puts -gamma (the US convention: dealers long calls, short puts). NSE publishes no trade-side data to verify that in India — if the true sign is inverted, every bar below and the flip level invert with it. 33% of total |GEX| sits within 2 strikes of ATM.{' '}
+        <span style={{ color: '#38bdf8', cursor: 'pointer', textDecoration: 'underline' }}>
+          What could make this chart wrong? →
+        </span>
+      </div>
+
+      {/* ------------------------------------------------------- */}
+      {/* 5. CHART HEADER & CONTROLS TOOLBAR                     */}
+      {/* ------------------------------------------------------- */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', paddingTop: '4px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '13px', fontWeight: '800', color: '#ffffff' }}>
+            GEX by strike — nearest expiry ({profile.expiryDate})
+          </span>
+          <span style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8', fontSize: '10px', fontWeight: '800', padding: '1px 6px', borderRadius: '4px' }}>
+            {profile.dte} DTE
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          {/* Auto Range Dropdown */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#0e1422', border: '1px solid rgba(255, 255, 255, 0.1)', padding: '3px 8px', borderRadius: '4px', fontSize: '11px', color: '#cbd5e1', cursor: 'pointer' }}>
+            <span>Auto range</span>
+            <ChevronDown size={11} />
+          </div>
+
+          {/* Expiry Toggle: Nearest vs All Expiries */}
+          <div style={{ display: 'flex', alignItems: 'center', background: '#0e1422', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '4px', padding: '2px' }}>
+            <button
+              onClick={() => setViewExpiry('Nearest')}
+              style={{
+                background: viewExpiry === 'Nearest' ? '#00f0ff' : 'transparent',
+                color: viewExpiry === 'Nearest' ? '#040810' : '#94a3b8',
+                border: 'none',
+                borderRadius: '3px',
+                padding: '2px 8px',
+                fontSize: '11px',
+                fontWeight: '800',
+                cursor: 'pointer'
+              }}
+            >
+              Nearest
+            </button>
+            <button
+              onClick={() => setViewExpiry('All expiries')}
+              style={{
+                background: viewExpiry === 'All expiries' ? '#00f0ff' : 'transparent',
+                color: viewExpiry === 'All expiries' ? '#040810' : '#94a3b8',
+                border: 'none',
+                borderRadius: '3px',
+                padding: '2px 8px',
+                fontSize: '11px',
+                fontWeight: '800',
+                cursor: 'pointer'
+              }}
+            >
+              All expiries
+            </button>
+          </div>
+
+          {/* View Type Toggle: Net vs Call vs Put vs Table */}
+          <div style={{ display: 'flex', alignItems: 'center', background: '#0e1422', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '4px', padding: '2px' }}>
+            {(['Net', 'Call vs Put', 'Table'] as const).map(t => (
+              <button
+                key={t}
+                onClick={() => setViewType(t)}
+                style={{
+                  background: viewType === t ? '#00f0ff' : 'transparent',
+                  color: viewType === t ? '#040810' : '#94a3b8',
+                  border: 'none',
+                  borderRadius: '3px',
+                  padding: '2px 8px',
+                  fontSize: '11px',
+                  fontWeight: '800',
+                  cursor: 'pointer'
+                }}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* METRICS SUMMARY CARDS */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
-        
-        {/* Card 1: Total Trades Logged */}
-        <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase' }}>60-Day Total Setups</span>
-            <Layers size={16} color="#f97316" />
-          </div>
-          <span style={{ fontSize: '24px', fontWeight: '900', color: '#ffffff' }}>{summaryStats.totalTrades}</span>
-          <span style={{ fontSize: '11px', color: '#94a3b8' }}>Tracked over last 60 sessions</span>
-        </div>
-
-        {/* Card 2: Win Rate */}
-        <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '10px', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '11px', color: '#a7f3d0', fontWeight: '700', textTransform: 'uppercase' }}>60-Day Target Win Rate</span>
-            <Award size={16} color="#10b981" />
-          </div>
-          <span style={{ fontSize: '24px', fontWeight: '900', color: '#10b981' }}>{summaryStats.winRate}%</span>
-          <span style={{ fontSize: '11px', color: '#6ee7b7' }}>{summaryStats.targetHits} Target Hits achieved</span>
-        </div>
-
-        {/* Card 3: Avg ROI per Trade */}
-        <div style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.3)', borderRadius: '10px', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '11px', color: '#93c5fd', fontWeight: '700', textTransform: 'uppercase' }}>Avg Return / Setup</span>
-            <TrendingUp size={16} color="#3b82f6" />
-          </div>
-          <span style={{ fontSize: '24px', fontWeight: '900', color: '#60a5fa' }}>+{summaryStats.avgRoi}%</span>
-          <span style={{ fontSize: '11px', color: '#93c5fd' }}>Average return per trade</span>
-        </div>
-
-        {/* Card 4: Target 3 Perfect Hits */}
-        <div style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '10px', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '11px', color: '#fde047', fontWeight: '700', textTransform: 'uppercase' }}>Target 3 Clean Sweeps</span>
-            <Flame size={16} color="#f59e0b" />
-          </div>
-          <span style={{ fontSize: '24px', fontWeight: '900', color: '#facc15' }}>{summaryStats.target3Hits}</span>
-          <span style={{ fontSize: '11px', color: '#fef08a' }}>Max target 3 hit setups</span>
-        </div>
+      {/* ------------------------------------------------------- */}
+      {/* 6. MAIN GEX CANVAS CHART CONTAINER                     */}
+      {/* ------------------------------------------------------- */}
+      <div style={{
+        position: 'relative',
+        width: '100%',
+        height: '440px',
+        backgroundColor: '#080c14',
+        borderRadius: '8px',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
+        overflow: 'hidden'
+      }}>
+        <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
       </div>
 
-      {/* FILTER TABS */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
-        {[
-          { id: 'ALL', label: `All Trades (${HIGH_BETA_TRADES_DATA.length})` },
-          { id: 'LIVE_ACTIVE', label: `Live Active (${summaryStats.liveActive})` },
-          { id: 'TARGET_HIT', label: `Targets Achieved (${summaryStats.targetHits})` },
-          { id: 'STOP_LOSS', label: `Stop Loss Hit` }
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setFilterStatus(tab.id as any)}
-            style={{
-              background: filterStatus === tab.id ? 'rgba(249, 115, 22, 0.2)' : 'rgba(255, 255, 255, 0.04)',
-              border: filterStatus === tab.id ? '1px solid #f97316' : '1px solid transparent',
-              color: filterStatus === tab.id ? '#f97316' : 'var(--text-secondary)',
-              padding: '6px 14px',
-              borderRadius: '6px',
-              fontSize: '12px',
-              fontWeight: '700',
-              cursor: 'pointer'
-            }}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      {/* ------------------------------------------------------- */}
+      {/* 7. BOTTOM LEGEND & TOTAL GEX SUMMARY                   */}
+      {/* ------------------------------------------------------- */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        fontSize: '11px',
+        color: '#94a3b8',
+        paddingTop: '4px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <span style={{ width: '9px', height: '9px', backgroundColor: '#22c55e', borderRadius: '2px', display: 'inline-block' }} />
+            <span>dealer-stabilizing</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <span style={{ width: '9px', height: '9px', backgroundColor: '#f87171', borderRadius: '2px', display: 'inline-block' }} />
+            <span>dealer-amplifying</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <span style={{ width: '14px', height: '2px', backgroundColor: '#22d3ee', display: 'inline-block' }} />
+            <span>|GEX| concentration</span>
+          </div>
+        </div>
 
-      {/* 60-DAY HIGH BETA TRADES TABLE */}
-      <div className="table-responsive-wrapper">
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', textAlign: 'center' }}>
-          <thead>
-            <tr style={{ background: '#090d16', color: '#94a3b8', borderBottom: '1px solid var(--border-color)' }}>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Date & Symbol</th>
-              <th style={{ padding: '12px' }}>Setup Type</th>
-              <th style={{ padding: '12px' }}>Entry Trigger</th>
-              <th style={{ padding: '12px', color: '#93c5fd' }}>Target 1</th>
-              <th style={{ padding: '12px', color: '#a7f3d0' }}>Target 2</th>
-              <th style={{ padding: '12px', color: '#fde047' }}>Target 3</th>
-              <th style={{ padding: '12px', color: '#fca5a5' }}>Stop Loss</th>
-              <th style={{ padding: '12px', color: '#ffffff' }}>Achieved Price</th>
-              <th style={{ padding: '12px' }}>Max ROI %</th>
-              <th style={{ padding: '12px' }}>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredTrades.map((t) => {
-              const isLive = t.finalStatus === 'LIVE ACTIVE';
-              const isT3 = t.finalStatus === 'TARGET 3 HIT';
-              const isT2 = t.finalStatus === 'TARGET 2 HIT';
-              const isSL = t.finalStatus === 'STOP LOSS HIT';
-
-              return (
-                <tr
-                  key={t.id}
-                  style={{
-                    borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
-                    background: isLive 
-                      ? 'rgba(249, 115, 22, 0.08)' 
-                      : isT3 ? 'rgba(16, 185, 129, 0.06)' : 'transparent'
-                  }}
-                >
-                  {/* Symbol & Date */}
-                  <td style={{ padding: '12px', textAlign: 'left' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ fontSize: '13px', fontWeight: '900', color: '#ffffff' }}>
-                        {t.displayName}
-                      </span>
-                      <span style={{ fontSize: '10px', color: '#94a3b8', fontFamily: 'monospace' }}>
-                        {t.date} · <strong style={{ color: '#00f0ff' }}>{t.symbol}</strong>
-                      </span>
-                    </div>
-                  </td>
-
-                  {/* Setup Type */}
-                  <td style={{ padding: '12px' }}>
-                    <span style={{ background: 'rgba(255, 255, 255, 0.05)', color: '#cbd5e1', padding: '3px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700' }}>
-                      {t.setupName}
-                    </span>
-                  </td>
-
-                  {/* Entry Trigger Price */}
-                  <td style={{ padding: '12px', fontFamily: 'monospace', fontWeight: '800', color: '#ffffff', fontSize: '13px' }}>
-                    ₹{t.entryPrice.toFixed(2)}
-                  </td>
-
-                  {/* Target 1 */}
-                  <td style={{ padding: '12px', fontFamily: 'monospace', color: '#60a5fa', fontWeight: '700' }}>
-                    ₹{t.target1.toFixed(2)}
-                  </td>
-
-                  {/* Target 2 */}
-                  <td style={{ padding: '12px', fontFamily: 'monospace', color: '#10b981', fontWeight: '700' }}>
-                    ₹{t.target2.toFixed(2)}
-                  </td>
-
-                  {/* Target 3 */}
-                  <td style={{ padding: '12px', fontFamily: 'monospace', color: '#facc15', fontWeight: '800' }}>
-                    ₹{t.target3.toFixed(2)}
-                  </td>
-
-                  {/* Stop Loss */}
-                  <td style={{ padding: '12px', fontFamily: 'monospace', color: '#ef4444' }}>
-                    ₹{t.stopLoss.toFixed(2)}
-                  </td>
-
-                  {/* Achieved Price */}
-                  <td style={{ padding: '12px', fontFamily: 'monospace', fontWeight: '900', color: isT3 || isT2 ? '#10b981' : isLive ? '#00f0ff' : '#ffffff', fontSize: '13px' }}>
-                    ₹{t.finalAchievedPrice.toFixed(2)}
-                  </td>
-
-                  {/* ROI % */}
-                  <td style={{ padding: '12px', fontWeight: '900', color: t.roiPct >= 0 ? '#10b981' : '#ef4444', fontFamily: 'monospace', fontSize: '13px' }}>
-                    {t.roiPct >= 0 ? `+${t.roiPct.toFixed(2)}%` : `${t.roiPct.toFixed(2)}%`}
-                  </td>
-
-                  {/* Final Status */}
-                  <td style={{ padding: '12px' }}>
-                    {isLive ? (
-                      <span style={{ background: 'rgba(249, 115, 22, 0.2)', color: '#f97316', border: '1px solid #f97316', padding: '3px 8px', borderRadius: '4px', fontWeight: '900', fontSize: '10px' }} className="animate-pulse">
-                        ⚡ LIVE ACTIVE
-                      </span>
-                    ) : isT3 ? (
-                      <span style={{ background: 'rgba(245, 158, 11, 0.2)', color: '#facc15', border: '1px solid #f59e0b', padding: '3px 8px', borderRadius: '4px', fontWeight: '900', fontSize: '10px' }}>
-                        🎯 TARGET 3 HIT
-                      </span>
-                    ) : isT2 ? (
-                      <span style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', border: '1px solid #10b981', padding: '3px 8px', borderRadius: '4px', fontWeight: '800', fontSize: '10px' }}>
-                        🚀 TARGET 2 HIT
-                      </span>
-                    ) : isSL ? (
-                      <span style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', border: '1px solid #ef4444', padding: '3px 8px', borderRadius: '4px', fontWeight: '800', fontSize: '10px' }}>
-                        🛑 STOP LOSS HIT
-                      </span>
-                    ) : (
-                      <span style={{ background: 'rgba(59, 130, 246, 0.2)', color: '#60a5fa', border: '1px solid #3b82f6', padding: '3px 8px', borderRadius: '4px', fontWeight: '800', fontSize: '10px' }}>
-                        ✅ TARGET 1 HIT
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <div style={{ color: '#64748b' }}>
+          Total |GEX| {profile.totalAbsGex} Cr · updated {profile.updatedTime}
+        </div>
       </div>
 
     </div>

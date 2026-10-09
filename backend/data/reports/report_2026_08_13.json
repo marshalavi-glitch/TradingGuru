@@ -7989,18 +7989,6 @@
       "isFno": false
     },
     {
-      "symbol": "NSE:LINDEINDIA",
-      "levelName": "S4 (VAL Breakdown Trigger)",
-      "levelVal": 6655.675,
-      "low": 6651,
-      "close": 6688.5,
-      "bounceStrengthPct": 0.5638249887235002,
-      "pattern": "Neutral Candle",
-      "touchTime": "03:20 pm",
-      "optionPremium": null,
-      "isFno": false
-    },
-    {
       "symbol": "NSE:LUPIN",
       "levelName": "S2 (VAL Reversion)",
       "levelVal": 2273.9783333333335,
@@ -8966,18 +8954,6 @@
       "bounceStrengthPct": 0.7282448377581205,
       "pattern": "BSL Sweep Reversal (High swept 564.9, close 546.4)",
       "touchTime": "10:40 am",
-      "optionPremium": null,
-      "isFno": false
-    },
-    {
-      "symbol": "NSE:BERGEPAINT",
-      "levelName": "S4 (VAL Breakdown Trigger)",
-      "levelVal": 543.8499999999999,
-      "low": 542.4,
-      "close": 546.35,
-      "bounceStrengthPct": 0.7282448377581205,
-      "pattern": "BSL Sweep Reversal (High swept 564.9, close 546.4)",
-      "touchTime": "03:20 pm",
       "optionPremium": null,
       "isFno": false
     },
@@ -10577,18 +10553,6 @@
       "pattern": "Double Bottom Breakout",
       "touchTime": "02:56 pm",
       "optionPremium": 27.3,
-      "isFno": true
-    },
-    {
-      "symbol": "NSE:360ONE",
-      "levelName": "R6 (VAH Exhaustion)",
-      "levelVal": 1189.0065789473686,
-      "high": 1184.9,
-      "close": 1183,
-      "rejectStrengthPct": 0.1603510844797106,
-      "pattern": "Double Bottom Breakout",
-      "touchTime": "03:16 pm",
-      "optionPremium": 26.85,
       "isFno": true
     },
     {
@@ -13124,18 +13088,6 @@
       "pattern": "SSL Sweep Reversal (Low swept 238.7, close 239.9)",
       "touchTime": "09:21 am",
       "optionPremium": 3.74,
-      "isFno": true
-    },
-    {
-      "symbol": "NSE:PATANJALI",
-      "levelName": "R2 (VAH Reversion)",
-      "levelVal": 354.6991666666667,
-      "high": 354,
-      "close": 353.85,
-      "rejectStrengthPct": 0.042372881355925776,
-      "pattern": "Bullish Engulfing (Momentum Shift)",
-      "touchTime": "03:16 pm",
-      "optionPremium": 13.3,
       "isFno": true
     },
     {

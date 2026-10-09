@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, '.env') });
 
 const hfToken = process.env.HF_TOKEN;
-const hfSpaceRepo = `https://marshalavi:${hfToken}@huggingface.co/spaces/marshalavi/TradingGuru`;
+const hfSpaceRepo = `https://marshalavi:${hfToken}@huggingface.co/spaces/marshalavi/TradingGuru-Terminal`;
 const cloudflaredPath = path.join(__dirname, 'cloudflared.exe');
 const rootDir = path.join(__dirname, '..');
 
@@ -76,7 +76,7 @@ async function publishToHuggingFace() {
 
     if (hfToken) {
       console.log('[HF Auto-Publisher] Uploading live_backend.json to HF Space...');
-      const commitUrl = 'https://huggingface.co/api/spaces/marshalavi/TradingGuru/commit/main';
+      const commitUrl = 'https://huggingface.co/api/spaces/marshalavi/TradingGuru-Terminal/commit/main';
       const payload = {
         summary: `Auto-publish active Tunnel URLs (Primary: ${primary})`,
         files: [
@@ -95,21 +95,15 @@ async function publishToHuggingFace() {
             'Authorization': `Bearer ${hfToken}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
+          signal: AbortSignal.timeout(10000)
         });
 
         if (res.ok) {
           console.log('✅ [HF Auto-Publisher] Direct HF API Upload Succeeded in <200ms!');
         } else {
-          console.warn(`⚠️ [HF Auto-Publisher] Direct API returned ${res.status}, using git push fallback...`);
-          try {
-            execSync('git add live_backend.json frontend/public/live_backend.json', { cwd: rootDir, stdio: 'ignore' });
-            try { execSync(`git commit -m "Auto-publish active Tunnel URLs"`, { cwd: rootDir, stdio: 'ignore' }); } catch (e) {}
-            execSync(`git push -f ${hfSpaceRepo} main`, { cwd: rootDir, stdio: 'ignore' });
-            console.log('✅ [HF Auto-Publisher] Git push fallback succeeded!');
-          } catch (gitErr) {
-            console.error('❌ [HF Auto-Publisher] Git push failed:', gitErr.message);
-          }
+          const errText = await res.text().catch(() => '');
+          console.warn(`⚠️ [HF Auto-Publisher] Direct API returned ${res.status}: ${errText}`);
         }
       } catch (e) {
         console.warn('⚠️ [HF Auto-Publisher] Fetch error:', e.message);
@@ -156,7 +150,21 @@ async function startLocaltunnel() {
   }
 }
 
-function startCloudflareTunnel() {
+async function startCloudflareTunnel() {
+  // Check if quicktunnel API is already running and healthy
+  try {
+    const res = await fetch('http://127.0.0.1:20241/quicktunnel', { signal: AbortSignal.timeout(1500) });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.hostname) {
+        cloudflareUrl = `https://${data.hostname}`;
+        console.log(`[Cloudflare Engine] Reusing active quicktunnel: ${cloudflareUrl}`);
+        await publishToHuggingFace();
+        return;
+      }
+    }
+  } catch (e) {}
+
   killExistingTunnelProcesses();
   cloudflareUrl = null;
 

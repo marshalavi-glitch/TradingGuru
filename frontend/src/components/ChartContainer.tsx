@@ -1,13 +1,14 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { createChart } from 'lightweight-charts';
 import type { IChartApi, ISeriesApi, Time } from 'lightweight-charts';
 import { calculateDayProfile, type Candle } from '../utils/profileCalculator';
-import type { MatrixSeriesData } from '../utils/matrixCalculator';
+import { calculateMatrixSeriesData, type MatrixSeriesData } from '../utils/matrixCalculator';
 import { AdvIndicatorPanel } from './AdvIndicatorPanel';
 import { RealtimeLevelAlertPopup } from './RealtimeLevelAlertPopup';
 import type { LevelAlert } from './RealtimeLevelAlertPopup';
-import { Bell, RotateCcw, Zap, AlertCircle, Wifi, WifiOff } from 'lucide-react';
+import { Bell, RotateCcw, Zap, AlertCircle, Wifi, WifiOff, Plus, Minus } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { isWithinMarketHours } from '../utils/marketHours';
 
 interface ChartContainerProps {
   candles: Candle[];
@@ -311,6 +312,84 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
   const openPriceLineRef = useRef<any>(null);
   const lastSymbolTimeframeRef = useRef<string>('');
 
+  // EMA & Overlay Refs
+  const emaSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const candlesRef = useRef<Candle[]>(candles);
+  candlesRef.current = candles;
+
+  const symbolDisplayName = useMemo(() => {
+    if (!symbol) return 'Nifty 50 Index';
+    if (symbol.includes('NIFTY') && !symbol.includes('BANK') && !symbol.includes('FIN') && !symbol.includes('MID')) return 'Nifty 50 Index';
+    if (symbol.includes('BANKNIFTY')) return 'Bank Nifty Index';
+    if (symbol.includes('FINNIFTY')) return 'Nifty Fin Service';
+    if (symbol.includes('MIDCPNIFTY')) return 'Nifty Midcap 50';
+    if (symbol.includes('SENSEX')) return 'BSE Sensex Index';
+    if (symbol.includes('RELIANCE')) return 'Reliance Industries';
+    if (symbol.includes('CRUDEOIL')) return 'Crude Oil Futures';
+    return symbol.replace('NSE:', '').replace('NFO:', '').replace('BSE:', '').replace('MCX:', '');
+  }, [symbol]);
+
+  // Orderflow Levels (Marshall Matrix Engine)
+  const activeOrderflowLevels = useMemo(() => {
+    const effData = (matrixSeriesData && matrixSeriesData.level1 && matrixSeriesData.level1.length > 0)
+      ? matrixSeriesData
+      : calculateMatrixSeriesData(candles, timeframe);
+
+    const getLatest = (arr?: any[]) => {
+      if (!arr || arr.length === 0) return 0;
+      return arr[arr.length - 1].value;
+    };
+
+    const r6 = getLatest(effData.level1);
+    const r5 = getLatest(effData.level2);
+    const r4 = getLatest(effData.level3);
+    const r3 = getLatest(effData.level4);
+    const r2 = getLatest(effData.level5);
+    const s2 = getLatest(effData.level6);
+    const s3 = getLatest(effData.level7);
+    const s4 = getLatest(effData.level8);
+    const s5 = getLatest(effData.level9);
+    const s6 = getLatest(effData.level10);
+
+    if (!r6 && !r4) return [];
+
+    const darkLine = isDark ? '#94a3b8' : '#1e293b';
+
+    return [
+      { key: 'r6', price: r6, title: 'Target', color: '#f23645', labelColor: '#f23645', lineStyle: 'solid' as const, lineWidth: 1.5, hasExtension: false },
+      { key: 'r5', price: r5, title: 'Target', color: '#f23645', labelColor: '#f23645', lineStyle: 'solid' as const, lineWidth: 1.5, hasExtension: true, extensionColor: '#f23645' },
+      { key: 'r4', price: r4, title: 'Breakout', color: '#f59e0b', labelColor: '#f59e0b', lineStyle: 'solid' as const, lineWidth: 1.5, hasExtension: true, extensionColor: '#f59e0b' },
+      { key: 'r3', price: r3, title: 'Sell reversal', color: darkLine, labelColor: '#f23645', lineStyle: 'solid' as const, lineWidth: 1.5, hasExtension: false },
+      { key: 'r2', price: r2, title: '', color: '#9333ea', labelColor: '#9333ea', lineStyle: 'solid' as const, lineWidth: 1.2, hasExtension: false },
+      { key: 's2', price: s2, title: '', color: '#9333ea', labelColor: '#9333ea', lineStyle: 'solid' as const, lineWidth: 1.2, hasExtension: false },
+      { key: 's3', price: s3, title: 'Buy Reversal', color: darkLine, labelColor: '#089981', lineStyle: 'solid' as const, lineWidth: 1.5, hasExtension: false },
+      { key: 's4', price: s4, title: 'Break Down', color: '#f59e0b', labelColor: '#f59e0b', lineStyle: 'solid' as const, lineWidth: 1.5, hasExtension: true, extensionColor: '#f59e0b' },
+      { key: 's5', price: s5, title: 'Target', color: '#f23645', labelColor: '#f23645', lineStyle: 'solid' as const, lineWidth: 1.5, hasExtension: false },
+      { key: 's6', price: s6, title: 'Target', color: '#f23645', labelColor: '#f23645', lineStyle: 'solid' as const, lineWidth: 1.5, hasExtension: true, extensionColor: '#f23645' },
+    ];
+  }, [matrixSeriesData, candles, timeframe, isDark]);
+
+  const activeOrderflowLevelsRef = useRef(activeOrderflowLevels);
+  activeOrderflowLevelsRef.current = activeOrderflowLevels;
+
+  const [orderflowLines, setOrderflowLines] = useState<{
+    startX: number;
+    rightX: number;
+    labelX: number;
+    lines: Array<{
+      key: string;
+      title: string;
+      price: number;
+      y: number;
+      color: string;
+      labelColor: string;
+      lineStyle: 'solid' | 'dashed';
+      lineWidth: number;
+      hasExtension?: boolean;
+      extensionColor?: string;
+    }>;
+  }>({ startX: 0, rightX: 0, labelX: 0, lines: [] });
+
   // GEX Refs
   const gexCallWallLineRef = useRef<any>(null);
   const gexPutWallLineRef = useRef<any>(null);
@@ -320,6 +399,83 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
   const onVisiblePriceRangeChangeRef = useRef(onVisiblePriceRangeChange);
   const handleRangeChangeRef = useRef<() => void>(() => {});
 
+  // Y-Axis Zoom Level (1.0 = auto default, > 1.0 = zoom out / compress candles, < 1.0 = zoom in / expand candles)
+  const [yZoom, setYZoom] = useState<number>(1.25);
+  const yZoomRef = useRef<number>(1.25);
+  const handleYZoomRef = useRef<(delta: number) => void>(() => {});
+  const handleYResetRef = useRef<() => void>(() => {});
+
+  const getAutoscaleProvider = useCallback((zoomVal: number) => {
+    return (original: () => any) => {
+      const res = original();
+      if (!res || !res.priceRange) return null;
+      const min = res.priceRange.minValue;
+      const max = res.priceRange.maxValue;
+      const mid = (min + max) / 2;
+      const rawSpan = Math.max(max - min, 1);
+
+      // Ensure healthy minimum price span so ticks are not spaced 4 points apart on flat market
+      // For NIFTY (mid ~ 24,000), 0.35% is ~84 points.
+      // For BANKNIFTY (mid ~ 53,000), 0.35% is ~185 points.
+      // For stocks, 0.5% gives a natural view.
+      const minPct = mid > 10000 ? 0.0035 : (mid > 1000 ? 0.005 : 0.01);
+      const minSpan = Math.max(rawSpan, mid * minPct);
+
+      const halfSpan = (minSpan / 2) * zoomVal;
+
+      return {
+        priceRange: {
+          minValue: mid - halfSpan,
+          maxValue: mid + halfSpan,
+        },
+        margins: {
+          above: 0.08,
+          below: 0.08,
+        }
+      };
+    };
+  }, []);
+
+  const handleYZoom = useCallback((delta: number) => {
+    // delta < 0: zoom in (decrease price range, taller candles)
+    // delta > 0: zoom out (increase price range, shorter candles)
+    const current = yZoomRef.current;
+    let nextZoom = delta > 0 ? current * 1.25 : current * 0.8;
+    nextZoom = Math.max(0.3, Math.min(6.0, nextZoom));
+    nextZoom = Math.round(nextZoom * 100) / 100;
+    yZoomRef.current = nextZoom;
+    setYZoom(nextZoom);
+
+    if (candlestickSeriesRef.current) {
+      candlestickSeriesRef.current.applyOptions({
+        autoscaleInfoProvider: getAutoscaleProvider(nextZoom)
+      });
+    }
+    if (chartRef.current) {
+      chartRef.current.priceScale('right').applyOptions({ autoScale: true });
+      requestAnimationFrame(handleRangeChangeRef.current);
+    }
+  }, [getAutoscaleProvider]);
+
+  const handleYReset = useCallback(() => {
+    yZoomRef.current = 1.0;
+    setYZoom(1.0);
+    if (candlestickSeriesRef.current) {
+      candlestickSeriesRef.current.applyOptions({
+        autoscaleInfoProvider: getAutoscaleProvider(1.0)
+      });
+    }
+    if (chartRef.current) {
+      chartRef.current.priceScale('right').applyOptions({ autoScale: true });
+      requestAnimationFrame(handleRangeChangeRef.current);
+    }
+  }, [getAutoscaleProvider]);
+
+  useEffect(() => {
+    handleYZoomRef.current = handleYZoom;
+    handleYResetRef.current = handleYReset;
+  }, [handleYZoom, handleYReset]);
+
   useEffect(() => {
     onVisiblePriceRangeChangeRef.current = onVisiblePriceRangeChange;
   }, [onVisiblePriceRangeChange]);
@@ -327,13 +483,18 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
   useEffect(() => {
     if (!chartContainerRef.current) return;
 
-    // Create chart instance
+    const initialWidth = chartContainerRef.current.clientWidth || 800;
+    const initialHeight = chartContainerRef.current.clientHeight || 500;
+
+    // Create chart instance matching TradingView standard styling
     const chart = createChart(chartContainerRef.current, {
+      width: initialWidth,
+      height: initialHeight,
       layout: {
-        background: { color: isDark ? '#0d1017' : '#ffffff' },
-        textColor: isDark ? '#9ca3af' : '#334155',
-        fontSize: 12,
-        fontFamily: 'Outfit, sans-serif'
+        background: { color: isDark ? '#0b0e14' : '#ffffff' },
+        textColor: isDark ? '#9ca3af' : '#787b86',
+        fontSize: 11,
+        fontFamily: "'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
       },
       handleScroll: {
         vertTouchDrag: true,
@@ -347,31 +508,31 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
         pinch: true,
       },
       grid: {
-        vertLines: { color: isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.05)' },
-        horzLines: { color: isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.05)' }
+        vertLines: { color: isDark ? 'rgba(255, 255, 255, 0.04)' : '#f0f3fa' },
+        horzLines: { color: isDark ? 'rgba(255, 255, 255, 0.04)' : '#f0f3fa' }
       },
       crosshair: {
         mode: 1, // CrosshairMode.Normal
         vertLine: {
-          color: '#8b5cf6',
+          color: isDark ? 'rgba(255, 255, 255, 0.2)' : '#9598a1',
           width: 1,
           style: 3, // LineStyle.Dashed
-          labelBackgroundColor: '#8b5cf6'
+          labelBackgroundColor: isDark ? '#1e293b' : '#334155'
         },
         horzLine: {
-          color: '#8b5cf6',
+          color: isDark ? 'rgba(255, 255, 255, 0.2)' : '#9598a1',
           width: 1,
           style: 3, // LineStyle.Dashed
-          labelBackgroundColor: '#8b5cf6'
+          labelBackgroundColor: isDark ? '#1e293b' : '#334155'
         }
       },
       rightPriceScale: {
-        borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.1)',
+        borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : '#e0e3eb',
         visible: true,
         autoScale: true,
         scaleMargins: {
           top: 0.1,
-          bottom: 0.15
+          bottom: 0.12
         }
       },
       localization: {
@@ -385,7 +546,7 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
         }
       },
       timeScale: {
-        borderColor: 'rgba(255, 255, 255, 0.08)',
+        borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : '#e0e3eb',
         timeVisible: true,
         secondsVisible: false,
         tickMarkFormatter: (time: number, tickMarkType: number) => {
@@ -419,29 +580,32 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
       logoObserver.observe(chartContainerRef.current, { childList: true, subtree: true });
     }
 
-    // Add Candlestick Series with stable auto-scale based strictly on visible candle bars
+    // Add Candlestick Series with TradingView signature colors & crisp borders
     const candlestickSeries = chart.addCandlestickSeries({
-      upColor: '#10b981',
-      downColor: '#ef4444',
-      borderVisible: false,
-      wickUpColor: '#10b981',
-      wickDownColor: '#ef4444',
-      autoscaleInfoProvider: (original: () => any) => {
-        const res = original();
-        if (!res || !res.priceRange) return null;
-        return {
-          priceRange: {
-            minValue: res.priceRange.minValue,
-            maxValue: res.priceRange.maxValue,
-          },
-          margins: {
-            above: 0.08,
-            below: 0.12,
-          }
-        };
-      }
+      upColor: '#089981',
+      downColor: '#f23645',
+      borderVisible: true,
+      borderUpColor: '#089981',
+      borderDownColor: '#f23645',
+      wickUpColor: '#089981',
+      wickDownColor: '#f23645',
+      priceLineColor: '#089981',
+      priceLineWidth: 1,
+      priceLineStyle: 3,
+      autoscaleInfoProvider: getAutoscaleProvider(yZoomRef.current)
     });
     candlestickSeriesRef.current = candlestickSeries;
+
+    // Add EMA 20 Series matching TradingView screenshot
+    const emaSeries = chart.addLineSeries({
+      color: '#ff9800',
+      lineWidth: 1.5,
+      priceLineVisible: false,
+      lastValueVisible: false,
+      title: 'EMA 20',
+      autoscaleInfoProvider: () => null
+    });
+    emaSeriesRef.current = emaSeries;
 
     // Dedicated zero-overhead line series to host all level price lines (POC, VAH, VAL, GEX, Fibs, etc.)
     // With autoscaleInfoProvider: () => null, price lines will NOT forcefully expand the Y-axis!
@@ -513,21 +677,73 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
         lineWidth: 1,
         lineType: 2, // LineType.WithSteps
         priceLineVisible: false,
-        lastValueVisible: true,
+        lastValueVisible: false,
         title: cfg.title,
+        visible: false, // Suppress jagged historical stair-steps in favor of clean projected session levels
         autoscaleInfoProvider: () => null
       });
     });
     matrixSeriesRef.current = matrixSeriesList;
 
     const handleRangeChange = () => {
-      if (!chartRef.current || !candlestickSeriesRef.current) return;
+      if (!chartRef.current || !candlestickSeriesRef.current || !chartContainerRef.current) return;
       try {
         const height = chartRef.current.paneSize().height;
+        const width = chartContainerRef.current.clientWidth;
         const min = candlestickSeriesRef.current.coordinateToPrice(height);
         const max = candlestickSeriesRef.current.coordinateToPrice(0);
         if (min !== null && max !== null && min < max) {
           onVisiblePriceRangeChangeRef.current?.({ min, max, paneHeight: height });
+        }
+
+        const curCandles = candlesRef.current;
+        if (curCandles && curCandles.length > 0) {
+          const lastCandle = curCandles[curCandles.length - 1];
+          const lastDateStr = new Date((lastCandle.time as number) * 1000).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+          let sessionStartCandle = curCandles[0];
+          for (let i = 0; i < curCandles.length; i++) {
+            const d = new Date((curCandles[i].time as number) * 1000).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+            if (d === lastDateStr) {
+              sessionStartCandle = curCandles[i];
+              break;
+            }
+          }
+
+          const startXCoord = chartRef.current.timeScale().timeToCoordinate(((sessionStartCandle.time as number) + IST_OFFSET_SECONDS) as Time);
+          const startX = startXCoord !== null ? Math.max(0, startXCoord) : 0;
+          const rightX = Math.max(startX + 60, width - 68);
+
+          const lastXCoord = chartRef.current.timeScale().timeToCoordinate(((lastCandle.time as number) + IST_OFFSET_SECONDS) as Time);
+          const lastX = lastXCoord !== null ? lastXCoord : rightX - 160;
+          const labelX = Math.min(rightX - 145, Math.max(startX + 60, lastX + 18));
+
+          const curLevels = activeOrderflowLevelsRef.current;
+          const computedLines: any[] = [];
+          if (curLevels && curLevels.length > 0) {
+            for (const lvl of curLevels) {
+              const y = candlestickSeriesRef.current.priceToCoordinate(lvl.price);
+              if (y !== null && y >= -15 && y <= height + 15) {
+                computedLines.push({
+                  ...lvl,
+                  y: Math.round(y)
+                });
+              }
+            }
+          }
+
+          setOrderflowLines(prev => {
+            if (prev.startX === startX && prev.rightX === rightX && prev.labelX === labelX && prev.lines.length === computedLines.length) {
+              let identical = true;
+              for (let i = 0; i < computedLines.length; i++) {
+                if (prev.lines[i]?.y !== computedLines[i]?.y || prev.lines[i]?.key !== computedLines[i]?.key) {
+                  identical = false;
+                  break;
+                }
+              }
+              if (identical) return prev;
+            }
+            return { startX, rightX, labelX, lines: computedLines };
+          });
         }
       } catch (e) {
         // Safe catch if paneSize is not ready yet
@@ -560,34 +776,38 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
       }
     });
 
+    const lastChartDimensionsRef = { width: 0, height: 0 };
     const handleResize = () => {
       if (chartContainerRef.current && chartRef.current) {
-        chartRef.current.applyOptions({
-          width: chartContainerRef.current.clientWidth,
-          height: chartContainerRef.current.clientHeight
-        });
-        requestAnimationFrame(handleRangeChange);
+        const width = Math.floor(chartContainerRef.current.clientWidth);
+        const height = Math.floor(chartContainerRef.current.clientHeight);
+        if (width > 0 && height > 0) {
+          if (width === lastChartDimensionsRef.width && height === lastChartDimensionsRef.height) {
+            return;
+          }
+          lastChartDimensionsRef.width = width;
+          lastChartDimensionsRef.height = height;
+          chartRef.current.applyOptions({
+            width,
+            height
+          });
+          requestAnimationFrame(handleRangeChange);
+        }
       }
     };
     
     window.addEventListener('resize', handleResize);
     handleResize();
 
-    // Robust ResizeObserver: Prevents chart from collapsing or misaligning when switching tabs
+    // Robust ResizeObserver: Prevents chart from collapsing or misaligning without infinite feedback loops
     let resizeObserver: ResizeObserver | null = null;
     if (typeof ResizeObserver !== 'undefined' && chartContainerRef.current) {
-      resizeObserver = new ResizeObserver((entries) => {
-        for (const entry of entries) {
-          if (entry.target === chartContainerRef.current && chartRef.current) {
-            const { width, height } = entry.contentRect;
-            if (width > 0 && height > 0) {
-              chartRef.current.applyOptions({ width, height });
-              requestAnimationFrame(handleRangeChange);
-            }
-          }
-        }
+      resizeObserver = new ResizeObserver(() => {
+        handleResize();
       });
-      resizeObserver.observe(chartContainerRef.current);
+      if (chartContainerRef.current.parentElement) {
+        resizeObserver.observe(chartContainerRef.current.parentElement);
+      }
     }
 
     const container = chartContainerRef.current;
@@ -595,8 +815,37 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
       requestAnimationFrame(handleRangeChange);
     };
 
+    const handleContainerWheel = (e: WheelEvent) => {
+      if (!chartContainerRef.current) return;
+      const rect = chartContainerRef.current.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      // If mouse is within the right price scale area (~70px from right)
+      if (mouseX >= rect.width - 70) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.deltaY < 0) {
+          handleYZoomRef.current(-1); // Zoom in
+        } else {
+          handleYZoomRef.current(1);  // Zoom out
+        }
+      } else {
+        requestAnimationFrame(handleRangeChange);
+      }
+    };
+
+    const handleContainerDblClick = (e: MouseEvent) => {
+      if (!chartContainerRef.current) return;
+      const rect = chartContainerRef.current.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      if (mouseX >= rect.width - 70) {
+        e.preventDefault();
+        handleYResetRef.current();
+      }
+    };
+
     if (container) {
-      container.addEventListener('wheel', triggerUpdate, { passive: true });
+      container.addEventListener('wheel', handleContainerWheel, { passive: false });
+      container.addEventListener('dblclick', handleContainerDblClick);
       container.addEventListener('mousemove', triggerUpdate);
       container.addEventListener('touchmove', triggerUpdate, { passive: true });
     }
@@ -610,26 +859,61 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
         logoObserver.disconnect();
       }
       if (container) {
-        container.removeEventListener('wheel', triggerUpdate);
+        container.removeEventListener('wheel', handleContainerWheel);
+        container.removeEventListener('dblclick', handleContainerDblClick);
         container.removeEventListener('mousemove', triggerUpdate);
         container.removeEventListener('touchmove', triggerUpdate);
       }
       chart.remove();
+      chartRef.current = null;
+      candlestickSeriesRef.current = null;
+      volumeSeriesRef.current = null;
+      vwapSeriesRef.current = null;
+      emaSeriesRef.current = null;
+      levelsSeriesRef.current = null;
+      matrixSeriesRef.current = [];
     };
   }, []);
 
   // Update chart data
   useEffect(() => {
-    if (!candlestickSeriesRef.current || !volumeSeriesRef.current || !candles || candles.length === 0) return;
+    if (!candlestickSeriesRef.current || !volumeSeriesRef.current) return;
 
-    // Sanitize candles: filter out invalid numbers, deduplicate timestamps, and sort ascending
+    if (!candles || candles.length === 0) {
+      candlestickSeriesRef.current.setData([]);
+      volumeSeriesRef.current.setData([]);
+      if (vwapSeriesRef.current) vwapSeriesRef.current.setData([]);
+      if (emaSeriesRef.current) emaSeriesRef.current.setData([]);
+      if (matrixSeriesRef.current) {
+        matrixSeriesRef.current.forEach((s: any) => {
+          try { s.setData([]); } catch (e) {}
+        });
+      }
+      prevDatasetKeyRef.current = '';
+      prevCandlesCountRef.current = 0;
+      return;
+    }
+
+    // Sanitize candles: filter out invalid numbers, deduplicate timestamps, filter market hours, and sort ascending
     const validCandlesMap = new Map<number, Candle>();
     candles.forEach((c) => {
       if (c && typeof c.time === 'number' && !isNaN(c.time) && !isNaN(c.close) && !isNaN(c.open) && !isNaN(c.high) && !isNaN(c.low)) {
-        validCandlesMap.set(c.time, c);
+        if (isWithinMarketHours(c.time, symbol, timeframe)) {
+          validCandlesMap.set(c.time, c);
+        }
       }
     });
-    const sortedCandles = Array.from(validCandlesMap.values()).sort((a, b) => a.time - b.time);
+    let sortedCandles = Array.from(validCandlesMap.values()).sort((a, b) => a.time - b.time);
+    if (sortedCandles.length === 0) return;
+
+    // Safety guard: reject price outlier candles from contaminated multi-symbol streams
+    const lastClose = sortedCandles[sortedCandles.length - 1].close;
+    if (lastClose > 0) {
+      sortedCandles = sortedCandles.filter(c => {
+        const ratio = c.close / lastClose;
+        return ratio >= 0.4 && ratio <= 2.5;
+      });
+    }
     if (sortedCandles.length === 0) return;
 
     let chartData = [];
@@ -742,6 +1026,28 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
       }
     }
 
+    // Calculate and set EMA 20 matching TradingView screenshot
+    if (emaSeriesRef.current && sortedCandles.length > 0) {
+      const k = 2 / (20 + 1);
+      let ema = sortedCandles[0].close;
+      const emaData = sortedCandles.map((c) => {
+        ema = c.close * k + ema * (1 - k);
+        return {
+          time: ((c.time as number) + IST_OFFSET_SECONDS) as Time,
+          value: Number(ema.toFixed(2))
+        };
+      });
+
+      if (isDatasetChange || isMajorCountChange) {
+        emaSeriesRef.current.setData(emaData);
+      } else {
+        const lastEma = emaData[emaData.length - 1];
+        if (lastEma) {
+          emaSeriesRef.current.update(lastEma);
+        }
+      }
+    }
+
     // Set Matrix series data with strict deduplication & ascending time order
     if (matrixSeriesRef.current.length === 10 && matrixSeriesData) {
       const shiftSeries = (seriesArr: any[]) => {
@@ -819,20 +1125,30 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
     });
   }, [candles, symbol, timeframe, sessionPeriod, matrixSeriesData, candleStyle]);
 
+  // Immediately render orderflow levels overlay whenever activeOrderflowLevels recalculates
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      handleRangeChangeRef.current();
+    });
+  }, [activeOrderflowLevels]);
+
   // Dynamic theme update for Lightweight Charts
   useEffect(() => {
     if (!chartRef.current) return;
     chartRef.current.applyOptions({
       layout: {
-        background: { color: isDark ? '#0d1017' : '#ffffff' },
-        textColor: isDark ? '#9ca3af' : '#334155'
+        background: { color: isDark ? '#0b0e14' : '#ffffff' },
+        textColor: isDark ? '#9ca3af' : '#787b86'
       },
       grid: {
-        vertLines: { color: isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.05)' },
-        horzLines: { color: isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.05)' }
+        vertLines: { color: isDark ? 'rgba(255, 255, 255, 0.04)' : '#f0f3fa' },
+        horzLines: { color: isDark ? 'rgba(255, 255, 255, 0.04)' : '#f0f3fa' }
       },
       rightPriceScale: {
-        borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.1)'
+        borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : '#e0e3eb'
+      },
+      timeScale: {
+        borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : '#e0e3eb'
       }
     });
   }, [isDark]);
@@ -1309,6 +1625,7 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
     }
 
   }, [
+    symbol,
     activePoc, activeVah, activeVal, activeIbHigh, activeIbLow,
     priorPocPrice, priorVahPrice, priorValPrice,
     poorHighPrice, poorLowPrice, untestedPocs, failedAuctions,
@@ -1324,10 +1641,10 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
   }, [symbol]);
 
   return (
-    <div className="glass-panel animate-fade-in" style={{ display: 'flex', flexDirection: 'column', flex: '1', height: '100%', overflow: 'hidden', position: 'relative' }}>
+    <div className="glass-panel animate-fade-in" style={{ display: 'flex', flexDirection: 'column', flex: 1, width: '100%', height: '100%', minHeight: 0, minWidth: 0, overflow: 'hidden', position: 'relative' }}>
       
       {/* Chart Title Overlay & Status Toolbar */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', padding: '12px 18px', borderBottom: '1px solid var(--border-color)', backgroundColor: 'rgba(13, 16, 23, 0.4)', gap: '10px' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', borderBottom: '1px solid var(--border-color)', backgroundColor: 'rgba(13, 16, 23, 0.4)', gap: '10px', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '15px', fontWeight: '700', color: 'white' }}>{symbol}</span>
@@ -1508,34 +1825,66 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
             >
               🎯 Fit View
             </button>
+            {/* Y-Axis Zoom In / Out Controls */}
+            <div style={{ display: 'inline-flex', alignItems: 'center', backgroundColor: isDark ? 'rgba(255, 255, 255, 0.04)' : '#f1f5f9', borderRadius: '4px', borderLeft: '1px solid rgba(255,255,255,0.08)', padding: '0 3px', gap: '2px' }}>
+              <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-secondary)', padding: '0 2px' }}>↕ Y:</span>
+              <button
+                onClick={() => handleYZoom(1)}
+                title="Zoom Out Y-Axis (Compress candles / increase price span)"
+                style={{
+                  fontSize: '10px',
+                  fontWeight: '700',
+                  padding: '3px 6px',
+                  borderRadius: '3px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  backgroundColor: 'transparent',
+                  color: 'var(--text-primary)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '2px'
+                }}
+              >
+                <Minus size={11} /> Zoom Out
+              </button>
+              <button
+                onClick={() => handleYZoom(-1)}
+                title="Zoom In Y-Axis (Expand candles vertically)"
+                style={{
+                  fontSize: '10px',
+                  fontWeight: '700',
+                  padding: '3px 6px',
+                  borderRadius: '3px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  backgroundColor: 'transparent',
+                  color: 'var(--text-primary)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '2px'
+                }}
+              >
+                <Plus size={11} /> Zoom In
+              </button>
+              <button
+                onClick={handleYReset}
+                title="Reset Y-Axis to Auto-fit"
+                style={{
+                  fontSize: '10px',
+                  fontWeight: '700',
+                  padding: '3px 5px',
+                  borderRadius: '3px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  backgroundColor: 'transparent',
+                  color: '#38bdf8'
+                }}
+              >
+                Auto
+              </button>
+            </div>
           </div>
         </div>
-
-        {(() => {
-          const displayCandle = hoveredCandle || (candles && candles.length > 0 ? candles[candles.length - 1] : null);
-          if (!displayCandle || typeof displayCandle.close !== 'number' || isNaN(displayCandle.close)) return null;
-
-          const open = typeof displayCandle.open === 'number' ? displayCandle.open : displayCandle.close;
-          const high = typeof displayCandle.high === 'number' ? displayCandle.high : displayCandle.close;
-          const low = typeof displayCandle.low === 'number' ? displayCandle.low : displayCandle.close;
-          const close = displayCandle.close;
-          const change = close - open;
-          const changePct = open > 0 ? (change / open) * 100 : 0;
-          const isUp = change >= 0;
-          const changeColor = isUp ? '#10b981' : '#ef4444';
-
-          return (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '11px', fontFamily: 'var(--font-mono)' }}>
-              <span>O: <strong style={{ color: isDark ? 'white' : '#0f172a' }}>{open.toFixed(2)}</strong></span>
-              <span>H: <strong style={{ color: '#10b981' }}>{high.toFixed(2)}</strong></span>
-              <span>L: <strong style={{ color: '#ef4444' }}>{low.toFixed(2)}</strong></span>
-              <span>C: <strong style={{ color: changeColor }}>{close.toFixed(2)}</strong></span>
-              <span style={{ color: changeColor, fontWeight: '700' }}>
-                {isUp ? '+' : ''}{change.toFixed(2)} ({isUp ? '+' : ''}{changePct.toFixed(2)}%)
-              </span>
-            </div>
-          );
-        })()}
       </div>
 
       {/* Delayed Data / WebSocket Disconnection Notice */}
@@ -1555,35 +1904,254 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
         </div>
       )}
 
-      <div 
-        ref={chartContainerRef} 
-        style={{ flex: '1', minHeight: '320px', width: '100%', position: 'relative' }} 
-      >
-        {/* Two-Way Resize Arrow Handle on Price Scale (Y-axis) */}
+      {/* CHART CANVAS AREA - Fluid Responsive Container with Absolute Inset Child */}
+      <div style={{
+        flex: 1,
+        minHeight: 0,
+        minWidth: 0,
+        position: 'relative',
+        width: '100%',
+        height: '100%',
+        overflow: 'hidden'
+      }}>
+        <div 
+          ref={chartContainerRef} 
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} 
+        >
+        {/* Top-Left TradingView Style Symbol & Real-Time Bar Legend */}
         <div
-          title="Price Scale (Y-axis): Click & drag up/down to scale price, double-click to auto-fit"
+          style={{
+            position: 'absolute',
+            top: '10px',
+            left: '14px',
+            zIndex: 12,
+            pointerEvents: 'none',
+            userSelect: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            fontSize: '11px',
+            fontFamily: "'Outfit', -apple-system, BlinkMacSystemFont, sans-serif"
+          }}
+        >
+          <span style={{ fontWeight: '700', color: isDark ? '#e2e8f0' : '#1e293b' }}>
+            {symbolDisplayName} • {timeframe} • {symbol.split(':')[0] || 'NSE'}
+          </span>
+          {(() => {
+            const c = hoveredCandle || (candles && candles.length > 0 ? candles[candles.length - 1] : null);
+            if (!c || typeof c.close !== 'number') return null;
+            const open = c.open ?? c.close;
+            const high = c.high ?? c.close;
+            const low = c.low ?? c.close;
+            const close = c.close;
+            const chg = close - open;
+            const chgPct = open > 0 ? (chg / open) * 100 : 0;
+            const isUp = chg >= 0;
+            const col = isUp ? '#089981' : '#f23645';
+            return (
+              <span style={{ display: 'inline-flex', gap: '8px', color: col, fontWeight: '600' }}>
+                <span style={{ color: isDark ? '#94a3b8' : '#64748b' }}>O <span style={{ color: col }}>{open.toFixed(2)}</span></span>
+                <span style={{ color: isDark ? '#94a3b8' : '#64748b' }}>H <span style={{ color: col }}>{high.toFixed(2)}</span></span>
+                <span style={{ color: isDark ? '#94a3b8' : '#64748b' }}>L <span style={{ color: col }}>{low.toFixed(2)}</span></span>
+                <span style={{ color: isDark ? '#94a3b8' : '#64748b' }}>C <span style={{ color: col }}>{close.toFixed(2)}</span></span>
+                <span style={{ fontWeight: '700' }}>{isUp ? '+' : ''}{chg.toFixed(2)} ({isUp ? '+' : ''}{chgPct.toFixed(2)}%)</span>
+              </span>
+            );
+          })()}
+        </div>
+
+        {/* SVG Orderflow Levels Overlay matching TradingView media_1791133477061.png */}
+        <svg
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            pointerEvents: 'none',
+            zIndex: 10
+          }}
+        >
+          {orderflowLines.lines.map((lvl) => {
+            const isLabelLess = !lvl.title;
+            const solidEndX = isLabelLess ? orderflowLines.rightX : orderflowLines.labelX;
+            return (
+              <g key={`ofl-${lvl.key}`}>
+                {/* Projected Solid Level Line */}
+                <line
+                  x1={orderflowLines.startX}
+                  y1={lvl.y}
+                  x2={solidEndX}
+                  y2={lvl.y}
+                  stroke={lvl.color}
+                  strokeWidth={lvl.lineWidth}
+                  strokeDasharray={lvl.lineStyle === 'dashed' ? '5,4' : 'none'}
+                  opacity={0.92}
+                />
+                {/* Right-aligned or End Level Label */}
+                {lvl.title && (
+                  <text
+                    x={orderflowLines.labelX + 6}
+                    y={lvl.y + 3.5}
+                    textAnchor="start"
+                    fill={lvl.labelColor}
+                    fontSize="11"
+                    fontWeight="700"
+                    fontFamily="'Outfit', -apple-system, BlinkMacSystemFont, sans-serif"
+                    style={{ letterSpacing: '0.2px' }}
+                  >
+                    {lvl.title} • {lvl.price.toFixed(1)}
+                  </text>
+                )}
+                {/* Dashed Continuation Extension to Right Price Scale */}
+                {lvl.hasExtension && (
+                  <line
+                    x1={orderflowLines.labelX + 125}
+                    y1={lvl.y}
+                    x2={orderflowLines.rightX}
+                    y2={lvl.y}
+                    stroke={lvl.extensionColor || lvl.color}
+                    strokeWidth={1.2}
+                    strokeDasharray="5,4"
+                    opacity={0.85}
+                  />
+                )}
+              </g>
+            );
+          })}
+        </svg>
+
+        {/* Center Chart Background Watermark matching TradingView */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '48%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            textAlign: 'center',
+            pointerEvents: 'none',
+            userSelect: 'none',
+            zIndex: 1,
+            opacity: isDark ? 0.12 : 0.13
+          }}
+        >
+          <div style={{
+            fontSize: '58px',
+            fontWeight: '900',
+            color: isDark ? '#ffffff' : '#334155',
+            letterSpacing: '-1.5px',
+            lineHeight: 1.1
+          }}>
+            {symbol.replace('NSE:', '').replace('NFO:', '').replace('BSE:', '').replace('MCX:', '')}, {timeframe}
+          </div>
+          <div style={{
+            fontSize: '26px',
+            fontWeight: '700',
+            color: isDark ? '#ffffff' : '#475569',
+            marginTop: '2px',
+            letterSpacing: '-0.5px'
+          }}>
+            {symbolDisplayName}
+          </div>
+        </div>
+
+        {/* Bottom Right TradingView-style Indicator Badge */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '36px',
+            right: '75px',
+            pointerEvents: 'none',
+            userSelect: 'none',
+            zIndex: 3,
+            fontWeight: '800',
+            fontSize: '11.5px',
+            letterSpacing: '1px',
+            color: '#ea580c',
+            textTransform: 'uppercase'
+          }}
+        >
+          ORDERFLOW LEVELS - MARSHALL
+        </div>
+
+        {/* Interactive Floating Y-Axis Zoom & Scale Handle on Price Scale */}
+        <div
           style={{
             position: 'absolute',
             top: '8px',
             right: '6px',
-            zIndex: 15,
-            backgroundColor: 'rgba(15, 23, 42, 0.85)',
-            border: '1px solid rgba(56, 189, 248, 0.5)',
-            color: '#38bdf8',
-            borderRadius: '4px',
-            padding: '2px 5px',
-            fontSize: '9px',
-            fontWeight: 800,
-            cursor: 'ns-resize',
-            pointerEvents: 'none',
+            zIndex: 20,
+            backgroundColor: 'rgba(15, 23, 42, 0.92)',
+            border: '1px solid rgba(56, 189, 248, 0.45)',
+            borderRadius: '6px',
+            padding: '3px 4px',
             display: 'flex',
             alignItems: 'center',
-            gap: '2px',
-            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.5)',
-            fontFamily: 'monospace'
+            gap: '3px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.6)'
           }}
         >
-          <span>↕ SCALE</span>
+          <span style={{ fontSize: '9px', fontWeight: '800', color: '#38bdf8', letterSpacing: '0.3px', padding: '0 2px' }}>
+            ↕ Y
+          </span>
+          <button
+            onClick={() => handleYZoom(-1)}
+            title="Zoom In Y-Axis (Expand candles vertically)"
+            style={{
+              width: '18px',
+              height: '18px',
+              borderRadius: '3px',
+              border: 'none',
+              background: 'rgba(56, 189, 248, 0.2)',
+              color: '#38bdf8',
+              fontSize: '13px',
+              fontWeight: '900',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              lineHeight: 1
+            }}
+          >
+            +
+          </button>
+          <button
+            onClick={() => handleYZoom(1)}
+            title="Zoom Out Y-Axis (Compress candles / reduce height)"
+            style={{
+              width: '18px',
+              height: '18px',
+              borderRadius: '3px',
+              border: 'none',
+              background: 'rgba(56, 189, 248, 0.2)',
+              color: '#38bdf8',
+              fontSize: '13px',
+              fontWeight: '900',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              lineHeight: 1
+            }}
+          >
+            −
+          </button>
+          <button
+            onClick={handleYReset}
+            title="Auto-Fit Price Range (Reset)"
+            style={{
+              padding: '1px 4px',
+              borderRadius: '3px',
+              border: 'none',
+              background: 'rgba(255, 255, 255, 0.1)',
+              color: '#94a3b8',
+              fontSize: '9px',
+              fontWeight: '700',
+              cursor: 'pointer'
+            }}
+          >
+            Fit
+          </button>
         </div>
 
         {/* Two-Way Resize Arrow Handle on Time Scale (X-axis) */}
@@ -1613,9 +2181,10 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
           <span>↔ SCALE TIME</span>
         </div>
       </div>
+      </div>
 
       {showAdvPanel && (
-        <div style={{ padding: '0 16px 16px 16px', overflowY: 'auto' }}>
+        <div style={{ padding: '0 16px 16px 16px', overflowY: 'auto', flexShrink: 0, maxHeight: '200px' }}>
           <AdvIndicatorPanel candles={candles} symbol={symbol} timeframe={timeframe} />
         </div>
       )}

@@ -102,6 +102,210 @@
     "exchange": "NSE"
   },
   {
+    "value": "NSE:RELIANCE1!",
+    "label": "Reliance Industries Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:TCS1!",
+    "label": "Tata Consultancy Services Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:HDFCBANK1!",
+    "label": "HDFC Bank Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:ICICIBANK1!",
+    "label": "ICICI Bank Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:INFY1!",
+    "label": "Infosys Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:SBIN1!",
+    "label": "State Bank of India Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:BHARTIARTL1!",
+    "label": "Bharti Airtel Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:ITC1!",
+    "label": "ITC Ltd Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:LT1!",
+    "label": "Larsen & Toubro Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:TATAMOTORS1!",
+    "label": "Tata Motors Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:BAJFINANCE1!",
+    "label": "Bajaj Finance Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:AXISBANK1!",
+    "label": "Axis Bank Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:KOTAKBANK1!",
+    "label": "Kotak Mahindra Bank Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:MARUTI1!",
+    "label": "Maruti Suzuki Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:TATASTEEL1!",
+    "label": "Tata Steel Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:SUNPHARMA1!",
+    "label": "Sun Pharmaceutical Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:TITAN1!",
+    "label": "Titan Company Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:ADANIENT1!",
+    "label": "Adani Enterprises Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:ADANIPORTS1!",
+    "label": "Adani Ports Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:HCLTECH1!",
+    "label": "HCL Technologies Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:WIPRO1!",
+    "label": "Wipro Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:NTPC1!",
+    "label": "NTPC Ltd Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:POWERGRID1!",
+    "label": "Power Grid Corp Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:ONGC1!",
+    "label": "ONGC Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:COALINDIA1!",
+    "label": "Coal India Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:BAJAJFINSV1!",
+    "label": "Bajaj Finserv Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:JSWSTEEL1!",
+    "label": "JSW Steel Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:HINDALCO1!",
+    "label": "Hindalco Industries Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:ULTRACEMCO1!",
+    "label": "UltraTech Cement Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "NSE:ASIANPAINT1!",
+    "label": "Asian Paints Futures",
+    "type": "futures",
+    "exchange": "NSE"
+  },
+  {
+    "value": "MCX:CRUDEOIL1!",
+    "label": "Crude Oil Futures (MCX)",
+    "type": "futures",
+    "exchange": "MCX"
+  },
+  {
+    "value": "MCX:GOLD1!",
+    "label": "Gold Futures (MCX)",
+    "type": "futures",
+    "exchange": "MCX"
+  },
+  {
+    "value": "MCX:SILVER1!",
+    "label": "Silver Futures (MCX)",
+    "type": "futures",
+    "exchange": "MCX"
+  },
+  {
+    "value": "MCX:NATURALGAS1!",
+    "label": "Natural Gas Futures (MCX)",
+    "type": "futures",
+    "exchange": "MCX"
+  },
+  {
     "value": "BSE:1STCUS",
     "label": "First Custodian Fund India Ltd.",
     "type": "stock",

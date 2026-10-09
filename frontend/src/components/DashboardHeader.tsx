@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, X, Activity, RefreshCw, Landmark, TrendingUp, Layers, Users, Volume2 } from 'lucide-react';
+import { Search, X, Activity, RefreshCw, Settings, Users, Volume2, Sun, Moon, LogOut, User, UserPlus, Landmark, TrendingUp, Layers } from 'lucide-react';
 import { tvStreamer, getBackendHttpUrl } from '../utils/tvStreamer';
+import { useTheme } from '../context/ThemeContext';
 
 interface DashboardHeaderProps {
   currentSymbol: string;
@@ -9,6 +10,9 @@ interface DashboardHeaderProps {
   onSymbolChange: (symbol: string) => void;
   onTimeframeChange: (timeframe: string) => void;
   onRefresh: () => void;
+  authUser?: string | null;
+  onLogout?: () => void;
+  onOpenUserManagement?: () => void;
 }
 
 interface SymbolPreset {
@@ -24,8 +28,12 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   connectionStatus,
   onSymbolChange,
   onTimeframeChange,
-  onRefresh
+  onRefresh,
+  authUser,
+  onLogout,
+  onOpenUserManagement
 }) => {
+  const { isDark, toggleTheme } = useTheme();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'stock' | 'futures' | 'index'>('all');
@@ -35,7 +43,29 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   const [currentTime, setCurrentTime] = useState<string>('');
   const [lastUpdateTime, setLastUpdateTime] = useState<string>('');
   const [onlineUsers, setOnlineUsers] = useState<number>(1);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const modalInputRef = useRef<HTMLInputElement>(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const settingsRef = useRef<HTMLDivElement>(null);
+
+  const handleRefreshClick = () => {
+    setIsRefreshing(true);
+    setLastUpdateTime(new Date().toLocaleTimeString('en-GB', { timeZone: 'Asia/Kolkata' }));
+    onRefresh();
+    setTimeout(() => setIsRefreshing(false), 800);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) {
+        setIsSettingsOpen(false);
+      }
+    };
+    if (isSettingsOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isSettingsOpen]);
 
   // Live Active Online Users Counter
   useEffect(() => {
@@ -151,7 +181,9 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     if (searchQuery.trim()) {
       let formatted = searchQuery.trim().toUpperCase();
       if (!formatted.includes(':')) {
-        formatted = `NSE:${formatted}`;
+        const isDeriv = (formatted.endsWith('FUT') || formatted.endsWith('CE') || formatted.endsWith('PE')) && /\d/.test(formatted);
+        const isMcx = ['CRUDEOIL', 'GOLD', 'SILVER', 'NATURALGAS', 'COPPER', 'ZINC'].some(c => formatted.includes(c));
+        formatted = isDeriv ? `NFO:${formatted}` : isMcx ? `MCX:${formatted}` : `NSE:${formatted}`;
       }
       handleSelectSymbol(formatted);
     }
@@ -183,210 +215,448 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     { value: 'M', label: '1M' },
   ];
 
+  const isAdmin = (authUser || '').trim().toLowerCase() === 'admin';
+
   return (
-    <header className="glass-panel animate-fade-in" style={{ padding: '12px 16px', position: 'relative', zIndex: 1100, overflow: 'visible' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
+    <header className="glass-panel animate-fade-in" style={{ padding: '8px 14px', position: 'relative', zIndex: 1100, overflow: 'visible' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', width: '100%', flexWrap: 'wrap' }}>
         
-        {/* Row 1: Logo & Title + Connection Status + Refresh */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
-          
-          {/* Logo & Title */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        {/* Left: Logo & Title + Tagline */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
             <div style={{
               background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-purple))',
-              borderRadius: '8px',
-              padding: '6px',
+              borderRadius: '6px',
+              padding: '4px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 0 12px rgba(99, 102, 241, 0.4)'
+              boxShadow: '0 0 10px rgba(99, 102, 241, 0.4)'
             }}>
-              <Activity size={20} color="white" />
+              <Activity size={16} color="white" />
             </div>
-            <div>
-              <h1 style={{ fontSize: '18px', fontWeight: '800', margin: 0, letterSpacing: '-0.3px', lineHeight: '1.2' }}>
-                Trading Guru
-              </h1>
-              <p style={{ fontSize: '10px', color: 'var(--text-secondary)', margin: 0, fontWeight: '700', letterSpacing: '0.4px' }}>
-                REAL-TIME CANDLESTICK CHARTS
-              </p>
-            </div>
+            <span style={{ fontSize: '15px', fontWeight: '900', margin: 0, letterSpacing: '-0.3px', color: 'var(--text-primary)', whiteSpace: 'nowrap', lineHeight: '1.2' }}>
+              Trading Guru
+            </span>
           </div>
-
-          {/* Right Controls: IST Clock + Status + Refresh */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            
-            {/* IST Clock */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--bg-input)', border: '1px solid var(--border-color)', padding: '4px 8px', borderRadius: '6px' }}>
-              <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#00f0ff', fontFamily: 'monospace' }}>
-                {currentTime ? `${currentTime}` : '--:--:--'}
-              </span>
-            </div>
-
-            {/* Voice Test Button */}
-            <button
-              onClick={() => {
-                if ('speechSynthesis' in window) {
-                  window.speechSynthesis.cancel();
-                  const sampleUtterance = new SpeechSynthesisUtterance('Voice alerts active. Real-time AI announcements are enabled.');
-                  const voices = window.speechSynthesis.getVoices();
-                  const femaleVoice = voices.find(v => v.name.includes('Zira') || v.name.includes('Jenny') || v.name.includes('Aria') || v.name.includes('Google UK English Female') || (v.name.toLowerCase().includes('female') && v.lang.startsWith('en')));
-                  if (femaleVoice) sampleUtterance.voice = femaleVoice;
-                  sampleUtterance.pitch = 1.25;
-                  sampleUtterance.rate = 1.0;
-                  window.speechSynthesis.speak(sampleUtterance);
-                }
-              }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                background: 'rgba(59, 130, 246, 0.15)',
-                border: '1px solid rgba(59, 130, 246, 0.4)',
-                padding: '4px 9px',
-                borderRadius: '6px',
-                color: '#60a5fa',
-                fontSize: '11px',
-                fontWeight: '800',
-                cursor: 'pointer'
-              }}
-              title="Click to test Female AI Voice alert speech"
-            >
-              <Volume2 size={13} color="#60a5fa" />
-              <span>AI Voice Alert</span>
-            </button>
-
-            {/* Active Users Badge (Prominent Top Counter) */}
-            <div 
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '7px', 
-                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(5, 150, 105, 0.15))', 
-                border: '1px solid #10b981', 
-                padding: '4px 12px', 
-                borderRadius: '8px',
-                boxShadow: '0 0 14px rgba(16, 185, 129, 0.35)'
-              }} 
-              title="Number of active users currently using this dashboard right now"
-            >
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981', boxShadow: '0 0 8px #10b981' }} className="animate-pulse" />
-              <Users size={14} color="#34d399" />
-              <span style={{ fontSize: '12px', fontWeight: '900', color: '#34d399', letterSpacing: '0.3px' }}>
-                {onlineUsers} {onlineUsers === 1 ? 'Person Active Now' : 'People Using Dashboard Right Now'}
-              </span>
-            </div>
-
-            {/* Live Connection Badge */}
-            <div
-              onClick={() => {
-                const current = tvStreamer.computeBackendUrl();
-                const input = window.prompt('Enter Live Backend Server / Tunnel URL:', current);
-                if (input !== null) {
-                  tvStreamer.setBackendUrl(input);
-                  onRefresh();
-                }
-              }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: 'var(--bg-input)',
-                border: '1px solid var(--border-color)',
-                padding: '4px 10px',
-                borderRadius: '6px',
-                cursor: 'pointer'
-              }}
-              title="Click to configure Backend URL"
-            >
-              <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: getStatusColor(), boxShadow: `0 0 8px ${getStatusColor()}` }} />
-              <span style={{ fontSize: '11px', textTransform: 'capitalize', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                {connectionStatus === 'connected' ? 'LIVE' : connectionStatus}
-              </span>
-            </div>
-
-
-
-            {/* Refresh */}
-            <button
-              onClick={() => {
-                setLastUpdateTime(new Date().toLocaleTimeString('en-GB', { timeZone: 'Asia/Kolkata' }));
-                onRefresh();
-              }}
-              style={{
-                background: 'transparent',
-                cursor: 'pointer',
-                padding: '6px',
-                borderRadius: '6px',
-                color: 'var(--text-secondary)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '1px solid var(--border-color)'
-              }}
-              title="Refresh Data"
-            >
-              <RefreshCw size={14} />
-            </button>
-          </div>
+          <span style={{
+            fontSize: '9.5px',
+            fontWeight: '800',
+            color: isDark ? '#60a5fa' : '#1d4ed8',
+            letterSpacing: '0.2px',
+            whiteSpace: 'nowrap'
+          }}>
+            Price Action • Order Flow • Market Profile • Market Logic
+          </span>
         </div>
 
-        {/* Row 2: Symbol Search Tap Target & Timeframe Selector Bar */}
-        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', width: '100%' }}>
-          
-          {/* Symbol Search Selector Button (Full width on mobile) */}
-          <div 
-            onClick={() => setIsModalOpen(true)}
-            style={{ 
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              background: 'var(--bg-input)',
-              border: '1px solid var(--border-color)',
-              borderRadius: '8px',
-              padding: '8px 12px',
-              cursor: 'pointer',
-              flex: '1 1 200px',
-              minWidth: '180px',
-              boxSizing: 'border-box'
-            }}
-          >
-            <Search size={15} color="var(--text-secondary)" />
-            <span style={{ fontSize: '13px', color: '#60a5fa', fontWeight: '800', flex: 1, letterSpacing: '0.2px' }}>
-              {currentSymbol}
-            </span>
-            <span style={{ fontSize: '10px', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.06)', padding: '2px 6px', borderRadius: '4px', fontWeight: '600' }}>
-              Search 🔍
-            </span>
-          </div>
+        {/* ONE Unified Symbol Search Box (Click opens modal) */}
+        <div 
+          onClick={() => setIsModalOpen(true)}
+          style={{ 
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: isDark ? 'rgba(255, 255, 255, 0.05)' : '#f1f5f9',
+            border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.12)' : '#cbd5e1'}`,
+            borderRadius: '20px',
+            padding: '5px 14px',
+            cursor: 'pointer',
+            minWidth: '150px',
+            maxWidth: '220px',
+            boxSizing: 'border-box',
+            transition: 'all 0.2s ease'
+          }}
+          title="Search any stock, future, index, or option contract"
+        >
+          <Search size={14} color="var(--text-secondary)" />
+          <span style={{ fontSize: '12px', color: isDark ? '#38bdf8' : '#0284c7', fontWeight: '800', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {currentSymbol}
+          </span>
+        </div>
 
-          {/* Timeframe Selector Pill Bar */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', padding: '2px 0' }}>
-            {timeframes.map((tf) => (
+        {/* Timeframe Selector Buttons */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', padding: '1px 0' }}>
+          {timeframes.map((tf) => {
+            const isActive = currentTimeframe === tf.value;
+            return (
               <button
                 key={tf.value}
                 onClick={() => onTimeframeChange(tf.value)}
                 style={{
-                  background: currentTimeframe === tf.value ? '#3b82f6' : 'rgba(255, 255, 255, 0.05)',
-                  border: currentTimeframe === tf.value ? '1px solid #3b82f6' : '1px solid transparent',
-                  color: currentTimeframe === tf.value ? '#ffffff' : 'var(--text-secondary)',
-                  padding: '5px 9px',
-                  borderRadius: '6px',
+                  background: isActive ? (isDark ? 'rgba(56, 189, 248, 0.2)' : '#e0f2fe') : 'transparent',
+                  border: isActive ? `1px solid ${isDark ? '#38bdf8' : '#0284c7'}` : '1px solid transparent',
+                  color: isActive ? (isDark ? '#38bdf8' : '#0284c7') : 'var(--text-secondary)',
+                  padding: '4px 8px',
+                  borderRadius: '14px',
                   fontSize: '11px',
                   fontWeight: '700',
                   cursor: 'pointer',
-                  whiteSpace: 'nowrap'
+                  whiteSpace: 'nowrap',
+                  transition: 'all 0.15s ease'
                 }}
               >
                 {tf.label}
               </button>
-            ))}
+            );
+          })}
+        </div>
+
+        {/* Right Section: Viewers + LIVE Indicator + Theme Toggle + Settings Gear Menu */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+          
+          {/* Active Viewers Count Badge (Before Live) */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px',
+              padding: '4px 9px',
+              borderRadius: '12px',
+              background: isDark ? 'rgba(59, 130, 246, 0.12)' : 'rgba(239, 246, 255, 0.9)',
+              border: `1px solid ${isDark ? 'rgba(59, 130, 246, 0.25)' : '#bfdbfe'}`,
+              color: isDark ? '#93c5fd' : '#1d4ed8',
+              fontSize: '11px',
+              fontWeight: '700',
+              whiteSpace: 'nowrap'
+            }}
+            title="Real-time people currently viewing the dashboard"
+          >
+            <Users size={12} />
+            <span>{onlineUsers} {onlineUsers === 1 ? 'Viewer' : 'Viewers'}</span>
           </div>
+
+          {/* LIVE Connection Indicator */}
+          <div
+            onClick={() => {
+              const current = tvStreamer.computeBackendUrl();
+              const input = window.prompt('Enter Live Backend Server / Tunnel URL:', current);
+              if (input !== null) {
+                tvStreamer.setBackendUrl(input);
+                onRefresh();
+              }
+            }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px',
+              padding: '4px 8px',
+              borderRadius: '12px',
+              background: 'transparent',
+              cursor: 'pointer'
+            }}
+            title="Click to configure Backend URL"
+          >
+            <div style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: getStatusColor(), boxShadow: `0 0 8px ${getStatusColor()}` }} className="animate-pulse" />
+            <span style={{ fontSize: '11px', fontWeight: '800', color: isDark ? '#10b981' : '#059669', letterSpacing: '0.2px' }}>
+              Live
+            </span>
+          </div>
+
+          {/* Refresh Button (Near Live) */}
+          <button
+            onClick={handleRefreshClick}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '5px',
+              height: '30px',
+              padding: '0 10px',
+              background: isDark ? 'rgba(56, 189, 248, 0.12)' : 'rgba(2, 132, 199, 0.08)',
+              border: `1px solid ${isDark ? 'rgba(56, 189, 248, 0.3)' : '#bae6fd'}`,
+              borderRadius: '8px',
+              cursor: 'pointer',
+              color: isDark ? '#38bdf8' : '#0284c7',
+              fontSize: '11px',
+              fontWeight: '700',
+              transition: 'all 0.2s ease'
+            }}
+            title="Refresh All Data & Charts"
+          >
+            <RefreshCw size={13} className={isRefreshing ? 'animate-spin' : ''} />
+            <span>Refresh</span>
+          </button>
+
+          {/* Theme Toggle Button (Sun / Moon) */}
+          <button
+            onClick={toggleTheme}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '30px',
+              height: '30px',
+              background: isDark ? 'rgba(255, 255, 255, 0.06)' : '#f1f5f9',
+              border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.15)' : '#cbd5e1'}`,
+              borderRadius: '8px',
+              cursor: 'pointer',
+              color: isDark ? '#fbbf24' : '#475569',
+              transition: 'all 0.2s ease'
+            }}
+            title={`Theme: ${isDark ? 'Dark Mode' : 'Light Mode'}. Click to toggle.`}
+          >
+            {isDark ? <Sun size={15} /> : <Moon size={15} />}
+          </button>
+
+          {/* Settings Gear (⚙️) Button & Popover */}
+          <div style={{ position: 'relative' }} ref={settingsRef}>
+            <button
+              onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '30px',
+                height: '30px',
+                background: isSettingsOpen ? 'rgba(56, 189, 248, 0.2)' : (isDark ? 'rgba(255, 255, 255, 0.06)' : '#f1f5f9'),
+                border: `1px solid ${isSettingsOpen ? '#38bdf8' : (isDark ? 'rgba(255, 255, 255, 0.15)' : '#cbd5e1')}`,
+                borderRadius: '8px',
+                cursor: 'pointer',
+                color: isSettingsOpen ? '#38bdf8' : 'var(--text-secondary)',
+                transition: 'all 0.2s ease'
+              }}
+              title="Dashboard Settings & Tools"
+            >
+              <Settings size={15} />
+            </button>
+
+            {/* Popover Dropdown Menu */}
+            {isSettingsOpen && (
+              <div style={{
+                position: 'absolute',
+                top: '38px',
+                right: 0,
+                width: '240px',
+                background: isDark ? '#0f172a' : '#ffffff',
+                border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.12)' : '#cbd5e1'}`,
+                borderRadius: '10px',
+                boxShadow: isDark ? '0 12px 30px rgba(0, 0, 0, 0.6)' : '0 12px 30px rgba(0, 0, 0, 0.15)',
+                padding: '10px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                zIndex: 9999
+              }}>
+                {/* Active Users Badge */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '6px 8px',
+                  background: 'rgba(16, 185, 129, 0.12)',
+                  borderRadius: '6px',
+                  border: '1px solid rgba(16, 185, 129, 0.3)'
+                }}>
+                  <Users size={14} color="#10b981" />
+                  <span style={{ fontSize: '11px', fontWeight: '800', color: '#10b981' }}>
+                    {onlineUsers} {onlineUsers === 1 ? 'Person Active Now' : 'People Using Dashboard'}
+                  </span>
+                </div>
+
+                {/* AI Voice Alert Test */}
+                <button
+                  onClick={() => {
+                    if ('speechSynthesis' in window) {
+                      window.speechSynthesis.cancel();
+                      const sampleUtterance = new SpeechSynthesisUtterance('Voice alerts active. Real-time AI announcements are enabled.');
+                      const voices = window.speechSynthesis.getVoices();
+                      const femaleVoice = voices.find(v => v.name.includes('Zira') || v.name.includes('Jenny') || v.name.includes('Aria') || v.name.includes('Google UK English Female') || (v.name.toLowerCase().includes('female') && v.lang.startsWith('en')));
+                      if (femaleVoice) sampleUtterance.voice = femaleVoice;
+                      sampleUtterance.pitch = 1.25;
+                      sampleUtterance.rate = 1.0;
+                      window.speechSynthesis.speak(sampleUtterance);
+                    }
+                  }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: isDark ? 'rgba(255, 255, 255, 0.05)' : '#f8fafc',
+                    border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : '#e2e8f0'}`,
+                    padding: '6px 10px',
+                    borderRadius: '6px',
+                    color: isDark ? '#ffffff' : '#0f172a',
+                    fontSize: '11.5px',
+                    fontWeight: '700',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <Volume2 size={14} color="#60a5fa" />
+                  <span>Test AI Voice Alert</span>
+                </button>
+
+                {/* Refresh Data */}
+                <button
+                  onClick={() => {
+                    setLastUpdateTime(new Date().toLocaleTimeString('en-GB', { timeZone: 'Asia/Kolkata' }));
+                    onRefresh();
+                    setIsSettingsOpen(false);
+                  }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: isDark ? 'rgba(255, 255, 255, 0.05)' : '#f8fafc',
+                    border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : '#e2e8f0'}`,
+                    padding: '6px 10px',
+                    borderRadius: '6px',
+                    color: isDark ? '#ffffff' : '#0f172a',
+                    fontSize: '11.5px',
+                    fontWeight: '700',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <RefreshCw size={14} color="#10b981" />
+                  <span>Refresh All Data</span>
+                </button>
+
+                {/* IST Clock */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '6px 8px',
+                  fontSize: '11px',
+                  color: 'var(--text-secondary)',
+                  borderTop: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0'}`,
+                  paddingTop: '8px'
+                }}>
+                  <span>IST Clock</span>
+                  <span style={{ fontWeight: '800', color: isDark ? '#38bdf8' : '#0284c7', fontFamily: 'monospace' }}>
+                    {currentTime || '--:--:--'}
+                  </span>
+                </div>
+
+                {/* Last Update */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '4px 8px',
+                  fontSize: '10.5px',
+                  color: 'var(--text-secondary)'
+                }}>
+                  <span>Updated</span>
+                  <span style={{ fontWeight: '700', color: '#10b981', fontFamily: 'monospace' }}>
+                    {lastUpdateTime || currentTime || '--:--:--'}
+                  </span>
+                </div>
+
+                {/* Manage User Logins (Admin Only) */}
+                {isAdmin && onOpenUserManagement && (
+                  <button
+                    onClick={() => {
+                      setIsSettingsOpen(false);
+                      onOpenUserManagement();
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      background: isDark ? 'rgba(56, 189, 248, 0.12)' : '#f0f9ff',
+                      border: `1px solid ${isDark ? 'rgba(56, 189, 248, 0.3)' : '#bae6fd'}`,
+                      padding: '7px 10px',
+                      borderRadius: '6px',
+                      color: isDark ? '#38bdf8' : '#0284c7',
+                      fontSize: '11.5px',
+                      fontWeight: '700',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <UserPlus size={14} color="#38bdf8" />
+                    <span>Manage User Logins</span>
+                  </button>
+                )}
+
+                {/* Sign Out Option */}
+                {onLogout && (
+                  <button
+                    onClick={() => {
+                      setIsSettingsOpen(false);
+                      onLogout();
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      background: isDark ? 'rgba(239, 68, 68, 0.12)' : 'rgba(254, 242, 242, 0.9)',
+                      border: `1px solid ${isDark ? 'rgba(239, 68, 68, 0.25)' : '#fecaca'}`,
+                      padding: '7px 10px',
+                      borderRadius: '6px',
+                      color: isDark ? '#f87171' : '#dc2626',
+                      fontSize: '11.5px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      marginTop: '4px'
+                    }}
+                  >
+                    <LogOut size={14} color={isDark ? '#f87171' : '#dc2626'} />
+                    <span>Sign Out ({authUser || 'User'})</span>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* User Badge & Direct Logout Button */}
+          {authUser && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '2px' }}>
+              <div
+                onClick={isAdmin ? onOpenUserManagement : undefined}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  padding: '4px 9px',
+                  borderRadius: '12px',
+                  background: isDark ? 'rgba(99, 102, 241, 0.15)' : 'rgba(238, 242, 255, 0.9)',
+                  border: `1px solid ${isDark ? 'rgba(99, 102, 241, 0.35)' : '#c7d2fe'}`,
+                  color: isDark ? '#a5b4fc' : '#4338ca',
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  whiteSpace: 'nowrap',
+                  cursor: isAdmin && onOpenUserManagement ? 'pointer' : 'default'
+                }}
+                title={isAdmin ? `Logged in as ${authUser} (Admin). Click to manage user access.` : `Logged in as ${authUser}`}
+              >
+                <User size={12} />
+                <span style={{ textTransform: 'capitalize' }}>{authUser}</span>
+              </div>
+              {onLogout && (
+                <button
+                  onClick={onLogout}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px',
+                    height: '30px',
+                    padding: '0 8px',
+                    background: isDark ? 'rgba(239, 68, 68, 0.12)' : 'rgba(254, 242, 242, 0.9)',
+                    border: `1px solid ${isDark ? 'rgba(239, 68, 68, 0.3)' : '#fecaca'}`,
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    color: isDark ? '#f87171' : '#dc2626',
+                    fontSize: '11px',
+                    fontWeight: '700',
+                    transition: 'all 0.15s ease'
+                  }}
+                  title="Sign out of Trading Guru"
+                >
+                  <LogOut size={13} />
+                  <span>Exit</span>
+                </button>
+              )}
+            </div>
+          )}
+
         </div>
 
       </div>
 
-      {/* TradingView-Style Search Overlay Modal */}
+
+          {/* TradingView-Style Search Overlay Modal */}
       {isModalOpen && (
         <div 
           onClick={() => setIsModalOpen(false)}
@@ -400,7 +670,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             backdropFilter: 'blur(8px)',
             zIndex: 9999,
             display: 'flex',
-            justify: 'center',
+            justifyContent: 'center',
             alignItems: 'center',
             padding: '12px',
             boxSizing: 'border-box'
@@ -412,10 +682,10 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             style={{
               width: '100%',
               maxWidth: '650px',
-              backgroundColor: '#0d1017',
-              border: '1px solid var(--border-color)',
+              backgroundColor: isDark ? '#0d1017' : '#ffffff',
+              border: `1px solid ${isDark ? 'var(--border-color)' : '#cbd5e1'}`,
               borderRadius: '14px',
-              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.7)',
+              boxShadow: isDark ? '0 20px 50px rgba(0, 0, 0, 0.7)' : '0 20px 50px rgba(0, 0, 0, 0.15)',
               display: 'flex',
               flexDirection: 'column',
               maxHeight: '90vh',
@@ -426,20 +696,20 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           >
             
             {/* Input Row */}
-            <form onSubmit={handleCustomSubmit} style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.06)', padding: '14px 16px', gap: '10px' }}>
+            <form onSubmit={handleCustomSubmit} style={{ display: 'flex', alignItems: 'center', borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.06)' : '#e2e8f0'}`, padding: '14px 16px', gap: '10px' }}>
               <Search size={18} color="var(--text-secondary)" />
               <input
                 ref={modalInputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search symbol (e.g. RELIANCE, NIFTY)..."
+                placeholder="Search Angel One (e.g. RELIANCE, NIFTY)..."
                 style={{
                   flex: 1,
                   background: 'transparent',
                   border: 'none',
                   outline: 'none',
-                  color: 'white',
+                  color: isDark ? 'white' : '#0f172a',
                   fontSize: '15px',
                   fontWeight: '500',
                   padding: '4px 0'
@@ -504,7 +774,9 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                   onClick={() => {
                     let formatted = searchQuery.trim().toUpperCase();
                     if (!formatted.includes(':')) {
-                      formatted = `NSE:${formatted}`;
+                      const isDeriv = (formatted.endsWith('FUT') || formatted.endsWith('CE') || formatted.endsWith('PE')) && /\d/.test(formatted);
+                      const isMcx = ['CRUDEOIL', 'GOLD', 'SILVER', 'NATURALGAS', 'COPPER', 'ZINC'].some(c => formatted.includes(c));
+                      formatted = isDeriv ? `NFO:${formatted}` : isMcx ? `MCX:${formatted}` : `NSE:${formatted}`;
                     }
                     handleSelectSymbol(formatted);
                   }}
@@ -524,7 +796,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               {loadingApi ? (
                 <div style={{ padding: '30px 20px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
                   <div style={{ width: '16px', height: '16px', borderRadius: '50%', border: '2px solid rgba(255,255,255,0.1)', borderTopColor: '#3b82f6', animation: 'spin 0.8s linear infinite' }} />
-                  Searching TradingView database...
+                  Searching Angel One database...
                 </div>
               ) : searchQuery ? (
                 (() => {
@@ -542,6 +814,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                         case 'index': return <Landmark size={14} color="#00f0ff" />;
                         case 'futures': return <TrendingUp size={14} color="#f59e0b" />;
                         case 'stock': return <Layers size={14} color="#ec4899" />;
+                        default: return <Activity size={14} color="#60a5fa" />;
                       }
                     };
 
@@ -572,8 +845,8 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                             {getIcon()}
                           </div>
                           <div>
-                            <div style={{ fontSize: '14px', fontWeight: '700', color: 'white' }}>
-                              {item.value.split(':')[1]}
+                            <div style={{ fontSize: '14px', fontWeight: '700', color: isDark ? 'white' : '#0f172a' }}>
+                              {(item.value && item.value.includes(':') ? item.value.split(':')[1] : item.value) || item.value}
                             </div>
                             <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                               {item.label}
@@ -605,6 +878,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                       case 'index': return <Landmark size={14} color="#00f0ff" />;
                       case 'futures': return <TrendingUp size={14} color="#f59e0b" />;
                       case 'stock': return <Layers size={14} color="#ec4899" />;
+                      default: return <Activity size={14} color="#60a5fa" />;
                     }
                   };
 
@@ -635,8 +909,8 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                           {getIcon()}
                         </div>
                         <div>
-                          <div style={{ fontSize: '14px', fontWeight: '700', color: 'white' }}>
-                            {item.value.split(':')[1]}
+                          <div style={{ fontSize: '14px', fontWeight: '700', color: isDark ? 'white' : '#0f172a' }}>
+                            {(item.value && item.value.includes(':') ? item.value.split(':')[1] : item.value) || item.value}
                           </div>
                           <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                             {item.label}
@@ -673,7 +947,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               fontSize: '11px', 
               color: 'var(--text-muted)',
               display: 'flex',
-              justify: 'space-between',
+              justifyContent: 'space-between',
               alignItems: 'center'
             }}>
               <span>Search stocks (e.g. RELIANCE, ZOMATO)</span>

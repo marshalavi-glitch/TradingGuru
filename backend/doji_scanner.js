@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { angelOneBridge } from './angelone_bridge.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -57,71 +58,20 @@ export function loadDojiCacheFromDisk() {
   }
 }
 
-function fetchCandlesForSymbol(tvBridge, symbol, timeframe, limit) {
-  let cleanupFn = null;
-  let resolved = false;
-  let cachedData = null;
-
-  return new Promise((resolve) => {
-    const timeout = setTimeout(async () => {
-      if (!resolved) {
-        resolved = true;
-        if (cleanupFn) {
-          try { await cleanupFn(); } catch (e) {}
-        }
-        resolve(cachedData || []);
-      }
-    }, 3000);
-
-    const onData = async (data) => {
-      if (data.isSnapshot && !resolved) {
-        resolved = true;
-        clearTimeout(timeout);
-        if (cleanupFn) {
-          try { await cleanupFn(); } catch (err) {}
-        }
-        resolve(data.candles || []);
-      } else if (!resolved && data.candles && data.candles.length > 0) {
-        cachedData = data.candles;
-      }
-    };
-
-    const onError = async () => {
-      if (!resolved) {
-        resolved = true;
-        clearTimeout(timeout);
-        if (cleanupFn) {
-          try { await cleanupFn(); } catch (e) {}
-        }
-        resolve([]);
-      }
-    };
-
-    tvBridge.subscribeSymbol(symbol, timeframe, onData, onError, limit)
-      .then(async (fn) => {
-        cleanupFn = fn;
-        if (resolved) {
-          try { await cleanupFn(); } catch (e) {}
-          return;
-        }
-        if (cachedData && !resolved) {
-          resolved = true;
-          clearTimeout(timeout);
-          try { await cleanupFn(); } catch (err) {}
-          resolve(cachedData);
-        }
-      })
-      .catch(() => {
-        if (!resolved) {
-          resolved = true;
-          clearTimeout(timeout);
-          resolve([]);
-        }
-      });
-  });
+async function fetchCandlesForSymbol(symbol, timeframe, limit) {
+  // Pure Angel One SmartAPI datafeed
+  try {
+    const angelRes = await angelOneBridge.getNormalizedCandles({ symbol, timeframe, limit, isPriority: false });
+    if (angelRes && angelRes.status && Array.isArray(angelRes.candles) && angelRes.candles.length > 0) {
+      return angelRes.candles;
+    }
+  } catch (err) {
+    console.warn(`[Doji Scanner] Angel One candle error for ${symbol}:`, err.message);
+  }
+  return [];
 }
 
-export async function scanDojiForSlot(tvBridge, slot = 'first_5min') {
+export async function scanDojiForSlot(slot = 'first_5min') {
   if (dojiCache.isScanning) {
     return dojiCache.slotData[slot] || { slot, stocks: [], allDojiStocks: [], lastScanTime: dojiCache.lastScanTime };
   }
@@ -151,7 +101,7 @@ export async function scanDojiForSlot(tvBridge, slot = 'first_5min') {
     
     const matchingStocks = [];
     const matchingStocksNoVol = [];
-    const BATCH_SIZE = 15;
+    const BATCH_SIZE = 2;
 
     const tf = slot === 'daily' ? 'D' : '5';
     const limit = slot === 'daily' ? 100 : 300;
@@ -160,7 +110,7 @@ export async function scanDojiForSlot(tvBridge, slot = 'first_5min') {
       const batch = symbols.slice(i, i + BATCH_SIZE);
       const batchPromises = batch.map(async (symbol) => {
         try {
-          const candles = await fetchCandlesForSymbol(tvBridge, symbol, tf, limit);
+          const candles = await fetchCandlesForSymbol(symbol, tf, limit);
           if (!candles || candles.length < 5) return;
 
           let targetCandle = null;
@@ -253,7 +203,7 @@ export async function scanDojiForSlot(tvBridge, slot = 'first_5min') {
       });
 
       await Promise.all(batchPromises);
-      await new Promise(r => setTimeout(r, 200));
+      await new Promise(r => setTimeout(r, 450));
     }
 
     matchingStocks.sort((a, b) => b.volumeRatio - a.volumeRatio);
@@ -285,10 +235,10 @@ export async function scanDojiForSlot(tvBridge, slot = 'first_5min') {
   }
 }
 
-export function startDojiScanner(tvBridge) {
+export function startDojiScanner() {
   loadDojiCacheFromDisk();
 
   setTimeout(() => {
-    scanDojiForSlot(tvBridge, 'first_5min');
-  }, 2000);
+    scanDojiForSlot('first_5min');
+  }, 60000);
 }
