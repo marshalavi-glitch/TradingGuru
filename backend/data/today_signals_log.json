@@ -5362,6 +5362,20 @@
       "sweepType": null,
       "sweepHigh": null,
       "sweepLow": null
+    },
+    {
+      "symbol": "NSE:CONCOR",
+      "levelKey": "level1",
+      "levelValue": 445.5699942296596,
+      "price": 443.65,
+      "touchTime": "01:56 pm",
+      "date": "10/9/2026",
+      "optionPremium": null,
+      "isFno": true,
+      "signalType": "touch",
+      "sweepType": null,
+      "sweepHigh": null,
+      "sweepLow": null
     }
   ]
 }
