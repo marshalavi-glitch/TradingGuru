@@ -122,22 +122,7 @@ async function run() {
       });
     }
 
-    // Add backtest Excel files if exist
-    const xlsxSrc20 = path.join(__dirname, 'frontend/public/downloads/Market_Profile_3Day_Compression_Backtest_20Days.xlsx');
-    if (fs.existsSync(xlsxSrc20)) {
-      filesToUpload.push({
-        path: 'downloads/Market_Profile_3Day_Compression_Backtest_20Days.xlsx',
-        buffer: fs.readFileSync(xlsxSrc20)
-      });
-    }
-
-    const xlsxSrc100 = path.join(__dirname, 'frontend/public/downloads/Market_Profile_3Day_Compression_Backtest_100Days.xlsx');
-    if (fs.existsSync(xlsxSrc100)) {
-      filesToUpload.push({
-        path: 'downloads/Market_Profile_3Day_Compression_Backtest_100Days.xlsx',
-        buffer: fs.readFileSync(xlsxSrc100)
-      });
-    }
+    // Note: Binary .xlsx files are served directly via backend API (/api/mp-3day-patterns/download-backtest-100d)
 
     // Upload via Direct HF API
     const uploaded = await uploadToHFDirect(filesToUpload);

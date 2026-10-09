@@ -16,6 +16,14 @@ import {
   getCandlestickPatternsCache
 } from './pattern_testing_scanner.js';
 
+import {
+  initOrderFlowReportCache,
+  orderFlowReportCache,
+  scanUniverse1000,
+  exportOrderFlowExcelBuffer,
+  exportOrderFlowCsvString
+} from './orderflow_reporter.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -23,6 +31,7 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 dotenv.config();
 
 loadPatternTestingCacheFromDisk();
+initOrderFlowReportCache();
 
 // Boot auto-login to Angel One SmartAPI if credentials exist
 angelOneBridge.login().catch(err => {
@@ -4358,6 +4367,8 @@ app.get('/api/mp-3day-patterns/backtest-data', (req, res) => {
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
+});
+
 app.get('/api/mp-3day-patterns/download-backtest-100d', (req, res) => {
   try {
     const candidates = [
@@ -4403,6 +4414,83 @@ setTimeout(() => {
     scanMp3DayPatterns();
   }
 }, 8000);
+
+
+// ==============================================================================
+// 1,000 STOCK ORDER FLOW TRADING LEVELS REPORT (ADMIN ROLE-BASED ACCESS)
+// ==============================================================================
+
+// Helper middleware for Admin Role-Based Access Control
+function requireAdminRole(req, res, next) {
+  if (!isAuthorizedAdmin(req)) {
+    return res.status(403).json({
+      success: false,
+      error: 'Access Denied: Only Administrator accounts are authorized to view or export the 1,000 Stock Order Flow Report.'
+    });
+  }
+  next();
+}
+
+// GET /api/orderflow-report/data - Returns full 1,000 stocks with calculated levels & live status
+app.get('/api/orderflow-report/data', requireAdminRole, (req, res) => {
+  try {
+    res.json({
+      success: true,
+      lastUpdated: orderFlowReportCache.lastUpdated,
+      isScanning: orderFlowReportCache.isScanning,
+      scanProgress: orderFlowReportCache.scanProgress,
+      scanStatus: orderFlowReportCache.scanStatus,
+      totalCount: orderFlowReportCache.totalCount,
+      summary: orderFlowReportCache.summary,
+      items: orderFlowReportCache.items
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST /api/orderflow-report/scan - Trigger live batch scan / refresh across 1,000 stocks
+app.post('/api/orderflow-report/scan', requireAdminRole, async (req, res) => {
+  try {
+    const isFullScan = req.body?.fullScan === true;
+    scanUniverse1000({ isFullScan }).catch(err => console.error('[OrderFlow Report Scan Error]', err.message));
+    res.json({
+      success: true,
+      message: 'Batch scan initiated across 1,000 stocks universe.',
+      isScanning: true
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// GET /api/orderflow-report/export-excel - Download multi-sheet Excel report (.xlsx)
+app.get('/api/orderflow-report/export-excel', requireAdminRole, async (req, res) => {
+  try {
+    const buffer = await exportOrderFlowExcelBuffer();
+    const dateStr = new Date().toISOString().slice(0, 10);
+    const filename = `OrderFlow_Levels_1000_Stocks_${dateStr}.xlsx`;
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.send(buffer);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// GET /api/orderflow-report/export-csv - Download complete CSV report (.csv)
+app.get('/api/orderflow-report/export-csv', requireAdminRole, (req, res) => {
+  try {
+    const csvContent = exportOrderFlowCsvString();
+    const dateStr = new Date().toISOString().slice(0, 10);
+    const filename = `OrderFlow_Levels_1000_Stocks_${dateStr}.csv`;
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.send(csvContent);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
 
 
 // ==============================================================================

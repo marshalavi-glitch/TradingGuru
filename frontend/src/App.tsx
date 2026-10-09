@@ -40,6 +40,7 @@ import { Test2Container } from './components/Test2Container';
 import { TestingContainer } from './components/TestingContainer';
 import { LogicTestContainer } from './components/LogicTestContainer';
 import { Mp3DayPatternContainer } from './components/Mp3DayPatternContainer';
+import { OrderFlowReportContainer } from './components/OrderFlowReportContainer';
 import { LoginScreen, getStoredAuthUser, clearStoredAuthUser, AUTH_EPOCH_KEY, CURRENT_AUTH_EPOCH } from './components/LoginScreen';
 import { UserManagementModal } from './components/UserManagementModal';
 import { WATCHLIST_DATA } from './data/watchlistData';
@@ -49,7 +50,7 @@ export type TabType =
   | 'scanner' | 'options' | 'signals' | 'doji' | 'doji_novol' | 'volume' 
   | 'opening_bias' | 'hourly_updates' | 'backtest_results' 
   | 'early_picks' | 'nr7_breakout' | 'order_flow' 
-  | 'cvd_adv' | 'heatmap' | 'market_profile' | 'pro_market_profile' | 'mp_3day_pattern' | 'value_breakout' | 'footprint_chart' | 'vsa' | 'high_beta' | 'manual_trades' | 'sr_breakout' | 'test' | 'test2' | 'testing';
+  | 'cvd_adv' | 'heatmap' | 'market_profile' | 'pro_market_profile' | 'mp_3day_pattern' | 'value_breakout' | 'footprint_chart' | 'vsa' | 'high_beta' | 'manual_trades' | 'sr_breakout' | 'test' | 'test2' | 'testing' | 'report';
 
 interface TabItem {
   id: TabType;
@@ -80,6 +81,7 @@ const TOOL_GROUPS: ToolGroup[] = [
     name: 'Signals',
     items: [
       { id: 'scanner', label: 'Scanner' },
+      { id: 'report', label: 'Order Flow Report' },
       { id: 'mp_3day_pattern', label: 'MP 3-Day Pattern' },
       { id: 'backtest_results', label: 'Live Math' },
       { id: 'options', label: 'Options Chain' },
@@ -155,6 +157,7 @@ function sanitizeFavoriteTabs(raw: any): TabType[] {
 
 const TABS_LIST: TabItem[] = [
   { id: 'logic_test', label: '🔬 Logic Test', color: '#00f0ff', badge: 'NEW' },
+  { id: 'report', label: '📑 Order Flow Report', color: '#10b981', badge: '1000' },
   { id: 'testing', label: '🧪 Testing', color: '#ec4899', badge: 'NEW' },
   { id: 'manual_trades', label: '📝 Manual Trades', color: '#10b981' },
   { id: 'test', label: '📊 Orderflow Chart', color: '#38bdf8' },
@@ -1360,6 +1363,13 @@ function App() {
           <TabErrorBoundary tabName="Pro TPO Profile">
             <ProMarketProfileContainer
               selectedSymbol={symbol}
+              onSymbolSelect={setSymbol}
+              onSwitchToChart={() => setActiveTab('chart')}
+            />
+          </TabErrorBoundary>
+        ) : activeTab === 'report' ? (
+          <TabErrorBoundary tabName="Order Flow Report">
+            <OrderFlowReportContainer
               onSymbolSelect={setSymbol}
               onSwitchToChart={() => setActiveTab('chart')}
             />
