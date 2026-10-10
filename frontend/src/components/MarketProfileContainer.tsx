@@ -1147,12 +1147,12 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
         ctx.setLineDash([]);
       }
 
-      // Pink / Purple Value Area Shading Box
+      // Value Area Shading Box (Subtle Red Tint)
       if (profile.vahPrice && profile.valPrice) {
         const vahY = getPriceY(profile.vahPrice);
         const valY = getPriceY(profile.valPrice);
         if (vahY < height - padding.bottom && valY > padding.top) {
-          ctx.fillStyle = 'rgba(236, 72, 153, 0.08)';
+          ctx.fillStyle = 'rgba(226, 54, 54, 0.06)';
           ctx.fillRect(colStartX, Math.max(padding.top, vahY), colWidth, Math.min(baseChartHeight, valY - vahY));
         }
       }
@@ -1235,23 +1235,31 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
         const binY = getPriceY(bin.price) - rowHeight / 2;
         if (binY < padding.top - rowHeight || binY > height - padding.bottom) return;
 
-        const isPoc = bin.price === profile.pocPrice;
-        const isAbovePoc = bin.price > profile.pocPrice;
+        const isPoc = bin.price === profile.pocPrice || Math.abs(bin.price - profile.pocPrice) < 0.0001;
         const isSinglePrint = bin.tpos.length === 1 && highlightSinglePrints;
+
+        // Inside Value Area definition (between VAL and VAH)
+        const isInsideVa = (profile.vahPrice != null && profile.valPrice != null)
+          ? (bin.price <= (profile.vahPrice + 0.0001) && bin.price >= (profile.valPrice - 0.0001))
+          : false;
+
+        // Market Profile Color Requirements:
+        // 1. Red (#e23636) for the entire Value Area between VAL and VAH, including POC.
+        // 2. Green (#089981) for all areas above VAH and below VAL.
+        // 3. Do not split colors at POC.
+        const blockBgColor = (isInsideVa || isPoc) ? '#e23636' : '#089981';
 
         if (profileMode === 'volume') {
           const barWidth = (bin.volume / maxVolInBin) * (colWidth * 0.85);
+          const barColor = (isInsideVa || isPoc) ? 'rgba(226, 54, 54, 0.85)' : 'rgba(8, 153, 129, 0.85)';
+
+          ctx.fillStyle = barColor;
+          ctx.fillRect(colStartX, binY, barWidth, Math.max(1, rowHeight - 0.5));
+
           if (isPoc) {
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(colStartX, binY, colWidth * 0.95, Math.max(2, rowHeight));
-            ctx.fillStyle = '#00f0ff';
-            ctx.fillRect(colStartX, binY + 0.5, barWidth, Math.max(1, rowHeight - 1));
-          } else if (isAbovePoc) {
-            ctx.fillStyle = 'rgba(239, 68, 68, 0.7)';
-            ctx.fillRect(colStartX, binY, barWidth, Math.max(1, rowHeight - 0.5));
-          } else {
-            ctx.fillStyle = 'rgba(16, 185, 129, 0.7)';
-            ctx.fillRect(colStartX, binY, barWidth, Math.max(1, rowHeight - 0.5));
+            ctx.strokeStyle = '#00f0ff';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(colStartX, binY, barWidth, Math.max(1, rowHeight - 0.5));
           }
         } else if (profileMode === 'tpo-split') {
           if (bin.tpos.length === 0) return;
@@ -1294,155 +1302,19 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
           // 1. Draw Market Profile with Value Area on Left (MP)
           const tpoCount = bin.tpos.length;
           if (tpoCount > 0) {
-            const isInsideVa = (profile.vahPrice && profile.valPrice)
-              ? (bin.price <= profile.vahPrice && bin.price >= profile.valPrice)
-              : false;
-
-            if (isPoc) {
-              // Solid black POC row matching TradingView POC bar
-              const pocLabelWidth = showLetters ? 38 : 28;
-              const pocRowWidth = Math.min(mpEndX - mpStartX, tpoCount * (baseBlockSize + blockGap) + pocLabelWidth);
-
-              ctx.fillStyle = '#000000';
-              ctx.fillRect(mpStartX, binY - 0.5, pocRowWidth, Math.max(rowHeight + 1, baseBlockSize + 1));
-
-              ctx.fillStyle = '#ffffff';
-              ctx.font = `bold ${Math.max(7, Math.min(10, baseBlockSize * 0.75))}px "JetBrains Mono", monospace`;
-              ctx.textAlign = 'left';
-              ctx.fillText('POC ▶', mpStartX + 2, binY + rowHeight / 2 + (baseBlockSize * 0.28));
-
-              bin.tpos.forEach((letter, colIdx) => {
-                const x = mpStartX + pocLabelWidth + colIdx * (baseBlockSize + blockGap);
-                if (x + baseBlockSize <= mpEndX) {
-                  ctx.fillStyle = '#111111';
-                  ctx.fillRect(x, binY + (rowHeight - baseBlockSize) / 2, baseBlockSize, baseBlockSize);
-                  ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
-                  ctx.lineWidth = 0.5;
-                  ctx.strokeRect(x, binY + (rowHeight - baseBlockSize) / 2, baseBlockSize, baseBlockSize);
-
-                  if (showLetters) {
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = `bold ${Math.max(8, Math.floor(baseBlockSize * 0.75))}px "JetBrains Mono", monospace`;
-                    ctx.textAlign = 'center';
-                    ctx.fillText(letter, x + baseBlockSize / 2, binY + rowHeight / 2 + (baseBlockSize * 0.28));
-                  } else {
-                    ctx.fillStyle = '#00f0ff';
-                    ctx.fillRect(x + 1, binY + (rowHeight - baseBlockSize) / 2 + 1, baseBlockSize - 2, baseBlockSize - 2);
-                  }
-                }
-              });
-            } else {
-              // Separate VA Coloring:
-              // Inside VA: Green (above POC), Pink/Rose (below POC)
-              // Outside VA: Cyan / Teal blocks (above VAH and below VAL)
-              let blockBgColor = '#38bdf8'; // Default outside VA: Cyan
-              if (isInsideVa) {
-                blockBgColor = isAbovePoc ? '#10b981' : '#f43f5e'; // Green above POC, Pink below POC
-              } else {
-                blockBgColor = isAbovePoc ? 'rgba(56, 189, 248, 0.85)' : 'rgba(56, 189, 248, 0.72)'; // Cyan outside VA
-              }
-
-              if (isSinglePrint) {
-                blockBgColor = isAbovePoc ? '#fb7185' : '#34d399';
-              }
-
-              bin.tpos.forEach((letter, colIdx) => {
-                const x = mpStartX + colIdx * (baseBlockSize + blockGap);
-                if (x + baseBlockSize <= mpEndX) {
-                  ctx.fillStyle = blockBgColor;
-                  ctx.fillRect(x, binY + (rowHeight - baseBlockSize) / 2, baseBlockSize, baseBlockSize);
-
-                  if (isSinglePrint) {
-                    ctx.strokeStyle = '#f59e0b';
-                    ctx.lineWidth = 1;
-                    ctx.strokeRect(x, binY + (rowHeight - baseBlockSize) / 2, baseBlockSize, baseBlockSize);
-                  } else {
-                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
-                    ctx.lineWidth = 0.5;
-                    ctx.strokeRect(x, binY + (rowHeight - baseBlockSize) / 2, baseBlockSize, baseBlockSize);
-                  }
-
-                  if (showLetters) {
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = `bold ${Math.max(8, Math.floor(baseBlockSize * 0.75))}px "JetBrains Mono", monospace`;
-                    ctx.textAlign = 'center';
-                    ctx.fillText(letter, x + baseBlockSize / 2, binY + rowHeight / 2 + (baseBlockSize * 0.28));
-                  }
-                }
-              });
-            }
-          }
-
-          // 2. Draw Volume Profile on Right (VP)
-          if (bin.volume > 0 && maxVolInBin > 0) {
-            const vpBarWidth = (bin.volume / maxVolInBin) * (vpWidth - 2);
-            const isVpPoc = bin.price === maxVolPrice;
-
-            // Cyan volume bar matching TradingView screenshot
-            ctx.fillStyle = isVpPoc ? '#00e5ff' : 'rgba(56, 189, 248, 0.78)';
-            ctx.fillRect(vpStartX, binY + 0.5, vpBarWidth, Math.max(1, rowHeight - 1));
-
-            // Solid black POC line across VP at Volume POC
-            if (isVpPoc) {
-              ctx.strokeStyle = '#000000';
-              ctx.lineWidth = 2;
-              ctx.beginPath();
-              ctx.moveTo(vpStartX, binY + rowHeight / 2);
-              ctx.lineTo(vpStartX + vpWidth, binY + rowHeight / 2);
-              ctx.stroke();
-            }
-          }
-        } else {
-          const tpoCount = bin.tpos.length;
-          if (tpoCount === 0) return;
-
-          if (isPoc) {
-            const pocLabelWidth = showLetters ? 38 : 28;
-            const pocRowWidth = Math.min(colWidth * 0.98, tpoCount * (baseBlockSize + blockGap) + pocLabelWidth);
-            
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(colStartX, binY - 0.5, pocRowWidth, Math.max(rowHeight + 1, baseBlockSize + 1));
-
-            ctx.fillStyle = '#ffffff';
-            ctx.font = `bold ${Math.max(7, Math.min(10, baseBlockSize * 0.75))}px "JetBrains Mono", monospace`;
-            ctx.textAlign = 'left';
-            ctx.fillText('POC ▶', colStartX + 2, binY + rowHeight / 2 + (baseBlockSize * 0.28));
-
             bin.tpos.forEach((letter, colIdx) => {
-              const x = colStartX + pocLabelWidth + colIdx * (baseBlockSize + blockGap);
-              if (x + baseBlockSize <= colEndX) {
-                ctx.fillStyle = '#111111';
-                ctx.fillRect(x, binY + (rowHeight - baseBlockSize) / 2, baseBlockSize, baseBlockSize);
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
-                ctx.lineWidth = 0.5;
-                ctx.strokeRect(x, binY + (rowHeight - baseBlockSize) / 2, baseBlockSize, baseBlockSize);
-
-                if (showLetters) {
-                  ctx.fillStyle = '#ffffff';
-                  ctx.font = `bold ${Math.max(8, Math.floor(baseBlockSize * 0.75))}px "JetBrains Mono", monospace`;
-                  ctx.textAlign = 'center';
-                  ctx.fillText(letter, x + baseBlockSize / 2, binY + rowHeight / 2 + (baseBlockSize * 0.28));
-                } else {
-                  ctx.fillStyle = '#00f0ff';
-                  ctx.fillRect(x + 1, binY + (rowHeight - baseBlockSize) / 2 + 1, baseBlockSize - 2, baseBlockSize - 2);
-                }
-              }
-            });
-          } else {
-            let blockBgColor = isAbovePoc ? '#e23636' : '#089981';
-            if (isSinglePrint) {
-              blockBgColor = isAbovePoc ? '#f43f5e' : '#10b981';
-            }
-
-            bin.tpos.forEach((letter, colIdx) => {
-              const x = colStartX + colIdx * (baseBlockSize + blockGap);
-              if (x + baseBlockSize <= colEndX) {
+              const x = mpStartX + colIdx * (baseBlockSize + blockGap);
+              if (x + baseBlockSize <= mpEndX) {
                 ctx.fillStyle = blockBgColor;
                 ctx.fillRect(x, binY + (rowHeight - baseBlockSize) / 2, baseBlockSize, baseBlockSize);
 
                 if (isSinglePrint) {
                   ctx.strokeStyle = '#f59e0b';
                   ctx.lineWidth = 1;
+                  ctx.strokeRect(x, binY + (rowHeight - baseBlockSize) / 2, baseBlockSize, baseBlockSize);
+                } else if (isPoc) {
+                  ctx.strokeStyle = 'rgba(0, 240, 255, 0.6)';
+                  ctx.lineWidth = 0.5;
                   ctx.strokeRect(x, binY + (rowHeight - baseBlockSize) / 2, baseBlockSize, baseBlockSize);
                 } else {
                   ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
@@ -1459,6 +1331,62 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
               }
             });
           }
+
+          // 2. Draw Volume Profile on Right (VP)
+          if (bin.volume > 0 && maxVolInBin > 0) {
+            const vpBarWidth = (bin.volume / maxVolInBin) * (vpWidth - 2);
+            const isVpPoc = bin.price === maxVolPrice;
+            const vpColor = (isInsideVa || isPoc || isVpPoc) ? 'rgba(226, 54, 54, 0.85)' : 'rgba(8, 153, 129, 0.85)';
+
+            ctx.fillStyle = vpColor;
+            ctx.fillRect(vpStartX, binY + 0.5, vpBarWidth, Math.max(1, rowHeight - 1));
+
+            // Cyan POC line across VP at Volume POC
+            if (isVpPoc) {
+              ctx.strokeStyle = '#00f0ff';
+              ctx.lineWidth = 2;
+              ctx.beginPath();
+              ctx.moveTo(vpStartX, binY + rowHeight / 2);
+              ctx.lineTo(vpStartX + vpWidth, binY + rowHeight / 2);
+              ctx.stroke();
+            }
+          }
+        } else {
+          // Standard / Collapsed TPO Profile:
+          // Red for the entire Value Area between VAL and VAH, including POC.
+          // Green for all areas above VAH and below VAL.
+          // Do not split colors at POC.
+          const tpoCount = bin.tpos.length;
+          if (tpoCount === 0) return;
+
+          bin.tpos.forEach((letter, colIdx) => {
+            const x = colStartX + colIdx * (baseBlockSize + blockGap);
+            if (x + baseBlockSize <= colEndX) {
+              ctx.fillStyle = blockBgColor;
+              ctx.fillRect(x, binY + (rowHeight - baseBlockSize) / 2, baseBlockSize, baseBlockSize);
+
+              if (isSinglePrint) {
+                ctx.strokeStyle = '#f59e0b';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(x, binY + (rowHeight - baseBlockSize) / 2, baseBlockSize, baseBlockSize);
+              } else if (isPoc) {
+                ctx.strokeStyle = 'rgba(0, 240, 255, 0.6)';
+                ctx.lineWidth = 0.5;
+                ctx.strokeRect(x, binY + (rowHeight - baseBlockSize) / 2, baseBlockSize, baseBlockSize);
+              } else {
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
+                ctx.lineWidth = 0.5;
+                ctx.strokeRect(x, binY + (rowHeight - baseBlockSize) / 2, baseBlockSize, baseBlockSize);
+              }
+
+              if (showLetters) {
+                ctx.fillStyle = '#ffffff';
+                ctx.font = `bold ${Math.max(8, Math.floor(baseBlockSize * 0.75))}px "JetBrains Mono", monospace`;
+                ctx.textAlign = 'center';
+                ctx.fillText(letter, x + baseBlockSize / 2, binY + rowHeight / 2 + (baseBlockSize * 0.28));
+              }
+            }
+          });
         }
       });
 
@@ -2881,60 +2809,6 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
           onDoubleClick={handleDoubleClick}
           style={{ cursor: cursorStyle, display: 'block', touchAction: 'none' }}
         />
-
-        {/* Floating Left Scroll Arrow (View Older Sessions) */}
-        <button
-          onClick={() => setPanOffset(prev => ({ ...prev, x: prev.x + 240 }))}
-          style={{
-            position: 'absolute',
-            left: '12px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            zIndex: 25,
-            background: 'rgba(15, 23, 42, 0.85)',
-            border: '1px solid rgba(0, 240, 255, 0.4)',
-            color: '#00f0ff',
-            padding: '12px 8px',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 14px rgba(0,0,0,0.6)',
-            backdropFilter: 'blur(6px)',
-            transition: 'all 0.15s'
-          }}
-          title="Scroll Left (View Older Sessions)"
-        >
-          <ChevronLeft size={24} />
-        </button>
-
-        {/* Floating Right Scroll Arrow (View Newer Sessions) */}
-        <button
-          onClick={() => setPanOffset(prev => ({ ...prev, x: prev.x - 240 }))}
-          style={{
-            position: 'absolute',
-            right: '12px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            zIndex: 25,
-            background: 'rgba(15, 23, 42, 0.85)',
-            border: '1px solid rgba(0, 240, 255, 0.4)',
-            color: '#00f0ff',
-            padding: '12px 8px',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 14px rgba(0,0,0,0.6)',
-            backdropFilter: 'blur(6px)',
-            transition: 'all 0.15s'
-          }}
-          title="Scroll Right (View Newer Sessions)"
-        >
-          <ChevronRight size={24} />
-        </button>
 
         {/* Hover / Pinned Tooltip */}
         {(pinnedInfo || hoverInfo) && dragMode === 'none' && (() => {

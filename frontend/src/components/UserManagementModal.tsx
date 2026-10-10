@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { X, UserPlus, Users, Trash2, Key, Shield, Copy, CheckCircle2, RefreshCw, ExternalLink, Clock } from 'lucide-react';
 import { DEFAULT_ACCOUNTS, UserAccount, getDeletedUsers, addDeletedUser, unmarkDeletedUser } from './LoginScreen';
-import { getBackendHttpUrl } from '../utils/tvStreamer';
+import { tvStreamer, getBackendHttpUrl } from '../utils/tvStreamer';
 
 interface UserManagementModalProps {
   isOpen: boolean;

@@ -10,7 +10,7 @@
       "market_profile",
       "mp_3day_pattern"
     ],
-    "lastLogin": "2026-10-07T14:51:46.450Z"
+    "lastLogin": "2026-10-10T16:03:22.135Z"
   },
   {
     "username": "sharath",
@@ -67,8 +67,7 @@
       "test",
       "scanner",
       "backtest_results",
-      "options",
-      "manual_trades"
+      "options"
     ]
   },
   {
@@ -85,7 +84,7 @@
     "password": "mk@5588",
     "role": "trader",
     "updatedAt": "2026-10-04T16:50:56.825Z",
-    "lastLogin": "2026-10-05T06:37:53.953Z",
+    "lastLogin": "2026-10-10T08:18:00.414Z",
     "favorites": [
       "chart",
       "test",
@@ -94,7 +93,8 @@
       "testing",
       "options",
       "footprint_chart",
-      "manual_trades"
+      "manual_trades",
+      "logic_test"
     ]
   },
   {
@@ -194,7 +194,8 @@
     "name": "Gopal",
     "password": "gujjugopal",
     "role": "trader",
-    "updatedAt": "2026-10-07T06:40:39.885Z"
+    "updatedAt": "2026-10-07T06:40:39.885Z",
+    "lastLogin": "2026-10-09T15:20:55.407Z"
   },
   {
     "username": "agarwal",
@@ -216,7 +217,8 @@
     "name": "Jyothi",
     "password": "jp@123",
     "role": "trader",
-    "updatedAt": "2026-10-07T06:58:58.608Z"
+    "updatedAt": "2026-10-07T06:58:58.608Z",
+    "lastLogin": "2026-10-09T16:33:59.615Z"
   },
   {
     "username": "giriraj",
@@ -232,5 +234,39 @@
     "password": "luckey@8909",
     "role": "trader",
     "updatedAt": "2026-10-08T16:04:02.652Z"
+  },
+  {
+    "username": "mihir",
+    "name": "Mihir",
+    "password": "mihir@123",
+    "role": "trader",
+    "updatedAt": "2026-10-09T13:01:04.993Z",
+    "lastLogin": "2026-10-09T15:23:07.502Z",
+    "favorites": [
+      "chart",
+      "test",
+      "market_profile"
+    ]
+  },
+  {
+    "username": "dhillon",
+    "name": "Dhillon",
+    "password": "dhillonpaji",
+    "role": "trader",
+    "updatedAt": "2026-10-09T13:02:27.953Z",
+    "lastLogin": "2026-10-09T13:46:48.642Z"
+  },
+  {
+    "username": "abhijit",
+    "name": "Abhijit",
+    "password": "abhi@123",
+    "role": "trader",
+    "updatedAt": "2026-10-09T14:22:31.256Z",
+    "lastLogin": "2026-10-10T14:45:33.093Z",
+    "favorites": [
+      "chart",
+      "test",
+      "manual_trades"
+    ]
   }
 ]

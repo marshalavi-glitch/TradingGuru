@@ -1,13 +1,111 @@
 {
   "date": "10/9/2026",
-  "results": [],
+  "results": [
+    {
+      "symbol": "NSE:FEDERALBNK",
+      "cleanName": "FEDERALBNK",
+      "sector": "Equity / F&O",
+      "currentPrice": 329.4,
+      "changePts": 7.8,
+      "changePct": 2.43,
+      "status": "BREAKOUT_BULLISH",
+      "statusText": "🚀 Bullish Breakout Active",
+      "action": "BUY ABOVE ₹326.35 (Target: ₹332.72)",
+      "isLatestSession": false,
+      "day1": {
+        "dateStr": "2026-10-06",
+        "dayHigh": 329.55,
+        "dayLow": 319.25,
+        "range": 10.3,
+        "openPrice": 328.1,
+        "closePrice": 319.95,
+        "pocPrice": 320.58,
+        "vahPrice": 325,
+        "valPrice": 319.28,
+        "totalVolume": 4108948,
+        "candlesCount": 12
+      },
+      "day2": {
+        "dateStr": "2026-10-07",
+        "dayHigh": 326.15,
+        "dayLow": 317.05,
+        "range": 9.1,
+        "openPrice": 320,
+        "closePrice": 323.6,
+        "pocPrice": 324.07,
+        "vahPrice": 325.22,
+        "valPrice": 321.31,
+        "totalVolume": 8433470,
+        "candlesCount": 12
+      },
+      "day3": {
+        "dateStr": "2026-10-08",
+        "dayHigh": 326.35,
+        "dayLow": 319.5,
+        "range": 6.85,
+        "openPrice": 323.5,
+        "closePrice": 321.6,
+        "pocPrice": 321.47,
+        "vahPrice": 322.66,
+        "valPrice": 319.77,
+        "totalVolume": 9801173,
+        "candlesCount": 12
+      },
+      "prior5": [
+        {
+          "date": "2026-09-28",
+          "range": 6.8,
+          "high": 327.3,
+          "low": 320.5
+        },
+        {
+          "date": "2026-09-29",
+          "range": 5.8,
+          "high": 326.85,
+          "low": 321.05
+        },
+        {
+          "date": "2026-09-30",
+          "range": 6.8,
+          "high": 324.25,
+          "low": 317.45
+        },
+        {
+          "date": "2026-10-01",
+          "range": 7.6,
+          "high": 321.35,
+          "low": 313.75
+        },
+        {
+          "date": "2026-10-05",
+          "range": 9.7,
+          "high": 328.2,
+          "low": 318.5
+        }
+      ],
+      "prior5MaxRange": 9.7,
+      "rangeExpansionPct": 6.2,
+      "compressionRatio": 66.5,
+      "vahCompressionRatio": 50.5,
+      "insideType": "RANGE_INSIDE",
+      "isDay2VaInside": true,
+      "isDay3VaInside": false,
+      "isDay3RangeInside": true,
+      "breakoutTriggerHigh": 326.35,
+      "breakoutTriggerLow": 317.05,
+      "target1Bullish": 332.72,
+      "target2Bullish": 336.65,
+      "target1Bearish": 310.68,
+      "target2Bearish": 306.75
+    }
+  ],
   "summary": {
     "totalScanned": 112,
-    "matchedCount": 0,
+    "matchedCount": 1,
     "activeCoilCount": 0,
-    "bullishBreakoutCount": 0,
+    "bullishBreakoutCount": 1,
     "bearishBreakoutCount": 0,
     "ultraCoilCount": 0
   },
-  "lastScanTime": "2026-10-09T08:20:51.278Z"
+  "lastScanTime": "2026-10-09T14:12:10.097Z"
 }

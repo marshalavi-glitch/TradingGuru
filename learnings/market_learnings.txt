@@ -59369,3 +59369,1222 @@ B. BEARISH RESISTANCE REJECTIONS (Tested VAH Resistance and Pullback)
 * Lunchtime Theta vs IV Filter: Period G consolidation successfully filtered false breakouts between 12:15 - 12:45 PM.
 * Hero Reversal Traps: Failed morning expansions (C/D/E periods) respected the opposite extreme target.
 ================================================================================
+
+================================================================================
+SESSION REPORT: 9/10/2026
+================================================================================
+
+1. MACRO SUMMARY
+--------------------------------------------------------------------------------
+* Nifty 50: 22520.45 (1.30%)
+* Bank Nifty: 55256.65 (1.36%)
+
+1B. INDEX LEVEL INTERACTIONS:
+--------------------------------------------------------------------------------
+  - Nifty touched Monthly R5 (VAH Extreme) (22596.96) at 02:15 pm | Candle = Bullish Engulfing (Momentum Shift) | Rejected (high: 22580.75, close: 22520.45)
+  - Nifty triggered a Monthly R4 (VAH Breakout Trigger) Breakout (close: 22520.45, excess: 0.3%)
+  - Bank Nifty triggered a Monthly R4 (VAH Breakout Trigger) Breakout (close: 55256.65, excess: 0.7%)
+
+2. HIGH-PROBABILITY MATRIX REVERSALS (BOUNCES & REJECTIONS)
+--------------------------------------------------------------------------------
+
+A. BULLISH SUPPORT BOUNCES (Tested VAL Support and Reverted)
+
+* NSE:PERSISTENT (+4.93% Bounce) | Candle = Bullish Marubozu (Strong Bullish Momentum) | Cup & Handle Breakout (27% Handle retracement)
+  - The Setup: Price traded down to a session low of 5499.00, testing the Support (S2) Matrix line at 5431.52 (within 1.24% proximity).
+  - The Action: Bounced +4.93% off the level to close at 5770.00.
+
+* NSE:ICICIGI (+4.33% Bounce) | Candle = Cup & Handle Breakout (18% Handle retracement)
+  - The Setup: Price traded down to a session low of 1620.00, testing the Target (S5) Matrix line at 1589.76 (within 1.90% proximity).
+  - The Action: Bounced +4.33% off the level to close at 1690.20.
+
+* NSE:ADANIPORTS (+3.64% Bounce) | Candle = Neutral Candle
+  - The Setup: Price traded down to a session low of 1699.10, testing the Support (S2) Matrix line at 1694.12 (within 0.29% proximity).
+  - The Action: Bounced +3.64% off the level to close at 1761.00.
+
+* NSE:ADANIPORTS (+3.64% Bounce) | Candle = Neutral Candle
+  - The Setup: Price traded down to a session low of 1699.10, testing the Buy Reversal (S3) Matrix line at 1687.18 (within 0.71% proximity).
+  - The Action: Bounced +3.64% off the level to close at 1761.00.
+
+* NSE:CUMMINSIND (+3.40% Bounce) | Candle = SSL Sweep Reversal (Low swept 4720.0, close 4830.0)
+  - The Setup: Price traded down to a session low of 4671.10, testing the Support (S2) Matrix line at 4712.12 (within 0.87% proximity).
+  - The Action: Bounced +3.40% off the level to close at 4830.00.
+
+B. BEARISH RESISTANCE REJECTIONS (Tested VAH Resistance and Pullback)
+
+* NSE:BANDHANBNK (-2.67% Rejection) | Candle = Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 154.1, close 157.0)
+  - The Setup: Price traded up to a session high of 161.30, testing the Sell reversal (R3) Matrix line at 158.06 (within 2.05% proximity).
+  - The Action: Rejected -2.67% off the level to close at 157.00.
+
+* NSE:BANDHANBNK (-2.67% Rejection) | Candle = Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 154.1, close 157.0)
+  - The Setup: Price traded up to a session high of 161.30, testing the Resistance (R2) Matrix line at 157.22 (within 2.60% proximity).
+  - The Action: Rejected -2.67% off the level to close at 157.00.
+
+* NSE:TCS (-2.18% Rejection) | Candle = Cup & Handle Breakout (15% Handle retracement)
+  - The Setup: Price traded up to a session high of 2204.00, testing the Target (R6) Matrix line at 2158.13 (within 2.13% proximity).
+  - The Action: Rejected -2.18% off the level to close at 2156.00.
+
+* NSE:TCS (-2.18% Rejection) | Candle = Cup & Handle Breakout (15% Handle retracement)
+  - The Setup: Price traded up to a session high of 2204.00, testing the Target (R5) Matrix line at 2147.00 (within 2.65% proximity).
+  - The Action: Rejected -2.18% off the level to close at 2156.00.
+
+* NSE:TCS (-2.18% Rejection) | Candle = Cup & Handle Breakout (15% Handle retracement)
+  - The Setup: Price traded up to a session high of 2204.00, testing the Breakout (R4) Matrix line at 2120.82 (within 3.92% proximity).
+  - The Action: Rejected -2.18% off the level to close at 2156.00.
+
+3. LEVEL BREAKDOWNS (Closed Below S4)
+--------------------------------------------------------------------------------
+No breakdowns detected.
+
+4. DETECTED PRICE ACTION & CANDLESTICK PATTERNS
+--------------------------------------------------------------------------------
+* NSE:TCS: Cup & Handle Breakout (15% Handle retracement)
+* NSE:BANKNIFTY: Double Top Breakdown
+* NSE:ICICIBANK: Standard Doji
+* NSE:BHARTIARTL: Standard Doji
+* NSE:AXISBANK: Cup & Handle Breakout (21% Handle retracement)
+* NSE:BAJFINANCE: Bullish Engulfing (Momentum Shift) | BSL Sweep Reversal (High swept 962.8, close 960.0)
+* NSE:M&M: BSL Sweep Reversal (High swept 2806.1, close 2796.2)
+* NSE:TATASTEEL: SSL Sweep Reversal (Low swept 170.5, close 173.8) | Double Top Breakdown
+* NSE:TITAN: Tweezer Bottom (Double Rejection) | Double Top Breakdown
+* NSE:NTPC: Double Top Breakdown
+* NSE:COALINDIA: Double Top Breakdown
+* NSE:ONGC: Double Top Breakdown
+* NSE:POWERGRID: Double Top Breakdown
+* NSE:HINDALCO: Tweezer Bottom (Double Rejection)
+* NSE:HCLTECH: Bullish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 1176.9, close 1216.7) | Double Top Breakdown
+
+5. INTRADAY 5-MIN OPTION PREMIUM BACKTEST & LEARNINGS
+--------------------------------------------------------------------------------
+* PERSISTENT (LONG) touched Support (S2) (5431.52) at 09:40 am
+  - Entry Premium: ₹84.17 | Exit Premium: ₹164.42 | ROI: 95.3% (Target/Close Exit)
+* ICICIGI (LONG) touched Target (S5) (1589.76) at 09:35 am
+  - Entry Premium: ₹24.83 | Exit Premium: ₹39.68 | ROI: 59.8% (Target/Close Exit)
+* ADANIPORTS (LONG) touched Support (S2) (1694.12) at 09:25 am
+  - Entry Premium: ₹26.00 | Exit Premium: ₹39.50 | ROI: 51.9% (Target/Close Exit)
+* ADANIPORTS (LONG) touched Buy Reversal (S3) (1687.18) at 09:25 am
+  - Entry Premium: ₹26.00 | Exit Premium: ₹39.50 | ROI: 51.9% (Target/Close Exit)
+* CUMMINSIND (LONG) touched Support (S2) (4712.12) at 09:30 am
+  - Entry Premium: ₹70.62 | Exit Premium: ₹95.02 | ROI: 34.6% (Target Hit at 10:05 am)
+* CUMMINSIND (LONG) touched Buy Reversal (S3) (4697.72) at 09:30 am
+  - Entry Premium: ₹70.62 | Exit Premium: ₹95.02 | ROI: 34.6% (Target Hit at 10:05 am)
+* TCS (LONG) touched Support (S2) (2061.06) at 09:15 am
+  - Entry Premium: ₹32.23 | Exit Premium: ₹43.53 | ROI: 35.1% (Target/Close Exit)
+* APOLLOHOSP (LONG) touched Support (S2) (7613.84) at 09:30 am
+  - Entry Premium: ₹117.41 | Exit Premium: ₹208.16 | ROI: 77.3% (Target/Close Exit)
+* BHEL (LONG) touched Buy Reversal (S3) (423.55) at 09:30 am
+  - Entry Premium: ₹6.36 | Exit Premium: ₹8.56 | ROI: 34.6% (Target Hit at 09:55 am)
+* MCX (LONG) touched S3 (VAL Reversion) (3221.42) at 09:20 am
+  - Entry Premium: ₹48.41 | Exit Premium: ₹60.73 | ROI: 25.5% (Target Hit at 09:30 am)
+* FEDERALBNK (LONG) touched Support (S2) (319.74) at 09:35 am
+  - Entry Premium: ₹4.90 | Exit Premium: ₹6.15 | ROI: 25.5% (Target/Close Exit)
+* METROPOLIS (LONG) touched Support (S2) (521.30) at 10:35 am
+  - Entry Premium: ₹7.86 | Exit Premium: ₹11.80 | ROI: 50.1% (Target Hit at 01:45 pm)
+* POLYCAB (LONG) touched Support (S2) (8103.98) at 09:45 am
+  - Entry Premium: ₹121.94 | Exit Premium: ₹163.68 | ROI: 34.2% (Target Hit at 10:10 am)
+* POLYCAB (LONG) touched Buy Reversal (S3) (8080.46) at 09:45 am
+  - Entry Premium: ₹121.94 | Exit Premium: ₹187.14 | ROI: 53.5% (Target Hit at 11:30 am)
+* IRCTC (LONG) touched Support (S2) (448.15) at 09:35 am
+  - Entry Premium: ₹6.92 | Exit Premium: ₹5.84 | ROI: -15.5% (Target/Close Exit)
+* TRENT (LONG) touched Support (S2) (2863.87) at 09:30 am
+  - Entry Premium: ₹43.64 | Exit Premium: ₹50.99 | ROI: 16.8% (Target/Close Exit)
+* TRENT (LONG) touched S3 (VAL Reversion) (2857.66) at 09:15 am
+  - Entry Premium: ₹43.18 | Exit Premium: ₹65.69 | ROI: 52.1% (Target/Close Exit)
+* TATACOMM (LONG) touched Break Down (S4) (1640.77) at 10:40 am
+  - Entry Premium: ₹24.59 | Exit Premium: ₹23.13 | ROI: -5.9% (SL Hit at 10:55 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* TATACOMM (LONG) touched Target (S5) (1619.38) at 12:25 pm
+  - Entry Premium: ₹24.38 | Exit Premium: ₹33.84 | ROI: 38.8% (Target Hit at 02:35 pm)
+* TATACOMM (LONG) touched Support (S2) (1665.19) at 02:50 pm
+  - Entry Premium: ₹24.84 | Exit Premium: ₹24.84 | ROI: 0.0% (Target Hit at 02:55 pm)
+* TATACOMM (LONG) touched Buy Reversal (S3) (1659.09) at 02:50 pm
+  - Entry Premium: ₹24.84 | Exit Premium: ₹25.07 | ROI: 0.9% (Target Hit at 02:55 pm)
+* TATACOMM (LONG) touched S5 (VAL Extreme) (1619.38) at 10:05 am
+  - Entry Premium: ₹24.54 | Exit Premium: ₹35.54 | ROI: 44.8% (Target/Close Exit)
+* DRREDDY (LONG) touched Support (S2) (1173.77) at 09:25 am
+  - Entry Premium: ₹17.68 | Exit Premium: ₹25.27 | ROI: 42.9% (Target Hit at 11:00 am)
+* DRREDDY (LONG) touched Buy Reversal (S3) (1170.65) at 09:25 am
+  - Entry Premium: ₹17.68 | Exit Premium: ₹28.38 | ROI: 60.5% (Target Hit at 02:20 pm)
+* DRREDDY (LONG) touched S3 (VAL Reversion) (1170.65) at 09:15 am
+  - Entry Premium: ₹17.62 | Exit Premium: ₹24.01 | ROI: 36.3% (Target Hit at 09:55 am)
+* BEL (LONG) touched Break Down (S4) (360.75) at 09:30 am
+  - Entry Premium: ₹5.43 | Exit Premium: ₹7.70 | ROI: 41.7% (Target Hit at 11:00 am)
+* BEL (LONG) touched Support (S2) (365.12) at 09:55 am
+  - Entry Premium: ₹5.45 | Exit Premium: ₹5.50 | ROI: 0.9% (Target Hit at 10:00 am)
+* BEL (LONG) touched Buy Reversal (S3) (364.03) at 09:55 am
+  - Entry Premium: ₹5.45 | Exit Premium: ₹5.50 | ROI: 0.9% (Target Hit at 10:00 am)
+* BEL (LONG) touched S4 (VAL Breakdown Trigger) (360.75) at 09:20 am
+  - Entry Premium: ₹5.44 | Exit Premium: ₹8.41 | ROI: 54.5% (Target Hit at 11:45 am)
+* LT (LONG) touched Support (S2) (3607.68) at 09:15 am
+  - Entry Premium: ₹54.52 | Exit Premium: ₹88.85 | ROI: 63.0% (Target Hit at 01:55 pm)
+* TATASTEEL (LONG) touched Support (S2) (170.89) at 09:20 am
+  - Entry Premium: ₹2.56 | Exit Premium: ₹2.78 | ROI: 8.4% (Target Hit at 09:25 am)
+* TATASTEEL (LONG) touched Buy Reversal (S3) (170.35) at 09:20 am
+  - Entry Premium: ₹2.56 | Exit Premium: ₹3.31 | ROI: 29.4% (Target Hit at 09:25 am)
+* TATASTEEL (LONG) touched S3 (VAL Reversion) (170.35) at 09:15 am
+  - Entry Premium: ₹2.57 | Exit Premium: ₹3.61 | ROI: 40.6% (Target Hit at 09:30 am)
+* RECLTD (LONG) touched Support (S2) (293.45) at 09:45 am
+  - Entry Premium: ₹4.45 | Exit Premium: ₹5.63 | ROI: 26.4% (Target/Close Exit)
+* ADANIENT (LONG) touched Support (S2) (2560.07) at 09:50 am
+  - Entry Premium: ₹39.21 | Exit Premium: ₹48.36 | ROI: 23.3% (Target/Close Exit)
+* NATIONALUM (LONG) touched Support (S2) (311.10) at 09:40 am
+  - Entry Premium: ₹4.72 | Exit Premium: ₹5.05 | ROI: 6.9% (Target/Close Exit)
+* NATIONALUM (LONG) touched S3 (VAL Reversion) (310.10) at 09:15 am
+  - Entry Premium: ₹4.66 | Exit Premium: ₹5.83 | ROI: 25.1% (Target Hit at 09:25 am)
+* IDFCFIRSTB (LONG) touched Support (S2) (78.19) at 09:35 am
+  - Entry Premium: ₹1.19 | Exit Premium: ₹1.10 | ROI: -8.0% (Target/Close Exit)
+* IDFCFIRSTB (LONG) touched Buy Reversal (S3) (78.05) at 09:35 am
+  - Entry Premium: ₹1.19 | Exit Premium: ₹1.10 | ROI: -8.0% (Target/Close Exit)
+* IDFCFIRSTB (LONG) touched S3 (VAL Reversion) (78.05) at 09:15 am
+  - Entry Premium: ₹1.18 | Exit Premium: ₹1.43 | ROI: 21.2% (Target/Close Exit)
+* COALINDIA (LONG) touched Support (S2) (407.40) at 09:20 am
+  - Entry Premium: ₹6.09 | Exit Premium: ₹5.79 | ROI: -4.9% (SL Hit at 09:25 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 4.7x average on touch candle swept away the level's liquidity.
+* COALINDIA (LONG) touched Buy Reversal (S3) (406.42) at 09:20 am
+  - Entry Premium: ₹6.09 | Exit Premium: ₹5.79 | ROI: -4.9% (SL Hit at 09:25 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 4.7x average on touch candle swept away the level's liquidity.
+* HDFCLIFE (LONG) touched Support (S2) (543.15) at 09:35 am
+  - Entry Premium: ₹8.40 | Exit Premium: ₹6.92 | ROI: -17.6% (Target/Close Exit)
+* HDFCLIFE (LONG) touched Buy Reversal (S3) (542.48) at 09:35 am
+  - Entry Premium: ₹8.40 | Exit Premium: ₹6.92 | ROI: -17.6% (Target/Close Exit)
+* ICICIPRULI (LONG) touched Support (S2) (455.30) at 09:35 am
+  - Entry Premium: ₹6.94 | Exit Premium: ₹6.97 | ROI: 0.4% (Target/Close Exit)
+* ICICIPRULI (LONG) touched Buy Reversal (S3) (454.44) at 09:35 am
+  - Entry Premium: ₹6.94 | Exit Premium: ₹6.97 | ROI: 0.4% (Target/Close Exit)
+* ICICIPRULI (LONG) touched Break Down (S4) (451.88) at 09:35 am
+  - Entry Premium: ₹6.94 | Exit Premium: ₹6.97 | ROI: 0.4% (Target/Close Exit)
+* ICICIPRULI (LONG) touched Target (S5) (448.90) at 09:35 am
+  - Entry Premium: ₹6.94 | Exit Premium: ₹6.97 | ROI: 0.4% (Target/Close Exit)
+* INFY (LONG) touched Support (S2) (993.38) at 09:15 am
+  - Entry Premium: ₹15.31 | Exit Premium: ₹18.08 | ROI: 18.1% (Target/Close Exit)
+* AXISBANK (LONG) touched Support (S2) (1240.53) at 09:20 am
+  - Entry Premium: ₹18.62 | Exit Premium: ₹21.77 | ROI: 16.9% (Target Hit at 09:25 am)
+* AXISBANK (LONG) touched Buy Reversal (S3) (1238.29) at 09:20 am
+  - Entry Premium: ₹18.62 | Exit Premium: ₹24.00 | ROI: 28.9% (Target Hit at 09:25 am)
+* AXISBANK (LONG) touched S3 (VAL Reversion) (1238.29) at 09:15 am
+  - Entry Premium: ₹18.64 | Exit Premium: ₹25.32 | ROI: 35.9% (Target Hit at 09:30 am)
+* NMDC (LONG) touched Support (S2) (70.20) at 09:40 am
+  - Entry Premium: ₹1.08 | Exit Premium: ₹0.99 | ROI: -8.3% (Target/Close Exit)
+* HAL (LONG) touched Support (S2) (4621.86) at 09:35 am
+  - Entry Premium: ₹69.34 | Exit Premium: ₹62.89 | ROI: -9.3% (SL Hit at 09:40 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* HAL (LONG) touched Buy Reversal (S3) (4609.09) at 09:35 am
+  - Entry Premium: ₹69.34 | Exit Premium: ₹57.83 | ROI: -16.6% (SL Hit at 09:40 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* BPCL (LONG) touched Support (S2) (284.01) at 09:25 am
+  - Entry Premium: ₹4.31 | Exit Premium: ₹4.06 | ROI: -5.8% (Target/Close Exit)
+* NESTLEIND (LONG) touched Support (S2) (1312.88) at 09:25 am
+  - Entry Premium: ₹19.88 | Exit Premium: ₹25.13 | ROI: 26.4% (Target/Close Exit)
+* UPL (LONG) touched Support (S2) (477.14) at 09:30 am
+  - Entry Premium: ₹7.32 | Exit Premium: ₹8.20 | ROI: 11.9% (Target/Close Exit)
+* BAJAJFINSV (LONG) touched Support (S2) (1700.92) at 10:30 am
+  - Entry Premium: ₹25.98 | Exit Premium: ₹28.63 | ROI: 10.2% (Target/Close Exit)
+* BALKRISIND (LONG) touched Support (S2) (1987.51) at 09:30 am
+  - Entry Premium: ₹30.01 | Exit Premium: ₹34.61 | ROI: 15.3% (Target/Close Exit)
+* BALKRISIND (LONG) touched Buy Reversal (S3) (1982.82) at 09:30 am
+  - Entry Premium: ₹30.01 | Exit Premium: ₹34.61 | ROI: 15.3% (Target/Close Exit)
+* BALKRISIND (LONG) touched S3 (VAL Reversion) (1982.82) at 09:15 am
+  - Entry Premium: ₹29.91 | Exit Premium: ₹37.91 | ROI: 26.7% (Target/Close Exit)
+* BANKNIFTY (LONG) touched Support (S2) (54394.08) at 09:15 am
+  - Entry Premium: ₹820.54 | Exit Premium: ₹1097.52 | ROI: 33.8% (Target/Close Exit)
+* ONGC (LONG) touched Support (S2) (218.98) at 09:20 am
+  - Entry Premium: ₹3.29 | Exit Premium: ₹3.95 | ROI: 20.0% (Target Hit at 10:00 am)
+* ONGC (LONG) touched Buy Reversal (S3) (218.57) at 09:20 am
+  - Entry Premium: ₹3.29 | Exit Premium: ₹4.35 | ROI: 32.4% (Target Hit at 12:10 pm)
+* MGL (LONG) touched Support (S2) (1039.78) at 09:40 am
+  - Entry Premium: ₹15.63 | Exit Premium: ₹19.93 | ROI: 27.5% (Target Hit at 12:05 pm)
+* MGL (LONG) touched Buy Reversal (S3) (1037.71) at 09:40 am
+  - Entry Premium: ₹15.63 | Exit Premium: ₹15.38 | ROI: -1.6% (Target/Close Exit)
+* MGL (LONG) touched Break Down (S4) (1031.53) at 09:40 am
+  - Entry Premium: ₹15.63 | Exit Premium: ₹15.38 | ROI: -1.6% (Target/Close Exit)
+* MGL (LONG) touched S4 (VAL Breakdown Trigger) (1031.53) at 09:15 am
+  - Entry Premium: ₹15.63 | Exit Premium: ₹15.28 | ROI: -2.2% (Target/Close Exit)
+* BAJFINANCE (LONG) touched Support (S2) (952.93) at 09:15 am
+  - Entry Premium: ₹14.31 | Exit Premium: ₹17.46 | ROI: 22.0% (Target Hit at 09:25 am)
+* BAJFINANCE (LONG) touched Buy Reversal (S3) (951.43) at 09:15 am
+  - Entry Premium: ₹14.31 | Exit Premium: ₹18.63 | ROI: 30.2% (Target Hit at 09:25 am)
+* BAJFINANCE (LONG) touched Break Down (S4) (946.90) at 09:15 am
+  - Entry Premium: ₹14.31 | Exit Premium: ₹16.98 | ROI: 18.7% (Target/Close Exit)
+* BAJFINANCE (LONG) touched S3 (VAL Reversion) (951.43) at 09:15 am
+  - Entry Premium: ₹14.31 | Exit Premium: ₹18.63 | ROI: 30.2% (Target Hit at 09:25 am)
+* HINDUNILVR (LONG) touched Support (S2) (1838.12) at 09:25 am
+  - Entry Premium: ₹27.89 | Exit Premium: ₹26.69 | ROI: -4.3% (Target/Close Exit)
+* ICICIBANK (LONG) touched Support (S2) (1345.19) at 09:15 am
+  - Entry Premium: ₹20.14 | Exit Premium: ₹20.44 | ROI: 1.5% (Target Hit at 09:20 am)
+* ICICIBANK (LONG) touched Buy Reversal (S3) (1343.28) at 09:15 am
+  - Entry Premium: ₹20.14 | Exit Premium: ₹22.15 | ROI: 10.0% (Target Hit at 09:25 am)
+* ICICIBANK (LONG) touched S3 (VAL Reversion) (1343.28) at 09:15 am
+  - Entry Premium: ₹20.14 | Exit Premium: ₹22.15 | ROI: 10.0% (Target Hit at 09:25 am)
+* RELIANCE (LONG) touched Support (S2) (1171.58) at 09:45 am
+  - Entry Premium: ₹17.56 | Exit Premium: ₹17.66 | ROI: 0.6% (Target/Close Exit)
+* RELIANCE (LONG) touched Buy Reversal (S3) (1168.38) at 09:45 am
+  - Entry Premium: ₹17.56 | Exit Premium: ₹17.66 | ROI: 0.6% (Target/Close Exit)
+* RELIANCE (LONG) touched S4 (VAL Breakdown Trigger) (1158.75) at 09:15 am
+  - Entry Premium: ₹17.51 | Exit Premium: ₹19.26 | ROI: 10.0% (Target/Close Exit)
+* SBILIFE (LONG) touched Support (S2) (1670.42) at 09:45 am
+  - Entry Premium: ₹25.46 | Exit Premium: ₹18.41 | ROI: -27.7% (Target/Close Exit)
+* SBILIFE (LONG) touched Buy Reversal (S3) (1664.38) at 09:45 am
+  - Entry Premium: ₹25.46 | Exit Premium: ₹18.41 | ROI: -27.7% (Target/Close Exit)
+* DIVISLAB (LONG) touched Support (S2) (9305.45) at 09:25 am
+  - Entry Premium: ₹139.99 | Exit Premium: ₹117.16 | ROI: -16.3% (SL Hit at 09:40 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 2.6x average on touch candle swept away the level's liquidity.
+* DIVISLAB (LONG) touched Buy Reversal (S3) (9277.67) at 09:25 am
+  - Entry Premium: ₹139.99 | Exit Premium: ₹131.49 | ROI: -6.1% (Target/Close Exit)
+* DIVISLAB (LONG) touched S3 (VAL Reversion) (9277.67) at 09:20 am
+  - Entry Premium: ₹139.53 | Exit Premium: ₹182.41 | ROI: 30.7% (Target Hit at 10:10 am)
+* KOTAKBANK (LONG) touched Support (S2) (433.71) at 09:20 am
+  - Entry Premium: ₹6.61 | Exit Premium: ₹6.61 | ROI: 0.0% (Target/Close Exit)
+* KOTAKBANK (LONG) touched Buy Reversal (S3) (433.06) at 09:20 am
+  - Entry Premium: ₹6.61 | Exit Premium: ₹6.61 | ROI: 0.0% (Target/Close Exit)
+* TATACONSUM (LONG) touched Support (S2) (947.00) at 11:40 am
+  - Entry Premium: ₹14.27 | Exit Premium: ₹14.82 | ROI: 3.9% (Target/Close Exit)
+* MFSL (LONG) touched Support (S2) (1314.08) at 09:40 am
+  - Entry Premium: ₹19.74 | Exit Premium: ₹24.19 | ROI: 22.6% (Target Hit at 09:55 am)
+* MFSL (LONG) touched Buy Reversal (S3) (1309.91) at 09:40 am
+  - Entry Premium: ₹19.74 | Exit Premium: ₹18.64 | ROI: -5.6% (Target/Close Exit)
+* IOC (LONG) touched Support (S2) (125.33) at 09:25 am
+  - Entry Premium: ₹1.90 | Exit Premium: ₹1.57 | ROI: -17.1% (Target/Close Exit)
+* SUNPHARMA (LONG) touched Support (S2) (1750.45) at 09:20 am
+  - Entry Premium: ₹26.28 | Exit Premium: ₹31.53 | ROI: 20.0% (Target Hit at 09:50 am)
+* SUNPHARMA (LONG) touched Buy Reversal (S3) (1745.77) at 09:20 am
+  - Entry Premium: ₹26.28 | Exit Premium: ₹36.20 | ROI: 37.7% (Target Hit at 10:05 am)
+* VOLTAS (LONG) touched Support (S2) (1025.75) at 09:45 am
+  - Entry Premium: ₹15.51 | Exit Premium: ₹17.91 | ROI: 15.5% (Target/Close Exit)
+* CIPLA (LONG) touched Support (S2) (1299.06) at 09:25 am
+  - Entry Premium: ₹19.51 | Exit Premium: ₹24.71 | ROI: 26.7% (Target Hit at 10:05 am)
+* CIPLA (LONG) touched Buy Reversal (S3) (1295.19) at 09:25 am
+  - Entry Premium: ₹19.51 | Exit Premium: ₹27.40 | ROI: 40.5% (Target Hit at 10:25 am)
+* CIPLA (LONG) touched S3 (VAL Reversion) (1295.19) at 09:15 am
+  - Entry Premium: ₹19.51 | Exit Premium: ₹27.40 | ROI: 40.5% (Target Hit at 10:25 am)
+* INDUSINDBK (LONG) touched Support (S2) (860.16) at 09:25 am
+  - Entry Premium: ₹12.94 | Exit Premium: ₹12.57 | ROI: -2.9% (Target/Close Exit)
+* INDUSINDBK (LONG) touched Buy Reversal (S3) (858.24) at 09:25 am
+  - Entry Premium: ₹12.94 | Exit Premium: ₹12.57 | ROI: -2.9% (Target/Close Exit)
+* INDUSINDBK (LONG) touched S3 (VAL Reversion) (858.24) at 09:15 am
+  - Entry Premium: ₹12.94 | Exit Premium: ₹12.76 | ROI: -1.4% (Target/Close Exit)
+* JSWSTEEL (LONG) touched Support (S2) (1164.48) at 11:40 am
+  - Entry Premium: ₹17.52 | Exit Premium: ₹17.12 | ROI: -2.3% (Target/Close Exit)
+* ESCORTS (LONG) touched Support (S2) (2758.71) at 09:35 am
+  - Entry Premium: ₹41.16 | Exit Premium: ₹39.01 | ROI: -5.2% (SL Hit at 09:40 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 2.2x average on touch candle swept away the level's liquidity.
+* ESCORTS (LONG) touched Buy Reversal (S3) (2751.27) at 09:35 am
+  - Entry Premium: ₹41.16 | Exit Premium: ₹39.01 | ROI: -5.2% (SL Hit at 09:40 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 2.2x average on touch candle swept away the level's liquidity.
+* ESCORTS (LONG) touched Break Down (S4) (2728.94) at 09:35 am
+  - Entry Premium: ₹41.16 | Exit Premium: ₹36.56 | ROI: -11.2% (Target/Close Exit)
+* BHARTIARTL (LONG) touched Support (S2) (1793.95) at 09:15 am
+  - Entry Premium: ₹27.11 | Exit Premium: ₹33.16 | ROI: 22.3% (Target/Close Exit)
+* BANDHANBNK (SHORT) touched Sell reversal (R3) (158.06) at 12:15 pm
+  - Entry Premium: ₹2.37 | Exit Premium: ₹2.04 | ROI: -13.8% (SL Hit at 01:45 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* BANDHANBNK (SHORT) touched Resistance (R2) (157.22) at 12:15 pm
+  - Entry Premium: ₹2.37 | Exit Premium: ₹2.15 | ROI: -9.1% (SL Hit at 01:40 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* TCS (SHORT) touched Target (R6) (2158.13) at 09:15 am
+  - Entry Premium: ₹32.23 | Exit Premium: ₹25.08 | ROI: -22.2% (SL Hit at 09:20 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (79.0% body) indicating aggressive breakout force rather than rejection.
+* TCS (SHORT) touched Target (R5) (2147.00) at 09:15 am
+  - Entry Premium: ₹32.23 | Exit Premium: ₹25.08 | ROI: -22.2% (SL Hit at 09:20 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (79.0% body) indicating aggressive breakout force rather than rejection.
+* TCS (SHORT) touched Breakout (R4) (2120.82) at 09:15 am
+  - Entry Premium: ₹32.23 | Exit Premium: ₹25.08 | ROI: -22.2% (SL Hit at 09:20 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (79.0% body) indicating aggressive breakout force rather than rejection.
+* JSWSTEEL (SHORT) touched Target (R5) (1226.17) at 09:25 am
+  - Entry Premium: ₹17.66 | Exit Premium: ₹22.51 | ROI: 27.5% (Target/Close Exit)
+* JSWSTEEL (SHORT) touched R3 (VAH Reversion) (1191.29) at 09:15 am
+  - Entry Premium: ₹17.55 | Exit Premium: ₹18.85 | ROI: 7.4% (Target/Close Exit)
+* TECHM (SHORT) touched Target (R6) (1531.35) at 09:20 am
+  - Entry Premium: ₹22.88 | Exit Premium: ₹17.52 | ROI: -23.4% (SL Hit at 10:20 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 3.8x average on touch candle swept away the level's liquidity.
+* TECHM (SHORT) touched Target (R5) (1526.69) at 09:25 am
+  - Entry Premium: ₹22.79 | Exit Premium: ₹17.62 | ROI: -22.7% (SL Hit at 09:35 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 2.6x average on touch candle swept away the level's liquidity.
+* TECHM (SHORT) touched Breakout (R4) (1515.45) at 09:25 am
+  - Entry Premium: ₹22.79 | Exit Premium: ₹18.84 | ROI: -17.3% (SL Hit at 09:35 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 2.6x average on touch candle swept away the level's liquidity.
+* TECHM (SHORT) touched Sell reversal (R3) (1505.83) at 09:25 am
+  - Entry Premium: ₹22.79 | Exit Premium: ₹18.84 | ROI: -17.3% (SL Hit at 09:35 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 2.6x average on touch candle swept away the level's liquidity.
+* TECHM (SHORT) touched Resistance (R2) (1502.62) at 09:25 am
+  - Entry Premium: ₹22.79 | Exit Premium: ₹18.84 | ROI: -17.3% (SL Hit at 09:35 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 2.6x average on touch candle swept away the level's liquidity.
+* VOLTAS (SHORT) touched Resistance (R2) (1038.25) at 09:45 am
+  - Entry Premium: ₹15.51 | Exit Premium: ₹12.24 | ROI: -21.0% (SL Hit at 12:55 pm)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (92.5% body) indicating aggressive breakout force rather than rejection.
+* VOLTAS (SHORT) touched Sell reversal (R3) (1041.38) at 10:05 am
+  - Entry Premium: ₹15.56 | Exit Premium: ₹12.43 | ROI: -20.1% (SL Hit at 01:20 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* SBILIFE (SHORT) touched Sell reversal (R3) (1700.62) at 09:45 am
+  - Entry Premium: ₹25.46 | Exit Premium: ₹22.25 | ROI: -12.6% (SL Hit at 09:55 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* SBILIFE (SHORT) touched Resistance (R2) (1694.58) at 09:45 am
+  - Entry Premium: ₹25.46 | Exit Premium: ₹24.76 | ROI: -2.7% (SL Hit at 09:50 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* PETRONET (SHORT) touched Target (R5) (296.30) at 09:40 am
+  - Entry Premium: ₹4.40 | Exit Premium: ₹5.15 | ROI: 17.0% (Target/Close Exit)
+* PETRONET (SHORT) touched Breakout (R4) (293.42) at 09:40 am
+  - Entry Premium: ₹4.40 | Exit Premium: ₹4.15 | ROI: -5.8% (SL Hit at 09:55 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* PETRONET (SHORT) touched Sell reversal (R3) (290.96) at 11:15 am
+  - Entry Premium: ₹4.37 | Exit Premium: ₹4.20 | ROI: -3.9% (SL Hit at 11:25 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* PETRONET (SHORT) touched Resistance (R2) (290.14) at 11:15 am
+  - Entry Premium: ₹4.37 | Exit Premium: ₹4.42 | ROI: 1.1% (Target Hit at 11:20 am)
+* MUTHOOTFIN (SHORT) touched Target (R6) (2651.50) at 09:40 am
+  - Entry Premium: ₹39.71 | Exit Premium: ₹35.01 | ROI: -11.8% (SL Hit at 10:05 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* MUTHOOTFIN (SHORT) touched Target (R5) (2639.66) at 09:40 am
+  - Entry Premium: ₹39.71 | Exit Premium: ₹35.86 | ROI: -9.7% (SL Hit at 10:00 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* MUTHOOTFIN (SHORT) touched Breakout (R4) (2610.14) at 11:15 am
+  - Entry Premium: ₹39.39 | Exit Premium: ₹39.39 | ROI: 0.0% (Target Hit at 11:20 am)
+* NAUKRI (SHORT) touched Target (R5) (1244.13) at 09:40 am
+  - Entry Premium: ₹18.36 | Exit Premium: ₹21.26 | ROI: 15.8% (Target/Close Exit)
+* NAUKRI (SHORT) touched Breakout (R4) (1221.52) at 09:40 am
+  - Entry Premium: ₹18.36 | Exit Premium: ₹16.71 | ROI: -9.0% (SL Hit at 09:55 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* IRCTC (SHORT) touched Target (R6) (459.14) at 09:35 am
+  - Entry Premium: ₹6.92 | Exit Premium: ₹6.69 | ROI: -3.3% (SL Hit at 09:40 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* IRCTC (SHORT) touched Breakout (R4) (454.94) at 09:35 am
+  - Entry Premium: ₹6.92 | Exit Premium: ₹6.69 | ROI: -3.3% (SL Hit at 09:40 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* IRCTC (SHORT) touched Target (R5) (457.91) at 10:35 am
+  - Entry Premium: ₹6.87 | Exit Premium: ₹6.30 | ROI: -8.4% (SL Hit at 10:40 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* OFSS (SHORT) touched Target (R5) (10758.93) at 09:40 am
+  - Entry Premium: ₹156.64 | Exit Premium: ₹104.14 | ROI: -33.5% (Target/Close Exit)
+* OFSS (SHORT) touched Breakout (R4) (10626.60) at 09:40 am
+  - Entry Premium: ₹156.64 | Exit Premium: ₹104.14 | ROI: -33.5% (Target/Close Exit)
+* OFSS (SHORT) touched Resistance (R2) (10475.53) at 09:40 am
+  - Entry Premium: ₹156.64 | Exit Premium: ₹111.64 | ROI: -28.7% (SL Hit at 10:15 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (100.0% body) indicating aggressive breakout force rather than rejection.
+* OFSS (SHORT) touched Sell reversal (R3) (10513.30) at 10:40 am
+  - Entry Premium: ₹157.98 | Exit Premium: ₹160.31 | ROI: 1.5% (Target Hit at 10:45 am)
+* DIVISLAB (SHORT) touched Target (R5) (9624.97) at 09:25 am
+  - Entry Premium: ₹139.99 | Exit Premium: ₹148.49 | ROI: 6.1% (Target/Close Exit)
+* TATACOMM (SHORT) touched Sell reversal (R3) (1695.72) at 10:40 am
+  - Entry Premium: ₹24.59 | Exit Premium: ₹15.09 | ROI: -38.6% (Target/Close Exit)
+* TATACOMM (SHORT) touched Resistance (R2) (1689.61) at 10:40 am
+  - Entry Premium: ₹24.59 | Exit Premium: ₹15.09 | ROI: -38.6% (Target/Close Exit)
+* JINDALSTEL (SHORT) touched Sell reversal (R3) (1027.52) at 09:35 am
+  - Entry Premium: ₹15.39 | Exit Premium: ₹19.26 | ROI: 25.2% (Target Hit at 11:25 am)
+* JINDALSTEL (SHORT) touched Resistance (R2) (1021.68) at 09:35 am
+  - Entry Premium: ₹15.39 | Exit Premium: ₹16.09 | ROI: 4.5% (Target Hit at 09:40 am)
+* BSOFT (SHORT) touched Target (R5) (284.61) at 09:30 am
+  - Entry Premium: ₹4.20 | Exit Premium: ₹1.48 | ROI: -64.7% (SL Hit at 10:45 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 2.1x average on touch candle swept away the level's liquidity.
+* BSOFT (SHORT) touched Breakout (R4) (279.88) at 09:30 am
+  - Entry Premium: ₹4.20 | Exit Premium: ₹3.85 | ROI: -8.3% (SL Hit at 09:35 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 2.1x average on touch candle swept away the level's liquidity.
+* BSOFT (SHORT) touched Target (R6) (286.54) at 02:20 pm
+  - Entry Premium: ₹4.29 | Exit Premium: ₹4.21 | ROI: -1.7% (Target/Close Exit)
+* CIPLA (SHORT) touched Breakout (R4) (1330.01) at 09:25 am
+  - Entry Premium: ₹19.51 | Exit Premium: ₹16.26 | ROI: -16.7% (Target/Close Exit)
+* CIPLA (SHORT) touched Sell reversal (R3) (1318.40) at 10:30 am
+  - Entry Premium: ₹19.72 | Exit Premium: ₹23.72 | ROI: 20.3% (Target/Close Exit)
+* CIPLA (SHORT) touched Resistance (R2) (1314.54) at 10:30 am
+  - Entry Premium: ₹19.72 | Exit Premium: ₹21.89 | ROI: 11.0% (Target Hit at 10:55 am)
+* BHEL (SHORT) touched Resistance (R2) (433.63) at 10:30 am
+  - Entry Premium: ₹6.47 | Exit Premium: ₹4.92 | ROI: -24.0% (SL Hit at 10:40 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* BHEL (SHORT) touched Sell reversal (R3) (435.65) at 12:55 pm
+  - Entry Premium: ₹6.52 | Exit Premium: ₹5.69 | ROI: -12.8% (SL Hit at 01:20 pm)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (90.5% body) indicating aggressive breakout force rather than rejection.
+* HEROMOTOCO (SHORT) touched Sell reversal (R3) (4898.02) at 09:50 am
+  - Entry Premium: ₹73.20 | Exit Premium: ₹59.29 | ROI: -19.0% (SL Hit at 10:10 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* HEROMOTOCO (SHORT) touched Resistance (R2) (4884.18) at 09:50 am
+  - Entry Premium: ₹73.20 | Exit Premium: ₹66.22 | ROI: -9.5% (SL Hit at 09:55 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* HEROMOTOCO (SHORT) touched Breakout (R4) (4939.55) at 10:30 am
+  - Entry Premium: ₹73.88 | Exit Premium: ₹61.66 | ROI: -16.5% (SL Hit at 11:00 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* UPL (SHORT) touched Sell reversal (R3) (486.91) at 09:30 am
+  - Entry Premium: ₹7.32 | Exit Premium: ₹7.62 | ROI: 4.1% (Target Hit at 09:35 am)
+* UPL (SHORT) touched Resistance (R2) (484.96) at 09:55 am
+  - Entry Premium: ₹7.31 | Exit Premium: ₹6.93 | ROI: -5.1% (SL Hit at 10:05 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* UPL (SHORT) touched Breakout (R4) (492.77) at 01:35 pm
+  - Entry Premium: ₹7.36 | Exit Premium: ₹5.96 | ROI: -19.0% (SL Hit at 02:15 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* WIPRO (SHORT) touched Target (R6) (162.21) at 09:20 am
+  - Entry Premium: ₹2.43 | Exit Premium: ₹2.20 | ROI: -9.7% (SL Hit at 09:25 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 6.2x average on touch candle swept away the level's liquidity.
+* WIPRO (SHORT) touched Target (R5) (161.72) at 09:20 am
+  - Entry Premium: ₹2.43 | Exit Premium: ₹2.20 | ROI: -9.7% (SL Hit at 09:25 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 6.2x average on touch candle swept away the level's liquidity.
+* WIPRO (SHORT) touched Breakout (R4) (160.49) at 09:20 am
+  - Entry Premium: ₹2.43 | Exit Premium: ₹2.20 | ROI: -9.7% (SL Hit at 09:25 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 6.2x average on touch candle swept away the level's liquidity.
+* INDIGO (SHORT) touched Resistance (R2) (4850.04) at 09:35 am
+  - Entry Premium: ₹72.45 | Exit Premium: ₹57.58 | ROI: -20.5% (SL Hit at 02:05 pm)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 2.4x average on touch candle swept away the level's liquidity.
+* INDIGO (SHORT) touched Sell reversal (R3) (4868.51) at 11:45 am
+  - Entry Premium: ₹72.70 | Exit Premium: ₹56.82 | ROI: -21.8% (SL Hit at 02:10 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* CONCOR (SHORT) touched Target (R5) (444.06) at 09:30 am
+  - Entry Premium: ₹6.56 | Exit Premium: ₹2.84 | ROI: -56.8% (SL Hit at 02:00 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* CONCOR (SHORT) touched Sell reversal (R3) (437.18) at 09:30 am
+  - Entry Premium: ₹6.56 | Exit Premium: ₹6.29 | ROI: -4.2% (SL Hit at 09:50 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* CONCOR (SHORT) touched Resistance (R2) (436.12) at 09:30 am
+  - Entry Premium: ₹6.56 | Exit Premium: ₹6.56 | ROI: 0.0% (Target Hit at 09:35 am)
+* CONCOR (SHORT) touched Breakout (R4) (440.35) at 09:55 am
+  - Entry Premium: ₹6.57 | Exit Premium: ₹5.00 | ROI: -23.8% (SL Hit at 10:00 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* CONCOR (SHORT) touched Target (R6) (445.57) at 01:55 pm
+  - Entry Premium: ₹6.67 | Exit Premium: ₹5.64 | ROI: -15.5% (SL Hit at 02:20 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* BANKBARODA (SHORT) touched Breakout (R4) (237.48) at 09:30 am
+  - Entry Premium: ₹3.56 | Exit Premium: ₹3.17 | ROI: -10.8% (SL Hit at 10:05 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 3.6x average on touch candle swept away the level's liquidity.
+* BANKBARODA (SHORT) touched Sell reversal (R3) (235.74) at 09:30 am
+  - Entry Premium: ₹3.56 | Exit Premium: ₹3.38 | ROI: -5.1% (SL Hit at 10:00 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 3.6x average on touch candle swept away the level's liquidity.
+* BANKBARODA (SHORT) touched Resistance (R2) (235.16) at 09:30 am
+  - Entry Premium: ₹3.56 | Exit Premium: ₹3.38 | ROI: -5.1% (SL Hit at 10:00 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 3.6x average on touch candle swept away the level's liquidity.
+* NESTLEIND (SHORT) touched Breakout (R4) (1337.37) at 09:25 am
+  - Entry Premium: ₹19.88 | Exit Premium: ₹12.56 | ROI: -36.8% (SL Hit at 01:45 pm)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (78.9% body) indicating aggressive breakout force rather than rejection.
+* NESTLEIND (SHORT) touched Sell reversal (R3) (1328.18) at 09:25 am
+  - Entry Premium: ₹19.88 | Exit Premium: ₹17.16 | ROI: -13.7% (SL Hit at 10:25 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (78.9% body) indicating aggressive breakout force rather than rejection.
+* NESTLEIND (SHORT) touched Resistance (R2) (1325.12) at 09:25 am
+  - Entry Premium: ₹19.88 | Exit Premium: ₹18.69 | ROI: -6.0% (SL Hit at 09:30 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (78.9% body) indicating aggressive breakout force rather than rejection.
+* NESTLEIND (SHORT) touched Target (R5) (1348.10) at 01:50 pm
+  - Entry Premium: ₹20.13 | Exit Premium: ₹23.03 | ROI: 14.4% (Target/Close Exit)
+* NESTLEIND (SHORT) touched Target (R6) (1352.58) at 02:10 pm
+  - Entry Premium: ₹20.18 | Exit Premium: ₹24.98 | ROI: 23.8% (Target/Close Exit)
+* NESTLEIND (SHORT) touched R5 (VAH Extreme) (1348.10) at 01:30 pm
+  - Entry Premium: ₹20.08 | Exit Premium: ₹21.33 | ROI: 6.2% (Target/Close Exit)
+* HDFCLIFE (SHORT) touched Breakout (R4) (548.54) at 09:35 am
+  - Entry Premium: ₹8.40 | Exit Premium: ₹9.40 | ROI: 11.9% (Target Hit at 09:40 am)
+* HDFCLIFE (SHORT) touched Sell reversal (R3) (546.52) at 09:35 am
+  - Entry Premium: ₹8.40 | Exit Premium: ₹9.40 | ROI: 11.9% (Target Hit at 09:40 am)
+* HDFCLIFE (SHORT) touched Resistance (R2) (545.85) at 09:35 am
+  - Entry Premium: ₹8.40 | Exit Premium: ₹9.40 | ROI: 11.9% (Target Hit at 09:40 am)
+* ASIANPAINT (SHORT) touched Breakout (R4) (2342.07) at 09:20 am
+  - Entry Premium: ₹34.92 | Exit Premium: ₹25.44 | ROI: -27.1% (SL Hit at 09:55 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (85.2% body) indicating aggressive breakout force rather than rejection.
+* ASIANPAINT (SHORT) touched Sell reversal (R3) (2326.84) at 09:20 am
+  - Entry Premium: ₹34.92 | Exit Premium: ₹31.87 | ROI: -8.7% (SL Hit at 09:25 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (85.2% body) indicating aggressive breakout force rather than rejection.
+* ASIANPAINT (SHORT) touched Resistance (R2) (2321.76) at 09:20 am
+  - Entry Premium: ₹34.92 | Exit Premium: ₹31.87 | ROI: -8.7% (SL Hit at 09:25 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (85.2% body) indicating aggressive breakout force rather than rejection.
+* ASIANPAINT (SHORT) touched Target (R6) (2367.00) at 10:30 am
+  - Entry Premium: ₹35.39 | Exit Premium: ₹42.39 | ROI: 19.8% (Target/Close Exit)
+* ASIANPAINT (SHORT) touched Target (R5) (2359.86) at 10:30 am
+  - Entry Premium: ₹35.39 | Exit Premium: ₹40.87 | ROI: 15.5% (Target Hit at 12:10 pm)
+* ASIANPAINT (SHORT) touched R5 (VAH Extreme) (2359.86) at 09:15 am
+  - Entry Premium: ₹35.00 | Exit Premium: ₹29.00 | ROI: -17.1% (Target/Close Exit)
+* AUBANK (SHORT) touched Sell reversal (R3) (981.57) at 09:30 am
+  - Entry Premium: ₹14.74 | Exit Premium: ₹13.94 | ROI: -5.4% (SL Hit at 09:35 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 2.5x average on touch candle swept away the level's liquidity.
+* AUBANK (SHORT) touched Resistance (R2) (979.38) at 09:30 am
+  - Entry Premium: ₹14.74 | Exit Premium: ₹13.94 | ROI: -5.4% (SL Hit at 09:35 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 2.5x average on touch candle swept away the level's liquidity.
+* AUBANK (SHORT) touched Breakout (R4) (988.14) at 09:55 am
+  - Entry Premium: ₹14.78 | Exit Premium: ₹12.27 | ROI: -17.0% (SL Hit at 10:40 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* KOTAKBANK (SHORT) touched Target (R6) (442.08) at 09:20 am
+  - Entry Premium: ₹6.61 | Exit Premium: ₹5.63 | ROI: -14.9% (SL Hit at 09:45 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 5.8x average on touch candle swept away the level's liquidity.
+* KOTAKBANK (SHORT) touched Target (R5) (441.14) at 09:20 am
+  - Entry Premium: ₹6.61 | Exit Premium: ₹5.67 | ROI: -14.4% (SL Hit at 09:45 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 5.8x average on touch candle swept away the level's liquidity.
+* SUNPHARMA (SHORT) touched Sell reversal (R3) (1773.83) at 10:25 am
+  - Entry Premium: ₹26.64 | Exit Premium: ₹28.31 | ROI: 6.3% (Target Hit at 10:30 am)
+* SUNPHARMA (SHORT) touched Resistance (R2) (1769.15) at 10:25 am
+  - Entry Premium: ₹26.64 | Exit Premium: ₹27.34 | ROI: 2.6% (Target Hit at 10:30 am)
+* BAJAJFINSV (SHORT) touched Target (R5) (1741.63) at 10:30 am
+  - Entry Premium: ₹25.98 | Exit Premium: ₹19.58 | ROI: -24.7% (SL Hit at 01:30 pm)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (75.6% body) indicating aggressive breakout force rather than rejection.
+* BAJAJFINSV (SHORT) touched Breakout (R4) (1729.23) at 10:30 am
+  - Entry Premium: ₹25.98 | Exit Premium: ₹24.43 | ROI: -6.0% (SL Hit at 11:25 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (75.6% body) indicating aggressive breakout force rather than rejection.
+* BAJAJFINSV (SHORT) touched Target (R6) (1746.78) at 01:30 pm
+  - Entry Premium: ₹26.21 | Exit Premium: ₹24.88 | ROI: -5.1% (SL Hit at 01:45 pm)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (79.7% body) indicating aggressive breakout force rather than rejection.
+* INDUSINDBK (SHORT) touched Resistance (R2) (867.84) at 09:50 am
+  - Entry Premium: ₹12.98 | Exit Premium: ₹14.61 | ROI: 12.5% (Target/Close Exit)
+* INDUSINDBK (SHORT) touched R3 (VAH Reversion) (869.76) at 09:15 am
+  - Entry Premium: ₹12.94 | Exit Premium: ₹13.11 | ROI: 1.4% (Target/Close Exit)
+* ICICIPRULI (SHORT) touched Breakout (R4) (462.12) at 09:35 am
+  - Entry Premium: ₹6.94 | Exit Premium: ₹7.54 | ROI: 8.6% (Target Hit at 09:40 am)
+* ICICIPRULI (SHORT) touched Target (R5) (465.10) at 09:55 am
+  - Entry Premium: ₹6.96 | Exit Premium: ₹9.04 | ROI: 29.9% (Target Hit at 11:40 am)
+* ICICIPRULI (SHORT) touched Sell reversal (R3) (459.56) at 11:15 am
+  - Entry Premium: ₹6.93 | Exit Premium: ₹6.98 | ROI: 0.7% (Target Hit at 11:20 am)
+* ICICIPRULI (SHORT) touched Resistance (R2) (458.70) at 11:45 am
+  - Entry Premium: ₹6.90 | Exit Premium: ₹6.90 | ROI: 0.0% (Target Hit at 11:50 am)
+* ICICIPRULI (SHORT) touched R5 (VAH Extreme) (465.10) at 09:15 am
+  - Entry Premium: ₹6.88 | Exit Premium: ₹4.98 | ROI: -27.6% (Target/Close Exit)
+* BEL (SHORT) touched Resistance (R2) (369.48) at 12:50 pm
+  - Entry Premium: ₹5.52 | Exit Premium: ₹4.49 | ROI: -18.7% (SL Hit at 01:55 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* BEL (SHORT) touched Sell reversal (R3) (370.57) at 01:35 pm
+  - Entry Premium: ₹5.54 | Exit Premium: ₹4.51 | ROI: -18.6% (SL Hit at 01:55 pm)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (78.9% body) indicating aggressive breakout force rather than rejection.
+* MGL (SHORT) touched Sell reversal (R3) (1050.09) at 09:40 am
+  - Entry Premium: ₹15.63 | Exit Premium: ₹15.88 | ROI: 1.6% (Target/Close Exit)
+* MGL (SHORT) touched Resistance (R2) (1048.03) at 09:40 am
+  - Entry Premium: ₹15.63 | Exit Premium: ₹11.57 | ROI: -26.0% (SL Hit at 12:05 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* HAL (SHORT) touched Resistance (R2) (4672.94) at 10:35 am
+  - Entry Premium: ₹69.58 | Exit Premium: ₹47.84 | ROI: -31.2% (SL Hit at 11:45 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* HAL (SHORT) touched Sell reversal (R3) (4685.71) at 11:45 am
+  - Entry Premium: ₹70.26 | Exit Premium: ₹82.06 | ROI: 16.8% (Target Hit at 12:15 pm)
+* COFORGE (SHORT) touched Breakout (R4) (1850.65) at 09:30 am
+  - Entry Premium: ₹27.85 | Exit Premium: ₹25.85 | ROI: -7.2% (SL Hit at 09:35 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* COFORGE (SHORT) touched Sell reversal (R3) (1832.48) at 09:30 am
+  - Entry Premium: ₹27.85 | Exit Premium: ₹25.85 | ROI: -7.2% (SL Hit at 09:35 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* COFORGE (SHORT) touched Resistance (R2) (1826.42) at 09:30 am
+  - Entry Premium: ₹27.85 | Exit Premium: ₹25.85 | ROI: -7.2% (SL Hit at 09:35 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* COFORGE (SHORT) touched Target (R6) (1880.76) at 10:30 am
+  - Entry Premium: ₹28.17 | Exit Premium: ₹34.69 | ROI: 23.1% (Target Hit at 11:05 am)
+* COFORGE (SHORT) touched Target (R5) (1871.89) at 10:35 am
+  - Entry Premium: ₹28.07 | Exit Premium: ₹35.37 | ROI: 26.0% (Target Hit at 11:30 am)
+* M&M (SHORT) touched Target (R5) (2805.04) at 10:25 am
+  - Entry Premium: ₹41.93 | Exit Premium: ₹34.25 | ROI: -18.3% (SL Hit at 10:55 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* M&M (SHORT) touched Breakout (R4) (2785.19) at 10:25 am
+  - Entry Premium: ₹41.93 | Exit Premium: ₹43.63 | ROI: 4.1% (Target Hit at 10:30 am)
+* M&M (SHORT) touched Target (R6) (2813.16) at 10:55 am
+  - Entry Premium: ₹42.26 | Exit Premium: ₹43.45 | ROI: 2.8% (Target Hit at 11:00 am)
+* BAJFINANCE (SHORT) touched Sell reversal (R3) (960.47) at 09:15 am
+  - Entry Premium: ₹14.31 | Exit Premium: ₹10.04 | ROI: -29.9% (SL Hit at 09:25 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 337992.0x average on touch candle swept away the level's liquidity.
+* BAJFINANCE (SHORT) touched Resistance (R2) (958.97) at 09:15 am
+  - Entry Premium: ₹14.31 | Exit Premium: ₹10.79 | ROI: -24.6% (SL Hit at 09:25 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 337992.0x average on touch candle swept away the level's liquidity.
+* BAJFINANCE (SHORT) touched Breakout (R4) (965.00) at 09:45 am
+  - Entry Premium: ₹14.41 | Exit Premium: ₹11.37 | ROI: -21.1% (SL Hit at 10:25 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* BAJFINANCE (SHORT) touched Target (R5) (970.28) at 10:25 am
+  - Entry Premium: ₹14.49 | Exit Premium: ₹17.99 | ROI: 24.1% (Target/Close Exit)
+* BHARTIARTL (SHORT) touched Resistance (R2) (1815.25) at 09:15 am
+  - Entry Premium: ₹27.11 | Exit Premium: ₹21.47 | ROI: -20.8% (SL Hit at 09:40 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 274185.0x average on touch candle swept away the level's liquidity.
+* BHARTIARTL (SHORT) touched Sell reversal (R3) (1820.58) at 09:45 am
+  - Entry Premium: ₹27.22 | Exit Premium: ₹24.62 | ROI: -9.6% (Target/Close Exit)
+* BHARTIARTL (SHORT) touched R3 (VAH Reversion) (1820.58) at 09:15 am
+  - Entry Premium: ₹27.11 | Exit Premium: ₹21.06 | ROI: -22.3% (Target/Close Exit)
+* DIXON (SHORT) touched Sell reversal (R3) (12770.45) at 09:35 am
+  - Entry Premium: ₹190.84 | Exit Premium: ₹154.35 | ROI: -19.1% (SL Hit at 01:45 pm)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 2.3x average on touch candle swept away the level's liquidity.
+* DIXON (SHORT) touched Resistance (R2) (12730.30) at 09:35 am
+  - Entry Premium: ₹190.84 | Exit Premium: ₹174.34 | ROI: -8.6% (SL Hit at 10:25 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 2.3x average on touch candle swept away the level's liquidity.
+* DIXON (SHORT) touched R4 (VAH Breakout Trigger) (12890.90) at 09:15 am
+  - Entry Premium: ₹191.25 | Exit Premium: ₹202.75 | ROI: 6.0% (Target/Close Exit)
+* POWERGRID (SHORT) touched Target (R6) (254.00) at 09:20 am
+  - Entry Premium: ₹3.71 | Exit Premium: ₹2.01 | ROI: -45.8% (Target/Close Exit)
+* POWERGRID (SHORT) touched Sell reversal (R3) (247.22) at 09:20 am
+  - Entry Premium: ₹3.71 | Exit Premium: ₹3.11 | ROI: -16.2% (SL Hit at 09:50 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 3.5x average on touch candle swept away the level's liquidity.
+* POWERGRID (SHORT) touched Breakout (R4) (249.79) at 09:50 am
+  - Entry Premium: ₹3.73 | Exit Premium: ₹2.99 | ROI: -20.0% (SL Hit at 11:20 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* ZEEL (SHORT) touched Target (R5) (71.71) at 10:05 am
+  - Entry Premium: ₹1.05 | Exit Premium: ₹0.80 | ROI: -23.9% (Target/Close Exit)
+* ZEEL (SHORT) touched Sell reversal (R3) (69.42) at 10:05 am
+  - Entry Premium: ₹1.05 | Exit Premium: ₹1.00 | ROI: -4.8% (SL Hit at 10:10 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* ZEEL (SHORT) touched Resistance (R2) (69.07) at 10:40 am
+  - Entry Premium: ₹1.04 | Exit Premium: ₹1.07 | ROI: 2.9% (Target Hit at 10:45 am)
+* ZEEL (SHORT) touched R4 (VAH Breakout Trigger) (70.48) at 02:15 pm
+  - Entry Premium: ₹1.05 | Exit Premium: ₹0.91 | ROI: -12.9% (Target/Close Exit)
+* NTPC (SHORT) touched Sell reversal (R3) (311.89) at 09:20 am
+  - Entry Premium: ₹4.65 | Exit Premium: ₹3.34 | ROI: -28.1% (SL Hit at 09:50 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 3.0x average on touch candle swept away the level's liquidity.
+* NTPC (SHORT) touched Resistance (R2) (311.16) at 09:20 am
+  - Entry Premium: ₹4.65 | Exit Premium: ₹3.71 | ROI: -20.2% (SL Hit at 09:30 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 3.0x average on touch candle swept away the level's liquidity.
+* NTPC (SHORT) touched Breakout (R4) (314.07) at 10:25 am
+  - Entry Premium: ₹4.71 | Exit Premium: ₹5.71 | ROI: 21.3% (Target Hit at 12:10 pm)
+* NTPC (SHORT) touched R4 (VAH Breakout Trigger) (314.07) at 09:15 am
+  - Entry Premium: ₹4.65 | Exit Premium: ₹4.50 | ROI: -3.2% (Target/Close Exit)
+* NMDC (SHORT) touched Breakout (R4) (72.15) at 09:40 am
+  - Entry Premium: ₹1.08 | Exit Premium: ₹0.91 | ROI: -15.4% (SL Hit at 10:55 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* NMDC (SHORT) touched Sell reversal (R3) (71.42) at 10:00 am
+  - Entry Premium: ₹1.08 | Exit Premium: ₹1.04 | ROI: -3.7% (SL Hit at 10:25 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* INFY (SHORT) touched Target (R6) (1016.83) at 09:15 am
+  - Entry Premium: ₹15.31 | Exit Premium: ₹12.73 | ROI: -16.8% (SL Hit at 09:20 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 1467223.0x average on touch candle swept away the level's liquidity.
+* INFY (SHORT) touched Breakout (R4) (1007.86) at 09:15 am
+  - Entry Premium: ₹15.31 | Exit Premium: ₹12.73 | ROI: -16.8% (SL Hit at 09:20 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 1467223.0x average on touch candle swept away the level's liquidity.
+* INFY (SHORT) touched Sell reversal (R3) (1002.43) at 09:15 am
+  - Entry Premium: ₹15.31 | Exit Premium: ₹12.73 | ROI: -16.8% (SL Hit at 09:20 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 1467223.0x average on touch candle swept away the level's liquidity.
+* GODREJPROP (SHORT) touched Sell reversal (R3) (1547.86) at 09:35 am
+  - Entry Premium: ₹23.24 | Exit Premium: ₹22.09 | ROI: -4.9% (SL Hit at 09:40 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 2.3x average on touch candle swept away the level's liquidity.
+* GODREJPROP (SHORT) touched Resistance (R2) (1543.24) at 09:35 am
+  - Entry Premium: ₹23.24 | Exit Premium: ₹22.09 | ROI: -4.9% (SL Hit at 09:40 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 2.3x average on touch candle swept away the level's liquidity.
+* GODREJPROP (SHORT) touched R4 (VAH Breakout Trigger) (1561.72) at 09:15 am
+  - Entry Premium: ₹23.15 | Exit Premium: ₹22.00 | ROI: -5.0% (Target/Close Exit)
+* MCX (SHORT) touched Target (R5) (3363.89) at 09:40 am
+  - Entry Premium: ₹49.65 | Exit Premium: ₹44.00 | ROI: -11.4% (Target/Close Exit)
+* MCX (SHORT) touched Breakout (R4) (3323.97) at 09:40 am
+  - Entry Premium: ₹49.65 | Exit Premium: ₹39.19 | ROI: -21.1% (SL Hit at 11:25 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 2.2x average on touch candle swept away the level's liquidity.
+* MCX (SHORT) touched Sell reversal (R3) (3289.78) at 09:55 am
+  - Entry Premium: ₹49.30 | Exit Premium: ₹43.55 | ROI: -11.7% (SL Hit at 10:10 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 2.1x average on touch candle swept away the level's liquidity.
+* MCX (SHORT) touched Resistance (R2) (3278.39) at 09:55 am
+  - Entry Premium: ₹49.30 | Exit Premium: ₹43.55 | ROI: -11.7% (SL Hit at 10:10 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 2.1x average on touch candle swept away the level's liquidity.
+* ADANIENT (SHORT) touched Resistance (R2) (2631.93) at 12:50 pm
+  - Entry Premium: ₹39.43 | Exit Premium: ₹35.34 | ROI: -10.4% (SL Hit at 01:05 pm)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (91.0% body) indicating aggressive breakout force rather than rejection.
+* ADANIENT (SHORT) touched Sell reversal (R3) (2649.90) at 01:30 pm
+  - Entry Premium: ₹39.63 | Exit Premium: ₹44.78 | ROI: 13.0% (Target/Close Exit)
+* ADANIENT (SHORT) touched R3 (VAH Reversion) (2649.90) at 10:00 am
+  - Entry Premium: ₹39.42 | Exit Premium: ₹37.42 | ROI: -5.1% (Target/Close Exit)
+* BALKRISIND (SHORT) touched Breakout (R4) (2025.06) at 09:30 am
+  - Entry Premium: ₹30.01 | Exit Premium: ₹25.41 | ROI: -15.3% (Target/Close Exit)
+* BALKRISIND (SHORT) touched Resistance (R2) (2006.29) at 09:30 am
+  - Entry Premium: ₹30.01 | Exit Premium: ₹25.26 | ROI: -15.8% (SL Hit at 10:30 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* BALKRISIND (SHORT) touched Sell reversal (R3) (2010.98) at 10:30 am
+  - Entry Premium: ₹30.13 | Exit Premium: ₹25.83 | ROI: -14.3% (SL Hit at 10:35 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 5.0x average on touch candle swept away the level's liquidity.
+* BALKRISIND (SHORT) touched R4 (VAH Breakout Trigger) (2025.06) at 09:15 am
+  - Entry Premium: ₹29.91 | Exit Premium: ₹21.91 | ROI: -26.7% (Target/Close Exit)
+* PFC (SHORT) touched Target (R5) (331.50) at 09:40 am
+  - Entry Premium: ₹4.91 | Exit Premium: ₹4.64 | ROI: -5.6% (Target/Close Exit)
+* PFC (SHORT) touched Breakout (R4) (328.62) at 09:40 am
+  - Entry Premium: ₹4.91 | Exit Premium: ₹4.00 | ROI: -18.6% (SL Hit at 01:40 pm)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (75.0% body) indicating aggressive breakout force rather than rejection.
+* PFC (SHORT) touched Sell reversal (R3) (326.16) at 09:45 am
+  - Entry Premium: ₹4.90 | Exit Premium: ₹4.38 | ROI: -10.7% (SL Hit at 10:00 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* PFC (SHORT) touched Resistance (R2) (325.34) at 10:40 am
+  - Entry Premium: ₹4.91 | Exit Premium: ₹5.01 | ROI: 2.0% (Target Hit at 10:45 am)
+* HINDUNILVR (SHORT) touched Breakout (R4) (1863.64) at 09:25 am
+  - Entry Premium: ₹27.89 | Exit Premium: ₹23.75 | ROI: -14.8% (SL Hit at 10:25 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 4.4x average on touch candle swept away the level's liquidity.
+* HINDUNILVR (SHORT) touched Sell reversal (R3) (1854.07) at 09:25 am
+  - Entry Premium: ₹27.89 | Exit Premium: ₹25.64 | ROI: -8.1% (SL Hit at 09:55 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 4.4x average on touch candle swept away the level's liquidity.
+* HINDUNILVR (SHORT) touched Resistance (R2) (1850.88) at 09:50 am
+  - Entry Premium: ₹27.88 | Exit Premium: ₹27.88 | ROI: 0.0% (Target Hit at 09:55 am)
+* NATIONALUM (SHORT) touched Resistance (R2) (315.10) at 09:40 am
+  - Entry Premium: ₹4.72 | Exit Premium: ₹4.26 | ROI: -9.8% (SL Hit at 10:05 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* NATIONALUM (SHORT) touched Sell reversal (R3) (316.10) at 10:40 am
+  - Entry Premium: ₹4.74 | Exit Premium: ₹4.25 | ROI: -10.3% (SL Hit at 10:55 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* NATIONALUM (SHORT) touched Breakout (R4) (319.10) at 11:15 am
+  - Entry Premium: ₹4.76 | Exit Premium: ₹5.76 | ROI: 21.0% (Target/Close Exit)
+* MARICO (SHORT) touched Breakout (R4) (788.17) at 09:40 am
+  - Entry Premium: ₹11.78 | Exit Premium: ₹9.63 | ROI: -18.2% (SL Hit at 09:55 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* MARICO (SHORT) touched Sell reversal (R3) (782.71) at 09:40 am
+  - Entry Premium: ₹11.78 | Exit Premium: ₹11.11 | ROI: -5.7% (SL Hit at 09:55 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* LUPIN (SHORT) touched Sell reversal (R3) (1960.00) at 09:40 am
+  - Entry Premium: ₹29.28 | Exit Premium: ₹23.37 | ROI: -20.2% (SL Hit at 09:55 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* LUPIN (SHORT) touched Resistance (R2) (1952.30) at 09:40 am
+  - Entry Premium: ₹29.28 | Exit Premium: ₹27.23 | ROI: -7.0% (SL Hit at 09:50 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* IOC (SHORT) touched Resistance (R2) (127.17) at 09:25 am
+  - Entry Premium: ₹1.90 | Exit Premium: ₹2.22 | ROI: 17.1% (Target/Close Exit)
+* CHOLAFIN (SHORT) touched Target (R6) (1572.52) at 09:30 am
+  - Entry Premium: ₹23.52 | Exit Premium: ₹19.69 | ROI: -16.3% (SL Hit at 10:20 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* CHOLAFIN (SHORT) touched Target (R5) (1568.83) at 09:30 am
+  - Entry Premium: ₹23.52 | Exit Premium: ₹21.54 | ROI: -8.4% (SL Hit at 10:00 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* CHOLAFIN (SHORT) touched Breakout (R4) (1559.67) at 09:30 am
+  - Entry Premium: ₹23.52 | Exit Premium: ₹25.82 | ROI: 9.8% (Target Hit at 09:40 am)
+* CHOLAFIN (SHORT) touched Sell reversal (R3) (1551.84) at 09:30 am
+  - Entry Premium: ₹23.52 | Exit Premium: ₹25.82 | ROI: 9.8% (Target Hit at 09:40 am)
+* METROPOLIS (SHORT) touched Resistance (R2) (530.40) at 01:55 pm
+  - Entry Premium: ₹7.93 | Exit Premium: ₹9.68 | ROI: 22.1% (Target/Close Exit)
+* METROPOLIS (SHORT) touched R3 (VAH Reversion) (532.67) at 09:15 am
+  - Entry Premium: ₹7.86 | Exit Premium: ₹7.21 | ROI: -8.3% (Target/Close Exit)
+* CUMMINSIND (SHORT) touched Sell reversal (R3) (4784.07) at 10:35 am
+  - Entry Premium: ₹71.17 | Exit Premium: ₹46.54 | ROI: -34.6% (SL Hit at 10:55 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (92.1% body) indicating aggressive breakout force rather than rejection.
+* CUMMINSIND (SHORT) touched Resistance (R2) (4769.68) at 10:35 am
+  - Entry Premium: ₹71.17 | Exit Premium: ₹53.75 | ROI: -24.5% (SL Hit at 10:45 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (92.1% body) indicating aggressive breakout force rather than rejection.
+* CUMMINSIND (SHORT) touched Breakout (R4) (4827.25) at 11:45 am
+  - Entry Premium: ₹72.53 | Exit Premium: ₹75.63 | ROI: 4.3% (Target Hit at 11:50 am)
+* CUMMINSIND (SHORT) touched Target (R5) (4877.68) at 02:20 pm
+  - Entry Premium: ₹72.73 | Exit Premium: ₹83.38 | ROI: 14.6% (Target/Close Exit)
+* BPCL (SHORT) touched Resistance (R2) (288.49) at 09:25 am
+  - Entry Premium: ₹4.31 | Exit Premium: ₹5.97 | ROI: 38.6% (Target Hit at 12:00 pm)
+* BPCL (SHORT) touched R3 (VAH Reversion) (289.61) at 09:15 am
+  - Entry Premium: ₹4.31 | Exit Premium: ₹4.61 | ROI: 7.0% (Target/Close Exit)
+* AXISBANK (SHORT) touched Sell reversal (R3) (1251.71) at 09:15 am
+  - Entry Premium: ₹18.64 | Exit Premium: ₹12.78 | ROI: -31.4% (SL Hit at 09:25 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 125482.0x average on touch candle swept away the level's liquidity.
+* AXISBANK (SHORT) touched Resistance (R2) (1249.47) at 09:20 am
+  - Entry Premium: ₹18.62 | Exit Premium: ₹13.23 | ROI: -28.9% (SL Hit at 09:25 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 6.2x average on touch candle swept away the level's liquidity.
+* AXISBANK (SHORT) touched Target (R5) (1266.26) at 09:45 am
+  - Entry Premium: ₹18.91 | Exit Premium: ₹19.76 | ROI: 4.5% (Target/Close Exit)
+* AXISBANK (SHORT) touched Breakout (R4) (1258.42) at 09:45 am
+  - Entry Premium: ₹18.91 | Exit Premium: ₹17.21 | ROI: -9.0% (SL Hit at 02:40 pm)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 2.5x average on touch candle swept away the level's liquidity.
+* AXISBANK (SHORT) touched R5 (VAH Extreme) (1266.26) at 09:30 am
+  - Entry Premium: ₹18.85 | Exit Premium: ₹17.70 | ROI: -6.1% (Target/Close Exit)
+* ICICIGI (SHORT) touched Target (R5) (1658.24) at 09:35 am
+  - Entry Premium: ₹24.83 | Exit Premium: ₹21.70 | ROI: -12.6% (SL Hit at 09:45 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* ICICIGI (SHORT) touched Breakout (R4) (1645.62) at 09:35 am
+  - Entry Premium: ₹24.83 | Exit Premium: ₹22.48 | ROI: -9.5% (SL Hit at 09:45 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* OBEROIRLTY (SHORT) touched Sell reversal (R3) (1681.64) at 09:40 am
+  - Entry Premium: ₹25.23 | Exit Premium: ₹21.48 | ROI: -14.9% (SL Hit at 09:55 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (92.0% body) indicating aggressive breakout force rather than rejection.
+* OBEROIRLTY (SHORT) touched Resistance (R2) (1675.53) at 09:40 am
+  - Entry Premium: ₹25.23 | Exit Premium: ₹21.48 | ROI: -14.9% (SL Hit at 09:55 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (92.0% body) indicating aggressive breakout force rather than rejection.
+* OBEROIRLTY (SHORT) touched Breakout (R4) (1699.98) at 11:45 am
+  - Entry Premium: ₹25.39 | Exit Premium: ₹20.00 | ROI: -21.2% (SL Hit at 02:25 pm)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (82.1% body) indicating aggressive breakout force rather than rejection.
+* ADANIPORTS (SHORT) touched Resistance (R2) (1721.88) at 09:25 am
+  - Entry Premium: ₹26.00 | Exit Premium: ₹26.30 | ROI: 1.2% (Target Hit at 09:30 am)
+* ADANIPORTS (SHORT) touched Breakout (R4) (1749.63) at 11:40 am
+  - Entry Premium: ₹26.26 | Exit Premium: ₹28.69 | ROI: 9.3% (Target Hit at 11:55 am)
+* POLYCAB (SHORT) touched Target (R5) (8374.46) at 09:45 am
+  - Entry Premium: ₹121.94 | Exit Premium: ₹65.94 | ROI: -45.9% (Target/Close Exit)
+* POLYCAB (SHORT) touched Breakout (R4) (8292.08) at 09:45 am
+  - Entry Premium: ₹121.94 | Exit Premium: ₹65.94 | ROI: -45.9% (Target/Close Exit)
+* POLYCAB (SHORT) touched Resistance (R2) (8198.02) at 10:40 am
+  - Entry Premium: ₹122.58 | Exit Premium: ₹101.37 | ROI: -17.3% (SL Hit at 11:15 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (78.0% body) indicating aggressive breakout force rather than rejection.
+* POLYCAB (SHORT) touched Sell reversal (R3) (8221.54) at 11:20 am
+  - Entry Premium: ₹123.44 | Exit Premium: ₹117.94 | ROI: -4.5% (SL Hit at 11:25 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 2.4x average on touch candle swept away the level's liquidity.
+* POLYCAB (SHORT) touched R4 (VAH Breakout Trigger) (8292.08) at 11:20 am
+  - Entry Premium: ₹123.44 | Exit Premium: ₹117.19 | ROI: -5.1% (Target/Close Exit)
+* LICHSGFIN (SHORT) touched Breakout (R4) (552.54) at 09:35 am
+  - Entry Premium: ₹8.29 | Exit Premium: ₹9.33 | ROI: 12.6% (Target Hit at 09:40 am)
+* LICHSGFIN (SHORT) touched Sell reversal (R3) (544.77) at 09:35 am
+  - Entry Premium: ₹8.29 | Exit Premium: ₹8.49 | ROI: 2.4% (Target Hit at 09:40 am)
+* LICHSGFIN (SHORT) touched Resistance (R2) (542.18) at 09:35 am
+  - Entry Premium: ₹8.29 | Exit Premium: ₹8.49 | ROI: 2.4% (Target Hit at 09:40 am)
+* SHRIRAMFIN (SHORT) touched Breakout (R4) (935.81) at 09:55 am
+  - Entry Premium: ₹13.98 | Exit Premium: ₹11.11 | ROI: -20.5% (SL Hit at 11:15 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* SHRIRAMFIN (SHORT) touched Target (R5) (946.65) at 02:40 pm
+  - Entry Premium: ₹14.17 | Exit Premium: ₹16.40 | ROI: 15.7% (Target/Close Exit)
+* TITAN (SHORT) touched Target (R5) (4453.15) at 09:20 am
+  - Entry Premium: ₹65.46 | Exit Premium: ₹47.86 | ROI: -26.9% (Target/Close Exit)
+* TITAN (SHORT) touched Breakout (R4) (4418.63) at 09:20 am
+  - Entry Premium: ₹65.46 | Exit Premium: ₹33.73 | ROI: -48.5% (SL Hit at 02:20 pm)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 5.5x average on touch candle swept away the level's liquidity.
+* TITAN (SHORT) touched Sell reversal (R3) (4389.06) at 09:20 am
+  - Entry Premium: ₹65.46 | Exit Premium: ₹48.54 | ROI: -25.8% (SL Hit at 12:00 pm)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 5.5x average on touch candle swept away the level's liquidity.
+* TITAN (SHORT) touched Resistance (R2) (4379.21) at 09:20 am
+  - Entry Premium: ₹65.46 | Exit Premium: ₹53.48 | ROI: -18.3% (SL Hit at 09:30 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 5.5x average on touch candle swept away the level's liquidity.
+* PIDILITIND (SHORT) touched Target (R5) (1493.12) at 09:45 am
+  - Entry Premium: ₹22.13 | Exit Premium: ₹18.88 | ROI: -14.7% (Target/Close Exit)
+* PIDILITIND (SHORT) touched Breakout (R4) (1480.94) at 09:45 am
+  - Entry Premium: ₹22.13 | Exit Premium: ₹17.67 | ROI: -20.1% (SL Hit at 10:55 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* PIDILITIND (SHORT) touched Sell reversal (R3) (1470.52) at 09:45 am
+  - Entry Premium: ₹22.13 | Exit Premium: ₹21.33 | ROI: -3.6% (SL Hit at 09:55 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* PIDILITIND (SHORT) touched Resistance (R2) (1467.05) at 01:00 pm
+  - Entry Premium: ₹22.10 | Exit Premium: ₹21.90 | ROI: -0.9% (SL Hit at 01:05 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* PAGEIND (SHORT) touched Sell reversal (R3) (36756.63) at 09:40 am
+  - Entry Premium: ₹549.90 | Exit Premium: ₹464.83 | ROI: -15.5% (SL Hit at 01:30 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* PAGEIND (SHORT) touched Resistance (R2) (36654.42) at 09:40 am
+  - Entry Premium: ₹549.90 | Exit Premium: ₹512.40 | ROI: -6.8% (SL Hit at 09:55 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* PAGEIND (SHORT) touched Breakout (R4) (37063.25) at 02:25 pm
+  - Entry Premium: ₹551.32 | Exit Premium: ₹586.32 | ROI: 6.3% (Target/Close Exit)
+* PAGEIND (SHORT) touched R4 (VAH Breakout Trigger) (37063.25) at 09:15 am
+  - Entry Premium: ₹549.90 | Exit Premium: ₹537.40 | ROI: -2.3% (Target/Close Exit)
+* TATACONSUM (SHORT) touched Breakout (R4) (966.59) at 09:30 am
+  - Entry Premium: ₹14.31 | Exit Premium: ₹15.11 | ROI: 5.6% (Target/Close Exit)
+* TATACONSUM (SHORT) touched Resistance (R2) (956.79) at 09:30 am
+  - Entry Premium: ₹14.31 | Exit Premium: ₹15.11 | ROI: 5.6% (Target/Close Exit)
+* TATACONSUM (SHORT) touched Sell reversal (R3) (959.24) at 10:30 am
+  - Entry Premium: ₹14.32 | Exit Premium: ₹15.24 | ROI: 6.5% (Target/Close Exit)
+* TATACONSUM (SHORT) touched R3 (VAH Reversion) (959.24) at 09:15 am
+  - Entry Premium: ₹14.32 | Exit Premium: ₹15.47 | ROI: 8.0% (Target/Close Exit)
+* TRENT (SHORT) touched Target (R5) (2935.37) at 09:30 am
+  - Entry Premium: ₹43.64 | Exit Premium: ₹36.29 | ROI: -16.8% (Target/Close Exit)
+* TRENT (SHORT) touched Breakout (R4) (2913.59) at 09:30 am
+  - Entry Premium: ₹43.64 | Exit Premium: ₹38.58 | ROI: -11.6% (SL Hit at 09:35 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (88.5% body) indicating aggressive breakout force rather than rejection.
+* TRENT (SHORT) touched Sell reversal (R3) (2894.95) at 09:30 am
+  - Entry Premium: ₹43.64 | Exit Premium: ₹41.84 | ROI: -4.1% (SL Hit at 09:35 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (88.5% body) indicating aggressive breakout force rather than rejection.
+* TRENT (SHORT) touched Resistance (R2) (2888.73) at 09:30 am
+  - Entry Premium: ₹43.64 | Exit Premium: ₹41.84 | ROI: -4.1% (SL Hit at 09:35 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (88.5% body) indicating aggressive breakout force rather than rejection.
+* ONGC (SHORT) touched Sell reversal (R3) (221.03) at 09:50 am
+  - Entry Premium: ₹3.31 | Exit Premium: ₹2.74 | ROI: -17.0% (SL Hit at 12:25 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* ONGC (SHORT) touched Resistance (R2) (220.62) at 09:50 am
+  - Entry Premium: ₹3.31 | Exit Premium: ₹2.95 | ROI: -10.8% (SL Hit at 11:50 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* ONGC (SHORT) touched Breakout (R4) (222.26) at 12:50 pm
+  - Entry Premium: ₹3.33 | Exit Premium: ₹3.93 | ROI: 18.1% (Target Hit at 01:50 pm)
+* ONGC (SHORT) touched R4 (VAH Breakout Trigger) (222.26) at 09:50 am
+  - Entry Premium: ₹3.31 | Exit Premium: ₹3.23 | ROI: -2.3% (Target/Close Exit)
+* HDFCBANK (SHORT) touched Target (R5) (705.58) at 09:15 am
+  - Entry Premium: ₹10.48 | Exit Premium: ₹6.36 | ROI: -39.3% (SL Hit at 01:40 pm)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 1004568.0x average on touch candle swept away the level's liquidity.
+* HDFCBANK (SHORT) touched Breakout (R4) (700.66) at 09:15 am
+  - Entry Premium: ₹10.48 | Exit Premium: ₹8.82 | ROI: -15.8% (SL Hit at 09:25 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 1004568.0x average on touch candle swept away the level's liquidity.
+* HDFCBANK (SHORT) touched Target (R6) (707.59) at 11:35 am
+  - Entry Premium: ₹10.56 | Exit Premium: ₹8.16 | ROI: -22.7% (SL Hit at 02:50 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* EICHERMOT (SHORT) touched Breakout (R4) (6867.88) at 09:25 am
+  - Entry Premium: ₹102.75 | Exit Premium: ₹80.00 | ROI: -22.1% (SL Hit at 09:30 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 8.7x average on touch candle swept away the level's liquidity.
+* EICHERMOT (SHORT) touched Sell reversal (R3) (6817.69) at 09:25 am
+  - Entry Premium: ₹102.75 | Exit Premium: ₹80.00 | ROI: -22.1% (SL Hit at 09:30 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 8.7x average on touch candle swept away the level's liquidity.
+* EICHERMOT (SHORT) touched Target (R6) (6950.00) at 09:50 am
+  - Entry Premium: ₹104.47 | Exit Premium: ₹104.22 | ROI: -0.2% (SL Hit at 09:55 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (76.6% body) indicating aggressive breakout force rather than rejection.
+* EICHERMOT (SHORT) touched Target (R5) (6926.49) at 09:50 am
+  - Entry Premium: ₹104.47 | Exit Premium: ₹104.22 | ROI: -0.2% (SL Hit at 09:55 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (76.6% body) indicating aggressive breakout force rather than rejection.
+* TATAMOTORS (SHORT) touched Sell reversal (R3) (276.12) at 09:20 am
+  - Entry Premium: ₹4.12 | Exit Premium: ₹3.26 | ROI: -20.9% (SL Hit at 09:25 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 5.7x average on touch candle swept away the level's liquidity.
+* TATAMOTORS (SHORT) touched Resistance (R2) (275.08) at 09:20 am
+  - Entry Premium: ₹4.12 | Exit Premium: ₹3.62 | ROI: -12.1% (SL Hit at 09:25 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 5.7x average on touch candle swept away the level's liquidity.
+* TATAMOTORS (SHORT) touched Breakout (R4) (279.24) at 10:25 am
+  - Entry Premium: ₹4.21 | Exit Premium: ₹4.26 | ROI: 1.2% (Target Hit at 10:30 am)
+* TATASTEEL (SHORT) touched Sell reversal (R3) (173.57) at 09:50 am
+  - Entry Premium: ₹2.60 | Exit Premium: ₹2.34 | ROI: -10.2% (SL Hit at 09:55 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* TATASTEEL (SHORT) touched Resistance (R2) (173.03) at 09:50 am
+  - Entry Premium: ₹2.60 | Exit Premium: ₹2.43 | ROI: -6.5% (SL Hit at 09:55 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* HCLTECH (SHORT) touched Target (R6) (1211.80) at 09:20 am
+  - Entry Premium: ₹18.11 | Exit Premium: ₹24.74 | ROI: 36.6% (Target Hit at 09:30 am)
+* HCLTECH (SHORT) touched Target (R5) (1207.30) at 09:20 am
+  - Entry Premium: ₹18.11 | Exit Premium: ₹23.61 | ROI: 30.4% (Target Hit at 09:30 am)
+* HCLTECH (SHORT) touched Breakout (R4) (1196.10) at 09:20 am
+  - Entry Premium: ₹18.11 | Exit Premium: ₹23.61 | ROI: 30.4% (Target Hit at 09:30 am)
+* HCLTECH (SHORT) touched Sell reversal (R3) (1186.50) at 09:20 am
+  - Entry Premium: ₹18.11 | Exit Premium: ₹23.61 | ROI: 30.4% (Target Hit at 09:30 am)
+* IDFCFIRSTB (SHORT) touched Breakout (R4) (79.27) at 09:35 am
+  - Entry Premium: ₹1.19 | Exit Premium: ₹1.29 | ROI: 8.4% (Target Hit at 09:40 am)
+* IDFCFIRSTB (SHORT) touched Sell reversal (R3) (78.87) at 09:55 am
+  - Entry Premium: ₹1.19 | Exit Premium: ₹1.14 | ROI: -3.8% (SL Hit at 10:00 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* IDFCFIRSTB (SHORT) touched Resistance (R2) (78.73) at 09:55 am
+  - Entry Premium: ₹1.19 | Exit Premium: ₹1.14 | ROI: -3.8% (SL Hit at 10:00 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* IDFCFIRSTB (SHORT) touched Target (R6) (79.95) at 12:55 pm
+  - Entry Premium: ₹1.19 | Exit Premium: ₹1.41 | ROI: 18.4% (Target/Close Exit)
+* IDFCFIRSTB (SHORT) touched Target (R5) (79.75) at 12:55 pm
+  - Entry Premium: ₹1.19 | Exit Premium: ₹1.41 | ROI: 18.4% (Target/Close Exit)
+* IDFCFIRSTB (SHORT) touched R5 (VAH Extreme) (79.75) at 09:30 am
+  - Entry Premium: ₹1.19 | Exit Premium: ₹1.17 | ROI: -1.3% (Target/Close Exit)
+* PERSISTENT (SHORT) touched Target (R5) (5641.37) at 09:40 am
+  - Entry Premium: ₹84.17 | Exit Premium: ₹61.17 | ROI: -27.3% (SL Hit at 01:45 pm)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (81.8% body) indicating aggressive breakout force rather than rejection.
+* PERSISTENT (SHORT) touched Breakout (R4) (5577.45) at 09:40 am
+  - Entry Premium: ₹84.17 | Exit Premium: ₹61.17 | ROI: -27.3% (SL Hit at 01:45 pm)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (81.8% body) indicating aggressive breakout force rather than rejection.
+* PERSISTENT (SHORT) touched Sell reversal (R3) (5522.73) at 09:40 am
+  - Entry Premium: ₹84.17 | Exit Premium: ₹61.17 | ROI: -27.3% (SL Hit at 01:45 pm)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (81.8% body) indicating aggressive breakout force rather than rejection.
+* PERSISTENT (SHORT) touched Target (R6) (5668.39) at 02:25 pm
+  - Entry Premium: ₹85.10 | Exit Premium: ₹81.99 | ROI: -3.7% (SL Hit at 02:30 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* ICICIBANK (SHORT) touched Breakout (R4) (1360.44) at 09:15 am
+  - Entry Premium: ₹20.14 | Exit Premium: ₹14.64 | ROI: -27.3% (Target/Close Exit)
+* ICICIBANK (SHORT) touched Sell reversal (R3) (1354.72) at 09:15 am
+  - Entry Premium: ₹20.14 | Exit Premium: ₹12.72 | ROI: -36.8% (SL Hit at 02:15 pm)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (93.7% body) indicating aggressive breakout force rather than rejection.
+* ICICIBANK (SHORT) touched Resistance (R2) (1352.81) at 09:15 am
+  - Entry Premium: ₹20.14 | Exit Premium: ₹13.14 | ROI: -34.8% (SL Hit at 02:15 pm)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (93.7% body) indicating aggressive breakout force rather than rejection.
+* ICICIBANK (SHORT) touched R4 (VAH Breakout Trigger) (1360.44) at 09:15 am
+  - Entry Premium: ₹20.14 | Exit Premium: ₹14.64 | ROI: -27.3% (Target/Close Exit)
+* DRREDDY (SHORT) touched Breakout (R4) (1198.70) at 09:25 am
+  - Entry Premium: ₹17.68 | Exit Premium: ₹8.29 | ROI: -53.2% (Target/Close Exit)
+* DRREDDY (SHORT) touched Sell reversal (R3) (1189.35) at 09:50 am
+  - Entry Premium: ₹17.77 | Exit Premium: ₹14.36 | ROI: -19.2% (SL Hit at 10:25 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (83.3% body) indicating aggressive breakout force rather than rejection.
+* DRREDDY (SHORT) touched Resistance (R2) (1186.23) at 09:50 am
+  - Entry Premium: ₹17.77 | Exit Premium: ₹15.92 | ROI: -10.4% (SL Hit at 10:00 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (83.3% body) indicating aggressive breakout force rather than rejection.
+* MARUTI (SHORT) touched Target (R5) (11435.35) at 09:20 am
+  - Entry Premium: ₹168.84 | Exit Premium: ₹89.34 | ROI: -47.1% (Target/Close Exit)
+* MARUTI (SHORT) touched Sell reversal (R3) (11293.45) at 09:20 am
+  - Entry Premium: ₹168.84 | Exit Premium: ₹138.82 | ROI: -17.8% (SL Hit at 09:30 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (79.6% body) indicating aggressive breakout force rather than rejection.
+* MARUTI (SHORT) touched Resistance (R2) (11271.63) at 09:20 am
+  - Entry Premium: ₹168.84 | Exit Premium: ₹144.34 | ROI: -14.5% (SL Hit at 09:25 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (79.6% body) indicating aggressive breakout force rather than rejection.
+* MARUTI (SHORT) touched Breakout (R4) (11358.90) at 10:25 am
+  - Entry Premium: ₹170.46 | Exit Premium: ₹161.65 | ROI: -5.2% (SL Hit at 10:35 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* MARUTI (SHORT) touched Target (R6) (11466.06) at 10:55 am
+  - Entry Premium: ₹171.51 | Exit Premium: ₹181.01 | ROI: 5.5% (Target/Close Exit)
+* MARUTI (SHORT) touched R6 (VAH Exhaustion) (11466.06) at 10:25 am
+  - Entry Premium: ₹170.46 | Exit Premium: ₹144.96 | ROI: -15.0% (Target/Close Exit)
+* FEDERALBNK (SHORT) touched Target (R5) (326.97) at 09:35 am
+  - Entry Premium: ₹4.90 | Exit Premium: ₹4.54 | ROI: -7.4% (SL Hit at 09:50 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (88.6% body) indicating aggressive breakout force rather than rejection.
+* FEDERALBNK (SHORT) touched Breakout (R4) (324.77) at 09:35 am
+  - Entry Premium: ₹4.90 | Exit Premium: ₹5.00 | ROI: 2.0% (Target Hit at 09:40 am)
+* FEDERALBNK (SHORT) touched Target (R6) (327.88) at 09:55 am
+  - Entry Premium: ₹4.90 | Exit Premium: ₹3.96 | ROI: -19.3% (SL Hit at 01:10 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* INDUSTOWER (SHORT) touched Target (R5) (387.72) at 09:35 am
+  - Entry Premium: ₹5.65 | Exit Premium: ₹4.80 | ROI: -15.0% (Target/Close Exit)
+* INDUSTOWER (SHORT) touched Sell reversal (R3) (377.65) at 09:35 am
+  - Entry Premium: ₹5.65 | Exit Premium: ₹4.82 | ROI: -14.6% (SL Hit at 12:30 pm)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (75.0% body) indicating aggressive breakout force rather than rejection.
+* INDUSTOWER (SHORT) touched Resistance (R2) (376.10) at 09:35 am
+  - Entry Premium: ₹5.65 | Exit Premium: ₹5.35 | ROI: -5.3% (SL Hit at 09:40 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (75.0% body) indicating aggressive breakout force rather than rejection.
+* INDUSTOWER (SHORT) touched Breakout (R4) (382.29) at 01:55 pm
+  - Entry Premium: ₹5.72 | Exit Premium: ₹7.13 | ROI: 24.6% (Target Hit at 03:10 pm)
+* INDUSTOWER (SHORT) touched R4 (VAH Breakout Trigger) (382.29) at 09:15 am
+  - Entry Premium: ₹5.68 | Exit Premium: ₹5.73 | ROI: 0.9% (Target/Close Exit)
+* CANBK (SHORT) touched Target (R5) (120.11) at 09:30 am
+  - Entry Premium: ₹1.78 | Exit Premium: ₹1.61 | ROI: -9.8% (Target/Close Exit)
+* CANBK (SHORT) touched Breakout (R4) (119.09) at 09:30 am
+  - Entry Premium: ₹1.78 | Exit Premium: ₹1.57 | ROI: -12.1% (SL Hit at 09:50 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 5.2x average on touch candle swept away the level's liquidity.
+* CANBK (SHORT) touched Sell reversal (R3) (118.22) at 09:30 am
+  - Entry Premium: ₹1.78 | Exit Premium: ₹1.66 | ROI: -7.0% (SL Hit at 09:40 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 5.2x average on touch candle swept away the level's liquidity.
+* CANBK (SHORT) touched R5 (VAH Extreme) (120.11) at 09:40 am
+  - Entry Premium: ₹1.79 | Exit Premium: ₹1.74 | ROI: -2.8% (Target/Close Exit)
+* BANKNIFTY (SHORT) touched Target (R5) (55089.91) at 09:15 am
+  - Entry Premium: ₹820.54 | Exit Premium: ₹571.84 | ROI: -30.3% (SL Hit at 09:55 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 7031743.0x average on touch candle swept away the level's liquidity.
+* BANKNIFTY (SHORT) touched Breakout (R4) (54877.97) at 09:15 am
+  - Entry Premium: ₹820.54 | Exit Premium: ₹678.03 | ROI: -17.4% (SL Hit at 09:30 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 7031743.0x average on touch candle swept away the level's liquidity.
+* BANKNIFTY (SHORT) touched Sell reversal (R3) (54696.51) at 09:15 am
+  - Entry Premium: ₹820.54 | Exit Premium: ₹738.49 | ROI: -10.0% (SL Hit at 09:25 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 7031743.0x average on touch candle swept away the level's liquidity.
+* BANKNIFTY (SHORT) touched Resistance (R2) (54636.02) at 09:15 am
+  - Entry Premium: ₹820.54 | Exit Premium: ₹738.49 | ROI: -10.0% (SL Hit at 09:25 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 7031743.0x average on touch candle swept away the level's liquidity.
+* BANKNIFTY (SHORT) touched Target (R6) (55176.50) at 09:45 am
+  - Entry Premium: ₹827.24 | Exit Premium: ₹758.36 | ROI: -8.3% (SL Hit at 01:40 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* NIFTY (SHORT) touched Sell reversal (R3) (22347.07) at 09:15 am
+  - Entry Premium: ₹334.80 | Exit Premium: ₹298.84 | ROI: -10.7% (SL Hit at 09:30 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 14708236.0x average on touch candle swept away the level's liquidity.
+* NIFTY (SHORT) touched Resistance (R2) (22308.64) at 09:15 am
+  - Entry Premium: ₹334.80 | Exit Premium: ₹303.00 | ROI: -9.5% (SL Hit at 09:30 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 14708236.0x average on touch candle swept away the level's liquidity.
+* NIFTY (SHORT) touched Breakout (R4) (22462.33) at 09:45 am
+  - Entry Premium: ₹336.69 | Exit Premium: ₹306.14 | ROI: -9.1% (SL Hit at 10:25 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (75.8% body) indicating aggressive breakout force rather than rejection.
+* NIFTY (SHORT) touched Target (R5) (22596.96) at 10:25 am
+  - Entry Premium: ₹337.63 | Exit Premium: ₹324.48 | ROI: -3.9% (Target/Close Exit)
+* NIFTY (SHORT) touched Target (R6) (22651.93) at 02:35 pm
+  - Entry Premium: ₹338.23 | Exit Premium: ₹345.01 | ROI: 2.0% (Target/Close Exit)
+* NIFTY (SHORT) touched R5 (VAH Extreme) (22596.96) at 09:35 am
+  - Entry Premium: ₹336.19 | Exit Premium: ₹274.81 | ROI: -18.3% (Target/Close Exit)
+* HAVELLS (SHORT) touched Resistance (R2) (1030.76) at 09:35 am
+  - Entry Premium: ₹15.40 | Exit Premium: ₹12.24 | ROI: -20.5% (SL Hit at 10:00 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* HAVELLS (SHORT) touched Sell reversal (R3) (1034.29) at 09:55 am
+  - Entry Premium: ₹15.46 | Exit Premium: ₹12.48 | ROI: -19.3% (SL Hit at 10:30 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (87.2% body) indicating aggressive breakout force rather than rejection.
+* HAVELLS (SHORT) touched Breakout (R4) (1044.88) at 01:55 pm
+  - Entry Premium: ₹15.64 | Exit Premium: ₹18.49 | ROI: 18.2% (Target/Close Exit)
+* HAVELLS (SHORT) touched R4 (VAH Breakout Trigger) (1044.88) at 10:30 am
+  - Entry Premium: ₹15.56 | Exit Premium: ₹15.66 | ROI: 0.6% (Target/Close Exit)
+* COALINDIA (SHORT) touched Resistance (R2) (411.30) at 09:50 am
+  - Entry Premium: ₹6.15 | Exit Premium: ₹4.93 | ROI: -19.7% (SL Hit at 02:15 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* COALINDIA (SHORT) touched Sell reversal (R3) (412.28) at 11:00 am
+  - Entry Premium: ₹6.15 | Exit Premium: ₹6.08 | ROI: -1.2% (Target/Close Exit)
+* COALINDIA (SHORT) touched R3 (VAH Reversion) (412.28) at 09:15 am
+  - Entry Premium: ₹6.09 | Exit Premium: ₹4.02 | ROI: -34.1% (Target/Close Exit)
+* GRASIM (SHORT) touched Target (R5) (2914.65) at 09:25 am
+  - Entry Premium: ₹43.13 | Exit Premium: ₹38.23 | ROI: -11.4% (Target/Close Exit)
+* GRASIM (SHORT) touched Sell reversal (R3) (2875.06) at 09:25 am
+  - Entry Premium: ₹43.13 | Exit Premium: ₹40.43 | ROI: -6.3% (SL Hit at 09:30 am)
+  - [SL ANALYSIS]: Solid drive breakout: Touch candle was a strong solid-body breakout (92.6% body) indicating aggressive breakout force rather than rejection.
+* GRASIM (SHORT) touched Resistance (R2) (2868.97) at 09:25 am
+  - Entry Premium: ₹43.13 | Exit Premium: ₹43.13 | ROI: 0.0% (Target Hit at 09:30 am)
+* GRASIM (SHORT) touched Breakout (R4) (2893.32) at 09:50 am
+  - Entry Premium: ₹43.26 | Exit Premium: ₹42.76 | ROI: -1.2% (Target/Close Exit)
+* GRASIM (SHORT) touched R4 (VAH Breakout Trigger) (2893.32) at 09:15 am
+  - Entry Premium: ₹42.97 | Exit Premium: ₹32.67 | ROI: -24.0% (Target/Close Exit)
+* DABUR (SHORT) touched Target (R6) (386.65) at 09:35 am
+  - Entry Premium: ₹5.75 | Exit Premium: ₹4.72 | ROI: -17.8% (Target/Close Exit)
+* DABUR (SHORT) touched Target (R5) (385.38) at 09:35 am
+  - Entry Premium: ₹5.75 | Exit Premium: ₹4.27 | ROI: -25.7% (SL Hit at 12:30 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* DABUR (SHORT) touched Breakout (R4) (382.22) at 09:35 am
+  - Entry Premium: ₹5.75 | Exit Premium: ₹5.62 | ROI: -2.2% (SL Hit at 09:40 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* LT (SHORT) touched Sell reversal (R3) (3651.22) at 09:15 am
+  - Entry Premium: ₹54.52 | Exit Premium: ₹42.66 | ROI: -21.8% (SL Hit at 09:40 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 29000.0x average on touch candle swept away the level's liquidity.
+* LT (SHORT) touched Resistance (R2) (3642.52) at 09:15 am
+  - Entry Premium: ₹54.52 | Exit Premium: ₹45.92 | ROI: -15.8% (SL Hit at 09:30 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 29000.0x average on touch candle swept away the level's liquidity.
+* LT (SHORT) touched Breakout (R4) (3677.35) at 09:45 am
+  - Entry Premium: ₹54.93 | Exit Premium: ₹43.68 | ROI: -20.5% (SL Hit at 10:05 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* LT (SHORT) touched Target (R5) (3707.86) at 01:30 pm
+  - Entry Premium: ₹55.40 | Exit Premium: ₹53.40 | ROI: -3.6% (Target/Close Exit)
+* LT (SHORT) touched R5 (VAH Extreme) (3707.86) at 10:05 am
+  - Entry Premium: ₹55.16 | Exit Premium: ₹45.06 | ROI: -18.3% (Target/Close Exit)
+* MANAPPURAM (SHORT) touched Target (R6) (310.21) at 09:40 am
+  - Entry Premium: ₹4.68 | Exit Premium: ₹4.26 | ROI: -9.1% (SL Hit at 10:00 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* MANAPPURAM (SHORT) touched Target (R5) (309.42) at 09:40 am
+  - Entry Premium: ₹4.68 | Exit Premium: ₹4.26 | ROI: -9.1% (SL Hit at 10:00 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* MANAPPURAM (SHORT) touched Breakout (R4) (307.48) at 12:20 pm
+  - Entry Premium: ₹4.63 | Exit Premium: ₹4.53 | ROI: -2.2% (SL Hit at 12:25 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* SRF (SHORT) touched Sell reversal (R3) (2510.75) at 09:45 am
+  - Entry Premium: ₹37.37 | Exit Premium: ₹25.24 | ROI: -32.5% (SL Hit at 10:55 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 3.0x average on touch candle swept away the level's liquidity.
+* SRF (SHORT) touched Resistance (R2) (2502.23) at 09:45 am
+  - Entry Premium: ₹37.37 | Exit Premium: ₹29.50 | ROI: -21.1% (SL Hit at 10:05 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 3.0x average on touch candle swept away the level's liquidity.
+* ULTRACEMCO (SHORT) touched Breakout (R4) (10560.20) at 09:20 am
+  - Entry Premium: ₹157.63 | Exit Premium: ₹121.47 | ROI: -22.9% (SL Hit at 09:50 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 3.1x average on touch candle swept away the level's liquidity.
+* ULTRACEMCO (SHORT) touched Sell reversal (R3) (10493.10) at 09:20 am
+  - Entry Premium: ₹157.63 | Exit Premium: ₹150.63 | ROI: -4.4% (SL Hit at 09:25 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 3.1x average on touch candle swept away the level's liquidity.
+* ULTRACEMCO (SHORT) touched Resistance (R2) (10470.73) at 09:20 am
+  - Entry Premium: ₹157.63 | Exit Premium: ₹150.63 | ROI: -4.4% (SL Hit at 09:25 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 3.1x average on touch candle swept away the level's liquidity.
+* ULTRACEMCO (SHORT) touched Target (R5) (10638.57) at 11:40 am
+  - Entry Premium: ₹159.21 | Exit Premium: ₹136.29 | ROI: -14.4% (SL Hit at 01:55 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* ULTRACEMCO (SHORT) touched Target (R6) (10670.00) at 12:50 pm
+  - Entry Premium: ₹159.36 | Exit Premium: ₹131.86 | ROI: -17.3% (Target/Close Exit)
+* SBIN (SHORT) touched Sell reversal (R3) (944.51) at 09:15 am
+  - Entry Premium: ₹14.12 | Exit Premium: ₹11.70 | ROI: -17.2% (SL Hit at 09:25 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 255257.0x average on touch candle swept away the level's liquidity.
+* SBIN (SHORT) touched Resistance (R2) (943.01) at 09:15 am
+  - Entry Premium: ₹14.12 | Exit Premium: ₹12.45 | ROI: -11.8% (SL Hit at 09:20 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 255257.0x average on touch candle swept away the level's liquidity.
+* SBIN (SHORT) touched Target (R6) (956.44) at 09:45 am
+  - Entry Premium: ₹14.30 | Exit Premium: ₹11.72 | ROI: -18.0% (SL Hit at 02:15 pm)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* SBIN (SHORT) touched Target (R5) (954.29) at 09:45 am
+  - Entry Premium: ₹14.30 | Exit Premium: ₹12.80 | ROI: -10.5% (SL Hit at 11:15 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* SBIN (SHORT) touched Breakout (R4) (949.02) at 12:45 pm
+  - Entry Premium: ₹14.31 | Exit Premium: ₹14.11 | ROI: -1.4% (SL Hit at 12:50 pm)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 3.1x average on touch candle swept away the level's liquidity.
+* RECLTD (SHORT) touched Sell reversal (R3) (297.32) at 09:45 am
+  - Entry Premium: ₹4.45 | Exit Premium: ₹3.92 | ROI: -12.0% (SL Hit at 10:00 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 3.6x average on touch candle swept away the level's liquidity.
+* RECLTD (SHORT) touched Resistance (R2) (296.55) at 09:45 am
+  - Entry Premium: ₹4.45 | Exit Premium: ₹3.98 | ROI: -10.7% (SL Hit at 10:00 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 3.6x average on touch candle swept away the level's liquidity.
+* RECLTD (SHORT) touched Breakout (R4) (299.65) at 11:45 am
+  - Entry Premium: ₹4.47 | Exit Premium: ₹4.02 | ROI: -10.1% (Target/Close Exit)
+* HINDALCO (SHORT) touched Resistance (R2) (894.61) at 09:20 am
+  - Entry Premium: ₹13.31 | Exit Premium: ₹8.73 | ROI: -34.4% (SL Hit at 09:35 am)
+  - [SL ANALYSIS]: Volume sweep: Volume spike of 6.6x average on touch candle swept away the level's liquidity.
+* HINDALCO (SHORT) touched Sell reversal (R3) (896.85) at 09:50 am
+  - Entry Premium: ₹13.43 | Exit Premium: ₹11.73 | ROI: -12.6% (SL Hit at 11:05 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* APOLLOHOSP (SHORT) touched Breakout (R4) (7822.48) at 09:30 am
+  - Entry Premium: ₹117.41 | Exit Premium: ₹105.91 | ROI: -9.8% (SL Hit at 09:50 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* APOLLOHOSP (SHORT) touched Target (R5) (7913.86) at 09:55 am
+  - Entry Premium: ₹118.24 | Exit Premium: ₹94.90 | ROI: -19.7% (SL Hit at 10:25 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* APOLLOHOSP (SHORT) touched Target (R6) (7952.69) at 10:30 am
+  - Entry Premium: ₹118.88 | Exit Premium: ₹97.08 | ROI: -18.3% (SL Hit at 11:50 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* TATAPOWER (SHORT) touched Target (R5) (347.63) at 09:45 am
+  - Entry Premium: ₹5.05 | Exit Premium: ₹2.93 | ROI: -42.0% (Target/Close Exit)
+* TATAPOWER (SHORT) touched Resistance (R2) (338.17) at 09:45 am
+  - Entry Premium: ₹5.05 | Exit Premium: ₹4.13 | ROI: -18.3% (SL Hit at 10:00 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+* TATAPOWER (SHORT) touched Sell reversal (R3) (339.43) at 10:40 am
+  - Entry Premium: ₹5.07 | Exit Premium: ₹3.96 | ROI: -21.8% (SL Hit at 11:00 am)
+  - [SL ANALYSIS]: Drift slippage: Spot drifted past the level on low volume due to absence of active institutional interest.
+
+5B. INTRADAY BACKTEST STATISTICAL SUMMARY:
+--------------------------------------------------------------------------------
+* Total Trades Triggered   : 436
+* Profit Closures (>0% ROI): 149 (34.2%)
+* Neutral Closures (0% ROI): 8 (1.8%)
+* Loss Closures (<0% ROI)  : 73 (16.7%)
+* Stop Loss Hits (SL Hit)  : 206 (47.2%)
+* Win Rate (Strict Profit) : 34.2%
+* Survival Rate (No SL Hit): 52.8%
+
+5C. PERFORMANCE BREAKDOWN BY LEVEL:
+--------------------------------------------------------------------------------
+* Level S5  : Total = 4   | Profit = 4   (100.0%) | Avg ROI = 35.9%
+* Level S3  : Total = 41  | Profit = 29  (70.7%) | Avg ROI = 18.0%
+* Level S4  : Total = 9   | Profit = 5   (55.6%) | Avg ROI = 11.6%
+* Level Unknown: Total = 124 | Profit = 49  (39.5%) | Avg ROI = 0.7%
+* Level R6  : Total = 31  | Profit = 8   (25.8%) | Avg ROI = -6.6%
+* Level R4  : Total = 83  | Profit = 21  (25.3%) | Avg ROI = -9.4%
+* Level R3  : Total = 85  | Profit = 18  (21.2%) | Avg ROI = -9.8%
+* Level R5  : Total = 59  | Profit = 15  (25.4%) | Avg ROI = -10.1%
+
+5D. PERFORMANCE BREAKDOWN BY DIRECTION:
+--------------------------------------------------------------------------------
+* LONG      : Total = 105 | Profit = 73  (69.5%) | Avg ROI = 16.7%
+* SHORT     : Total = 331 | Profit = 76  (23.0%) | Avg ROI = -9.3%
+
+================================================================================
+6. OPENING BIAS & BHAICHARA INSTITUTIONAL VALIDATION
+================================================================================
+
+
+8. OPENING BIAS VALIDATION (Did the market follow the 2-Year Opening Bias?):
+-----------------------------------------
+* NIFTY: FAILED
+  - Zone: Open Between R2 and R3
+  - Prediction: Expected RED Close (Probability: 39.7%)
+  - Actual: Closed GREEN (Open: 22314.95 | Close: 22520.45 | Move: 205.50 pts)
+  - Analysis: The gap was rejected/accepted differently. Today's close (GREEN) deviated from the historical bias. Re-calibrating future zone expectations (New Green Close probability: 39.7%).
+
+* BANKNIFTY: FAILED
+  - Zone: Open Between R3 and R4
+  - Prediction: Expected RED Close (Probability: 46.4%)
+  - Actual: Closed GREEN (Open: 54746.25 | Close: 55256.65 | Move: 510.40 pts)
+  - Analysis: The gap was rejected/accepted differently. Today's close (GREEN) deviated from the historical bias. Re-calibrating future zone expectations (New Green Close probability: 46.4%).
+
+================================================================================
+7. BHAICHARA WORK AUTO-LEARNED INSTITUTIONAL LESSONS
+================================================================================
+* ATM Straddle Skew Asymmetry: SKEW > +15% correctly predicted bullish call accumulation on winning sessions.
+* Gamma Crossover Ratio (Γ): Institutional volume accumulation (>2.0x) confirmed late-day drives after 2:15 PM.
+* Lunchtime Theta vs IV Filter: Period G consolidation successfully filtered false breakouts between 12:15 - 12:45 PM.
+* Hero Reversal Traps: Failed morning expansions (C/D/E periods) respected the opposite extreme target.
+================================================================================

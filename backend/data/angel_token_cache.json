@@ -44483,5 +44483,1505 @@
     "exchange": "NFO",
     "symboltoken": "44598",
     "tradingsymbol": "NIFTY13OCT2622300CE"
+  },
+  "NFO:BANKNIFTY23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61466",
+    "tradingsymbol": "BANKNIFTY23NOV26FUT"
+  },
+  "BANKNIFTY23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61466",
+    "tradingsymbol": "BANKNIFTY23NOV26FUT"
+  },
+  "NFO:BANKNIFTY27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48699",
+    "tradingsymbol": "BANKNIFTY27OCT26FUT"
+  },
+  "BANKNIFTY27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48699",
+    "tradingsymbol": "BANKNIFTY27OCT26FUT"
+  },
+  "NFO:BANKNIFTY29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58872",
+    "tradingsymbol": "BANKNIFTY29DEC26FUT"
+  },
+  "BANKNIFTY29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58872",
+    "tradingsymbol": "BANKNIFTY29DEC26FUT"
+  },
+  "NSE:BANKNIFTY1-AF": {
+    "exchange": "NSE",
+    "symboltoken": "765609",
+    "tradingsymbol": "BANKNIFTY1-AF"
+  },
+  "BANKNIFTY1-AF": {
+    "exchange": "NSE",
+    "symboltoken": "765609",
+    "tradingsymbol": "BANKNIFTY1-AF"
+  },
+  "NSE:BANKNIFTY1-BL": {
+    "exchange": "NSE",
+    "symboltoken": "5852",
+    "tradingsymbol": "BANKNIFTY1-BL"
+  },
+  "BANKNIFTY1-BL": {
+    "exchange": "NSE",
+    "symboltoken": "5852",
+    "tradingsymbol": "BANKNIFTY1-BL"
+  },
+  "NSE:BANKNIFTY1": {
+    "exchange": "NSE",
+    "symboltoken": "5851",
+    "tradingsymbol": "BANKNIFTY1-EQ"
+  },
+  "BANKNIFTY1-EQ": {
+    "exchange": "NSE",
+    "symboltoken": "5851",
+    "tradingsymbol": "BANKNIFTY1-EQ"
+  },
+  "NSE:BANKNIFTY1-RL": {
+    "exchange": "NSE",
+    "symboltoken": "18046",
+    "tradingsymbol": "BANKNIFTY1-RL"
+  },
+  "BANKNIFTY1-RL": {
+    "exchange": "NSE",
+    "symboltoken": "18046",
+    "tradingsymbol": "BANKNIFTY1-RL"
+  },
+  "NFO:VBL23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61741",
+    "tradingsymbol": "VBL23NOV26FUT"
+  },
+  "VBL23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61741",
+    "tradingsymbol": "VBL23NOV26FUT"
+  },
+  "NFO:VBL27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "49028",
+    "tradingsymbol": "VBL27OCT26FUT"
+  },
+  "VBL27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "49028",
+    "tradingsymbol": "VBL27OCT26FUT"
+  },
+  "NFO:VBL29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "59149",
+    "tradingsymbol": "VBL29DEC26FUT"
+  },
+  "VBL29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "59149",
+    "tradingsymbol": "VBL29DEC26FUT"
+  },
+  "NFO:VEDL23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61742",
+    "tradingsymbol": "VEDL23NOV26FUT"
+  },
+  "VEDL23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61742",
+    "tradingsymbol": "VEDL23NOV26FUT"
+  },
+  "NFO:VEDL27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "49029",
+    "tradingsymbol": "VEDL27OCT26FUT"
+  },
+  "VEDL27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "49029",
+    "tradingsymbol": "VEDL27OCT26FUT"
+  },
+  "NFO:VEDL29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "59150",
+    "tradingsymbol": "VEDL29DEC26FUT"
+  },
+  "VEDL29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "59150",
+    "tradingsymbol": "VEDL29DEC26FUT"
+  },
+  "NFO:VMM23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61743",
+    "tradingsymbol": "VMM23NOV26FUT"
+  },
+  "VMM23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61743",
+    "tradingsymbol": "VMM23NOV26FUT"
+  },
+  "NFO:VMM27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "49030",
+    "tradingsymbol": "VMM27OCT26FUT"
+  },
+  "VMM27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "49030",
+    "tradingsymbol": "VMM27OCT26FUT"
+  },
+  "NFO:VMM29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "59151",
+    "tradingsymbol": "VMM29DEC26FUT"
+  },
+  "VMM29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "59151",
+    "tradingsymbol": "VMM29DEC26FUT"
+  },
+  "NFO:VOLTAS23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61744",
+    "tradingsymbol": "VOLTAS23NOV26FUT"
+  },
+  "VOLTAS23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61744",
+    "tradingsymbol": "VOLTAS23NOV26FUT"
+  },
+  "NFO:VOLTAS27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "49031",
+    "tradingsymbol": "VOLTAS27OCT26FUT"
+  },
+  "VOLTAS27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "49031",
+    "tradingsymbol": "VOLTAS27OCT26FUT"
+  },
+  "NFO:VOLTAS29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "59152",
+    "tradingsymbol": "VOLTAS29DEC26FUT"
+  },
+  "VOLTAS29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "59152",
+    "tradingsymbol": "VOLTAS29DEC26FUT"
+  },
+  "NSE:V1NSETEST": {
+    "exchange": "NSE",
+    "symboltoken": "12863",
+    "tradingsymbol": "V1NSETEST-EQ"
+  },
+  "V1NSETEST-EQ": {
+    "exchange": "NSE",
+    "symboltoken": "12863",
+    "tradingsymbol": "V1NSETEST-EQ"
+  },
+  "NIFTY13OCT2622550CE": {
+    "exchange": "NFO",
+    "symboltoken": "44614",
+    "tradingsymbol": "NIFTY13OCT2622550CE"
+  },
+  "NFO:NIFTY13OCT2622550CE": {
+    "exchange": "NFO",
+    "symboltoken": "44614",
+    "tradingsymbol": "NIFTY13OCT2622550CE"
+  },
+  "NIFTY13OCT2622550PE": {
+    "exchange": "NFO",
+    "symboltoken": "44615",
+    "tradingsymbol": "NIFTY13OCT2622550PE"
+  },
+  "NFO:NIFTY13OCT2622550PE": {
+    "exchange": "NFO",
+    "symboltoken": "44615",
+    "tradingsymbol": "NIFTY13OCT2622550PE"
+  },
+  "ICICIBANK27OCT261360CE": {
+    "exchange": "NFO",
+    "symboltoken": "80601",
+    "tradingsymbol": "ICICIBANK27OCT261360CE"
+  },
+  "NFO:ICICIBANK27OCT261360CE": {
+    "exchange": "NFO",
+    "symboltoken": "80601",
+    "tradingsymbol": "ICICIBANK27OCT261360CE"
+  },
+  "NFO:INDHOTEL23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61601",
+    "tradingsymbol": "INDHOTEL23NOV26FUT"
+  },
+  "INDHOTEL23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61601",
+    "tradingsymbol": "INDHOTEL23NOV26FUT"
+  },
+  "NFO:INDHOTEL27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48880",
+    "tradingsymbol": "INDHOTEL27OCT26FUT"
+  },
+  "INDHOTEL27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48880",
+    "tradingsymbol": "INDHOTEL27OCT26FUT"
+  },
+  "NFO:INDHOTEL29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58994",
+    "tradingsymbol": "INDHOTEL29DEC26FUT"
+  },
+  "INDHOTEL29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58994",
+    "tradingsymbol": "INDHOTEL29DEC26FUT"
+  },
+  "NFO:INDIANB23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61602",
+    "tradingsymbol": "INDIANB23NOV26FUT"
+  },
+  "INDIANB23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61602",
+    "tradingsymbol": "INDIANB23NOV26FUT"
+  },
+  "NFO:INDIANB27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48881",
+    "tradingsymbol": "INDIANB27OCT26FUT"
+  },
+  "INDIANB27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48881",
+    "tradingsymbol": "INDIANB27OCT26FUT"
+  },
+  "NFO:INDIANB29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58997",
+    "tradingsymbol": "INDIANB29DEC26FUT"
+  },
+  "INDIANB29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58997",
+    "tradingsymbol": "INDIANB29DEC26FUT"
+  },
+  "NFO:INDIGO23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61603",
+    "tradingsymbol": "INDIGO23NOV26FUT"
+  },
+  "INDIGO23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61603",
+    "tradingsymbol": "INDIGO23NOV26FUT"
+  },
+  "NFO:INDIGO27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48882",
+    "tradingsymbol": "INDIGO27OCT26FUT"
+  },
+  "INDIGO27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48882",
+    "tradingsymbol": "INDIGO27OCT26FUT"
+  },
+  "NFO:INDIGO29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58998",
+    "tradingsymbol": "INDIGO29DEC26FUT"
+  },
+  "INDIGO29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58998",
+    "tradingsymbol": "INDIGO29DEC26FUT"
+  },
+  "NFO:INDUSINDBK23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61606",
+    "tradingsymbol": "INDUSINDBK23NOV26FUT"
+  },
+  "INDUSINDBK23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61606",
+    "tradingsymbol": "INDUSINDBK23NOV26FUT"
+  },
+  "NFO:INDUSINDBK27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48883",
+    "tradingsymbol": "INDUSINDBK27OCT26FUT"
+  },
+  "INDUSINDBK27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48883",
+    "tradingsymbol": "INDUSINDBK27OCT26FUT"
+  },
+  "NFO:INDUSINDBK29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58999",
+    "tradingsymbol": "INDUSINDBK29DEC26FUT"
+  },
+  "INDUSINDBK29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58999",
+    "tradingsymbol": "INDUSINDBK29DEC26FUT"
+  },
+  "NFO:INDUSTOWER23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61607",
+    "tradingsymbol": "INDUSTOWER23NOV26FUT"
+  },
+  "INDUSTOWER23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61607",
+    "tradingsymbol": "INDUSTOWER23NOV26FUT"
+  },
+  "NFO:INDUSTOWER27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48884",
+    "tradingsymbol": "INDUSTOWER27OCT26FUT"
+  },
+  "INDUSTOWER27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48884",
+    "tradingsymbol": "INDUSTOWER27OCT26FUT"
+  },
+  "NFO:INDUSTOWER29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "59000",
+    "tradingsymbol": "INDUSTOWER29DEC26FUT"
+  },
+  "INDUSTOWER29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "59000",
+    "tradingsymbol": "INDUSTOWER29DEC26FUT"
+  },
+  "NFO:INOXWIND23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61611",
+    "tradingsymbol": "INOXWIND23NOV26FUT"
+  },
+  "INOXWIND23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61611",
+    "tradingsymbol": "INOXWIND23NOV26FUT"
+  },
+  "NFO:INOXWIND27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48892",
+    "tradingsymbol": "INOXWIND27OCT26FUT"
+  },
+  "INOXWIND27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48892",
+    "tradingsymbol": "INOXWIND27OCT26FUT"
+  },
+  "NFO:INOXWIND29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "59002",
+    "tradingsymbol": "INOXWIND29DEC26FUT"
+  },
+  "INOXWIND29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "59002",
+    "tradingsymbol": "INOXWIND29DEC26FUT"
+  },
+  "NSE:INA-BE": {
+    "exchange": "NSE",
+    "symboltoken": "761101",
+    "tradingsymbol": "INA-BE"
+  },
+  "INA-BE": {
+    "exchange": "NSE",
+    "symboltoken": "761101",
+    "tradingsymbol": "INA-BE"
+  },
+  "NSE:INFINIUM-SL": {
+    "exchange": "NSE",
+    "symboltoken": "15040",
+    "tradingsymbol": "INFINIUM-SL"
+  },
+  "INFINIUM-SL": {
+    "exchange": "NSE",
+    "symboltoken": "15040",
+    "tradingsymbol": "INFINIUM-SL"
+  },
+  "NFO:HAL23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61578",
+    "tradingsymbol": "HAL23NOV26FUT"
+  },
+  "HAL23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61578",
+    "tradingsymbol": "HAL23NOV26FUT"
+  },
+  "NFO:HAL27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48857",
+    "tradingsymbol": "HAL27OCT26FUT"
+  },
+  "HAL27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48857",
+    "tradingsymbol": "HAL27OCT26FUT"
+  },
+  "NFO:HAL29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58975",
+    "tradingsymbol": "HAL29DEC26FUT"
+  },
+  "HAL29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58975",
+    "tradingsymbol": "HAL29DEC26FUT"
+  },
+  "NFO:HAVELLS23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61579",
+    "tradingsymbol": "HAVELLS23NOV26FUT"
+  },
+  "HAVELLS23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61579",
+    "tradingsymbol": "HAVELLS23NOV26FUT"
+  },
+  "NFO:HAVELLS27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48859",
+    "tradingsymbol": "HAVELLS27OCT26FUT"
+  },
+  "HAVELLS27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48859",
+    "tradingsymbol": "HAVELLS27OCT26FUT"
+  },
+  "NFO:HAVELLS29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58976",
+    "tradingsymbol": "HAVELLS29DEC26FUT"
+  },
+  "HAVELLS29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58976",
+    "tradingsymbol": "HAVELLS29DEC26FUT"
+  },
+  "NFO:HCLTECH23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61580",
+    "tradingsymbol": "HCLTECH23NOV26FUT"
+  },
+  "HCLTECH23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61580",
+    "tradingsymbol": "HCLTECH23NOV26FUT"
+  },
+  "NFO:HCLTECH27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48860",
+    "tradingsymbol": "HCLTECH27OCT26FUT"
+  },
+  "HCLTECH27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48860",
+    "tradingsymbol": "HCLTECH27OCT26FUT"
+  },
+  "NFO:HCLTECH29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58977",
+    "tradingsymbol": "HCLTECH29DEC26FUT"
+  },
+  "HCLTECH29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58977",
+    "tradingsymbol": "HCLTECH29DEC26FUT"
+  },
+  "NFO:HDFCAMC23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61581",
+    "tradingsymbol": "HDFCAMC23NOV26FUT"
+  },
+  "HDFCAMC23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61581",
+    "tradingsymbol": "HDFCAMC23NOV26FUT"
+  },
+  "NFO:HDFCAMC27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48861",
+    "tradingsymbol": "HDFCAMC27OCT26FUT"
+  },
+  "HDFCAMC27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48861",
+    "tradingsymbol": "HDFCAMC27OCT26FUT"
+  },
+  "NFO:HDFCAMC29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58978",
+    "tradingsymbol": "HDFCAMC29DEC26FUT"
+  },
+  "HDFCAMC29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58978",
+    "tradingsymbol": "HDFCAMC29DEC26FUT"
+  },
+  "NFO:HDFCBANK23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61582",
+    "tradingsymbol": "HDFCBANK23NOV26FUT"
+  },
+  "HDFCBANK23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61582",
+    "tradingsymbol": "HDFCBANK23NOV26FUT"
+  },
+  "NFO:HDFCBANK27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48864",
+    "tradingsymbol": "HDFCBANK27OCT26FUT"
+  },
+  "HDFCBANK27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48864",
+    "tradingsymbol": "HDFCBANK27OCT26FUT"
+  },
+  "NFO:HDFCBANK29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58979",
+    "tradingsymbol": "HDFCBANK29DEC26FUT"
+  },
+  "HDFCBANK29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58979",
+    "tradingsymbol": "HDFCBANK29DEC26FUT"
+  },
+  "NFO:HDFCLIFE23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61583",
+    "tradingsymbol": "HDFCLIFE23NOV26FUT"
+  },
+  "HDFCLIFE23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61583",
+    "tradingsymbol": "HDFCLIFE23NOV26FUT"
+  },
+  "NFO:HDFCLIFE27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48865",
+    "tradingsymbol": "HDFCLIFE27OCT26FUT"
+  },
+  "HDFCLIFE27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48865",
+    "tradingsymbol": "HDFCLIFE27OCT26FUT"
+  },
+  "NFO:HDFCLIFE29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58980",
+    "tradingsymbol": "HDFCLIFE29DEC26FUT"
+  },
+  "HDFCLIFE29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58980",
+    "tradingsymbol": "HDFCLIFE29DEC26FUT"
+  },
+  "NFO:HEROMOTOCO23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61584",
+    "tradingsymbol": "HEROMOTOCO23NOV26FUT"
+  },
+  "HEROMOTOCO23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61584",
+    "tradingsymbol": "HEROMOTOCO23NOV26FUT"
+  },
+  "NFO:HEROMOTOCO27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48866",
+    "tradingsymbol": "HEROMOTOCO27OCT26FUT"
+  },
+  "HEROMOTOCO27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48866",
+    "tradingsymbol": "HEROMOTOCO27OCT26FUT"
+  },
+  "NFO:HEROMOTOCO29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58981",
+    "tradingsymbol": "HEROMOTOCO29DEC26FUT"
+  },
+  "HEROMOTOCO29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58981",
+    "tradingsymbol": "HEROMOTOCO29DEC26FUT"
+  },
+  "NFO:HINDALCO23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61585",
+    "tradingsymbol": "HINDALCO23NOV26FUT"
+  },
+  "HINDALCO23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61585",
+    "tradingsymbol": "HINDALCO23NOV26FUT"
+  },
+  "NFO:HINDALCO27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48867",
+    "tradingsymbol": "HINDALCO27OCT26FUT"
+  },
+  "HINDALCO27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48867",
+    "tradingsymbol": "HINDALCO27OCT26FUT"
+  },
+  "NFO:HINDALCO29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58982",
+    "tradingsymbol": "HINDALCO29DEC26FUT"
+  },
+  "HINDALCO29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58982",
+    "tradingsymbol": "HINDALCO29DEC26FUT"
+  },
+  "NFO:HINDPETRO23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61590",
+    "tradingsymbol": "HINDPETRO23NOV26FUT"
+  },
+  "HINDPETRO23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61590",
+    "tradingsymbol": "HINDPETRO23NOV26FUT"
+  },
+  "NFO:HINDPETRO27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48868",
+    "tradingsymbol": "HINDPETRO27OCT26FUT"
+  },
+  "HINDPETRO27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48868",
+    "tradingsymbol": "HINDPETRO27OCT26FUT"
+  },
+  "NFO:HINDPETRO29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58983",
+    "tradingsymbol": "HINDPETRO29DEC26FUT"
+  },
+  "HINDPETRO29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58983",
+    "tradingsymbol": "HINDPETRO29DEC26FUT"
+  },
+  "NFO:HINDUNILVR23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61591",
+    "tradingsymbol": "HINDUNILVR23NOV26FUT"
+  },
+  "HINDUNILVR23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61591",
+    "tradingsymbol": "HINDUNILVR23NOV26FUT"
+  },
+  "NFO:HINDUNILVR27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48869",
+    "tradingsymbol": "HINDUNILVR27OCT26FUT"
+  },
+  "HINDUNILVR27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48869",
+    "tradingsymbol": "HINDUNILVR27OCT26FUT"
+  },
+  "NFO:HINDUNILVR29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58984",
+    "tradingsymbol": "HINDUNILVR29DEC26FUT"
+  },
+  "HINDUNILVR29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58984",
+    "tradingsymbol": "HINDUNILVR29DEC26FUT"
+  },
+  "NFO:HINDZINC23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61592",
+    "tradingsymbol": "HINDZINC23NOV26FUT"
+  },
+  "HINDZINC23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61592",
+    "tradingsymbol": "HINDZINC23NOV26FUT"
+  },
+  "NFO:HINDZINC27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48870",
+    "tradingsymbol": "HINDZINC27OCT26FUT"
+  },
+  "HINDZINC27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48870",
+    "tradingsymbol": "HINDZINC27OCT26FUT"
+  },
+  "NFO:HINDZINC29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58987",
+    "tradingsymbol": "HINDZINC29DEC26FUT"
+  },
+  "HINDZINC29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58987",
+    "tradingsymbol": "HINDZINC29DEC26FUT"
+  },
+  "NFO:HYUNDAI23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61594",
+    "tradingsymbol": "HYUNDAI23NOV26FUT"
+  },
+  "HYUNDAI23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61594",
+    "tradingsymbol": "HYUNDAI23NOV26FUT"
+  },
+  "NFO:HYUNDAI27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48871",
+    "tradingsymbol": "HYUNDAI27OCT26FUT"
+  },
+  "HYUNDAI27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48871",
+    "tradingsymbol": "HYUNDAI27OCT26FUT"
+  },
+  "NFO:HYUNDAI29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58988",
+    "tradingsymbol": "HYUNDAI29DEC26FUT"
+  },
+  "HYUNDAI29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58988",
+    "tradingsymbol": "HYUNDAI29DEC26FUT"
+  },
+  "NSE:H1861D46DD-MF": {
+    "exchange": "NSE",
+    "symboltoken": "8442",
+    "tradingsymbol": "H1861D46DD-MF"
+  },
+  "H1861D46DD-MF": {
+    "exchange": "NSE",
+    "symboltoken": "8442",
+    "tradingsymbol": "H1861D46DD-MF"
+  },
+  "NSE:HCC-AF": {
+    "exchange": "NSE",
+    "symboltoken": "4034",
+    "tradingsymbol": "HCC-AF"
+  },
+  "HCC-AF": {
+    "exchange": "NSE",
+    "symboltoken": "4034",
+    "tradingsymbol": "HCC-AF"
+  },
+  "NSE:HCL-INSYS-BE": {
+    "exchange": "NSE",
+    "symboltoken": "5735",
+    "tradingsymbol": "HCL-INSYS-BE"
+  },
+  "HCL-INSYS-BE": {
+    "exchange": "NSE",
+    "symboltoken": "5735",
+    "tradingsymbol": "HCL-INSYS-BE"
+  },
+  "NSE:HCL-INSYS-BL": {
+    "exchange": "NSE",
+    "symboltoken": "12428",
+    "tradingsymbol": "HCL-INSYS-BL"
+  },
+  "HCL-INSYS-BL": {
+    "exchange": "NSE",
+    "symboltoken": "12428",
+    "tradingsymbol": "HCL-INSYS-BL"
+  },
+  "NSE:HCL-INSYS": {
+    "exchange": "NSE",
+    "symboltoken": "1327",
+    "tradingsymbol": "HCL-INSYS-EQ"
+  },
+  "HCL-INSYS-EQ": {
+    "exchange": "NSE",
+    "symboltoken": "1327",
+    "tradingsymbol": "HCL-INSYS-EQ"
+  },
+  "NSE:HCL-INSYS-IQ": {
+    "exchange": "NSE",
+    "symboltoken": "27832",
+    "tradingsymbol": "HCL-INSYS-IQ"
+  },
+  "HCL-INSYS-IQ": {
+    "exchange": "NSE",
+    "symboltoken": "27832",
+    "tradingsymbol": "HCL-INSYS-IQ"
+  },
+  "NSE:HCL-INSYS-RL": {
+    "exchange": "NSE",
+    "symboltoken": "15851",
+    "tradingsymbol": "HCL-INSYS-RL"
+  },
+  "HCL-INSYS-RL": {
+    "exchange": "NSE",
+    "symboltoken": "15851",
+    "tradingsymbol": "HCL-INSYS-RL"
+  },
+  "NSE:HCLTECH-AF": {
+    "exchange": "NSE",
+    "symboltoken": "11105",
+    "tradingsymbol": "HCLTECH-AF"
+  },
+  "HCLTECH-AF": {
+    "exchange": "NSE",
+    "symboltoken": "11105",
+    "tradingsymbol": "HCLTECH-AF"
+  },
+  "NSE:HCLTECH-BE": {
+    "exchange": "NSE",
+    "symboltoken": "7223",
+    "tradingsymbol": "HCLTECH-BE"
+  },
+  "HCLTECH-BE": {
+    "exchange": "NSE",
+    "symboltoken": "7223",
+    "tradingsymbol": "HCLTECH-BE"
+  },
+  "NSE:HCLTECH-BL": {
+    "exchange": "NSE",
+    "symboltoken": "12429",
+    "tradingsymbol": "HCLTECH-BL"
+  },
+  "HCLTECH-BL": {
+    "exchange": "NSE",
+    "symboltoken": "12429",
+    "tradingsymbol": "HCLTECH-BL"
+  },
+  "NSE:HCLTECH-IQ": {
+    "exchange": "NSE",
+    "symboltoken": "27833",
+    "tradingsymbol": "HCLTECH-IQ"
+  },
+  "HCLTECH-IQ": {
+    "exchange": "NSE",
+    "symboltoken": "27833",
+    "tradingsymbol": "HCLTECH-IQ"
+  },
+  "NSE:HCLTECH-RL": {
+    "exchange": "NSE",
+    "symboltoken": "15852",
+    "tradingsymbol": "HCLTECH-RL"
+  },
+  "HCLTECH-RL": {
+    "exchange": "NSE",
+    "symboltoken": "15852",
+    "tradingsymbol": "HCLTECH-RL"
+  },
+  "BANKNIFTY27OCT2655300CE": {
+    "exchange": "NFO",
+    "symboltoken": "49448",
+    "tradingsymbol": "BANKNIFTY27OCT2655300CE"
+  },
+  "NFO:BANKNIFTY27OCT2655300CE": {
+    "exchange": "NFO",
+    "symboltoken": "49448",
+    "tradingsymbol": "BANKNIFTY27OCT2655300CE"
+  },
+  "NFO:ICICIBANK23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61595",
+    "tradingsymbol": "ICICIBANK23NOV26FUT"
+  },
+  "ICICIBANK23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61595",
+    "tradingsymbol": "ICICIBANK23NOV26FUT"
+  },
+  "NFO:ICICIBANK27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48874",
+    "tradingsymbol": "ICICIBANK27OCT26FUT"
+  },
+  "ICICIBANK27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48874",
+    "tradingsymbol": "ICICIBANK27OCT26FUT"
+  },
+  "NFO:ICICIBANK29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58989",
+    "tradingsymbol": "ICICIBANK29DEC26FUT"
+  },
+  "ICICIBANK29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58989",
+    "tradingsymbol": "ICICIBANK29DEC26FUT"
+  },
+  "NFO:ICICIGI23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61596",
+    "tradingsymbol": "ICICIGI23NOV26FUT"
+  },
+  "ICICIGI23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61596",
+    "tradingsymbol": "ICICIGI23NOV26FUT"
+  },
+  "NFO:ICICIGI27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48875",
+    "tradingsymbol": "ICICIGI27OCT26FUT"
+  },
+  "ICICIGI27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48875",
+    "tradingsymbol": "ICICIGI27OCT26FUT"
+  },
+  "NFO:ICICIGI29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58990",
+    "tradingsymbol": "ICICIGI29DEC26FUT"
+  },
+  "ICICIGI29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58990",
+    "tradingsymbol": "ICICIGI29DEC26FUT"
+  },
+  "NFO:ICICIPRULI23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61597",
+    "tradingsymbol": "ICICIPRULI23NOV26FUT"
+  },
+  "ICICIPRULI23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61597",
+    "tradingsymbol": "ICICIPRULI23NOV26FUT"
+  },
+  "NFO:ICICIPRULI27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48876",
+    "tradingsymbol": "ICICIPRULI27OCT26FUT"
+  },
+  "ICICIPRULI27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48876",
+    "tradingsymbol": "ICICIPRULI27OCT26FUT"
+  },
+  "NFO:ICICIPRULI29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58991",
+    "tradingsymbol": "ICICIPRULI29DEC26FUT"
+  },
+  "ICICIPRULI29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58991",
+    "tradingsymbol": "ICICIPRULI29DEC26FUT"
+  },
+  "NFO:IDEA23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61598",
+    "tradingsymbol": "IDEA23NOV26FUT"
+  },
+  "IDEA23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61598",
+    "tradingsymbol": "IDEA23NOV26FUT"
+  },
+  "NFO:IDEA27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48877",
+    "tradingsymbol": "IDEA27OCT26FUT"
+  },
+  "IDEA27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48877",
+    "tradingsymbol": "IDEA27OCT26FUT"
+  },
+  "NFO:IDEA29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58992",
+    "tradingsymbol": "IDEA29DEC26FUT"
+  },
+  "IDEA29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58992",
+    "tradingsymbol": "IDEA29DEC26FUT"
+  },
+  "NFO:IDFCFIRSTB23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61599",
+    "tradingsymbol": "IDFCFIRSTB23NOV26FUT"
+  },
+  "IDFCFIRSTB23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61599",
+    "tradingsymbol": "IDFCFIRSTB23NOV26FUT"
+  },
+  "NFO:IDFCFIRSTB27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48878",
+    "tradingsymbol": "IDFCFIRSTB27OCT26FUT"
+  },
+  "IDFCFIRSTB27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48878",
+    "tradingsymbol": "IDFCFIRSTB27OCT26FUT"
+  },
+  "NFO:IDFCFIRSTB29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58993",
+    "tradingsymbol": "IDFCFIRSTB29DEC26FUT"
+  },
+  "IDFCFIRSTB29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58993",
+    "tradingsymbol": "IDFCFIRSTB29DEC26FUT"
+  },
+  "NFO:IEX23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61600",
+    "tradingsymbol": "IEX23NOV26FUT"
+  },
+  "IEX23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61600",
+    "tradingsymbol": "IEX23NOV26FUT"
+  },
+  "NFO:IEX27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48879",
+    "tradingsymbol": "IEX27OCT26FUT"
+  },
+  "IEX27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48879",
+    "tradingsymbol": "IEX27OCT26FUT"
+  },
+  "NFO:IOC23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61612",
+    "tradingsymbol": "IOC23NOV26FUT"
+  },
+  "IOC23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61612",
+    "tradingsymbol": "IOC23NOV26FUT"
+  },
+  "NFO:IOC27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48893",
+    "tradingsymbol": "IOC27OCT26FUT"
+  },
+  "IOC27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48893",
+    "tradingsymbol": "IOC27OCT26FUT"
+  },
+  "NFO:IOC29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "59003",
+    "tradingsymbol": "IOC29DEC26FUT"
+  },
+  "IOC29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "59003",
+    "tradingsymbol": "IOC29DEC26FUT"
+  },
+  "NFO:IREDA23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61613",
+    "tradingsymbol": "IREDA23NOV26FUT"
+  },
+  "IREDA23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61613",
+    "tradingsymbol": "IREDA23NOV26FUT"
+  },
+  "NFO:IREDA27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48894",
+    "tradingsymbol": "IREDA27OCT26FUT"
+  },
+  "IREDA27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48894",
+    "tradingsymbol": "IREDA27OCT26FUT"
+  },
+  "NFO:IRFC23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61614",
+    "tradingsymbol": "IRFC23NOV26FUT"
+  },
+  "IRFC23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61614",
+    "tradingsymbol": "IRFC23NOV26FUT"
+  },
+  "NFO:IRFC27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48895",
+    "tradingsymbol": "IRFC27OCT26FUT"
+  },
+  "IRFC27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48895",
+    "tradingsymbol": "IRFC27OCT26FUT"
+  },
+  "NFO:IRFC29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "59004",
+    "tradingsymbol": "IRFC29DEC26FUT"
+  },
+  "IRFC29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "59004",
+    "tradingsymbol": "IRFC29DEC26FUT"
+  },
+  "NFO:ITC23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61615",
+    "tradingsymbol": "ITC23NOV26FUT"
+  },
+  "ITC23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61615",
+    "tradingsymbol": "ITC23NOV26FUT"
+  },
+  "NFO:ITC27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48896",
+    "tradingsymbol": "ITC27OCT26FUT"
+  },
+  "ITC27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48896",
+    "tradingsymbol": "ITC27OCT26FUT"
+  },
+  "NFO:ITC29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "59005",
+    "tradingsymbol": "ITC29DEC26FUT"
+  },
+  "ITC29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "59005",
+    "tradingsymbol": "ITC29DEC26FUT"
+  },
+  "NSE:IBLFL-SL": {
+    "exchange": "NSE",
+    "symboltoken": "21349",
+    "tradingsymbol": "IBLFL-SL"
+  },
+  "IBLFL-SL": {
+    "exchange": "NSE",
+    "symboltoken": "21349",
+    "tradingsymbol": "IBLFL-SL"
+  },
+  "NSE:ICICI-N8": {
+    "exchange": "NSE",
+    "symboltoken": "4213",
+    "tradingsymbol": "ICICI-N8"
+  },
+  "ICICI-N8": {
+    "exchange": "NSE",
+    "symboltoken": "4213",
+    "tradingsymbol": "ICICI-N8"
+  },
+  "NSE:ICICI1295-N1": {
+    "exchange": "NSE",
+    "symboltoken": "9390",
+    "tradingsymbol": "ICICI1295-N1"
+  },
+  "ICICI1295-N1": {
+    "exchange": "NSE",
+    "symboltoken": "9390",
+    "tradingsymbol": "ICICI1295-N1"
+  },
+  "NSE:ICICI1295-N2": {
+    "exchange": "NSE",
+    "symboltoken": "9391",
+    "tradingsymbol": "ICICI1295-N2"
+  },
+  "ICICI1295-N2": {
+    "exchange": "NSE",
+    "symboltoken": "9391",
+    "tradingsymbol": "ICICI1295-N2"
+  },
+  "NSE:ICICI1295-U1": {
+    "exchange": "NSE",
+    "symboltoken": "10239",
+    "tradingsymbol": "ICICI1295-U1"
+  },
+  "ICICI1295-U1": {
+    "exchange": "NSE",
+    "symboltoken": "10239",
+    "tradingsymbol": "ICICI1295-U1"
+  },
+  "NSE:ICICI1295-U2": {
+    "exchange": "NSE",
+    "symboltoken": "10240",
+    "tradingsymbol": "ICICI1295-U2"
+  },
+  "ICICI1295-U2": {
+    "exchange": "NSE",
+    "symboltoken": "10240",
+    "tradingsymbol": "ICICI1295-U2"
+  },
+  "NSE:ICICIAMC-BE": {
+    "exchange": "NSE",
+    "symboltoken": "760409",
+    "tradingsymbol": "ICICIAMC-BE"
+  },
+  "ICICIAMC-BE": {
+    "exchange": "NSE",
+    "symboltoken": "760409",
+    "tradingsymbol": "ICICIAMC-BE"
+  },
+  "NSE:ICICIAMC-BL": {
+    "exchange": "NSE",
+    "symboltoken": "760410",
+    "tradingsymbol": "ICICIAMC-BL"
+  },
+  "ICICIAMC-BL": {
+    "exchange": "NSE",
+    "symboltoken": "760410",
+    "tradingsymbol": "ICICIAMC-BL"
+  },
+  "NSE:ICICIAMC-IQ": {
+    "exchange": "NSE",
+    "symboltoken": "760411",
+    "tradingsymbol": "ICICIAMC-IQ"
+  },
+  "ICICIAMC-IQ": {
+    "exchange": "NSE",
+    "symboltoken": "760411",
+    "tradingsymbol": "ICICIAMC-IQ"
+  },
+  "NSE:ICICIAMC-RL": {
+    "exchange": "NSE",
+    "symboltoken": "760408",
+    "tradingsymbol": "ICICIAMC-RL"
+  },
+  "ICICIAMC-RL": {
+    "exchange": "NSE",
+    "symboltoken": "760408",
+    "tradingsymbol": "ICICIAMC-RL"
+  },
+  "NSE:ICICIB22-AF": {
+    "exchange": "NSE",
+    "symboltoken": "765726",
+    "tradingsymbol": "ICICIB22-AF"
+  },
+  "ICICIB22-AF": {
+    "exchange": "NSE",
+    "symboltoken": "765726",
+    "tradingsymbol": "ICICIB22-AF"
+  },
+  "NSE:ICICIB22-BL": {
+    "exchange": "NSE",
+    "symboltoken": "525",
+    "tradingsymbol": "ICICIB22-BL"
+  },
+  "ICICIB22-BL": {
+    "exchange": "NSE",
+    "symboltoken": "525",
+    "tradingsymbol": "ICICIB22-BL"
+  },
+  "NSE:ICICIB22": {
+    "exchange": "NSE",
+    "symboltoken": "522",
+    "tradingsymbol": "ICICIB22-EQ"
+  },
+  "ICICIB22-EQ": {
+    "exchange": "NSE",
+    "symboltoken": "522",
+    "tradingsymbol": "ICICIB22-EQ"
+  },
+  "NSE:ICICIB22-RL": {
+    "exchange": "NSE",
+    "symboltoken": "3780",
+    "tradingsymbol": "ICICIB22-RL"
+  },
+  "ICICIB22-RL": {
+    "exchange": "NSE",
+    "symboltoken": "3780",
+    "tradingsymbol": "ICICIB22-RL"
+  },
+  "NSE:ICICIBANK-AF": {
+    "exchange": "NSE",
+    "symboltoken": "11111",
+    "tradingsymbol": "ICICIBANK-AF"
+  },
+  "ICICIBANK-AF": {
+    "exchange": "NSE",
+    "symboltoken": "11111",
+    "tradingsymbol": "ICICIBANK-AF"
+  },
+  "NSE:ICICIBANK-BE": {
+    "exchange": "NSE",
+    "symboltoken": "4967",
+    "tradingsymbol": "ICICIBANK-BE"
+  },
+  "ICICIBANK-BE": {
+    "exchange": "NSE",
+    "symboltoken": "4967",
+    "tradingsymbol": "ICICIBANK-BE"
+  },
+  "NSE:ICICIBANK-BL": {
+    "exchange": "NSE",
+    "symboltoken": "12458",
+    "tradingsymbol": "ICICIBANK-BL"
+  },
+  "ICICIBANK-BL": {
+    "exchange": "NSE",
+    "symboltoken": "12458",
+    "tradingsymbol": "ICICIBANK-BL"
+  },
+  "NSE:ICICIBANK-IQ": {
+    "exchange": "NSE",
+    "symboltoken": "27885",
+    "tradingsymbol": "ICICIBANK-IQ"
+  },
+  "ICICIBANK-IQ": {
+    "exchange": "NSE",
+    "symboltoken": "27885",
+    "tradingsymbol": "ICICIBANK-IQ"
+  },
+  "NSE:ICICIBANK-RL": {
+    "exchange": "NSE",
+    "symboltoken": "15897",
+    "tradingsymbol": "ICICIBANK-RL"
+  },
+  "ICICIBANK-RL": {
+    "exchange": "NSE",
+    "symboltoken": "15897",
+    "tradingsymbol": "ICICIBANK-RL"
+  },
+  "NSE:ICICIGI-AF": {
+    "exchange": "NSE",
+    "symboltoken": "911",
+    "tradingsymbol": "ICICIGI-AF"
+  },
+  "ICICIGI-AF": {
+    "exchange": "NSE",
+    "symboltoken": "911",
+    "tradingsymbol": "ICICIGI-AF"
+  },
+  "NSE:ICICIGI-BE": {
+    "exchange": "NSE",
+    "symboltoken": "21774",
+    "tradingsymbol": "ICICIGI-BE"
+  },
+  "ICICIGI-BE": {
+    "exchange": "NSE",
+    "symboltoken": "21774",
+    "tradingsymbol": "ICICIGI-BE"
+  },
+  "NSE:ICICIGI-BL": {
+    "exchange": "NSE",
+    "symboltoken": "21773",
+    "tradingsymbol": "ICICIGI-BL"
+  },
+  "ICICIGI-BL": {
+    "exchange": "NSE",
+    "symboltoken": "21773",
+    "tradingsymbol": "ICICIGI-BL"
+  },
+  "NSE:ICDSLTD-BE": {
+    "exchange": "NSE",
+    "symboltoken": "9610",
+    "tradingsymbol": "ICDSLTD-BE"
+  },
+  "ICDSLTD-BE": {
+    "exchange": "NSE",
+    "symboltoken": "9610",
+    "tradingsymbol": "ICDSLTD-BE"
+  },
+  "NSE:LABHCONST": {
+    "exchange": "NSE",
+    "symboltoken": "1958",
+    "tradingsymbol": "LABHCONST-EQ"
+  },
+  "LABHCONST-EQ": {
+    "exchange": "NSE",
+    "symboltoken": "1958",
+    "tradingsymbol": "LABHCONST-EQ"
+  },
+  "NSE:LAURUSLABS-AF": {
+    "exchange": "NSE",
+    "symboltoken": "6393",
+    "tradingsymbol": "LAURUSLABS-AF"
+  },
+  "LAURUSLABS-AF": {
+    "exchange": "NSE",
+    "symboltoken": "6393",
+    "tradingsymbol": "LAURUSLABS-AF"
+  },
+  "NSE:LAURUSLABS-BE": {
+    "exchange": "NSE",
+    "symboltoken": "19244",
+    "tradingsymbol": "LAURUSLABS-BE"
+  },
+  "LAURUSLABS-BE": {
+    "exchange": "NSE",
+    "symboltoken": "19244",
+    "tradingsymbol": "LAURUSLABS-BE"
+  },
+  "NSE:LAURUSLABS-BL": {
+    "exchange": "NSE",
+    "symboltoken": "19243",
+    "tradingsymbol": "LAURUSLABS-BL"
+  },
+  "LAURUSLABS-BL": {
+    "exchange": "NSE",
+    "symboltoken": "19243",
+    "tradingsymbol": "LAURUSLABS-BL"
+  },
+  "NSE:LAURUSLABS-IQ": {
+    "exchange": "NSE",
+    "symboltoken": "19245",
+    "tradingsymbol": "LAURUSLABS-IQ"
+  },
+  "LAURUSLABS-IQ": {
+    "exchange": "NSE",
+    "symboltoken": "19245",
+    "tradingsymbol": "LAURUSLABS-IQ"
+  },
+  "NSE:LAURUSLABS-RL": {
+    "exchange": "NSE",
+    "symboltoken": "19246",
+    "tradingsymbol": "LAURUSLABS-RL"
+  },
+  "LAURUSLABS-RL": {
+    "exchange": "NSE",
+    "symboltoken": "19246",
+    "tradingsymbol": "LAURUSLABS-RL"
+  },
+  "BANKNIFTY27OCT2655400PE": {
+    "exchange": "NFO",
+    "symboltoken": "49456",
+    "tradingsymbol": "BANKNIFTY27OCT2655400PE"
+  },
+  "NFO:BANKNIFTY27OCT2655400PE": {
+    "exchange": "NFO",
+    "symboltoken": "49456",
+    "tradingsymbol": "BANKNIFTY27OCT2655400PE"
   }
 }
