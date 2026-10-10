@@ -223,14 +223,19 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
       localStorage.setItem('trading_guru_user_last_logins', JSON.stringify(logins));
     } catch {}
 
-    // 2. Persist to backend server
+    // 2. Persist to backend server & announce live presence
     try {
       getBackendHttpUrl().then((backendUrl) => {
         if (backendUrl) {
           fetch(`${backendUrl}/api/auth/record-login`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'bypass-tunnel-reminder': 'true' },
             body: JSON.stringify({ username: cleanUser, timestamp: nowIso })
+          }).catch(() => {});
+          fetch(`${backendUrl}/api/auth/heartbeat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'bypass-tunnel-reminder': 'true' },
+            body: JSON.stringify({ username: cleanUser })
           }).catch(() => {});
         }
       }).catch(() => {});

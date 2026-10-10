@@ -120,7 +120,9 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
     try {
       const backendUrl = await getBackendHttpUrl();
       if (backendUrl) {
-        const res = await fetch(`${backendUrl}/api/auth/users`, { signal: AbortSignal.timeout(4000) });
+        const res = await fetch(`${backendUrl}/api/auth/users`, {
+          headers: { 'bypass-tunnel-reminder': 'true' }
+        });
         if (res.ok) {
           const data = await res.json();
           if (data && Array.isArray(data.users)) {
@@ -129,7 +131,9 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
           }
         }
       }
-    } catch {}
+    } catch (e) {
+      console.warn('[UserManagement] Error loading users:', e);
+    }
 
     // Fallback if backend wasn't reached
     if (!backendSuccess) {
@@ -163,31 +167,52 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
 
     // For current logged-in user (e.g. Admin), ensure active online flag
     const currentClean = (currentUser || '').trim().toLowerCase();
-    combined.forEach(u => {
-      if (u.username.toLowerCase() === currentClean || (u.name && u.name.toLowerCase() === currentClean)) {
-        u.isOnline = true;
-      }
-    });
+    if (currentClean) {
+      combined.forEach(u => {
+        if (u.username.toLowerCase() === currentClean || (u.name && u.name.toLowerCase() === currentClean)) {
+          u.isOnline = true;
+        }
+      });
+    }
 
     setUsers(combined);
   };
 
   useEffect(() => {
-    if (isOpen) {
-      loadUsers();
-      setStatusMsg(null);
-      setConfirmDeleteUser(null);
-      const timer = setInterval(loadUsers, 5000);
-      return () => clearInterval(timer);
-    }
-  }, [isOpen]);
+    if (!isOpen) return;
+
+    loadUsers();
+    setStatusMsg(null);
+    setConfirmDeleteUser(null);
+    const timer = setInterval(loadUsers, 4000);
+
+    // Real-time WebSocket presence synchronization
+    const handleWsOnlineUpdate = (onlineList: string[], count: number) => {
+      if (Array.isArray(onlineList)) {
+        const onlineSet = new Set(onlineList.map(u => u.toLowerCase()));
+        const currentClean = (currentUser || '').trim().toLowerCase();
+        setUsers(prev => prev.map(u => {
+          const isCurrent = currentClean && (currentClean === u.username.toLowerCase() || currentClean === (u.name || '').toLowerCase());
+          const isOnline = isCurrent || onlineSet.has(u.username.toLowerCase()) || (u.name ? onlineSet.has(u.name.toLowerCase()) : false);
+          return { ...u, isOnline };
+        }));
+      }
+    };
+
+    tvStreamer.addOnlineUsersListListener(handleWsOnlineUpdate);
+
+    return () => {
+      clearInterval(timer);
+      tvStreamer.removeOnlineUsersListListener(handleWsOnlineUpdate);
+    };
+  }, [isOpen, currentUser]);
 
   const isAdmin = (currentUser || '').trim().toLowerCase() === 'admin';
 
   const onlineCount = useMemo(() => {
     const currentClean = (currentUser || '').trim().toLowerCase();
     return users.filter(u => {
-      const isCurrent = currentClean === u.username.toLowerCase() || currentClean === (u.name || '').toLowerCase();
+      const isCurrent = currentClean && (currentClean === u.username.toLowerCase() || currentClean === (u.name || '').toLowerCase());
       return isCurrent || !!u.isOnline;
     }).length;
   }, [users, currentUser]);

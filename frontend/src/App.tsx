@@ -221,11 +221,14 @@ function App() {
   useEffect(() => {
     if (!authUser) return;
 
+    tvStreamer.identifyUser(authUser);
+
     let isChecking = false;
     const checkSessionValidity = async () => {
       if (isChecking) return;
       isChecking = true;
       try {
+        tvStreamer.identifyUser(authUser);
         const localEpoch = Number(localStorage.getItem(AUTH_EPOCH_KEY) || sessionStorage.getItem(AUTH_EPOCH_KEY) || 0);
         if (!localEpoch) {
           handleLogout();

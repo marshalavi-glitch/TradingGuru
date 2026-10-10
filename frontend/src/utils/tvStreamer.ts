@@ -19,6 +19,7 @@ type OnDataCallback = (data: TVDataMessage) => void;
 type OnErrorCallback = (error: string) => void;
 type OnStatusCallback = (status: 'connecting' | 'connected' | 'disconnected') => void;
 type OnOnlineUsersCallback = (count: number) => void;
+export type OnOnlineUsersListCallback = (users: string[], count: number) => void;
 export type OnManualTradeAddedCallback = (trade: any) => void;
 export type OnManualTradeDeletedCallback = (id: string) => void;
 export type OnManualTradesClearedCallback = () => void;
@@ -33,6 +34,8 @@ class TVWebSocketStreamer {
   private onErrorCallback: OnErrorCallback | null = null;
   private onStatusCallback: OnStatusCallback | null = null;
   private onOnlineUsersCallback: OnOnlineUsersCallback | null = null;
+  private onOnlineUsersListCallbacks: OnOnlineUsersListCallback[] = [];
+  private presencePingInterval: number | null = null;
   private onManualTradeAddedCallbacks: OnManualTradeAddedCallback[] = [];
   private onManualTradeDeletedCallbacks: OnManualTradeDeletedCallback[] = [];
   private onManualTradesClearedCallbacks: OnManualTradesClearedCallback[] = [];
@@ -86,6 +89,32 @@ class TVWebSocketStreamer {
 
   public setOnlineUsersListener(callback: OnOnlineUsersCallback) {
     this.onOnlineUsersCallback = callback;
+  }
+
+  public addOnlineUsersListListener(callback: OnOnlineUsersListCallback) {
+    if (!this.onOnlineUsersListCallbacks.includes(callback)) {
+      this.onOnlineUsersListCallbacks.push(callback);
+    }
+  }
+
+  public removeOnlineUsersListListener(callback: OnOnlineUsersListCallback) {
+    this.onOnlineUsersListCallbacks = this.onOnlineUsersListCallbacks.filter(c => c !== callback);
+  }
+
+  public identifyUser(username: string | null) {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN && username) {
+      try {
+        this.ws.send(JSON.stringify({ type: 'presence', username: username.trim().toLowerCase() }));
+      } catch (e) {}
+    }
+  }
+
+  private getStoredAuthUsername(): string | null {
+    try {
+      return localStorage.getItem('trading_guru_auth_user_v2') || sessionStorage.getItem('trading_guru_auth_user_v2') || null;
+    } catch (e) {
+      return null;
+    }
   }
 
   public setManualTradeAddedListener(callback: OnManualTradeAddedCallback) {
@@ -292,7 +321,13 @@ class TVWebSocketStreamer {
     }, 1500);
 
     try {
-      this.ws = new WebSocket(this.url);
+      const storedUser = this.getStoredAuthUsername();
+      let targetWsUrl = this.url;
+      if (storedUser) {
+        const sep = targetWsUrl.includes('?') ? '&' : '?';
+        targetWsUrl = `${targetWsUrl}${sep}user=${encodeURIComponent(storedUser.trim().toLowerCase())}`;
+      }
+      this.ws = new WebSocket(targetWsUrl);
 
       this.ws.onopen = () => {
         console.log(`WebSocket connection established with ${this.url}`);
@@ -300,6 +335,27 @@ class TVWebSocketStreamer {
         if (this.statusTimer) clearTimeout(this.statusTimer);
         this.stopHttpPollingFallback();
         this.setStatus('connected');
+
+        // Immediately register presence on connection
+        const currentUser = this.getStoredAuthUsername();
+        if (currentUser && this.ws && this.ws.readyState === WebSocket.OPEN) {
+          try {
+            this.ws.send(JSON.stringify({ type: 'presence', username: currentUser.trim().toLowerCase() }));
+          } catch (e) {}
+        }
+
+        // Start periodic 10s presence heartbeat over WebSocket
+        if (this.presencePingInterval) clearInterval(this.presencePingInterval);
+        this.presencePingInterval = window.setInterval(() => {
+          if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            const u = this.getStoredAuthUsername();
+            if (u) {
+              try {
+                this.ws.send(JSON.stringify({ type: 'heartbeat', username: u.trim().toLowerCase() }));
+              } catch (e) {}
+            }
+          }
+        }, 10000);
         
         if (this.currentSubscription) {
           this.sendSubscription(this.currentSubscription.symbol, this.currentSubscription.timeframe);
@@ -331,6 +387,11 @@ class TVWebSocketStreamer {
           } else if (payload.type === 'online_users') {
             if (this.onOnlineUsersCallback && typeof payload.count === 'number') {
               this.onOnlineUsersCallback(payload.count);
+            }
+            if (Array.isArray(payload.onlineUsers)) {
+              this.onOnlineUsersListCallbacks.forEach(cb => {
+                try { cb(payload.onlineUsers, payload.count || payload.onlineUsers.length); } catch (e) {}
+              });
             }
           } else if (payload.type === 'manual_trade_added') {
             if (payload.trade) {
@@ -620,6 +681,10 @@ class TVWebSocketStreamer {
     this.unsubscribe();
     this.stopHttpPollingFallback();
     if (this.statusTimer) clearTimeout(this.statusTimer);
+    if (this.presencePingInterval) {
+      clearInterval(this.presencePingInterval);
+      this.presencePingInterval = null;
+    }
     if (this.ws) {
       this.ws.close();
       this.ws = null;

@@ -1964,21 +1964,43 @@ function removeUserPresence(username) {
   activeUserPresence.delete(clean);
 }
 
+function getOnlineUsersSet() {
+  const onlineSet = new Set();
+  
+  // 1. From active WebSocket clients
+  if (typeof wss !== 'undefined' && wss && wss.clients) {
+    wss.clients.forEach(c => {
+      if (c.readyState === 1 && c.authUser) {
+        onlineSet.add(c.authUser.toLowerCase());
+      }
+    });
+  }
+  
+  // 2. From activeUserPresence Map (within last 35 seconds)
+  const now = Date.now();
+  for (const [uname, data] of activeUserPresence.entries()) {
+    if (now - data.lastPing < 35000) {
+      onlineSet.add(uname.toLowerCase());
+    }
+  }
+  
+  return onlineSet;
+}
+
 function isUserOnline(username) {
   if (!username) return false;
   const clean = String(username).trim().toLowerCase();
-  const presence = activeUserPresence.get(clean);
-  if (!presence) return false;
-  return (Date.now() - presence.lastPing) < 40000;
+  return getOnlineUsersSet().has(clean);
 }
 
 app.get('/api/auth/users', (req, res) => {
   try {
+    const onlineSet = getOnlineUsersSet();
     const users = loadUsersFromDisk();
     const enrichedUsers = users.map(u => {
       const cleanUser = (u.username || '').toLowerCase();
       const cleanName = (u.name || '').toLowerCase();
-      const online = isUserOnline(cleanUser) || isUserOnline(cleanName);
+      const online = onlineSet.has(cleanUser) || (cleanName && onlineSet.has(cleanName));
       const presence = activeUserPresence.get(cleanUser) || activeUserPresence.get(cleanName);
       return {
         ...u,
@@ -1986,7 +2008,12 @@ app.get('/api/auth/users', (req, res) => {
         lastSeen: presence ? new Date(presence.lastPing).toISOString() : (u.lastLogin || null)
       };
     });
-    res.json({ success: true, users: enrichedUsers });
+    res.json({ 
+      success: true, 
+      users: enrichedUsers,
+      count: Math.max(onlineSet.size, 1),
+      onlineUsers: Array.from(onlineSet)
+    });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -1999,8 +2026,17 @@ app.post('/api/auth/heartbeat', (req, res) => {
     const requester = username || req.headers['x-auth-user'] || '';
     if (requester) {
       recordUserPresence(requester);
+      if (typeof broadcastOnlineUsers === 'function') {
+        broadcastOnlineUsers();
+      }
     }
-    res.json({ success: true, timestamp: Date.now() });
+    const onlineSet = getOnlineUsersSet();
+    res.json({ 
+      success: true, 
+      count: Math.max(onlineSet.size, 1), 
+      onlineUsers: Array.from(onlineSet), 
+      timestamp: Date.now() 
+    });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -2013,6 +2049,9 @@ app.post('/api/auth/heartbeat-leave', (req, res) => {
     const requester = username || req.headers['x-auth-user'] || '';
     if (requester) {
       removeUserPresence(requester);
+      if (typeof broadcastOnlineUsers === 'function') {
+        broadcastOnlineUsers();
+      }
     }
     res.json({ success: true });
   } catch (err) {
@@ -2331,8 +2370,10 @@ async function fetchAnchorLevels(symbol, timeframe) {
 }
 
 function broadcastOnlineUsers() {
-  const count = wss && wss.clients ? wss.clients.size : 0;
-  const msg = JSON.stringify({ type: 'online_users', count });
+  const onlineSet = getOnlineUsersSet();
+  const onlineArray = Array.from(onlineSet);
+  const count = Math.max(onlineSet.size, 1);
+  const msg = JSON.stringify({ type: 'online_users', count, onlineUsers: onlineArray });
   if (wss && wss.clients) {
     wss.clients.forEach(client => {
       if (client.readyState === 1) {
@@ -2343,12 +2384,25 @@ function broadcastOnlineUsers() {
 }
 
 app.get('/api/online-users', (req, res) => {
-  const count = wss && wss.clients ? wss.clients.size : 1;
-  res.json({ count: Math.max(1, count) });
+  const onlineSet = getOnlineUsersSet();
+  const count = Math.max(onlineSet.size, 1);
+  res.json({ count, onlineUsers: Array.from(onlineSet) });
 });
 
-wss.on('connection', (ws) => {
-  console.log('Client connected to WebSocket server');
+wss.on('connection', (ws, req) => {
+  // Extract user from URL query param: ws://localhost:3002/?user=admin
+  try {
+    if (req && req.url) {
+      const parsedUrl = new URL(req.url, 'http://localhost');
+      const userParam = parsedUrl.searchParams.get('user');
+      if (userParam) {
+        ws.authUser = String(userParam).trim().toLowerCase();
+        recordUserPresence(ws.authUser);
+      }
+    }
+  } catch (e) {}
+
+  console.log('Client connected to WebSocket server', ws.authUser ? `(${ws.authUser})` : '');
   broadcastOnlineUsers();
   
   ws.on('error', (err) => {
@@ -2369,6 +2423,26 @@ wss.on('connection', (ws) => {
   ws.on('message', async (message) => {
     try {
       const payload = JSON.parse(message);
+      
+      if (payload.type === 'presence' || payload.type === 'identify') {
+        const username = payload.username || payload.user;
+        if (username) {
+          ws.authUser = String(username).trim().toLowerCase();
+          recordUserPresence(ws.authUser);
+          broadcastOnlineUsers();
+        }
+        return;
+      }
+
+      if (payload.type === 'heartbeat') {
+        if (payload.username || payload.user) {
+          ws.authUser = String(payload.username || payload.user).trim().toLowerCase();
+        }
+        if (ws.authUser) {
+          recordUserPresence(ws.authUser);
+        }
+        return;
+      }
       
       if (payload.type === 'unsubscribe') {
         cleanupActiveSubscription();
@@ -2612,7 +2686,20 @@ wss.on('connection', (ws) => {
   });
 
   ws.on('close', async () => {
-    console.log('Client disconnected');
+    console.log('Client disconnected', ws.authUser ? `(${ws.authUser})` : '');
+    if (ws.authUser) {
+      let hasOtherSockets = false;
+      if (wss && wss.clients) {
+        wss.clients.forEach(c => {
+          if (c !== ws && c.authUser === ws.authUser && c.readyState === 1) {
+            hasOtherSockets = true;
+          }
+        });
+      }
+      if (!hasOtherSockets) {
+        removeUserPresence(ws.authUser);
+      }
+    }
     broadcastOnlineUsers();
     cleanupActiveSubscription();
   });
