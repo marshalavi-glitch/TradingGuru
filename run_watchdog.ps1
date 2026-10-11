@@ -3,7 +3,7 @@
 # Keeps Node.js Backend Server & Cloudflare Tunnel running continuously
 # ==============================================================================
 
-$backendDir = "C:\Users\Admin-pc\Downloads\agents\backend"
+$backendDir = Join-Path $PSScriptRoot "backend"
 $nodeExe = "C:\Users\Admin-pc\AppData\Local\ms-playwright-go\1.57.0\node.exe"
 
 Write-Host "[INIT] Starting 24/7 Trading Guru Watchdog Manager..." -ForegroundColor Green

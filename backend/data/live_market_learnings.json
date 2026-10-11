@@ -105602,5 +105602,22 @@
     "bankniftyLtpCe": 770.1,
     "bankniftyLtpPe": 644,
     "actionableTakeaway": "Bullish CE Bloat"
+  },
+  {
+    "time": "11:02:43",
+    "date": "11/10/2026",
+    "niftySpot": 22520.45,
+    "niftySkew": 11.137994999596742,
+    "niftyGamma": 3,
+    "niftyStraddle": 247.98000000000002,
+    "niftyLtpCe": 137.8,
+    "niftyLtpPe": 110.18,
+    "bankniftySpot": 55256.65,
+    "bankniftySkew": -0.29691474558393904,
+    "bankniftyGamma": 1,
+    "bankniftyStraddle": 1128.27,
+    "bankniftyLtpCe": 562.46,
+    "bankniftyLtpPe": 565.81,
+    "actionableTakeaway": "Equilibrium Rotation"
   }
 ]

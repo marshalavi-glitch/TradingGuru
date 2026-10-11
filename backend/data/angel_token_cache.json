@@ -46213,5 +46213,35 @@
     "exchange": "NFO",
     "symboltoken": "70987",
     "tradingsymbol": "APOLLOHOSP23NOV2610000CE"
+  },
+  "NIFTY13OCT2622000CE": {
+    "exchange": "NFO",
+    "symboltoken": "44572",
+    "tradingsymbol": "NIFTY13OCT2622000CE"
+  },
+  "NFO:NIFTY13OCT2622000CE": {
+    "exchange": "NFO",
+    "symboltoken": "44572",
+    "tradingsymbol": "NIFTY13OCT2622000CE"
+  },
+  "ADANIENT27OCT262740CE": {
+    "exchange": "NFO",
+    "symboltoken": "42018",
+    "tradingsymbol": "ADANIENT23NOV261400CE"
+  },
+  "NFO:ADANIENT27OCT262740CE": {
+    "exchange": "NFO",
+    "symboltoken": "42018",
+    "tradingsymbol": "ADANIENT23NOV261400CE"
+  },
+  "ADANIENT23NOV261400CE": {
+    "exchange": "NFO",
+    "symboltoken": "42018",
+    "tradingsymbol": "ADANIENT23NOV261400CE"
+  },
+  "NFO:ADANIENT23NOV261400CE": {
+    "exchange": "NFO",
+    "symboltoken": "42018",
+    "tradingsymbol": "ADANIENT23NOV261400CE"
   }
 }

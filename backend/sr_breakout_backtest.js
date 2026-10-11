@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
-import { angelOneBridge } from 'file:///C:/Users/Admin-pc/Downloads/agents/backend/angelone_bridge.js';
-import { buildExcelWorkbook, buildCsv } from 'file:///C:/Users/Admin-pc/Downloads/agents/backend/excel_generator.js';
-import { LOT_SIZES, getAtmStrike, isIndexSymbol } from 'file:///C:/Users/Admin-pc/Downloads/agents/backend/sr_breakout_scanner.js';
+import { angelOneBridge } from './angelone_bridge.js';
+import { buildExcelWorkbook, buildCsv } from './excel_generator.js';
+import { LOT_SIZES, getAtmStrike, isIndexSymbol } from './sr_breakout_scanner.js';
 
 const BACKTEST_SYMBOLS = [
   'NIFTY', 'BANKNIFTY', 'RELIANCE', 'TCS', 'INFY', 'HDFCBANK', 'ICICIBANK', 'SBIN',
