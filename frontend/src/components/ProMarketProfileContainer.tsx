@@ -83,7 +83,7 @@ export const QUICK_SYMBOLS = [
 function groupCandlesBySessionPeriod(
   candles: Candle[],
   period: 'D' | 'W' | 'W_S' | 'M_S' | 'Y'
-): { keys: string[]; grouped: Record<string, Candle[]>; sessionPeriodType: 'daily' | 'weekly' | 'monthly' } {
+): { keys: string[]; grouped: Record<string, Candle[]>; sessionPeriodType: 'daily' | 'weekly' | 'monthly' | 'yearly' } {
   const grouped: Record<string, Candle[]> = {};
   
   if (period === 'D') {
@@ -135,7 +135,7 @@ function groupCandlesBySessionPeriod(
       if (!grouped[yearStr]) grouped[yearStr] = [];
       grouped[yearStr].push(c);
     }
-    return { keys: Object.keys(grouped).sort(), grouped, sessionPeriodType: 'monthly' };
+    return { keys: Object.keys(grouped).sort(), grouped, sessionPeriodType: 'yearly' };
   }
   
   return { keys: [], grouped: {}, sessionPeriodType: 'daily' };
@@ -328,14 +328,16 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
         attempts++;
         const backendHttp = await getBackendHttpUrl();
         const resolved = resolveSymbol(symbol);
+        const isYearly = sessionPeriod === 'Y' || timeframe === 'Y';
+        const effTf = isYearly ? 'D' : timeframe;
         const multiplier = timeframe === '5' ? 85 : timeframe === '15' ? 40 : 35;
-        const limit = Math.min(1500, Math.max(450, (lookbackDays + 1) * multiplier));
-        const url = `${backendHttp}/api/candles?symbol=${encodeURIComponent(resolved.formattedSymbol)}&timeframe=${timeframe}&limit=${limit}`;
+        const limit = isYearly ? 2000 : Math.min(1500, Math.max(450, (lookbackDays + 1) * multiplier));
+        const url = `${backendHttp}/api/candles?symbol=${encodeURIComponent(resolved.formattedSymbol)}&timeframe=${effTf}&limit=${limit}`;
         const res = await fetch(url);
         if (res.ok) {
           const data = await res.json();
           if (data.candles && data.candles.length > 0) {
-            setCandles(filterMarketHoursCandles(data.candles, resolved.formattedSymbol, timeframe));
+            setCandles(filterMarketHoursCandles(data.candles, resolved.formattedSymbol, effTf));
             const last = data.candles[data.candles.length - 1];
             if (last && typeof last.close === 'number') {
               setLiveLtp(last.close);
@@ -345,11 +347,11 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
             return;
           } else if (resolved.formattedSymbol.includes('1!')) {
             const fallbackSym = resolved.formattedSymbol.replace('1!', '');
-            const fbRes = await fetch(`${backendHttp}/api/candles?symbol=${encodeURIComponent(fallbackSym)}&timeframe=${timeframe}&limit=${limit}`);
+            const fbRes = await fetch(`${backendHttp}/api/candles?symbol=${encodeURIComponent(fallbackSym)}&timeframe=${effTf}&limit=${limit}`);
             if (fbRes.ok) {
               const fbData = await fbRes.json();
               if (fbData.candles && fbData.candles.length > 0) {
-                setCandles(filterMarketHoursCandles(fbData.candles, fallbackSym, timeframe));
+                setCandles(filterMarketHoursCandles(fbData.candles, fallbackSym, effTf));
                 const last = fbData.candles[fbData.candles.length - 1];
                 if (last && typeof last.close === 'number') {
                   setLiveLtp(last.close);
@@ -377,7 +379,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
 
   useEffect(() => {
     fetchCandles();
-  }, [symbol, timeframe, lookbackDays]);
+  }, [symbol, timeframe, lookbackDays, sessionPeriod]);
 
   // Real-Time Tick-by-Tick Synchronization from Dashboard's Centralized Live Market Data Stream (tvStreamer)
   useEffect(() => {
@@ -481,7 +483,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
     } else if (sessionPeriod === 'M_S') {
       lookbackLimit = Math.max(3, Math.ceil(lookbackDays / 10));
     } else if (sessionPeriod === 'Y') {
-      lookbackLimit = Math.max(2, Math.ceil(lookbackDays / 50));
+      lookbackLimit = Math.max(6, lookbackDays);
     }
     
     const activeKeys = keys.slice(Math.max(0, keys.length - lookbackLimit));
@@ -495,7 +497,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
   const lastAutoScrollKey = useRef<string>('');
   useEffect(() => {
     if (dayProfiles.length > 0 && dimensions.width > 0) {
-      const key = `${symbol}_${timeframe}_${dayProfiles.length}`;
+      const key = `${symbol}_${timeframe}_${sessionPeriod}_${dayProfiles.length}`;
       if (lastAutoScrollKey.current !== key) {
         lastAutoScrollKey.current = key;
         const chartW = dimensions.width - 25 - 80;
@@ -510,7 +512,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
         }
       }
     }
-  }, [dayProfiles, dimensions.width, symbol, timeframe]);
+  }, [dayProfiles, dimensions.width, symbol, timeframe, sessionPeriod]);
 
   // Keyboard shortcut listener for Pin/Unpin (P) and Unpin (Esc)
   useEffect(() => {
@@ -1572,8 +1574,21 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
 
           {/* Timeframe Selector */}
           <select
-            value={timeframe}
-            onChange={(e) => setTimeframe(e.target.value)}
+            value={sessionPeriod === 'Y' ? 'Y' : timeframe}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === 'Y') {
+                setSessionPeriod('Y');
+                setTimeframe('D');
+                setLookbackDays(6);
+              } else {
+                if (sessionPeriod === 'Y') {
+                  setSessionPeriod('D');
+                  setLookbackDays(5);
+                }
+                setTimeframe(val);
+              }
+            }}
             style={{
               background: '#2d2d2d',
               color: '#ffffff',
@@ -1591,6 +1606,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
             <option value="30" style={{ background: '#222222', color: '#ffffff' }}>30 Minute</option>
             <option value="60" style={{ background: '#222222', color: '#ffffff' }}>60 Minute</option>
             <option value="D" style={{ background: '#222222', color: '#ffffff' }}>Daily</option>
+            <option value="Y" style={{ background: '#222222', color: '#38bdf8', fontWeight: 'bold' }}>Yearly (6 Years MP)</option>
           </select>
 
           {/* Dynamic Date & Time Range text (e.g. 13-12-2023 14:15:00 - 19-12-2023 11:45:00) */}
@@ -1607,10 +1623,10 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
             <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
           </button>
 
-          {/* Lookback Days Selector (5D to 100D) */}
+          {/* Lookback Days Selector (5D to 30D for intraday/daily, 1Y to 6Y for yearly) */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: '#2d2d2d', padding: '2px 5px', borderRadius: '3px', border: '1px solid #444444' }}>
             <span style={{ fontSize: '10px', fontWeight: '800', color: '#9ca3af' }}>📅</span>
-            {[5, 10, 15, 20, 30].map((d) => (
+            {(sessionPeriod === 'Y' ? [3, 6, 10] : [5, 10, 15, 20, 30]).map((d) => (
               <button
                 key={d}
                 onClick={() => setLookbackDays(d)}
@@ -1625,7 +1641,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
                   cursor: 'pointer'
                 }}
               >
-                {d}D
+                {d}{sessionPeriod === 'Y' ? 'Y' : 'D'}
               </button>
             ))}
           </div>
@@ -2085,7 +2101,15 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
             {(['D', 'W', 'W_S', 'M_S', 'Y'] as const).map(p => (
               <button
                 key={p}
-                onClick={() => setSessionPeriod(p)}
+                onClick={() => {
+                  setSessionPeriod(p);
+                  if (p === 'Y') {
+                    setTimeframe('D');
+                    setLookbackDays(6);
+                  } else if (sessionPeriod === 'Y') {
+                    setLookbackDays(5);
+                  }
+                }}
                 style={{
                   background: sessionPeriod === p ? '#2563eb' : '#262626',
                   color: sessionPeriod === p ? '#ffffff' : '#9ca3af',
@@ -2097,7 +2121,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
                   cursor: 'pointer'
                 }}
               >
-                {p}
+                {p === 'Y' ? 'Y (6Y)' : p}
               </button>
             ))}
           </div>

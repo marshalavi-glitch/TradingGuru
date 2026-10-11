@@ -1009,7 +1009,7 @@ export class AngelOneBridge {
       } else if (interval === 'ONE_HOUR') {
         daysBack = Math.min(45, Math.max(25, Math.ceil((limit || 100) / 6 * 1.8)));
       } else if (interval === 'ONE_DAY') {
-        daysBack = Math.min(365, Math.max(160, Math.ceil((limit || 100) * 1.5)));
+        daysBack = Math.min(2600, Math.max(160, Math.ceil((limit || 100) * 1.5)));
       }
 
       // Commodities futures contracts have shorter lifespans

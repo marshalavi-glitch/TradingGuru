@@ -212,7 +212,7 @@ export function calculateDayProfile(
   dateStr: string,
   dayCandles: Candle[],
   binCount: number = 40,
-  sessionPeriod: 'daily' | 'weekly' | 'monthly' = 'daily',
+  sessionPeriod: 'daily' | 'weekly' | 'monthly' | 'yearly' = 'daily',
   parentPrices?: number[],
   parentTickSize?: number,
   symbol?: string
@@ -253,13 +253,13 @@ export function calculateDayProfile(
   if (parentTickSize === undefined) {
     const cleanSym = symbol ? symbol.replace("NSE:", "").replace("BSE:", "").replace("_S", "").toUpperCase() : "";
     if (cleanSym === 'NIFTY') {
-      tickSize = sessionPeriod === 'monthly' ? 10 : (sessionPeriod === 'weekly' ? 5 : 2);
+      tickSize = sessionPeriod === 'yearly' ? 50 : (sessionPeriod === 'monthly' ? 10 : (sessionPeriod === 'weekly' ? 5 : 2));
     } else if (cleanSym === 'BANKNIFTY') {
-      tickSize = sessionPeriod === 'monthly' ? 20 : (sessionPeriod === 'weekly' ? 10 : 5);
+      tickSize = sessionPeriod === 'yearly' ? 100 : (sessionPeriod === 'monthly' ? 20 : (sessionPeriod === 'weekly' ? 10 : 5));
     } else if (cleanSym === 'FINNIFTY' || cleanSym === 'MIDCPNIFTY') {
-      tickSize = sessionPeriod === 'monthly' ? 10 : (sessionPeriod === 'weekly' ? 5 : 2);
+      tickSize = sessionPeriod === 'yearly' ? 50 : (sessionPeriod === 'monthly' ? 10 : (sessionPeriod === 'weekly' ? 5 : 2));
     } else if (cleanSym === 'SENSEX') {
-      tickSize = sessionPeriod === 'monthly' ? 20 : (sessionPeriod === 'weekly' ? 10 : 5);
+      tickSize = sessionPeriod === 'yearly' ? 100 : (sessionPeriod === 'monthly' ? 20 : (sessionPeriod === 'weekly' ? 10 : 5));
     } else {
       const range = dayHigh - dayLow;
       const rawTick = range / binCount;
@@ -309,7 +309,9 @@ export function calculateDayProfile(
     const d = new Date(c.time * 1000);
     
     let periodIndex = 0;
-    if (sessionPeriod === 'monthly') {
+    if (sessionPeriod === 'yearly') {
+      periodIndex = d.getMonth(); // 0 for Jan ('A') through 11 for Dec ('L')
+    } else if (sessionPeriod === 'monthly') {
       const cdStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       periodIndex = uniqueDays.indexOf(cdStr);
     } else {
