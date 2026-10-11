@@ -45983,5 +45983,235 @@
     "exchange": "NFO",
     "symboltoken": "49456",
     "tradingsymbol": "BANKNIFTY27OCT2655400PE"
+  },
+  "NFO:BIOCON23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61520",
+    "tradingsymbol": "BIOCON23NOV26FUT"
+  },
+  "BIOCON23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61520",
+    "tradingsymbol": "BIOCON23NOV26FUT"
+  },
+  "NFO:BIOCON27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48771",
+    "tradingsymbol": "BIOCON27OCT26FUT"
+  },
+  "BIOCON27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48771",
+    "tradingsymbol": "BIOCON27OCT26FUT"
+  },
+  "NFO:BIOCON29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58925",
+    "tradingsymbol": "BIOCON29DEC26FUT"
+  },
+  "BIOCON29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "58925",
+    "tradingsymbol": "BIOCON29DEC26FUT"
+  },
+  "NSE:BI-BE": {
+    "exchange": "NSE",
+    "symboltoken": "762586",
+    "tradingsymbol": "BI-BE"
+  },
+  "BI-BE": {
+    "exchange": "NSE",
+    "symboltoken": "762586",
+    "tradingsymbol": "BI-BE"
+  },
+  "NSE:SHIGAN-SL": {
+    "exchange": "NSE",
+    "symboltoken": "8396",
+    "tradingsymbol": "SHIGAN-SL"
+  },
+  "SHIGAN-SL": {
+    "exchange": "NSE",
+    "symboltoken": "8396",
+    "tradingsymbol": "SHIGAN-SL"
+  },
+  "NSE:SHILPAMED-BE": {
+    "exchange": "NSE",
+    "symboltoken": "17756",
+    "tradingsymbol": "SHILPAMED-BE"
+  },
+  "SHILPAMED-BE": {
+    "exchange": "NSE",
+    "symboltoken": "17756",
+    "tradingsymbol": "SHILPAMED-BE"
+  },
+  "NSE:SHILPAMED-BL": {
+    "exchange": "NSE",
+    "symboltoken": "17755",
+    "tradingsymbol": "SHILPAMED-BL"
+  },
+  "SHILPAMED-BL": {
+    "exchange": "NSE",
+    "symboltoken": "17755",
+    "tradingsymbol": "SHILPAMED-BL"
+  },
+  "NSE:SHILPAMED": {
+    "exchange": "NSE",
+    "symboltoken": "17752",
+    "tradingsymbol": "SHILPAMED-EQ"
+  },
+  "SHILPAMED-EQ": {
+    "exchange": "NSE",
+    "symboltoken": "17752",
+    "tradingsymbol": "SHILPAMED-EQ"
+  },
+  "NSE:SHILPAMED-IQ": {
+    "exchange": "NSE",
+    "symboltoken": "28472",
+    "tradingsymbol": "SHILPAMED-IQ"
+  },
+  "SHILPAMED-IQ": {
+    "exchange": "NSE",
+    "symboltoken": "28472",
+    "tradingsymbol": "SHILPAMED-IQ"
+  },
+  "NSE:SHILPAMED-RL": {
+    "exchange": "NSE",
+    "symboltoken": "17757",
+    "tradingsymbol": "SHILPAMED-RL"
+  },
+  "SHILPAMED-RL": {
+    "exchange": "NSE",
+    "symboltoken": "17757",
+    "tradingsymbol": "SHILPAMED-RL"
+  },
+  "NFO:POWERGRID23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61690",
+    "tradingsymbol": "POWERGRID23NOV26FUT"
+  },
+  "POWERGRID23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61690",
+    "tradingsymbol": "POWERGRID23NOV26FUT"
+  },
+  "NFO:POWERGRID27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48980",
+    "tradingsymbol": "POWERGRID27OCT26FUT"
+  },
+  "POWERGRID27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48980",
+    "tradingsymbol": "POWERGRID27OCT26FUT"
+  },
+  "NFO:POWERGRID29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "59090",
+    "tradingsymbol": "POWERGRID29DEC26FUT"
+  },
+  "POWERGRID29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "59090",
+    "tradingsymbol": "POWERGRID29DEC26FUT"
+  },
+  "NFO:POWERINDIA23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61691",
+    "tradingsymbol": "POWERINDIA23NOV26FUT"
+  },
+  "POWERINDIA23NOV26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "61691",
+    "tradingsymbol": "POWERINDIA23NOV26FUT"
+  },
+  "NFO:POWERINDIA27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48981",
+    "tradingsymbol": "POWERINDIA27OCT26FUT"
+  },
+  "POWERINDIA27OCT26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "48981",
+    "tradingsymbol": "POWERINDIA27OCT26FUT"
+  },
+  "NFO:POWERINDIA29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "59091",
+    "tradingsymbol": "POWERINDIA29DEC26FUT"
+  },
+  "POWERINDIA29DEC26FUT": {
+    "exchange": "NFO",
+    "symboltoken": "59091",
+    "tradingsymbol": "POWERINDIA29DEC26FUT"
+  },
+  "NSE:POWERGRID-AF": {
+    "exchange": "NSE",
+    "symboltoken": "11127",
+    "tradingsymbol": "POWERGRID-AF"
+  },
+  "POWERGRID-AF": {
+    "exchange": "NSE",
+    "symboltoken": "11127",
+    "tradingsymbol": "POWERGRID-AF"
+  },
+  "NSE:POWERMECH-BE": {
+    "exchange": "NSE",
+    "symboltoken": "10468",
+    "tradingsymbol": "POWERMECH-BE"
+  },
+  "POWERMECH-BE": {
+    "exchange": "NSE",
+    "symboltoken": "10468",
+    "tradingsymbol": "POWERMECH-BE"
+  },
+  "NSE:POWERMECH-BL": {
+    "exchange": "NSE",
+    "symboltoken": "10469",
+    "tradingsymbol": "POWERMECH-BL"
+  },
+  "POWERMECH-BL": {
+    "exchange": "NSE",
+    "symboltoken": "10469",
+    "tradingsymbol": "POWERMECH-BL"
+  },
+  "NSE:POWERMECH-IQ": {
+    "exchange": "NSE",
+    "symboltoken": "10475",
+    "tradingsymbol": "POWERMECH-IQ"
+  },
+  "POWERMECH-IQ": {
+    "exchange": "NSE",
+    "symboltoken": "10475",
+    "tradingsymbol": "POWERMECH-IQ"
+  },
+  "NSE:POWERMECH-RL": {
+    "exchange": "NSE",
+    "symboltoken": "10476",
+    "tradingsymbol": "POWERMECH-RL"
+  },
+  "POWERMECH-RL": {
+    "exchange": "NSE",
+    "symboltoken": "10476",
+    "tradingsymbol": "POWERMECH-RL"
+  },
+  "APOLLOHOSP13OCT268000CE": {
+    "exchange": "NFO",
+    "symboltoken": "70987",
+    "tradingsymbol": "APOLLOHOSP23NOV2610000CE"
+  },
+  "NFO:APOLLOHOSP13OCT268000CE": {
+    "exchange": "NFO",
+    "symboltoken": "70987",
+    "tradingsymbol": "APOLLOHOSP23NOV2610000CE"
+  },
+  "APOLLOHOSP23NOV2610000CE": {
+    "exchange": "NFO",
+    "symboltoken": "70987",
+    "tradingsymbol": "APOLLOHOSP23NOV2610000CE"
+  },
+  "NFO:APOLLOHOSP23NOV2610000CE": {
+    "exchange": "NFO",
+    "symboltoken": "70987",
+    "tradingsymbol": "APOLLOHOSP23NOV2610000CE"
   }
 }

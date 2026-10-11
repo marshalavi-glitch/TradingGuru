@@ -155,19 +155,22 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
   const calculatedProfile = useMemo(() => {
     if (!candles || candles.length === 0) return null;
     try {
-      const todayCandles = candles.filter((c) => {
+      let todayCandles = candles.filter((c) => {
         const d = typeof c.time === 'string'
           ? c.time.slice(0, 10)
           : new Date((c.time as number) * 1000).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
         return d === sessionDate;
       });
 
-      if (todayCandles.length === 0) return null;
-      return calculateDayProfile(todayCandles, 5, sessionDate);
+      if (todayCandles.length === 0) {
+        todayCandles = candles;
+      }
+      return calculateDayProfile(sessionDate, todayCandles, 40, 'daily', undefined, undefined, symbol);
     } catch (e) {
+      console.warn('[ChartContainer] calculateDayProfile error:', e);
       return null;
     }
-  }, [candles, sessionDate]);
+  }, [candles, sessionDate, symbol]);
 
   const activePoc = pocPrice || calculatedProfile?.pocPrice;
   const activeVah = vahPrice || calculatedProfile?.vahPrice;
@@ -312,8 +315,6 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
   const openPriceLineRef = useRef<any>(null);
   const lastSymbolTimeframeRef = useRef<string>('');
 
-  // EMA & Overlay Refs
-  const emaSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
   const candlesRef = useRef<Candle[]>(candles);
   candlesRef.current = candles;
 
@@ -331,8 +332,13 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
 
   // Orderflow Levels (Marshall Matrix Engine)
   const activeOrderflowLevels = useMemo(() => {
-    const effData = (matrixSeriesData && matrixSeriesData.level1 && matrixSeriesData.level1.length > 0)
-      ? matrixSeriesData
+    const currentPrice = (candles && candles.length > 0) ? candles[candles.length - 1].close : 0;
+    const isMatrixCompatible = matrixSeriesData && matrixSeriesData.level1 && matrixSeriesData.level1.length > 0 &&
+      currentPrice > 0 &&
+      Math.abs(matrixSeriesData.level1[matrixSeriesData.level1.length - 1].value - currentPrice) / currentPrice < 2.0;
+
+    const effData = isMatrixCompatible
+      ? matrixSeriesData!
       : calculateMatrixSeriesData(candles, timeframe);
 
     const getLatest = (arr?: any[]) => {
@@ -596,17 +602,6 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
     });
     candlestickSeriesRef.current = candlestickSeries;
 
-    // Add EMA 20 Series matching TradingView screenshot
-    const emaSeries = chart.addLineSeries({
-      color: '#ff9800',
-      lineWidth: 1.5,
-      priceLineVisible: false,
-      lastValueVisible: false,
-      title: 'EMA 20',
-      autoscaleInfoProvider: () => null
-    });
-    emaSeriesRef.current = emaSeries;
-
     // Dedicated zero-overhead line series to host all level price lines (POC, VAH, VAL, GEX, Fibs, etc.)
     // With autoscaleInfoProvider: () => null, price lines will NOT forcefully expand the Y-axis!
     const levelsSeries = chart.addLineSeries({
@@ -869,7 +864,6 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
       candlestickSeriesRef.current = null;
       volumeSeriesRef.current = null;
       vwapSeriesRef.current = null;
-      emaSeriesRef.current = null;
       levelsSeriesRef.current = null;
       matrixSeriesRef.current = [];
     };
@@ -883,7 +877,6 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
       candlestickSeriesRef.current.setData([]);
       volumeSeriesRef.current.setData([]);
       if (vwapSeriesRef.current) vwapSeriesRef.current.setData([]);
-      if (emaSeriesRef.current) emaSeriesRef.current.setData([]);
       if (matrixSeriesRef.current) {
         matrixSeriesRef.current.forEach((s: any) => {
           try { s.setData([]); } catch (e) {}
@@ -1026,28 +1019,6 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
       }
     }
 
-    // Calculate and set EMA 20 matching TradingView screenshot
-    if (emaSeriesRef.current && sortedCandles.length > 0) {
-      const k = 2 / (20 + 1);
-      let ema = sortedCandles[0].close;
-      const emaData = sortedCandles.map((c) => {
-        ema = c.close * k + ema * (1 - k);
-        return {
-          time: ((c.time as number) + IST_OFFSET_SECONDS) as Time,
-          value: Number(ema.toFixed(2))
-        };
-      });
-
-      if (isDatasetChange || isMajorCountChange) {
-        emaSeriesRef.current.setData(emaData);
-      } else {
-        const lastEma = emaData[emaData.length - 1];
-        if (lastEma) {
-          emaSeriesRef.current.update(lastEma);
-        }
-      }
-    }
-
     // Set Matrix series data with strict deduplication & ascending time order
     if (matrixSeriesRef.current.length === 10 && matrixSeriesData) {
       const shiftSeries = (seriesArr: any[]) => {
@@ -1159,10 +1130,12 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
     if (!series) return;
 
     const currentPrice = (candles && candles.length > 0) ? candles[candles.length - 1].close : 0;
+    const isOptionSymbol = /(CE|PE|CALL|PUT|\d+[CP])$/i.test(symbol || '') || /\s+(CE|PE|CE\/PE)$/i.test(symbol || '');
     // Guard against distant levels (like Fib 3.618 or old monthly NPOCs) distorting/collapsing the vertical candle scale
     const isPriceNear = (price?: number, maxDistancePct: number = 0.035) => {
       if (!price || !currentPrice || price <= 0) return false;
-      return Math.abs(price - currentPrice) / currentPrice <= maxDistancePct;
+      const threshold = isOptionSymbol ? Math.max(0.75, maxDistancePct * 15) : maxDistancePct;
+      return Math.abs(price - currentPrice) / currentPrice <= threshold;
     };
 
     // Helper to clear a line ref

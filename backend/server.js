@@ -591,6 +591,32 @@ function getOptionSetupLevels(symbol, optInfo) {
     };
   }
 
+  if (!found && optInfo) {
+    let ltp = getOptionTargetLtp(symbol, optInfo);
+    if (ltp && ltp > 0) {
+      const entry = Number(ltp);
+      const sl = Math.max(0.5, Number((entry * 0.75).toFixed(2)));
+      const t1 = Number((entry * 1.30).toFixed(2));
+      const t2 = Number((entry * 1.60).toFixed(2));
+      const vah = Number((entry * 1.05).toFixed(2));
+      const poc = Number((entry * 0.98).toFixed(2));
+      const val = Math.max(0.5, Number((entry * 0.92).toFixed(2)));
+
+      return {
+        level1: t2,                                   // Resistance Target R6
+        level2: t1,                                   // Resistance Target R5
+        level3: Number((entry * 1.08).toFixed(2)),    // Breakout Threshold R4
+        level4: vah,                                  // VAH (Value Area High / R3)
+        level5: entry,                                // R2
+        level6: poc,                                  // POC / S2
+        level7: val,                                  // VAL / Buy Reversal S3
+        level8: sl,                                   // S4 (Stop Loss)
+        level9: Math.max(0.5, Number((sl * 0.90).toFixed(2))), // S5
+        level10: Math.max(0.5, Number((sl * 0.80).toFixed(2))) // S6
+      };
+    }
+  }
+
   return null;
 }
 
@@ -2300,6 +2326,9 @@ async function fetchAnchorLevels(symbol, timeframe) {
       const dateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       return { [dateKey]: setupLevels };
     }
+    // For option contracts without explicit setup, do not query underlying spot candles
+    // to avoid contaminating option charts with spot index numbers (e.g. 24,000).
+    return null;
   }
 
   const anchorTf = (timeframe === 'D' || timeframe === 'W' || timeframe === 'M') ? 'M' : 'D';

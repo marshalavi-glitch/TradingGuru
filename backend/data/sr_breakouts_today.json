@@ -1,5 +1,5 @@
 {
-  "date": "10/10/2026",
+  "date": "10/11/2026",
   "results": [
     {
       "symbol": "NSE:FINNIFTY 25000 CE",
@@ -79,25 +79,25 @@
       "symbol": "NSE:MIDCPNIFTY 13575 CE",
       "displayName": "MIDCPNIFTY 13575 CE/PE",
       "companyName": "Nifty Midcap Select (13575 CE/PE Option)",
-      "close": 46.36,
+      "close": 54.14,
       "changePct": 1.48,
       "changePts": 201.05,
       "volume": 292675,
       "direction": "coiling",
-      "nr7High": 46.36,
-      "nr7Low": 38.26,
+      "nr7High": 54.14,
+      "nr7Low": 46.04,
       "nr7Range": 8.1,
       "todayHigh": 217.26,
       "todayLow": 46.51,
       "todayRange": 237.03,
-      "val": 41.51,
-      "vah": 47.18,
-      "poc": 44.34,
+      "val": 49.29,
+      "vah": 54.96,
+      "poc": 52.12,
       "mpStatus": "Inside Value Area (Rotation)",
-      "entryPrice": 46.36,
-      "stopLoss": 38.26,
-      "target1": 54.5,
-      "target2": 59.5,
+      "entryPrice": 54.14,
+      "stopLoss": 46.04,
+      "target1": 62.2,
+      "target2": 67.2,
       "riskPts": 8.1,
       "rewardPts": 8.1,
       "riskReward": "1 : 1.00",
@@ -109,7 +109,7 @@
       "optionType": "CE/PE",
       "underlyingPrice": 13584.75,
       "lotSize": 50,
-      "contractValue": 2318,
+      "contractValue": 2707,
       "underlyingSymbol": "NSE:MIDCPNIFTY"
     },
     {
@@ -10416,5 +10416,5 @@
     "bearishCount": 5,
     "coilingCount": 288
   },
-  "lastScanTime": "2026-10-10T11:57:36.074Z"
+  "lastScanTime": "2026-10-11T04:38:06.554Z"
 }

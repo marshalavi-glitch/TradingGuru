@@ -85,12 +85,20 @@ export function calculateMatrixSeriesData(candles: Candle[], timeframe: string):
 
         const r5 = r4 + 1.168 * (r4 - r3);
         const s5 = s4 - 1.168 * (s3 - s4);
-        const r6 = l_prev > 0 ? (h_prev / l_prev) * c_prev : c_prev * 1.05;
-        const s6 = c_prev - (r6 - c_prev);
+        const r6 = r5 + 1.168 * (r4 - r3);
+        const s6 = Math.max(0.05, s5 - 1.168 * (s3 - s4));
 
         const levels = {
-          level1: r6, level2: r5, level3: r4, level4: r3, level5: r2,
-          level6: s2, level7: s3, level8: s4, level9: s5, level10: s6
+          level1: Math.round(r6 * 100) / 100,
+          level2: Math.round(r5 * 100) / 100,
+          level3: Math.round(r4 * 100) / 100,
+          level4: Math.round(r3 * 100) / 100,
+          level5: Math.round(r2 * 100) / 100,
+          level6: Math.max(0.05, Math.round(s2 * 100) / 100),
+          level7: Math.max(0.05, Math.round(s3 * 100) / 100),
+          level8: Math.max(0.05, Math.round(s4 * 100) / 100),
+          level9: Math.max(0.05, Math.round(s5 * 100) / 100),
+          level10: Math.max(0.05, Math.round(s6 * 100) / 100)
         };
 
         const sortedCurrent = [...currentCandles].sort((a, b) => a.time - b.time);

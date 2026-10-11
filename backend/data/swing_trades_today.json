@@ -1,5 +1,5 @@
 {
-  "date": "10/10/2026",
+  "date": "10/11/2026",
   "results": {
     "60": [],
     "D": [
@@ -38,7 +38,7 @@
         "target2": 289.1,
         "stopLoss": 256.1,
         "riskReward": "1 : 1.3",
-        "lastUpdated": "21:40:39",
+        "lastUpdated": "10:00:44",
         "sparklineCloses": [
           262.3,
           267,
@@ -92,7 +92,7 @@
         "target2": 2351.8,
         "stopLoss": 2072.1,
         "riskReward": "1 : 1.3",
-        "lastUpdated": "21:40:37",
+        "lastUpdated": "10:00:42",
         "sparklineCloses": [
           2105,
           2128.7,
@@ -146,7 +146,7 @@
         "target2": 20944,
         "stopLoss": 23083.5,
         "riskReward": "1 : 1.6",
-        "lastUpdated": "21:40:35",
+        "lastUpdated": "10:00:40",
         "sparklineCloses": [
           23346.4,
           23414.3,
@@ -200,7 +200,7 @@
         "target2": 67399.3,
         "stopLoss": 74284.1,
         "riskReward": "1 : 1.6",
-        "lastUpdated": "21:40:37",
+        "lastUpdated": "10:00:40",
         "sparklineCloses": [
           74294.96,
           74858.99,
@@ -254,7 +254,7 @@
         "target2": 1088.4,
         "stopLoss": 1203.8,
         "riskReward": "1 : 1.4",
-        "lastUpdated": "21:40:37",
+        "lastUpdated": "10:00:40",
         "sparklineCloses": [
           1226.4,
           1247.4,
@@ -308,7 +308,7 @@
         "target2": 381.2,
         "stopLoss": 424.5,
         "riskReward": "1 : 1.3",
-        "lastUpdated": "21:40:46",
+        "lastUpdated": "10:00:50",
         "sparklineCloses": [
           409.9,
           414.7,
@@ -362,7 +362,7 @@
         "target2": 2166.3,
         "stopLoss": 2413.2,
         "riskReward": "1 : 1.3",
-        "lastUpdated": "21:40:47",
+        "lastUpdated": "10:00:50",
         "sparklineCloses": [
           2451.3,
           2440.3,
@@ -416,7 +416,7 @@
         "target2": 6535.5,
         "stopLoss": 7270.5,
         "riskReward": "1 : 1.3",
-        "lastUpdated": "21:40:51",
+        "lastUpdated": "10:00:56",
         "sparklineCloses": [
           7516,
           7512.5,
@@ -470,7 +470,7 @@
         "target2": 5162.8,
         "stopLoss": 4692.8,
         "riskReward": "1 : 1.5",
-        "lastUpdated": "21:40:55",
+        "lastUpdated": "10:00:58",
         "sparklineCloses": [
           4998,
           5023,
@@ -524,7 +524,7 @@
         "target2": 653.2,
         "stopLoss": 730.4,
         "riskReward": "1 : 1.3",
-        "lastUpdated": "21:40:37",
+        "lastUpdated": "10:00:42",
         "sparklineCloses": [
           731,
           739.5,
@@ -578,7 +578,7 @@
         "target2": 3444.1,
         "stopLoss": 3808.5,
         "riskReward": "1 : 1.4",
-        "lastUpdated": "21:40:40",
+        "lastUpdated": "10:00:44",
         "sparklineCloses": [
           3885,
           3904.8,
@@ -632,7 +632,7 @@
         "target2": 1354.4,
         "stopLoss": 1218.2,
         "riskReward": "1 : 1.3",
-        "lastUpdated": "21:40:41",
+        "lastUpdated": "10:00:44",
         "sparklineCloses": [
           1257,
           1250,
@@ -686,7 +686,7 @@
         "target2": 479.1,
         "stopLoss": 424.7,
         "riskReward": "1 : 1.3",
-        "lastUpdated": "21:40:41",
+        "lastUpdated": "10:00:45",
         "sparklineCloses": [
           412.5,
           414.8,
@@ -740,7 +740,7 @@
         "target2": 862.8,
         "stopLoss": 1001.7,
         "riskReward": "1 : 1.3",
-        "lastUpdated": "21:40:41",
+        "lastUpdated": "10:00:46",
         "sparklineCloses": [
           1040.3,
           1021.3,
@@ -794,7 +794,7 @@
         "target2": 157.3,
         "stopLoss": 180.9,
         "riskReward": "1 : 1.3",
-        "lastUpdated": "21:40:43",
+        "lastUpdated": "10:00:48",
         "sparklineCloses": [
           185.54,
           183.4,
@@ -848,7 +848,7 @@
         "target2": 9927.8,
         "stopLoss": 10979.9,
         "riskReward": "1 : 1.4",
-        "lastUpdated": "21:40:47",
+        "lastUpdated": "10:00:51",
         "sparklineCloses": [
           11014,
           11100,
@@ -902,7 +902,7 @@
         "target2": 1095.3,
         "stopLoss": 1268.7,
         "riskReward": "1 : 1.3",
-        "lastUpdated": "21:40:47",
+        "lastUpdated": "10:00:52",
         "sparklineCloses": [
           1249.3,
           1281,
@@ -956,7 +956,7 @@
         "target2": 1386.2,
         "stopLoss": 1568.9,
         "riskReward": "1 : 1.3",
-        "lastUpdated": "21:40:49",
+        "lastUpdated": "10:00:52",
         "sparklineCloses": [
           1537.1,
           1558.5,
@@ -1010,7 +1010,7 @@
         "target2": 1933.9,
         "stopLoss": 1686.9,
         "riskReward": "1 : 1.3",
-        "lastUpdated": "21:40:49",
+        "lastUpdated": "10:00:54",
         "sparklineCloses": [
           1824,
           1787.1,
@@ -1064,7 +1064,7 @@
         "target2": 931.8,
         "stopLoss": 1062.6,
         "riskReward": "1 : 1.3",
-        "lastUpdated": "21:40:39",
+        "lastUpdated": "10:00:42",
         "sparklineCloses": [
           1051.4,
           1038.5,
@@ -1118,7 +1118,7 @@
         "target2": 1636.8,
         "stopLoss": 1810.7,
         "riskReward": "1 : 1.4",
-        "lastUpdated": "21:40:43",
+        "lastUpdated": "10:00:48",
         "sparklineCloses": [
           1837.3,
           1868.9,
@@ -1172,7 +1172,7 @@
         "target2": 290.2,
         "stopLoss": 320.6,
         "riskReward": "1 : 1.5",
-        "lastUpdated": "21:40:45",
+        "lastUpdated": "10:00:49",
         "sparklineCloses": [
           323.65,
           326.4,
@@ -1226,7 +1226,7 @@
         "target2": 2307.5,
         "stopLoss": 2774.5,
         "riskReward": "1 : 1.3",
-        "lastUpdated": "21:40:49",
+        "lastUpdated": "10:00:54",
         "sparklineCloses": [
           3020,
           2975,
@@ -1280,7 +1280,7 @@
         "target2": 1200.6,
         "stopLoss": 1344,
         "riskReward": "1 : 1.3",
-        "lastUpdated": "21:40:51",
+        "lastUpdated": "10:00:54",
         "sparklineCloses": [
           1394.5,
           1386.1,
@@ -1334,7 +1334,7 @@
         "target2": 1066.9,
         "stopLoss": 1211.3,
         "riskReward": "1 : 1.3",
-        "lastUpdated": "21:40:53",
+        "lastUpdated": "10:00:57",
         "sparklineCloses": [
           1275.6,
           1268.6,
@@ -1388,7 +1388,7 @@
         "target2": 261.5,
         "stopLoss": 299.1,
         "riskReward": "1 : 1.3",
-        "lastUpdated": "21:40:55",
+        "lastUpdated": "10:01:00",
         "sparklineCloses": [
           314,
           312.75,
@@ -1442,7 +1442,7 @@
         "target2": 58019.5,
         "stopLoss": 54151.5,
         "riskReward": "1 : 2.0",
-        "lastUpdated": "21:40:35",
+        "lastUpdated": "10:00:40",
         "sparklineCloses": [
           56358.7,
           56470.65,
@@ -1496,7 +1496,7 @@
         "target2": 26216.9,
         "stopLoss": 24469.1,
         "riskReward": "1 : 2.0",
-        "lastUpdated": "21:40:35",
+        "lastUpdated": "10:00:40",
         "sparklineCloses": [
           25510,
           25524.7,
@@ -1550,7 +1550,7 @@
         "target2": 1422.8,
         "stopLoss": 1327.9,
         "riskReward": "1 : 2.0",
-        "lastUpdated": "21:40:37",
+        "lastUpdated": "10:00:42",
         "sparklineCloses": [
           1338.9,
           1345,
@@ -1604,7 +1604,7 @@
         "target2": 1007.1,
         "stopLoss": 939.9,
         "riskReward": "1 : 2.0",
-        "lastUpdated": "21:40:39",
+        "lastUpdated": "10:00:42",
         "sparklineCloses": [
           996.2,
           996,
@@ -1658,7 +1658,7 @@
         "target2": 1895.4,
         "stopLoss": 1769,
         "riskReward": "1 : 2.0",
-        "lastUpdated": "21:40:39",
+        "lastUpdated": "10:00:44",
         "sparklineCloses": [
           1893.3,
           1830.2,
@@ -1712,7 +1712,7 @@
         "target2": 293.9,
         "stopLoss": 274.3,
         "riskReward": "1 : 2.0",
-        "lastUpdated": "21:40:41",
+        "lastUpdated": "10:00:46",
         "sparklineCloses": [
           303.8,
           301.65,
@@ -1766,7 +1766,7 @@
         "target2": 2936,
         "stopLoss": 2740.3,
         "riskReward": "1 : 2.0",
-        "lastUpdated": "21:40:43",
+        "lastUpdated": "10:00:46",
         "sparklineCloses": [
           3052,
           3055.3,
@@ -1820,7 +1820,7 @@
         "target2": 11991,
         "stopLoss": 11191.6,
         "riskReward": "1 : 2.0",
-        "lastUpdated": "21:40:43",
+        "lastUpdated": "10:00:46",
         "sparklineCloses": [
           12103,
           12153,
@@ -1874,7 +1874,7 @@
         "target2": 4630.5,
         "stopLoss": 4321.8,
         "riskReward": "1 : 2.0",
-        "lastUpdated": "21:40:43",
+        "lastUpdated": "10:00:48",
         "sparklineCloses": [
           4798.5,
           4875,
@@ -1928,7 +1928,7 @@
         "target2": 945.4,
         "stopLoss": 882.3,
         "riskReward": "1 : 2.0",
-        "lastUpdated": "21:40:45",
+        "lastUpdated": "10:00:48",
         "sparklineCloses": [
           986.5,
           981.2,
@@ -1982,7 +1982,7 @@
         "target2": 261.6,
         "stopLoss": 244.2,
         "riskReward": "1 : 2.0",
-        "lastUpdated": "21:40:45",
+        "lastUpdated": "10:00:50",
         "sparklineCloses": [
           270.3,
           266.1,
@@ -2036,7 +2036,7 @@
         "target2": 232.3,
         "stopLoss": 216.8,
         "riskReward": "1 : 2.0",
-        "lastUpdated": "21:40:45",
+        "lastUpdated": "10:00:50",
         "sparklineCloses": [
           232.8,
           235.63,
@@ -2090,7 +2090,7 @@
         "target2": 170.7,
         "stopLoss": 159.3,
         "riskReward": "1 : 2.0",
-        "lastUpdated": "21:40:47",
+        "lastUpdated": "10:00:52",
         "sparklineCloses": [
           166.83,
           164.55,
@@ -2144,7 +2144,7 @@
         "target2": 1821.4,
         "stopLoss": 1700,
         "riskReward": "1 : 2.0",
-        "lastUpdated": "21:40:49",
+        "lastUpdated": "10:00:54",
         "sparklineCloses": [
           1852.5,
           1849.8,
@@ -2198,7 +2198,7 @@
         "target2": 1256.9,
         "stopLoss": 1173.1,
         "riskReward": "1 : 2.0",
-        "lastUpdated": "21:40:51",
+        "lastUpdated": "10:00:54",
         "sparklineCloses": [
           1185,
           1198.3,
@@ -2252,7 +2252,7 @@
         "target2": 9807,
         "stopLoss": 9153.2,
         "riskReward": "1 : 2.0",
-        "lastUpdated": "21:40:51",
+        "lastUpdated": "10:00:56",
         "sparklineCloses": [
           9375,
           9410.5,
@@ -2306,7 +2306,7 @@
         "target2": 5140.3,
         "stopLoss": 4797.6,
         "riskReward": "1 : 2.0",
-        "lastUpdated": "21:40:52",
+        "lastUpdated": "10:00:56",
         "sparklineCloses": [
           5285.5,
           5419,
@@ -2360,7 +2360,7 @@
         "target2": 3034.5,
         "stopLoss": 2832.2,
         "riskReward": "1 : 2.0",
-        "lastUpdated": "21:40:53",
+        "lastUpdated": "10:00:56",
         "sparklineCloses": [
           3209.2,
           3166,
@@ -2414,7 +2414,7 @@
         "target2": 1399.7,
         "stopLoss": 1306.3,
         "riskReward": "1 : 2.0",
-        "lastUpdated": "21:40:53",
+        "lastUpdated": "10:00:58",
         "sparklineCloses": [
           1372.4,
           1385,
@@ -2468,7 +2468,7 @@
         "target2": 1002.8,
         "stopLoss": 935.9,
         "riskReward": "1 : 2.0",
-        "lastUpdated": "21:40:53",
+        "lastUpdated": "10:00:58",
         "sparklineCloses": [
           996,
           1000.6,
@@ -2522,7 +2522,7 @@
         "target2": 904.7,
         "stopLoss": 844.4,
         "riskReward": "1 : 2.0",
-        "lastUpdated": "21:40:55",
+        "lastUpdated": "10:00:58",
         "sparklineCloses": [
           966.3,
           956,
@@ -2544,5 +2544,5 @@
     ],
     "W": []
   },
-  "lastScanTime": "2026-10-10T16:10:55.682Z"
+  "lastScanTime": "2026-10-11T04:31:00.384Z"
 }

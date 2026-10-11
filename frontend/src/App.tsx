@@ -666,18 +666,22 @@ function App() {
           }
         }
         if (levels && latestCandles && latestCandles.length > 0) {
-          latestCandles.forEach(c => {
-            seriesData.level1.push({ time: c.time as any, value: levels.level1 });
-            seriesData.level2.push({ time: c.time as any, value: levels.level2 });
-            seriesData.level3.push({ time: c.time as any, value: levels.level3 });
-            seriesData.level4.push({ time: c.time as any, value: levels.level4 });
-            seriesData.level5.push({ time: c.time as any, value: levels.level5 });
-            seriesData.level6.push({ time: c.time as any, value: levels.level6 });
-            seriesData.level7.push({ time: c.time as any, value: levels.level7 });
-            seriesData.level8.push({ time: c.time as any, value: levels.level8 });
-            seriesData.level9.push({ time: c.time as any, value: levels.level9 });
-            seriesData.level10.push({ time: c.time as any, value: levels.level10 });
-          });
+          const samplePrice = latestCandles[latestCandles.length - 1].close;
+          const isPlausible = !levels.level1 || samplePrice <= 0 || (Math.abs(levels.level1 - samplePrice) / samplePrice < 2.5);
+          if (isPlausible) {
+            latestCandles.forEach(c => {
+              seriesData.level1.push({ time: c.time as any, value: levels.level1 });
+              seriesData.level2.push({ time: c.time as any, value: levels.level2 });
+              seriesData.level3.push({ time: c.time as any, value: levels.level3 });
+              seriesData.level4.push({ time: c.time as any, value: levels.level4 });
+              seriesData.level5.push({ time: c.time as any, value: levels.level5 });
+              seriesData.level6.push({ time: c.time as any, value: levels.level6 });
+              seriesData.level7.push({ time: c.time as any, value: levels.level7 });
+              seriesData.level8.push({ time: c.time as any, value: levels.level8 });
+              seriesData.level9.push({ time: c.time as any, value: levels.level9 });
+              seriesData.level10.push({ time: c.time as any, value: levels.level10 });
+            });
+          }
         }
       }
       if (seriesData.level1.length > 0) {
