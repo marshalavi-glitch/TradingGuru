@@ -3,10 +3,10 @@ let lastFetchTime = 0;
 let pendingResolvePromise: Promise<string> | null = null;
 
 export const DEFAULT_FALLBACK_URLS = [
+  'https://must-last-glory-defend.trycloudflare.com',
+  'https://puny-clouds-post.loca.lt',
   'https://monday-willing-kills-aerial.trycloudflare.com',
-  'https://revenue-substantially-advantages-expanded.trycloudflare.com',
-  'https://lists-characterized-patients-appreciated.trycloudflare.com',
-  'https://sharp-taxis-smash.loca.lt'
+  'https://revenue-substantially-advantages-expanded.trycloudflare.com'
 ];
 
 // Global fetch interceptor: Automatically attaches 'bypass-tunnel-reminder: true'
