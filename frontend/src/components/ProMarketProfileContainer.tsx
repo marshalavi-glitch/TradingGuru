@@ -143,11 +143,11 @@ function groupCandlesBySessionPeriod(
 
 function getLetterColor(letter: string): string {
   const code = letter.toUpperCase().charCodeAt(0);
-  if (code >= 65 && code <= 66) return '#ec4899'; // A-B Initial Balance Pink/Magenta
-  if (code >= 67 && code <= 70) return '#3b82f6'; // C-F Morning Blue
-  if (code >= 71 && code <= 74) return '#00f0ff'; // G-J Midday Cyan
-  if (code >= 75 && code <= 78) return '#8b5cf6'; // K-N Afternoon Purple
-  if (code >= 79 && code <= 82) return '#f59e0b'; // O-R Pre-Close Amber
+  if (code >= 65 && code <= 66) return '#c084fc'; // A-B Initial Balance Purple
+  if (code >= 67 && code <= 70) return '#38bdf8'; // C-F Morning Cyan/Blue
+  if (code >= 71 && code <= 74) return '#22c55e'; // G-J Midday Green
+  if (code >= 75 && code <= 78) return '#ffffff'; // K-N Afternoon White
+  if (code >= 79 && code <= 82) return '#f97316'; // O-R Pre-Close Orange
   return '#ef4444'; // S-Z Red
 }
 
@@ -195,6 +195,24 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
   const [zoomLevel, setZoomLevel] = useState<number>(1.0);
   const [yScale, setYScale] = useState<number>(1.0);
   const [xScale, setXScale] = useState<number>(1.0);
+  const [barRemainingSeconds, setBarRemainingSeconds] = useState<number>(0);
+
+  useEffect(() => {
+    const updateCountdown = () => {
+      const now = Math.floor(Date.now() / 1000);
+      let tfMins = 30;
+      if (timeframe === '5') tfMins = 5;
+      else if (timeframe === '15') tfMins = 15;
+      else if (timeframe === '60') tfMins = 60;
+      else if (timeframe === 'D' || sessionPeriod === 'Y') tfMins = 375;
+      const blockSecs = tfMins * 60;
+      const rem = blockSecs - (now % blockSecs);
+      setBarRemainingSeconds(rem);
+    };
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [timeframe, sessionPeriod]);
 
   // Saved scales to restore on exit
   const prevScaleRef = useRef<{ yScale: number; xScale: number; zoomLevel: number }>({ yScale: 1.0, xScale: 1.0, zoomLevel: 1.0 });
@@ -685,12 +703,12 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
     canvas.style.height = `${height}px`;
     ctx.scale(dpr, dpr);
 
-    // Charcoal Dark Gray Theme matching the reference screenshot
-    const bgColor = isDark ? '#202020' : '#ffffff';
+    // Pitch Black Background matching NinjaTrader reference screenshot
+    const bgColor = isDark ? '#000000' : '#ffffff';
     ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, width, height);
 
-    const padding = { top: 35, bottom: 45, left: viewMode === 'GV' ? 100 : 25, right: 80 };
+    const padding = { top: 35, bottom: 45, left: viewMode === 'GV' ? 100 : 20, right: 75 };
     const baseChartWidth = width - padding.left - padding.right;
     const baseChartHeight = height - padding.top - padding.bottom;
 
@@ -806,27 +824,10 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
 
       if (colEndX < padding.left || colStartX > width - padding.right) return;
 
-      // Top X-Axis Date Label
-      const dateHeader = formatDateHeader(profile.dateStr);
-      ctx.fillStyle = isDark ? '#9ca3af' : '#475569';
-      ctx.font = 'bold 9px "JetBrains Mono", monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText(dateHeader, colStartX + colWidth / 2, padding.top - 10);
-
-      // Session Vertical Separator Line (Extending full height)
-      if (sIdx > 0) {
-        ctx.strokeStyle = isDark ? '#383838' : 'rgba(0, 0, 0, 0.15)';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(colStartX - colGap / 2, padding.top);
-        ctx.lineTo(colStartX - colGap / 2, height - padding.bottom);
-        ctx.stroke();
-      }
-
-      // Bottom Date Label (e.g. 14 Dec, 15 Dec, 18 Dec...)
+      // Bottom Date Label (e.g. 30 Sep, 1 Oct, 5 Oct, 6 Oct...)
       const dateShort = formatDateShort(profile.dateStr);
-      ctx.fillStyle = isDark ? '#9ca3af' : '#4b5563';
-      ctx.font = 'bold 9.5px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#9ca3af';
+      ctx.font = '10px "JetBrains Mono", monospace';
       ctx.textAlign = 'center';
       ctx.fillText(dateShort, colStartX + colWidth / 2, height - padding.bottom + 16);
 
@@ -842,35 +843,27 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
       const blockGap = showLetters ? 1 : 0.5;
 
       const maxSessionVol = Math.max(...bins.map(b => b.volume), 1);
-      const tpoSubW = viewMode === 'T' ? colWidth : Math.max(28, colWidth * 0.42);
+      const tpoSubW = viewMode === 'T' ? colWidth : Math.max(28, colWidth * 0.44);
       const volSubW = colWidth - tpoSubW;
+      const isUpDay = profile.closePrice >= profile.openPrice;
 
-      // Render Bins (TPO Letters + Golden Volume Bars with numbers)
+      // Render Bins (TPO Letters on left, Volume Profile Bars on right matching screenshot)
       bins.forEach(bin => {
         const binY = getPriceY(bin.price) - rowHeight / 2;
         if (binY < padding.top - rowHeight || binY > height - padding.bottom) return;
 
         const isPoc = bin.price === profile.pocPrice;
+        const inValueArea = bin.price >= profile.valPrice && bin.price <= profile.vahPrice;
 
         if (viewMode === 'V') {
           // Pure Volume Bar Mode
           const barW = (bin.volume / maxSessionVol) * (colWidth - 6);
-          ctx.fillStyle = isPoc ? '#facc15' : '#d4af37';
+          const barColor = inValueArea ? (isUpDay ? '#ef4444' : '#2563eb') : '#71717a';
+          ctx.fillStyle = barColor;
           ctx.fillRect(colStartX, binY + 0.5, Math.max(2, barW), Math.max(1, rowHeight - 1));
-          if (barW >= 22 && rowHeight >= 7) {
-            ctx.fillStyle = '#0f172a';
-            ctx.font = 'bold 8px "JetBrains Mono", monospace';
-            ctx.textAlign = 'left';
-            ctx.fillText(String(Math.round(bin.volume)), colStartX + 3, binY + rowHeight / 2 + 2.5);
-          }
         } else {
-          // T-V Mode (Default): TPO Letters on left, Golden Volume Profile Bars on right
+          // T-V Mode (Default): TPO Letters on left, Volume Profile Bars on right
           if (bin.tpos.length > 0) {
-            if (isPoc) {
-              ctx.fillStyle = 'rgba(250, 204, 21, 0.25)';
-              ctx.fillRect(colStartX, binY, tpoSubW, Math.max(1, rowHeight));
-            }
-
             bin.tpos.forEach((letter, colIdx) => {
               const x = colStartX + colIdx * (baseBlockSize + blockGap);
               if (x + baseBlockSize <= colStartX + tpoSubW) {
@@ -882,50 +875,65 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
                 } else {
                   ctx.fillRect(x, binY + (rowHeight - baseBlockSize) / 2, baseBlockSize, baseBlockSize);
                 }
+
+                // Highlight Boxes matching screenshot [F], [A], [M]
+                const isSessionHigh = bin.price === profile.dayHigh && colIdx === 0;
+                const isSessionLow = bin.price === profile.dayLow && colIdx === 0;
+                const isIbHigh = bin.price === profile.ibHigh && colIdx === 0;
+                const isIbLow = bin.price === profile.ibLow && colIdx === 0;
+
+                if (isSessionHigh || isSessionLow || isIbHigh || isIbLow) {
+                  ctx.strokeStyle = '#ffffff';
+                  ctx.lineWidth = 1;
+                  ctx.strokeRect(x - 1, binY + (rowHeight - baseBlockSize) / 2 - 1, baseBlockSize + 2, baseBlockSize + 2);
+                }
               }
             });
 
-            // Single Print Marker (red asterisk)
-            if (bin.tpos.length === 1) {
-              ctx.fillStyle = '#ef4444';
-              ctx.font = 'bold 10px monospace';
-              ctx.textAlign = 'left';
-              const lastX = colStartX + baseBlockSize + 2;
-              if (lastX < colStartX + tpoSubW) {
-                ctx.fillText('*', lastX, binY + rowHeight / 2 + 3);
-              }
+            // If POC row, highlight with red box around the letters in the TPO column
+            if (isPoc && bin.tpos.length > 0) {
+              const pocLettersCount = Math.min(bin.tpos.length, Math.floor((tpoSubW - 4) / (baseBlockSize + blockGap)));
+              const pocBoxW = Math.max(baseBlockSize + 2, pocLettersCount * (baseBlockSize + blockGap));
+              ctx.strokeStyle = '#ef4444';
+              ctx.lineWidth = 1;
+              ctx.strokeRect(colStartX - 1, binY + (rowHeight - baseBlockSize) / 2 - 1, pocBoxW + 2, baseBlockSize + 2);
             }
           }
 
-          // Golden Volume Histogram Bar on Right Side of Letters
+          // Volume Histogram Bar on Right Side of Letters
           if (viewMode !== 'T') {
             const barStartX = colStartX + tpoSubW;
             const barW = (bin.volume / maxSessionVol) * (volSubW - 6);
 
-            ctx.fillStyle = isPoc ? '#facc15' : '#d4af37';
+            // Red on Up days, Blue on Down days inside Value Area; Grey for tails/excess outside Value Area
+            const barColor = inValueArea ? (isUpDay ? '#ef4444' : '#2563eb') : '#71717a';
+            ctx.fillStyle = barColor;
             ctx.fillRect(barStartX, binY + 0.5, Math.max(2, barW), Math.max(1, rowHeight - 1));
-            ctx.strokeStyle = 'rgba(0, 0, 0, 0.25)';
-            ctx.lineWidth = 0.5;
-            ctx.strokeRect(barStartX, binY + 0.5, Math.max(2, barW), Math.max(1, rowHeight - 1));
-
-            // Volume Number printed inside bar
-            if (barW >= 20 && rowHeight >= 7) {
-              ctx.fillStyle = '#0f172a';
-              ctx.font = 'bold 8px "JetBrains Mono", monospace';
-              ctx.textAlign = 'left';
-              ctx.fillText(String(Math.round(bin.volume)), barStartX + 3, binY + rowHeight / 2 + 2.5);
-            }
           }
         }
       });
 
-      // Key Session Reference Lines:
-      // 1. VAH (Solid vibrant Green line across session)
+      // Session Open Marker: Prominent Orange Circle as seen in screenshot
+      if (profile.openPrice) {
+        const openY = getPriceY(profile.openPrice);
+        if (openY >= padding.top && openY <= height - padding.bottom) {
+          ctx.fillStyle = '#f97316'; // Vibrant orange
+          ctx.beginPath();
+          ctx.arc(colStartX + 4, openY, 3.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        }
+      }
+
+      // Key Session Reference Lines matching screenshot:
+      // 1. VAH (Thin crisp White line across session)
       if (profile.vahPrice) {
         const vahY = getPriceY(profile.vahPrice);
         if (vahY >= padding.top && vahY <= height - padding.bottom) {
-          ctx.strokeStyle = '#16a34a';
-          ctx.lineWidth = 2.5;
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.2;
           ctx.beginPath();
           ctx.moveTo(colStartX, vahY);
           ctx.lineTo(colStartX + colWidth, vahY);
@@ -933,12 +941,12 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
         }
       }
 
-      // 2. VAL (Solid vibrant Red line across session)
+      // 2. VAL (Thin crisp White line across session)
       if (profile.valPrice) {
         const valY = getPriceY(profile.valPrice);
         if (valY >= padding.top && valY <= height - padding.bottom) {
-          ctx.strokeStyle = '#dc2626';
-          ctx.lineWidth = 2.5;
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.2;
           ctx.beginPath();
           ctx.moveTo(colStartX, valY);
           ctx.lineTo(colStartX + colWidth, valY);
@@ -946,113 +954,51 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
         }
       }
 
-      // 3. POC (Solid vibrant Yellow line across session with label "POC")
+      // 3. POC (Thin crisp Yellow line across session + Dotted extension forward)
       if (profile.pocPrice) {
         const pocY = getPriceY(profile.pocPrice);
         if (pocY >= padding.top && pocY <= height - padding.bottom) {
           ctx.strokeStyle = '#facc15';
-          ctx.lineWidth = 3.0;
+          ctx.lineWidth = 1.5;
           ctx.beginPath();
           ctx.moveTo(colStartX, pocY);
           ctx.lineTo(colStartX + colWidth, pocY);
           ctx.stroke();
 
-          ctx.fillStyle = '#facc15';
-          ctx.font = 'bold 9px "JetBrains Mono", monospace';
-          ctx.textAlign = 'left';
-          ctx.fillText('POC', colStartX + colWidth + 4, pocY + 3);
-        }
-      }
-
-      // 4. PPOC Extension (Untested / Virgin POCs extending forward)
-      structuralLevels.ppocs.forEach(ppoc => {
-        if (ppoc.sIdx === sIdx) {
-          const pocY = getPriceY(ppoc.price);
-          if (pocY >= padding.top && pocY <= height - padding.bottom) {
-            let endX = width - padding.right;
-            if (ppoc.testedInIdx !== null && ppoc.testedInIdx < dayProfiles.length) {
-              const testStartX = padding.left + panOffset.x + ppoc.testedInIdx * (colWidth + colGap);
-              endX = Math.max(colStartX + colWidth, testStartX);
+          // Dotted extension line forward until tested by subsequent session
+          let endX = width - padding.right;
+          for (let fIdx = sIdx + 1; fIdx < dayProfiles.length; fIdx++) {
+            const fut = dayProfiles[fIdx];
+            if (profile.pocPrice >= fut.dayLow && profile.pocPrice <= fut.dayHigh) {
+              const futX = padding.left + panOffset.x + fIdx * (colWidth + colGap);
+              endX = Math.max(colStartX + colWidth, futX);
+              break;
             }
+          }
+          if (endX > colStartX + colWidth) {
             ctx.strokeStyle = '#facc15';
-            ctx.lineWidth = 1.8;
-            ctx.setLineDash([6, 3, 2, 3]);
+            ctx.lineWidth = 1.2;
+            ctx.setLineDash([4, 4]);
             ctx.beginPath();
             ctx.moveTo(colStartX + colWidth, pocY);
             ctx.lineTo(endX, pocY);
             ctx.stroke();
             ctx.setLineDash([]);
-
-            ctx.fillStyle = '#facc15';
-            ctx.font = 'bold 9px "JetBrains Mono", monospace';
-            ctx.textAlign = 'left';
-            ctx.fillText('PPOC', colStartX + colWidth + 4, pocY + 3);
           }
         }
-      });
+      }
 
-      // 5. Poor High Line
-      structuralLevels.poorHighs.forEach(ph => {
-        if (ph.sIdx === sIdx) {
-          const phY = getPriceY(ph.price);
-          if (phY >= padding.top && phY <= height - padding.bottom) {
-            ctx.strokeStyle = '#84cc16';
+      // 4. Virgin POC / Major Reference Line (Purple)
+      structuralLevels.ppocs.forEach(ppoc => {
+        if (ppoc.sIdx === sIdx) {
+          const ppocY = getPriceY(ppoc.price);
+          if (ppocY >= padding.top && ppocY <= height - padding.bottom) {
+            ctx.strokeStyle = '#c084fc';
             ctx.lineWidth = 1.5;
-            ctx.setLineDash([6, 3, 2, 3]);
             ctx.beginPath();
-            ctx.moveTo(colStartX, phY);
-            ctx.lineTo(colStartX + colWidth * 2.2, phY);
+            ctx.moveTo(colStartX, ppocY);
+            ctx.lineTo(width - padding.right, ppocY);
             ctx.stroke();
-            ctx.setLineDash([]);
-
-            ctx.fillStyle = '#84cc16';
-            ctx.font = 'bold 9px "JetBrains Mono", monospace';
-            ctx.textAlign = 'left';
-            ctx.fillText('Poor High', colStartX + colWidth + 12, phY - 4);
-          }
-        }
-      });
-
-      // 6. Poor Low Line
-      structuralLevels.poorLows.forEach(pl => {
-        if (pl.sIdx === sIdx) {
-          const plY = getPriceY(pl.price);
-          if (plY >= padding.top && plY <= height - padding.bottom) {
-            ctx.strokeStyle = '#ef4444';
-            ctx.lineWidth = 1.5;
-            ctx.setLineDash([6, 3, 2, 3]);
-            ctx.beginPath();
-            ctx.moveTo(colStartX, plY);
-            ctx.lineTo(colStartX + colWidth * 2.2, plY);
-            ctx.stroke();
-            ctx.setLineDash([]);
-
-            ctx.fillStyle = '#ef4444';
-            ctx.font = 'bold 9px "JetBrains Mono", monospace';
-            ctx.textAlign = 'left';
-            ctx.fillText('Poor Low', colStartX + colWidth + 12, plY - 4);
-          }
-        }
-      });
-
-      // 7. Double Mech Ref Bot Line
-      structuralLevels.doubleMechBots.forEach(dmb => {
-        if (dmb.sIdx === sIdx) {
-          const dmbY = getPriceY(dmb.price);
-          if (dmbY >= padding.top && dmbY <= height - padding.bottom) {
-            ctx.strokeStyle = '#ef4444';
-            ctx.lineWidth = 1.5;
-            ctx.setLineDash([8, 4, 2, 4]);
-            ctx.beginPath();
-            ctx.moveTo(colStartX, dmbY);
-            ctx.lineTo(colStartX + colWidth * 2.5, dmbY);
-            ctx.stroke();
-            ctx.setLineDash([]);
-
-            ctx.fillStyle = '#ef4444';
-            ctx.font = 'bold 9px "JetBrains Mono", monospace';
-            ctx.textAlign = 'left';
-            ctx.fillText('Double Mech Ref Bot', colStartX + colWidth + 4, dmbY - 4);
           }
         }
       });
@@ -1097,8 +1043,8 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
       ctx.fillRect(padding.left, rulerY, rulerX - padding.left, padding.bottom);
     }
 
-    ctx.strokeStyle = isXActive ? '#38bdf8' : '#1e3a8a';
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = isXActive ? '#38bdf8' : (isDark ? '#262626' : '#cbd5e1');
+    ctx.lineWidth = 1;
 
     // X-Axis Horizontal Ruler Line
     ctx.beginPath();
@@ -1107,13 +1053,36 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
     ctx.stroke();
 
     // Y-Axis Vertical Ruler Line
-    ctx.strokeStyle = isYActive ? '#38bdf8' : '#1e3a8a';
+    ctx.strokeStyle = isYActive ? '#38bdf8' : (isDark ? '#262626' : '#cbd5e1');
     ctx.beginPath();
     ctx.moveTo(rulerX, padding.top);
     ctx.lineTo(rulerX, rulerY);
     ctx.stroke();
 
+    // Top-Left Indicator Title (matching screenshot: BarTimer(NIFTY_I (30 Minute)), VOFATPOChart)
+    ctx.save();
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = 'bold 11px "JetBrains Mono", monospace';
+    ctx.textAlign = 'left';
+    const cleanSym = symbol.replace('NSE:', '').replace('BSE:', '').replace('1!', '_I');
+    const tfLabel = timeframe === '30' ? '30 Minute' : timeframe === '5' ? '5 Minute' : timeframe === '15' ? '15 Minute' : timeframe === '60' ? '60 Minute' : timeframe === 'D' ? 'Daily' : `${timeframe} Minute`;
+    ctx.fillText(`BarTimer(${cleanSym} (${tfLabel})), VOFATPOChart`, padding.left + 5, padding.top - 12);
 
+    // Bottom-Right Countdown Bar Timer (matching screenshot: Time remaining = 00:17:33)
+    const minutes = Math.floor(barRemainingSeconds / 60);
+    const seconds = barRemainingSeconds % 60;
+    const formattedRemaining = `00:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    ctx.fillStyle = '#e2e8f0';
+    ctx.font = '11px "JetBrains Mono", monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(`Time remaining = ${formattedRemaining}`, width - padding.right - 10, height - padding.bottom + 26);
+
+    // Bottom-Left Watermark (matching screenshot: © 2026 NinjaTrader, LLC)
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '10px "JetBrains Mono", monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('© 2026 NinjaTrader, LLC', padding.left + 5, height - padding.bottom + 26);
+    ctx.restore();
 
     // Live Current Price (LTP) Marker on Right Y-Axis (matching screenshot)
     if (typeof liveLtp === 'number' && !isNaN(liveLtp)) {
@@ -1128,7 +1097,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
         const badgeX = rulerX + 3;
 
         // Dark box with white border
-        ctx.fillStyle = '#0a0a0a';
+        ctx.fillStyle = '#000000';
         ctx.fillRect(badgeX, ltpY - badgeH / 2, badgeW, badgeH);
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 1.5;
@@ -1199,7 +1168,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
       ctx.restore();
     }
 
-  }, [dayProfiles, dimensions, viewMode, zoomLevel, panOffset, tpoStep, globalVolumeProfile, structuralLevels, liveLtp, crosshairPos, isDark, yScale, xScale, hoveredAxis, dragMode]);
+  }, [dayProfiles, dimensions, viewMode, zoomLevel, panOffset, tpoStep, globalVolumeProfile, structuralLevels, liveLtp, crosshairPos, isDark, yScale, xScale, hoveredAxis, dragMode, barRemainingSeconds]);
 
   const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
@@ -1527,7 +1496,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
         margin: 0,
         gap: '8px',
         minHeight: isExpanded || isStandalone ? '100vh' : '85vh',
-        background: '#1a1a1a',
+        background: '#000000',
         color: '#e2e8f0',
         padding: isExpanded ? '8px 12px' : '10px',
         borderRadius: isExpanded ? '0' : '4px',
@@ -1537,11 +1506,11 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
     >
       
       {/* Top Header Bar (Matching Reference Screenshot) */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#1e1e1e', padding: '6px 12px', borderRadius: '4px', border: '1px solid #333333', flexWrap: 'wrap', gap: '8px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#0a0a0a', padding: '6px 12px', borderRadius: '4px', border: '1px solid #1f1f1f', flexWrap: 'wrap', gap: '8px' }}>
         
-        {/* Left Side: Red "Chart" button, Symbol Select, Timeframe Select, Date Range info */}
+        {/* Left Side: Orange "Chart" button, Symbol Select, Timeframe Select, Date Range info */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-          <div style={{ background: '#991b1b', color: '#ffffff', fontWeight: '900', padding: '3px 8px', borderRadius: '3px', fontSize: '11px', letterSpacing: '0.5px' }}>
+          <div style={{ background: '#ea580c', color: '#ffffff', fontWeight: '900', padding: '3px 8px', borderRadius: '3px', fontSize: '11px', letterSpacing: '0.5px' }}>
             Chart
           </div>
 
@@ -1805,9 +1774,9 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
           flex: isExpanded || isStandalone ? 1 : 'none',
           minHeight: isExpanded || isStandalone ? '400px' : '620px', 
           height: isExpanded || isStandalone ? 'calc(100vh - 65px)' : '680px',
-          background: isDark ? '#202020' : '#ffffff', 
+          background: isDark ? '#000000' : '#ffffff', 
           borderRadius: '6px', 
-          border: `1px solid ${isDark ? '#333333' : '#cbd5e1'}`,
+          border: `1px solid ${isDark ? '#1f1f1f' : '#cbd5e1'}`,
           overflow: 'hidden'
         }}
       >
@@ -2094,7 +2063,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
 
       {/* Bottom Mode Selector Toolbar */}
       {!isExpanded && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#1e1e1e', padding: '6px 10px', borderRadius: '4px', border: '1px solid #333333', flexWrap: 'wrap', gap: '6px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0a', padding: '6px 10px', borderRadius: '4px', border: '1px solid #1f1f1f', flexWrap: 'wrap', gap: '6px' }}>
           
           {/* Left Side: Period Buttons (D, W, W_S, M_S, Y) */}
           <div style={{ display: 'flex', gap: '3px' }}>
