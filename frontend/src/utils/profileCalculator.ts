@@ -314,6 +314,25 @@ export function calculateDayProfile(
     } else if (sessionPeriod === 'monthly') {
       const cdStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       periodIndex = uniqueDays.indexOf(cdStr);
+    } else if (sessionPeriod === 'weekly') {
+      const cdStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const dayIdx = uniqueDays.indexOf(cdStr);
+      if (dayIdx >= 0 && sorted.length <= 15) {
+        // Daily candles for multi-week history: each day in the week gets its own bracket (A, B, C, D, E)
+        periodIndex = dayIdx;
+      } else {
+        const istSeconds = c.time + 19800; // 5 hours 30 mins
+        const istDate = new Date(istSeconds * 1000);
+        const hour = istDate.getUTCHours();
+        const min = istDate.getUTCMinutes();
+        const minsFromOpen = (hour * 60 + min) - (9 * 60 + 15);
+        const isMcx = isMcxSymbol(symbol);
+        const maxMins = isMcx ? 855 : 360;
+        if (minsFromOpen < 0 || (isMcx ? minsFromOpen > maxMins : minsFromOpen >= maxMins)) {
+          continue;
+        }
+        periodIndex = Math.floor(minsFromOpen / 30);
+      }
     } else {
       // Align TPO periods exactly to IST Exchange Hours (09:15 AM IST Open)
       const istSeconds = c.time + 19800; // 5 hours 30 mins
@@ -693,6 +712,138 @@ export function getSinglePrintsForProfile(profile: DayProfile): { start: number;
     singlePrints.push({ start: currentStart, end: currentEnd });
   }
   return singlePrints;
+}
+
+export interface SinglePrintZone {
+  id: string;
+  sessionDate: string;
+  sessionIdx: number;
+  lowPrice: number;
+  highPrice: number;
+  letters: string[];
+  isCleared: boolean;
+  isPartiallyTested: boolean;
+}
+
+/**
+ * Calculates Single Print Zones and tracks price interaction / clearance across subsequent market action.
+ * A Single Print Zone remains visible until price fully traverses its entire price range.
+ * Once completely crossed (full range traversed from boundary to boundary), the zone is marked cleared and removed.
+ * Partially crossed zones remain visible until completely cleared.
+ */
+export function calculateSinglePrintZones(
+  dayProfiles: DayProfile[],
+  liveLtp?: number
+): SinglePrintZone[] {
+  if (!dayProfiles || dayProfiles.length === 0) return [];
+
+  const zones: SinglePrintZone[] = [];
+
+  dayProfiles.forEach((profile, sIdx) => {
+    if (!profile.bins || profile.bins.length === 0) return;
+
+    // Check if session has progressed beyond single opening period
+    const allLetters = new Set<string>();
+    profile.bins.forEach(b => b.tpos.forEach(l => allLetters.add(l)));
+    if (allLetters.size <= 1 && sIdx === dayProfiles.length - 1) {
+      return; // Do not mark initial 30m bracket as single prints
+    }
+
+    const step = profile.tickSize || 5;
+    const sortedBins = [...profile.bins].sort((a, b) => a.price - b.price);
+
+    let currentRun: typeof sortedBins = [];
+
+    const processRun = (run: typeof sortedBins) => {
+      if (run.length === 0) return;
+
+      const minPrice = run[0].price;
+      const maxPrice = run[run.length - 1].price;
+
+      // Exclude isolated 1-tick day extreme (which is a standard high/low boundary)
+      const isExtreme1Tick = run.length === 1 && (minPrice === profile.dayLow || maxPrice === profile.dayHigh);
+      if (isExtreme1Tick) return;
+
+      const lowPrice = minPrice - step / 2;
+      const highPrice = maxPrice + step / 2;
+      const letters = Array.from(new Set(run.flatMap(b => b.tpos)));
+
+      // Clearance tracking:
+      // Starting orientation: did price close above or below the zone in this session?
+      const sessionClose = profile.closePrice;
+      let hasBeenAbove = sessionClose >= highPrice;
+      let hasBeenBelow = sessionClose <= lowPrice;
+      let isCleared = false;
+      let isPartiallyTested = false;
+
+      // Check subsequent sessions
+      for (let j = sIdx + 1; j < dayProfiles.length; j++) {
+        const nextDay = dayProfiles[j];
+
+        // Check if price entered / partially tested the zone
+        if (nextDay.dayLow < highPrice && nextDay.dayHigh > lowPrice) {
+          isPartiallyTested = true;
+        }
+
+        if (nextDay.dayHigh >= highPrice) {
+          hasBeenAbove = true;
+        }
+        if (nextDay.dayLow <= lowPrice) {
+          hasBeenBelow = true;
+        }
+
+        // Full traversal check: price has traversed the full range from one boundary to the other
+        if (hasBeenAbove && hasBeenBelow) {
+          isCleared = true;
+          break;
+        }
+      }
+
+      // Also check liveLtp for active real-time updates
+      if (!isCleared && liveLtp != null && sIdx < dayProfiles.length) {
+        if (liveLtp < highPrice && liveLtp > lowPrice) {
+          isPartiallyTested = true;
+        }
+        if (liveLtp >= highPrice) {
+          hasBeenAbove = true;
+        }
+        if (liveLtp <= lowPrice) {
+          hasBeenBelow = true;
+        }
+        if (hasBeenAbove && hasBeenBelow) {
+          isCleared = true;
+        }
+      }
+
+      zones.push({
+        id: `${profile.dateStr}_sp_${lowPrice.toFixed(2)}_${highPrice.toFixed(2)}`,
+        sessionDate: profile.dateStr,
+        sessionIdx: sIdx,
+        lowPrice,
+        highPrice,
+        letters,
+        isCleared,
+        isPartiallyTested
+      });
+    };
+
+    for (let i = 0; i < sortedBins.length; i++) {
+      const bin = sortedBins[i];
+      if (bin.tpos.length === 1) {
+        currentRun.push(bin);
+      } else {
+        if (currentRun.length > 0) {
+          processRun(currentRun);
+          currentRun = [];
+        }
+      }
+    }
+    if (currentRun.length > 0) {
+      processRun(currentRun);
+    }
+  });
+
+  return zones;
 }
 
 // Helper to check profile shape of any profile

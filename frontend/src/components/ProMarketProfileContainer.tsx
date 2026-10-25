@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import tvStreamer, { getBackendHttpUrl } from '../utils/tvStreamer';
-import { groupCandlesByDay, calculateDayProfile, Candle, DayProfile, TPOBin } from '../utils/profileCalculator';
+import { groupCandlesByDay, calculateDayProfile, Candle, DayProfile, TPOBin, calculateSinglePrintZones, SinglePrintZone } from '../utils/profileCalculator';
 import { resolveSymbol } from '../utils/symbolResolver';
 import { filterMarketHoursCandles, isWithinMarketHours } from '../utils/marketHours';
 import { 
@@ -292,10 +292,29 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
   useEffect(() => {
     if (selectedSymbol && selectedSymbol !== symbol) {
       setSymbol(selectedSymbol);
+      if (selectedSymbol.includes('BANKNIFTY')) {
+        setGridStep(50);
+        setTpoStep(10);
+      } else if (selectedSymbol.includes('NIFTY')) {
+        setGridStep(20);
+        setTpoStep(4);
+      } else if (selectedSymbol.includes('SENSEX')) {
+        setGridStep(50);
+        setTpoStep(20);
+      }
     }
   }, [selectedSymbol]);
 
   // Customization State
+  const [gridStep, setGridStep] = useState<number>(20); // Grid line spacing
+  const [showIbLine, setShowIbLine] = useState<boolean>(true); // Initial Balance vertical line
+  const [highlightSinglePrints, setHighlightSinglePrints] = useState<boolean>(true); // Single prints highlight
+  const [showPoorHighLow, setShowPoorHighLow] = useState<boolean>(true); // Poor High/Low markers
+  const [showTwoDayBalance, setShowTwoDayBalance] = useState<boolean>(true); // 2-Day Balance toggle
+  const [showG2G3, setShowG2G3] = useState<boolean>(true); // G2 (2-Day) and G3 (3-Day) Balance reference lines
+  const [showWeeklyLevels, setShowWeeklyLevels] = useState<boolean>(true); // Weekly High & Low lines
+  const [showHvn, setShowHvn] = useState<boolean>(true); // High Volume Node (HVN) reference lines
+  const [showLvn, setShowLvn] = useState<boolean>(true); // Low Volume Node (LVN) reference lines
   const [tpoStep, setTpoStep] = useState<number>(4); // TPO Tick step (default 4 as in screenshot)
   const [panOffset, setPanOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [dragMode, setDragMode] = useState<'none' | 'pan' | 'y-axis' | 'x-axis'>('none');
@@ -304,6 +323,25 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
   const [initialXScale, setInitialXScale] = useState<number>(1.0);
   const [hoveredAxis, setHoveredAxis] = useState<'none' | 'y-axis' | 'x-axis'>('none');
   const [cursorStyle, setCursorStyle] = useState<string>('crosshair');
+
+  // Multi-touch pinch & pan state ref for smooth mobile gestures
+  const touchStateRef = useRef<{
+    mode: 'none' | 'pan' | 'pinch';
+    startX: number;
+    startY: number;
+    initialPan: { x: number; y: number };
+    startDist: number;
+    initialZoom: number;
+    initialYScale: number;
+  }>({
+    mode: 'none',
+    startX: 0,
+    startY: 0,
+    initialPan: { x: 0, y: 0 },
+    startDist: 0,
+    initialZoom: 1.0,
+    initialYScale: 1.0
+  });
 
   const [candles, setCandles] = useState<Candle[]>([]);
   const [liveLtp, setLiveLtp] = useState<number | null>(null);
@@ -347,9 +385,20 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
         const backendHttp = await getBackendHttpUrl();
         const resolved = resolveSymbol(symbol);
         const isYearly = sessionPeriod === 'Y' || timeframe === 'Y';
-        const effTf = isYearly ? 'D' : timeframe;
-        const multiplier = timeframe === '5' ? 85 : timeframe === '15' ? 40 : 35;
-        const limit = isYearly ? 2000 : Math.min(1500, Math.max(450, (lookbackDays + 1) * multiplier));
+        const isMonthly = sessionPeriod === 'M_S' || timeframe === 'M';
+        const isWeekly = sessionPeriod === 'W' || sessionPeriod === 'W_S' || timeframe === 'W';
+        const effTf = (isYearly || isMonthly || isWeekly) ? 'D' : timeframe;
+        let limit: number;
+        if (isYearly) {
+          limit = 2000; // 6 years of daily candles (~1500 trading days)
+        } else if (isMonthly) {
+          limit = 1000; // 25 months of daily candles (~525 trading days)
+        } else if (isWeekly) {
+          limit = 800;  // 50 weeks of daily candles (~250 trading days)
+        } else {
+          const multiplier = timeframe === '5' ? 85 : timeframe === '15' ? 40 : 35;
+          limit = Math.min(1500, Math.max(450, (lookbackDays + 1) * multiplier));
+        }
         const url = `${backendHttp}/api/candles?symbol=${encodeURIComponent(resolved.formattedSymbol)}&timeframe=${effTf}&limit=${limit}`;
         const res = await fetch(url);
         if (res.ok) {
@@ -497,11 +546,11 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
     // Slice keys based on session period
     let lookbackLimit = lookbackDays;
     if (sessionPeriod === 'W' || sessionPeriod === 'W_S') {
-      lookbackLimit = Math.max(4, Math.ceil(lookbackDays / 3));
+      lookbackLimit = 50; // Last 50 weeks of TPO profiles
     } else if (sessionPeriod === 'M_S') {
-      lookbackLimit = Math.max(3, Math.ceil(lookbackDays / 10));
+      lookbackLimit = 25; // Last 25 months of TPO profiles
     } else if (sessionPeriod === 'Y') {
-      lookbackLimit = Math.max(6, lookbackDays);
+      lookbackLimit = 6;  // Last 6 years of TPO profiles
     }
     
     const activeKeys = keys.slice(Math.max(0, keys.length - lookbackLimit));
@@ -596,10 +645,25 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
     return `${fmt(first.time)} - ${fmt(last.time)}`;
   }, [candles]);
 
-  // Compute structural Market Profile levels (PPOC, Poor High/Low, Double Mech Ref Bot, Weekly High)
+  // Compute structural Market Profile levels (PPOC, Poor High/Low, AB Poor High/Low, Double Mech Ref Bot, Weekly High/Low, G2/G3 Balance, HVN)
   const structuralLevels = useMemo(() => {
     if (dayProfiles.length === 0) {
-      return { ppocs: [], poorHighs: [], poorLows: [], doubleMechBots: [], weeklyHigh: null, weeklyLow: null };
+      return {
+        ppocs: [],
+        poorHighs: [],
+        poorLows: [],
+        abPoorHighs: [],
+        abPoorLows: [],
+        doubleMechBots: [],
+        weeklyHigh: null,
+        weeklyLow: null,
+        g2High: null,
+        g2Low: null,
+        g3High: null,
+        g3Low: null,
+        hvns: [],
+        lvns: []
+      };
     }
 
     let maxHigh = -Infinity;
@@ -623,19 +687,36 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
       ppocs.push({ sIdx: idx, price: p.pocPrice, testedInIdx: testedIdx });
     });
 
-    // 2. Poor Highs and Poor Lows
+    // 2. Poor Highs, Poor Lows, AB Poor Highs, AB Poor Lows
     const poorHighs: { sIdx: number; price: number }[] = [];
     const poorLows: { sIdx: number; price: number }[] = [];
+    const abPoorHighs: { sIdx: number; price: number }[] = [];
+    const abPoorLows: { sIdx: number; price: number }[] = [];
+
     dayProfiles.forEach((p, idx) => {
       if (p.bins.length > 0) {
         const sorted = [...p.bins].sort((a, b) => b.price - a.price);
         const topBin = sorted[0];
         const botBin = sorted[sorted.length - 1];
+
+        // AB Poor High: High was formed in A or B period without single-print excess / flat top with >= 2 TPOs
         if (topBin && topBin.tpos.length >= 2) {
-          poorHighs.push({ sIdx: idx, price: topBin.price });
+          const isAbHigh = topBin.tpos.some(t => t === 'A' || t === 'B');
+          if (isAbHigh) {
+            abPoorHighs.push({ sIdx: idx, price: topBin.price });
+          } else {
+            poorHighs.push({ sIdx: idx, price: topBin.price });
+          }
         }
+
+        // AB Poor Low: Low was formed in A or B period without single-print excess / flat bottom with >= 2 TPOs
         if (botBin && botBin.tpos.length >= 2) {
-          poorLows.push({ sIdx: idx, price: botBin.price });
+          const isAbLow = botBin.tpos.some(t => t === 'A' || t === 'B');
+          if (isAbLow) {
+            abPoorLows.push({ sIdx: idx, price: botBin.price });
+          } else {
+            poorLows.push({ sIdx: idx, price: botBin.price });
+          }
         }
       }
     });
@@ -652,15 +733,114 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
       }
     }
 
+    // 4. G2 & G3 High and Low Balance levels
+    let g2High: number | null = null;
+    let g2Low: number | null = null;
+    let g3High: number | null = null;
+    let g3Low: number | null = null;
+
+    if (dayProfiles.length >= 2) {
+      const s1 = dayProfiles[dayProfiles.length - 1];
+      const s2 = dayProfiles[dayProfiles.length - 2];
+      g2High = Math.max(s1.dayHigh, s2.dayHigh);
+      g2Low = Math.min(s1.dayLow, s2.dayLow);
+    }
+    if (dayProfiles.length >= 3) {
+      const s1 = dayProfiles[dayProfiles.length - 1];
+      const s2 = dayProfiles[dayProfiles.length - 2];
+      const s3 = dayProfiles[dayProfiles.length - 3];
+      g3High = Math.max(s1.dayHigh, s2.dayHigh, s3.dayHigh);
+      g3Low = Math.min(s1.dayLow, s2.dayLow, s3.dayLow);
+    }
+
+    // 5. HVN (High Volume Node) & LVN (Low Volume Node) Lines:
+    // Computed per session, tracked independently forward until first valid price test
+    const hvns: { sIdx: number; price: number; volume: number; testedInIdx: number | null }[] = [];
+    const lvns: { sIdx: number; price: number; volume: number; testedInIdx: number | null }[] = [];
+
+    dayProfiles.forEach((p, sIdx) => {
+      if (!p.bins || p.bins.length < 5) return;
+      const sortedBins = [...p.bins].sort((a, b) => a.price - b.price);
+      const totalVol = sortedBins.reduce((acc, b) => acc + b.volume, 0);
+      const avgVol = totalVol / sortedBins.length;
+
+      // Find local volume peaks (HVN)
+      const candHvns: { price: number; volume: number }[] = [];
+      for (let i = 1; i < sortedBins.length - 1; i++) {
+        const cur = sortedBins[i];
+        const prev = sortedBins[i - 1];
+        const next = sortedBins[i + 1];
+        if (cur.volume > prev.volume && cur.volume > next.volume && cur.volume >= avgVol * 1.3) {
+          if (Math.abs(cur.price - p.pocPrice) >= (tpoStep * 1.5)) {
+            candHvns.push({ price: cur.price, volume: cur.volume });
+          }
+        }
+      }
+      candHvns.sort((a, b) => b.volume - a.volume);
+      const sessionTopHvns = candHvns.slice(0, 2);
+
+      sessionTopHvns.forEach(node => {
+        let testedIdx: number | null = null;
+        for (let fIdx = sIdx + 1; fIdx < dayProfiles.length; fIdx++) {
+          const fut = dayProfiles[fIdx];
+          if (node.price >= fut.dayLow && node.price <= fut.dayHigh) {
+            testedIdx = fIdx;
+            break;
+          }
+        }
+        hvns.push({ sIdx, price: node.price, volume: node.volume, testedInIdx: testedIdx });
+      });
+
+      // Find local volume valleys (LVN)
+      const candLvns: { price: number; volume: number }[] = [];
+      for (let i = 2; i < sortedBins.length - 2; i++) {
+        const cur = sortedBins[i];
+        const prev = sortedBins[i - 1];
+        const next = sortedBins[i + 1];
+        if (cur.volume < prev.volume && cur.volume < next.volume && cur.volume <= avgVol * 0.7 && cur.volume > 0) {
+          if (Math.abs(cur.price - p.pocPrice) >= (tpoStep * 1.5)) {
+            candLvns.push({ price: cur.price, volume: cur.volume });
+          }
+        }
+      }
+      candLvns.sort((a, b) => a.volume - b.volume);
+      const sessionTopLvns = candLvns.slice(0, 2);
+
+      sessionTopLvns.forEach(node => {
+        let testedIdx: number | null = null;
+        for (let fIdx = sIdx + 1; fIdx < dayProfiles.length; fIdx++) {
+          const fut = dayProfiles[fIdx];
+          if (node.price >= fut.dayLow && node.price <= fut.dayHigh) {
+            testedIdx = fIdx;
+            break;
+          }
+        }
+        lvns.push({ sIdx, price: node.price, volume: node.volume, testedInIdx: testedIdx });
+      });
+    });
+
     return {
       ppocs,
       poorHighs,
       poorLows,
+      abPoorHighs,
+      abPoorLows,
       doubleMechBots,
       weeklyHigh: maxHigh > -Infinity ? maxHigh : null,
-      weeklyLow: minLow < Infinity ? minLow : null
+      weeklyLow: minLow < Infinity ? minLow : null,
+      g2High,
+      g2Low,
+      g3High,
+      g3Low,
+      hvns,
+      lvns
     };
-  }, [dayProfiles]);
+  }, [dayProfiles, globalVolumeProfile, tpoStep]);
+
+  // Calculate Single Print Zones and track traversal / clearance across subsequent market action
+  const singlePrintZones = useMemo(() => {
+    return calculateSinglePrintZones(dayProfiles, liveLtp);
+  }, [dayProfiles, liveLtp]);
 
   // Handle Resize
   useEffect(() => {
@@ -756,7 +936,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
     const targetTicks = Math.max(8, Math.min(18, Math.floor(baseChartHeight / 36)));
     const rawStep = priceRange / targetTicks;
     const niceSteps = [0.5, 1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000];
-    const step = niceSteps.find(s => s >= rawStep) || (Math.ceil(rawStep / 50) * 50);
+    const step = gridStep > 0 ? gridStep : (niceSteps.find(s => s >= rawStep) || (Math.ceil(rawStep / 50) * 50));
 
     const startTick = Math.floor(minPrice / step) * step;
     const endTick = Math.ceil(maxPrice / step) * step;
@@ -867,6 +1047,12 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
             bin.tpos.forEach((letter, colIdx) => {
               const x = colStartX + colIdx * (baseBlockSize + blockGap);
               if (x + baseBlockSize <= colStartX + tpoSubW) {
+                // Highlight Single Prints
+                if (highlightSinglePrints && bin.tpos.length === 1 && bin.price !== profile.dayHigh && bin.price !== profile.dayLow && colIdx === 0) {
+                  ctx.fillStyle = 'rgba(245, 158, 11, 0.25)';
+                  ctx.fillRect(x - 1, binY + (rowHeight - baseBlockSize) / 2 - 1, baseBlockSize + 2, baseBlockSize + 2);
+                }
+
                 ctx.fillStyle = getLetterColor(letter);
                 if (showLetters) {
                   ctx.font = `bold ${Math.max(7, Math.floor(baseBlockSize * 0.75))}px "JetBrains Mono", monospace`;
@@ -927,6 +1113,36 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
         }
       }
 
+      // Initial Balance (IB) Vertical Bracket Line
+      if (showIbLine && profile.ibHigh && profile.ibLow) {
+        const ibYTop = getPriceY(profile.ibHigh);
+        const ibYBottom = getPriceY(profile.ibLow);
+        if (ibYTop < height - padding.bottom && ibYBottom > padding.top) {
+          const drawTop = Math.max(padding.top, ibYTop);
+          const drawBottom = Math.min(height - padding.bottom, ibYBottom);
+          const ibX = colStartX - 4;
+
+          ctx.strokeStyle = '#c084fc';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.moveTo(ibX, drawTop);
+          ctx.lineTo(ibX, drawBottom);
+          ctx.stroke();
+
+          // Top bracket tick
+          ctx.beginPath();
+          ctx.moveTo(ibX - 3, drawTop);
+          ctx.lineTo(ibX + 3, drawTop);
+          ctx.stroke();
+
+          // Bottom bracket tick
+          ctx.beginPath();
+          ctx.moveTo(ibX - 3, drawBottom);
+          ctx.lineTo(ibX + 3, drawBottom);
+          ctx.stroke();
+        }
+      }
+
       // Key Session Reference Lines matching screenshot:
       // 1. VAH (Thin crisp White line across session)
       if (profile.vahPrice) {
@@ -958,70 +1174,369 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
       if (profile.pocPrice) {
         const pocY = getPriceY(profile.pocPrice);
         if (pocY >= padding.top && pocY <= height - padding.bottom) {
+          // Historical level visible within its session
           ctx.strokeStyle = '#facc15';
-          ctx.lineWidth = 1.5;
+          ctx.lineWidth = 1.6;
           ctx.beginPath();
           ctx.moveTo(colStartX, pocY);
           ctx.lineTo(colStartX + colWidth, pocY);
           ctx.stroke();
 
-          // Dotted extension line forward until tested by subsequent session
-          let endX = width - padding.right;
+          // Tested POC logic:
+          // Once price tests a POC, stop extending that POC level.
+          // Keep the historical level visible without extending it further past the first valid test.
+          let testedIdx: number | null = null;
           for (let fIdx = sIdx + 1; fIdx < dayProfiles.length; fIdx++) {
             const fut = dayProfiles[fIdx];
             if (profile.pocPrice >= fut.dayLow && profile.pocPrice <= fut.dayHigh) {
-              const futX = padding.left + panOffset.x + fIdx * (colWidth + colGap);
-              endX = Math.max(colStartX + colWidth, futX);
+              testedIdx = fIdx;
               break;
             }
           }
-          if (endX > colStartX + colWidth) {
-            ctx.strokeStyle = '#facc15';
-            ctx.lineWidth = 1.2;
-            ctx.setLineDash([4, 4]);
+
+          if (testedIdx !== null) {
+            // Tested POC: Extend only until the first valid test touch point, then stop immediately
+            const futX = padding.left + panOffset.x + testedIdx * (colWidth + colGap) + colWidth * 0.35;
+            const endX = Math.max(colStartX + colWidth, futX);
+            ctx.strokeStyle = 'rgba(250, 204, 21, 0.45)';
+            ctx.lineWidth = 1.0;
+            ctx.setLineDash([2, 2]);
             ctx.beginPath();
             ctx.moveTo(colStartX + colWidth, pocY);
             ctx.lineTo(endX, pocY);
             ctx.stroke();
             ctx.setLineDash([]);
+            // Small test touch marker dot
+            ctx.fillStyle = 'rgba(250, 204, 21, 0.65)';
+            ctx.beginPath();
+            ctx.arc(endX, pocY, 2, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            // Untested / Virgin POC: extends forward to the current price axis
+            const endX = width - padding.right;
+            if (endX > colStartX + colWidth) {
+              ctx.strokeStyle = '#facc15';
+              ctx.lineWidth = 1.3;
+              ctx.setLineDash([4, 4]);
+              ctx.beginPath();
+              ctx.moveTo(colStartX + colWidth, pocY);
+              ctx.lineTo(endX, pocY);
+              ctx.stroke();
+              ctx.setLineDash([]);
+
+              ctx.fillStyle = '#facc15';
+              ctx.font = 'bold 9px "JetBrains Mono", monospace';
+              ctx.textAlign = 'right';
+              ctx.fillText(`nPOC: ₹${profile.pocPrice.toFixed(1)}`, width - padding.right - 8, pocY - 3);
+            }
           }
         }
       }
 
-      // 4. Virgin POC / Major Reference Line (Purple)
-      structuralLevels.ppocs.forEach(ppoc => {
-        if (ppoc.sIdx === sIdx) {
-          const ppocY = getPriceY(ppoc.price);
-          if (ppocY >= padding.top && ppocY <= height - padding.bottom) {
-            ctx.strokeStyle = '#c084fc';
-            ctx.lineWidth = 1.5;
+      // 5. Poor High / Low & AB Poor High / Low Markers
+      if (showPoorHighLow) {
+        // AB Poor High (priority) or Standard Poor High
+        const abPoorHigh = structuralLevels.abPoorHighs.find(p => p.sIdx === sIdx);
+        const poorHigh = structuralLevels.poorHighs.find(p => p.sIdx === sIdx);
+        if (abPoorHigh) {
+          const phY = getPriceY(abPoorHigh.price);
+          if (phY >= padding.top && phY <= height - padding.bottom) {
+            ctx.fillStyle = '#ef4444';
+            ctx.font = 'bold 9px "JetBrains Mono", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('⚠️ AB Poor High', colStartX + colWidth / 2, phY - 6);
+          }
+        } else if (poorHigh) {
+          const phY = getPriceY(poorHigh.price);
+          if (phY >= padding.top && phY <= height - padding.bottom) {
+            ctx.fillStyle = '#f87171';
+            ctx.font = 'bold 9px "JetBrains Mono", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('⚠️ Poor H', colStartX + colWidth / 2, phY - 6);
+          }
+        }
+
+        // AB Poor Low (priority) or Standard Poor Low
+        const abPoorLow = structuralLevels.abPoorLows.find(p => p.sIdx === sIdx);
+        const poorLow = structuralLevels.poorLows.find(p => p.sIdx === sIdx);
+        if (abPoorLow) {
+          const plY = getPriceY(abPoorLow.price);
+          if (plY >= padding.top && plY <= height - padding.bottom) {
+            ctx.fillStyle = '#10b981';
+            ctx.font = 'bold 9px "JetBrains Mono", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('⚠️ AB Poor Low', colStartX + colWidth / 2, plY + 14);
+          }
+        } else if (poorLow) {
+          const plY = getPriceY(poorLow.price);
+          if (plY >= padding.top && plY <= height - padding.bottom) {
+            ctx.fillStyle = '#f87171';
+            ctx.font = 'bold 9px "JetBrains Mono", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('⚠️ Poor L', colStartX + colWidth / 2, plY + 14);
+          }
+        }
+      }
+    });
+
+    // 8. Weekly High & Weekly LOW Lines across lookback
+    if (showWeeklyLevels) {
+      if (structuralLevels.weeklyHigh) {
+        const whY = getPriceY(structuralLevels.weeklyHigh);
+        if (whY >= padding.top && whY <= height - padding.bottom) {
+          ctx.strokeStyle = '#10b981';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([8, 4, 2, 4]);
+          ctx.beginPath();
+          ctx.moveTo(padding.left, whY);
+          ctx.lineTo(width - padding.right, whY);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          ctx.fillStyle = '#10b981';
+          ctx.font = 'bold 9.5px "JetBrains Mono", monospace';
+          ctx.textAlign = 'left';
+          ctx.fillText(`Weekly High: ₹${structuralLevels.weeklyHigh.toFixed(1)}`, padding.left + 8, whY - 4);
+        }
+      }
+
+      if (structuralLevels.weeklyLow) {
+        const wlY = getPriceY(structuralLevels.weeklyLow);
+        if (wlY >= padding.top && wlY <= height - padding.bottom) {
+          ctx.strokeStyle = '#ef4444';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([8, 4, 2, 4]);
+          ctx.beginPath();
+          ctx.moveTo(padding.left, wlY);
+          ctx.lineTo(width - padding.right, wlY);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          ctx.fillStyle = '#ef4444';
+          ctx.font = 'bold 9.5px "JetBrains Mono", monospace';
+          ctx.textAlign = 'left';
+          ctx.fillText(`Weekly Low: ₹${structuralLevels.weeklyLow.toFixed(1)}`, padding.left + 8, wlY + 12);
+        }
+      }
+    }
+
+    // 9. G2 & G3 High / Low Balance Lines
+    if (showG2G3) {
+      if (structuralLevels.g2High) {
+        const g2Hy = getPriceY(structuralLevels.g2High);
+        if (g2Hy >= padding.top && g2Hy <= height - padding.bottom) {
+          ctx.strokeStyle = '#06b6d4';
+          ctx.lineWidth = 1.2;
+          ctx.setLineDash([6, 3]);
+          ctx.beginPath();
+          ctx.moveTo(padding.left, g2Hy);
+          ctx.lineTo(width - padding.right, g2Hy);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          ctx.fillStyle = '#06b6d4';
+          ctx.font = 'bold 9px "JetBrains Mono", monospace';
+          ctx.textAlign = 'left';
+          ctx.fillText(`G2 High (2D): ₹${structuralLevels.g2High.toFixed(1)}`, padding.left + 140, g2Hy - 4);
+        }
+      }
+      if (structuralLevels.g2Low) {
+        const g2Ly = getPriceY(structuralLevels.g2Low);
+        if (g2Ly >= padding.top && g2Ly <= height - padding.bottom) {
+          ctx.strokeStyle = '#06b6d4';
+          ctx.lineWidth = 1.2;
+          ctx.setLineDash([6, 3]);
+          ctx.beginPath();
+          ctx.moveTo(padding.left, g2Ly);
+          ctx.lineTo(width - padding.right, g2Ly);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          ctx.fillStyle = '#06b6d4';
+          ctx.font = 'bold 9px "JetBrains Mono", monospace';
+          ctx.textAlign = 'left';
+          ctx.fillText(`G2 Low (2D): ₹${structuralLevels.g2Low.toFixed(1)}`, padding.left + 140, g2Ly + 12);
+        }
+      }
+
+      if (structuralLevels.g3High) {
+        const g3Hy = getPriceY(structuralLevels.g3High);
+        if (g3Hy >= padding.top && g3Hy <= height - padding.bottom) {
+          ctx.strokeStyle = '#ec4899';
+          ctx.lineWidth = 1.2;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.moveTo(padding.left, g3Hy);
+          ctx.lineTo(width - padding.right, g3Hy);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          ctx.fillStyle = '#ec4899';
+          ctx.font = 'bold 9px "JetBrains Mono", monospace';
+          ctx.textAlign = 'left';
+          ctx.fillText(`G3 High (3D): ₹${structuralLevels.g3High.toFixed(1)}`, padding.left + 270, g3Hy - 4);
+        }
+      }
+      if (structuralLevels.g3Low) {
+        const g3Ly = getPriceY(structuralLevels.g3Low);
+        if (g3Ly >= padding.top && g3Ly <= height - padding.bottom) {
+          ctx.strokeStyle = '#ec4899';
+          ctx.lineWidth = 1.2;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.moveTo(padding.left, g3Ly);
+          ctx.lineTo(width - padding.right, g3Ly);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          ctx.fillStyle = '#ec4899';
+          ctx.font = 'bold 9px "JetBrains Mono", monospace';
+          ctx.textAlign = 'left';
+          ctx.fillText(`G3 Low (3D): ₹${structuralLevels.g3Low.toFixed(1)}`, padding.left + 270, g3Ly + 12);
+        }
+      }
+    }
+
+    // 10. HVN (High Volume Node) Lines - Extended until tested
+    if (showHvn && structuralLevels.hvns && structuralLevels.hvns.length > 0) {
+      structuralLevels.hvns.forEach((hvn) => {
+        const hvnY = getPriceY(hvn.price);
+        if (hvnY < padding.top || hvnY > height - padding.bottom) return;
+
+        const startX = padding.left + panOffset.x + hvn.sIdx * (colWidth + colGap) + colWidth;
+        if (hvn.testedInIdx !== null) {
+          // Stop extending each level immediately after its first valid test
+          const futX = padding.left + panOffset.x + hvn.testedInIdx * (colWidth + colGap) + colWidth * 0.35;
+          const endX = Math.max(startX, futX);
+          ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+          ctx.lineWidth = 1.0;
+          ctx.setLineDash([3, 3]);
+          ctx.beginPath();
+          ctx.moveTo(startX, hvnY);
+          ctx.lineTo(endX, hvnY);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          ctx.fillStyle = 'rgba(56, 189, 248, 0.6)';
+          ctx.beginPath();
+          ctx.arc(endX, hvnY, 2, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          // Untested HVN: extends to the right price axis
+          const endX = width - padding.right;
+          if (endX > startX) {
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 1.2;
+            ctx.setLineDash([5, 3]);
             ctx.beginPath();
-            ctx.moveTo(colStartX, ppocY);
-            ctx.lineTo(width - padding.right, ppocY);
+            ctx.moveTo(startX, hvnY);
+            ctx.lineTo(endX, hvnY);
             ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.fillStyle = '#38bdf8';
+            ctx.font = 'bold 9px "JetBrains Mono", monospace';
+            ctx.textAlign = 'right';
+            ctx.fillText(`HVN: ₹${hvn.price.toFixed(1)}`, width - padding.right - 8, hvnY - 3);
           }
         }
       });
-    });
+    }
 
-    // 8. Weekly High Line across lookback
-    if (structuralLevels.weeklyHigh) {
-      const whY = getPriceY(structuralLevels.weeklyHigh);
-      if (whY >= padding.top && whY <= height - padding.bottom) {
-        ctx.strokeStyle = '#84cc16';
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([8, 4, 2, 4]);
-        ctx.beginPath();
-        ctx.moveTo(padding.left, whY);
-        ctx.lineTo(width - padding.right, whY);
-        ctx.stroke();
-        ctx.setLineDash([]);
+    // 10b. LVN (Low Volume Node) Lines - Extended until tested
+    if (showLvn && structuralLevels.lvns && structuralLevels.lvns.length > 0) {
+      structuralLevels.lvns.forEach((lvn) => {
+        const lvnY = getPriceY(lvn.price);
+        if (lvnY < padding.top || lvnY > height - padding.bottom) return;
 
-        ctx.fillStyle = '#84cc16';
-        ctx.font = 'bold 9px "JetBrains Mono", monospace';
-        ctx.textAlign = 'left';
-        ctx.fillText('Weekly High', (padding.left + width - padding.right) / 2 - 30, whY - 4);
-      }
+        const startX = padding.left + panOffset.x + lvn.sIdx * (colWidth + colGap) + colWidth;
+        if (lvn.testedInIdx !== null) {
+          // Stop extending each level immediately after its first valid test
+          const futX = padding.left + panOffset.x + lvn.testedInIdx * (colWidth + colGap) + colWidth * 0.35;
+          const endX = Math.max(startX, futX);
+          ctx.strokeStyle = 'rgba(249, 115, 22, 0.4)';
+          ctx.lineWidth = 1.0;
+          ctx.setLineDash([3, 3]);
+          ctx.beginPath();
+          ctx.moveTo(startX, lvnY);
+          ctx.lineTo(endX, lvnY);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          ctx.fillStyle = 'rgba(249, 115, 22, 0.6)';
+          ctx.beginPath();
+          ctx.arc(endX, lvnY, 2, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          // Untested LVN: extends to the right price axis
+          const endX = width - padding.right;
+          if (endX > startX) {
+            ctx.strokeStyle = '#f97316';
+            ctx.lineWidth = 1.2;
+            ctx.setLineDash([5, 3]);
+            ctx.beginPath();
+            ctx.moveTo(startX, lvnY);
+            ctx.lineTo(endX, lvnY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.fillStyle = '#f97316';
+            ctx.font = 'bold 9px "JetBrains Mono", monospace';
+            ctx.textAlign = 'right';
+            ctx.fillText(`LVN: ₹${lvn.price.toFixed(1)}`, width - padding.right - 8, lvnY - 3);
+          }
+        }
+      });
+    }
+
+    // 11. UNCLEARED SINGLE PRINT ZONES (Market Profile Imbalance Zones)
+    if (highlightSinglePrints && singlePrintZones.length > 0) {
+      singlePrintZones.forEach(zone => {
+        // Automatically remove cleared zones: only display uncleared or partially tested zones
+        if (zone.isCleared) return;
+
+        const colStartX = padding.left + panOffset.x + zone.sessionIdx * (colWidth + colGap);
+        const lineStartX = colStartX;
+        const lineEndX = width - padding.right;
+
+        // Skip if offscreen horizontally
+        if (lineEndX < padding.left || lineStartX > width - padding.right) return;
+
+        const yTop = getPriceY(zone.highPrice);
+        const yBottom = getPriceY(zone.lowPrice);
+        const zoneY = Math.min(yTop, yBottom);
+        const zoneH = Math.max(3, Math.abs(yBottom - yTop));
+
+        // Skip if offscreen vertically
+        if (zoneY + zoneH < padding.top || zoneY > height - padding.bottom) return;
+
+        // 1. Semi-transparent Amber Zone Fill
+        ctx.fillStyle = zone.isPartiallyTested ? 'rgba(245, 158, 11, 0.12)' : 'rgba(245, 158, 11, 0.20)';
+        ctx.fillRect(lineStartX, zoneY, lineEndX - lineStartX, zoneH);
+
+        // 2. Label Badge on Origin Column
+        if (lineStartX >= padding.left - 40 && lineStartX <= width - padding.right) {
+          const badgeText = zone.isPartiallyTested
+            ? `⚡ SP Zone (Tested) [${zone.lowPrice.toFixed(1)} - ${zone.highPrice.toFixed(1)}]`
+            : `⚡ SP Zone [${zone.lowPrice.toFixed(1)} - ${zone.highPrice.toFixed(1)}]`;
+          ctx.font = 'bold 9px "JetBrains Mono", monospace';
+          const textWidth = ctx.measureText(badgeText).width;
+          const badgeX = lineStartX + 4;
+          const badgeY = zoneH >= 16 
+            ? zoneY + zoneH / 2 + 3 
+            : Math.max(padding.top + 10, zoneY - 4);
+
+          ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.88)' : 'rgba(255, 255, 255, 0.92)';
+          ctx.fillRect(badgeX, badgeY - 9, textWidth + 8, 12);
+          ctx.strokeStyle = 'rgba(245, 158, 11, 0.6)';
+          ctx.lineWidth = 0.8;
+          ctx.strokeRect(badgeX, badgeY - 9, textWidth + 8, 12);
+
+          ctx.fillStyle = '#fbbf24';
+          ctx.textAlign = 'left';
+          ctx.fillText(badgeText, badgeX + 4, badgeY);
+        }
+      });
     }
 
     ctx.restore();
@@ -1059,16 +1574,8 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
     ctx.lineTo(rulerX, rulerY);
     ctx.stroke();
 
-    // Top-Left Indicator Title (matching screenshot: BarTimer(NIFTY_I (30 Minute)), VOFATPOChart)
+    // Bottom-Right Countdown Bar Timer
     ctx.save();
-    ctx.fillStyle = '#38bdf8';
-    ctx.font = 'bold 11px "JetBrains Mono", monospace';
-    ctx.textAlign = 'left';
-    const cleanSym = symbol.replace('NSE:', '').replace('BSE:', '').replace('1!', '_I');
-    const tfLabel = timeframe === '30' ? '30 Minute' : timeframe === '5' ? '5 Minute' : timeframe === '15' ? '15 Minute' : timeframe === '60' ? '60 Minute' : timeframe === 'D' ? 'Daily' : `${timeframe} Minute`;
-    ctx.fillText(`BarTimer(${cleanSym} (${tfLabel})), VOFATPOChart`, padding.left + 5, padding.top - 12);
-
-    // Bottom-Right Countdown Bar Timer (matching screenshot: Time remaining = 00:17:33)
     const minutes = Math.floor(barRemainingSeconds / 60);
     const seconds = barRemainingSeconds % 60;
     const formattedRemaining = `00:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
@@ -1076,12 +1583,6 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
     ctx.font = '11px "JetBrains Mono", monospace';
     ctx.textAlign = 'right';
     ctx.fillText(`Time remaining = ${formattedRemaining}`, width - padding.right - 10, height - padding.bottom + 26);
-
-    // Bottom-Left Watermark (matching screenshot: © 2026 NinjaTrader, LLC)
-    ctx.fillStyle = '#6b7280';
-    ctx.font = '10px "JetBrains Mono", monospace';
-    ctx.textAlign = 'left';
-    ctx.fillText('© 2026 NinjaTrader, LLC', padding.left + 5, height - padding.bottom + 26);
     ctx.restore();
 
     // Live Current Price (LTP) Marker on Right Y-Axis (matching screenshot)
@@ -1168,7 +1669,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
       ctx.restore();
     }
 
-  }, [dayProfiles, dimensions, viewMode, zoomLevel, panOffset, tpoStep, globalVolumeProfile, structuralLevels, liveLtp, crosshairPos, isDark, yScale, xScale, hoveredAxis, dragMode, barRemainingSeconds]);
+  }, [dayProfiles, dimensions, viewMode, zoomLevel, panOffset, tpoStep, gridStep, showIbLine, highlightSinglePrints, singlePrintZones, showPoorHighLow, showTwoDayBalance, showG2G3, showWeeklyLevels, showHvn, showLvn, globalVolumeProfile, structuralLevels, liveLtp, crosshairPos, isDark, yScale, xScale, hoveredAxis, dragMode, barRemainingSeconds]);
 
   const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
@@ -1345,6 +1846,63 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
     setDragMode('none');
   };
 
+  // Touch Handlers for Mobile: Single finger pan & Two-finger pinch-to-zoom
+  const handleCanvasTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (e.touches.length === 1) {
+      const t = e.touches[0];
+      touchStateRef.current = {
+        mode: 'pan',
+        startX: t.clientX,
+        startY: t.clientY,
+        initialPan: { ...panOffset },
+        startDist: 0,
+        initialZoom: zoomLevel,
+        initialYScale: yScale
+      };
+      setDragMode('pan');
+    } else if (e.touches.length === 2) {
+      const t0 = e.touches[0];
+      const t1 = e.touches[1];
+      const dist = Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
+      touchStateRef.current = {
+        mode: 'pinch',
+        startX: (t0.clientX + t1.clientX) / 2,
+        startY: (t0.clientY + t1.clientY) / 2,
+        initialPan: { ...panOffset },
+        startDist: Math.max(10, dist),
+        initialZoom: zoomLevel,
+        initialYScale: yScale
+      };
+      setDragMode('none');
+    }
+  };
+
+  const handleCanvasTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (e.touches.length === 1 && touchStateRef.current.mode === 'pan') {
+      const t = e.touches[0];
+      const dx = t.clientX - touchStateRef.current.startX;
+      const dy = t.clientY - touchStateRef.current.startY;
+      setPanOffset({
+        x: touchStateRef.current.initialPan.x + dx,
+        y: touchStateRef.current.initialPan.y + dy
+      });
+    } else if (e.touches.length === 2) {
+      const t0 = e.touches[0];
+      const t1 = e.touches[1];
+      const dist = Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
+      if (touchStateRef.current.startDist > 0) {
+        const factor = dist / touchStateRef.current.startDist;
+        const newZoom = Math.min(4.0, Math.max(0.25, touchStateRef.current.initialZoom * factor));
+        setZoomLevel(newZoom);
+      }
+    }
+  };
+
+  const handleCanvasTouchEnd = () => {
+    touchStateRef.current.mode = 'none';
+    setDragMode('none');
+  };
+
   const handleTakeScreenshot = async () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -1505,264 +2063,554 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
       }}
     >
       
-      {/* Top Header Bar (Matching Reference Screenshot) */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#0a0a0a', padding: '6px 12px', borderRadius: '4px', border: '1px solid #1f1f1f', flexWrap: 'wrap', gap: '8px' }}>
+      {/* Controls Toolbar (Matching Reference Screenshot & Design Language) */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(15, 23, 42, 0.75)', padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(10px)', marginBottom: '8px' }}>
         
-        {/* Left Side: Orange "Chart" button, Symbol Select, Timeframe Select, Date Range info */}
+        {/* Row 1: Core TPO & Analysis Controls (Matches Screenshot Exact Layout) */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-          <div style={{ background: '#ea580c', color: '#ffffff', fontWeight: '900', padding: '3px 8px', borderRadius: '3px', fontSize: '11px', letterSpacing: '0.5px' }}>
-            Chart
+          
+          {/* Axis Grid Step with [-] [+] controls */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '3px', background: 'rgba(0,0,0,0.4)', padding: '3px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <Sliders size={12} style={{ color: '#00f0ff' }} />
+            <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '600' }}>Grid:</span>
+            <button
+              onClick={() => {
+                const steps = [5, 10, 20, 25, 50, 100];
+                const curIdx = steps.indexOf(gridStep);
+                if (curIdx > 0) setGridStep(steps[curIdx - 1]);
+                else setGridStep(5);
+              }}
+              style={{ background: 'rgba(255,255,255,0.08)', border: 'none', color: '#60a5fa', width: '18px', height: '18px', borderRadius: '3px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              title="Decrease Grid Step Spacing"
+            >
+              -
+            </button>
+            <select
+              value={gridStep}
+              onChange={(e) => setGridStep(Number(e.target.value))}
+              style={{
+                background: 'transparent',
+                color: '#00f0ff',
+                border: 'none',
+                fontSize: '11px',
+                fontWeight: '800',
+                cursor: 'pointer',
+                outline: 'none',
+                padding: '0 2px'
+              }}
+            >
+              <option value={5} style={{ background: '#1e293b' }}>5 pts</option>
+              <option value={10} style={{ background: '#1e293b' }}>10 pts</option>
+              <option value={20} style={{ background: '#1e293b' }}>20 pts</option>
+              <option value={25} style={{ background: '#1e293b' }}>25 pts</option>
+              <option value={50} style={{ background: '#1e293b' }}>50 pts</option>
+              <option value={100} style={{ background: '#1e293b' }}>100 pts</option>
+            </select>
+            <button
+              onClick={() => {
+                const steps = [5, 10, 20, 25, 50, 100];
+                const curIdx = steps.indexOf(gridStep);
+                if (curIdx !== -1 && curIdx < steps.length - 1) setGridStep(steps[curIdx + 1]);
+                else setGridStep(100);
+              }}
+              style={{ background: 'rgba(255,255,255,0.08)', border: 'none', color: '#60a5fa', width: '18px', height: '18px', borderRadius: '3px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              title="Increase Grid Step Spacing"
+            >
+              +
+            </button>
           </div>
 
-          {/* Symbol Selector */}
-          <select
-            value={symbol}
-            onChange={(e) => {
-              const newSym = e.target.value;
-              setSymbol(newSym);
-              if (onSymbolSelect) onSymbolSelect(newSym);
-            }}
-            style={{
-              background: '#2d2d2d',
-              color: '#ffffff',
-              border: '1px solid #444444',
-              borderRadius: '3px',
-              padding: '3px 8px',
-              fontSize: '11px',
-              fontWeight: '800',
-              cursor: 'pointer',
-              outline: 'none'
-            }}
-          >
-            {QUICK_SYMBOLS.map(qs => (
-              <option key={qs.symbol} value={qs.symbol} style={{ background: '#222222', color: '#ffffff' }}>
-                {qs.label}
-              </option>
-            ))}
-          </select>
-
-          {/* Timeframe Selector */}
-          <select
-            value={sessionPeriod === 'Y' ? 'Y' : timeframe}
-            onChange={(e) => {
-              const val = e.target.value;
-              if (val === 'Y') {
-                setSessionPeriod('Y');
-                setTimeframe('D');
-                setLookbackDays(6);
-              } else {
-                if (sessionPeriod === 'Y') {
-                  setSessionPeriod('D');
-                  setLookbackDays(5);
-                }
-                setTimeframe(val);
-              }
-            }}
-            style={{
-              background: '#2d2d2d',
-              color: '#ffffff',
-              border: '1px solid #444444',
-              borderRadius: '3px',
-              padding: '3px 8px',
-              fontSize: '11px',
-              fontWeight: '800',
-              cursor: 'pointer',
-              outline: 'none'
-            }}
-          >
-            <option value="5" style={{ background: '#222222', color: '#ffffff' }}>5 Minute</option>
-            <option value="15" style={{ background: '#222222', color: '#ffffff' }}>15 Minute</option>
-            <option value="30" style={{ background: '#222222', color: '#ffffff' }}>30 Minute</option>
-            <option value="60" style={{ background: '#222222', color: '#ffffff' }}>60 Minute</option>
-            <option value="D" style={{ background: '#222222', color: '#ffffff' }}>Daily</option>
-            <option value="Y" style={{ background: '#222222', color: '#38bdf8', fontWeight: 'bold' }}>Yearly (6 Years MP)</option>
-          </select>
-
-          {/* Dynamic Date & Time Range text (e.g. 13-12-2023 14:15:00 - 19-12-2023 11:45:00) */}
-          {dateRangeStr && (
-            <span style={{ fontSize: '11px', color: '#9ca3af', fontFamily: '"JetBrains Mono", monospace', marginLeft: '6px' }}>
-              {dateRangeStr}
-            </span>
-          )}
-        </div>
-
-        {/* Right Side: Refresh, Lookback days, TPO step, Zoom, Pin, Screenshot, Pop Out, Fullscreen */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-          <button onClick={() => fetchCandles(false)} style={{ background: 'transparent', border: 'none', color: '#9ca3af', cursor: 'pointer', padding: '3px' }} title="Refresh">
-            <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
-          </button>
-
-          {/* Lookback Days Selector (5D to 30D for intraday/daily, 1Y to 6Y for yearly) */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: '#2d2d2d', padding: '2px 5px', borderRadius: '3px', border: '1px solid #444444' }}>
-            <span style={{ fontSize: '10px', fontWeight: '800', color: '#9ca3af' }}>📅</span>
-            {(sessionPeriod === 'Y' ? [3, 6, 10] : [5, 10, 15, 20, 30]).map((d) => (
-              <button
-                key={d}
-                onClick={() => setLookbackDays(d)}
-                style={{
-                  background: lookbackDays === d ? '#3b82f6' : 'transparent',
-                  color: lookbackDays === d ? '#ffffff' : '#9ca3af',
-                  border: 'none',
-                  padding: '2px 4px',
-                  borderRadius: '2px',
-                  fontSize: '10px',
-                  fontWeight: lookbackDays === d ? '800' : '600',
-                  cursor: 'pointer'
-                }}
-              >
-                {d}{sessionPeriod === 'Y' ? 'Y' : 'D'}
-              </button>
-            ))}
-          </div>
-
-          {/* TPO Tick Step Dropdown */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#2d2d2d', padding: '2px 5px', borderRadius: '3px', border: '1px solid #444444' }}>
-            <span style={{ fontSize: '10px', fontWeight: '800', color: '#9ca3af' }}>TPO</span>
+          {/* TPO Size / Tick Step with direct [-] [+] manual controls (KEPT TPO SIZE SELECTING) */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '3px', background: 'rgba(0,0,0,0.4)', padding: '3px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <span style={{ fontSize: '11px', color: '#60a5fa', fontWeight: '800' }}>TPO:</span>
+            <button
+              onClick={() => {
+                const steps = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 16, 18, 20, 24, 25, 30, 40, 50];
+                const curIdx = steps.indexOf(tpoStep);
+                if (curIdx > 0) setTpoStep(steps[curIdx - 1]);
+                else setTpoStep(steps[0]);
+              }}
+              style={{ background: 'rgba(255,255,255,0.08)', border: 'none', color: '#60a5fa', width: '18px', height: '18px', borderRadius: '3px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              title="Decrease TPO Size"
+            >
+              -
+            </button>
             <select
               value={tpoStep}
               onChange={(e) => setTpoStep(Number(e.target.value))}
               style={{
-                background: '#222222',
+                background: 'transparent',
                 color: '#60a5fa',
                 border: 'none',
-                borderRadius: '2px',
-                padding: '1px 4px',
-                fontSize: '10px',
+                fontSize: '11px',
                 fontWeight: '800',
+                cursor: 'pointer',
                 outline: 'none',
-                cursor: 'pointer'
+                padding: '0 2px'
               }}
             >
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16, 18, 24, 30, 40].map((stepVal) => (
-                <option key={stepVal} value={stepVal} style={{ background: '#222222', color: '#ffffff' }}>
-                  {stepVal}
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 16, 18, 20, 24, 25, 30, 40, 50].map((stepVal) => (
+                <option key={stepVal} value={stepVal} style={{ background: '#1e293b', color: '#ffffff' }}>
+                  {stepVal} pts
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={() => {
+                const steps = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 16, 18, 20, 24, 25, 30, 40, 50];
+                const curIdx = steps.indexOf(tpoStep);
+                if (curIdx !== -1 && curIdx < steps.length - 1) setTpoStep(steps[curIdx + 1]);
+                else setTpoStep(steps[steps.length - 1]);
+              }}
+              style={{ background: 'rgba(255,255,255,0.08)', border: 'none', color: '#60a5fa', width: '18px', height: '18px', borderRadius: '3px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              title="Increase TPO Size"
+            >
+              +
+            </button>
+          </div>
+
+          {/* IB Line, Single Prints & Poor H/L Toggles */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(0,0,0,0.3)', padding: '2px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <button
+              onClick={() => setShowIbLine(!showIbLine)}
+              style={{
+                background: showIbLine ? 'rgba(59, 130, 246, 0.25)' : 'transparent',
+                color: showIbLine ? '#60a5fa' : '#94a3b8',
+                border: 'none',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer'
+              }}
+              title="Toggle Initial Balance (IB) Vertical Bracket Line"
+            >
+              IB Line
+            </button>
+            <button
+              onClick={() => setHighlightSinglePrints(!highlightSinglePrints)}
+              style={{
+                background: highlightSinglePrints ? 'rgba(245, 158, 11, 0.25)' : 'transparent',
+                color: highlightSinglePrints ? '#f59e0b' : '#94a3b8',
+                border: 'none',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer'
+              }}
+              title="Highlight Single Prints (Excess & Breakout Imbalance Gaps)"
+            >
+              Single Prints
+            </button>
+            <button
+              onClick={() => setShowPoorHighLow(!showPoorHighLow)}
+              style={{
+                background: showPoorHighLow ? 'rgba(239, 68, 68, 0.25)' : 'transparent',
+                color: showPoorHighLow ? '#f87171' : '#94a3b8',
+                border: 'none',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '3px'
+              }}
+              title="Toggle Poor High/Low & AB Poor High/Low Unfinished Business Markers"
+            >
+              <span>⚠️</span> Poor & AB
+            </button>
+            <button
+              onClick={() => setShowWeeklyLevels(!showWeeklyLevels)}
+              style={{
+                background: showWeeklyLevels ? 'rgba(16, 185, 129, 0.25)' : 'transparent',
+                color: showWeeklyLevels ? '#34d399' : '#94a3b8',
+                border: 'none',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer'
+              }}
+              title="Toggle Weekly High & Weekly Low Reference Lines"
+            >
+              Weekly H/L
+            </button>
+            <button
+              onClick={() => setShowG2G3(!showG2G3)}
+              style={{
+                background: showG2G3 ? 'rgba(6, 182, 212, 0.25)' : 'transparent',
+                color: showG2G3 ? '#22d3ee' : '#94a3b8',
+                border: 'none',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer'
+              }}
+              title="Toggle G2 (2-Day) and G3 (3-Day) Balance High/Low Lines"
+            >
+              G2/G3 Bal
+            </button>
+            <button
+              onClick={() => setShowHvn(!showHvn)}
+              style={{
+                background: showHvn ? 'rgba(56, 189, 248, 0.25)' : 'transparent',
+                color: showHvn ? '#38bdf8' : '#94a3b8',
+                border: 'none',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer'
+              }}
+              title="Toggle High Volume Node (HVN) Lines"
+            >
+              HVN
+            </button>
+            <button
+              onClick={() => setShowLvn(!showLvn)}
+              style={{
+                background: showLvn ? 'rgba(249, 115, 22, 0.25)' : 'transparent',
+                color: showLvn ? '#f97316' : '#94a3b8',
+                border: 'none',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer'
+              }}
+              title="Toggle Low Volume Node (LVN) Lines"
+            >
+              LVN
+            </button>
+          </div>
+
+          {/* Zoom Controls */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(0,0,0,0.4)', padding: '3px 6px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <button
+              onClick={() => setZoomLevel(prev => Math.min(5.0, prev * 1.25))}
+              style={{ background: 'transparent', border: 'none', color: '#60a5fa', cursor: 'pointer', padding: '3px', display: 'flex', alignItems: 'center' }}
+              title="Zoom In (+)"
+            >
+              <ZoomIn size={15} />
+            </button>
+            <span style={{ fontSize: '11px', fontWeight: '800', color: '#00f0ff', padding: '0 4px', minWidth: '38px', textAlign: 'center' }}>
+              {Math.round(zoomLevel * 100)}%
+            </span>
+            <button
+              onClick={() => setZoomLevel(prev => Math.max(0.4, prev * 0.8))}
+              style={{ background: 'transparent', border: 'none', color: '#60a5fa', cursor: 'pointer', padding: '3px', display: 'flex', alignItems: 'center' }}
+              title="Zoom Out (-)"
+            >
+              <ZoomOut size={15} />
+            </button>
+            <button
+              onClick={() => { setZoomLevel(1.0); setPanOffset({ x: 0, y: 0 }); }}
+              style={{ background: 'rgba(255,255,255,0.08)', border: 'none', color: 'white', cursor: 'pointer', padding: '3px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: '700', marginLeft: '4px' }}
+              title="Reset Zoom & Pan"
+            >
+              Reset
+            </button>
+          </div>
+
+          {/* Timeframe Buttons */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '3px', background: 'rgba(0,0,0,0.3)', padding: '2px', borderRadius: '6px' }}>
+            {[
+              { id: '5', label: '5m', period: 'D', lookback: 5 },
+              { id: '15', label: '15m', period: 'D', lookback: 5 },
+              { id: '30', label: '30m', period: 'D', lookback: 5 },
+              { id: 'D', label: '1D', period: 'D', lookback: 30 },
+              { id: 'W', label: '50W', period: 'W', lookback: 50 },
+              { id: 'M', label: '25M', period: 'M_S', lookback: 25 },
+              { id: 'Y', label: '6Y', period: 'Y', lookback: 6 }
+            ].map((btn) => {
+              const isActive = btn.period === 'D'
+                ? (sessionPeriod === 'D' && timeframe === btn.id)
+                : (sessionPeriod === btn.period);
+              return (
+                <button
+                  key={btn.id}
+                  onClick={() => {
+                    setSessionPeriod(btn.period as any);
+                    setTimeframe(btn.period === 'D' ? btn.id : 'D');
+                    setLookbackDays(btn.lookback);
+                  }}
+                  style={{
+                    background: isActive ? '#3b82f6' : 'transparent',
+                    color: isActive ? 'white' : '#94a3b8',
+                    border: 'none',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    fontSize: '11px',
+                    fontWeight: '700',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {btn.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Lookback Days Selection (Dropdown) */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            background: 'rgba(0,0,0,0.35)',
+            padding: '2px 6px',
+            borderRadius: '6px',
+            border: '1px solid rgba(139, 92, 246, 0.35)'
+          }}>
+            <select
+              value={lookbackDays}
+              onChange={(e) => setLookbackDays(Number(e.target.value))}
+              style={{
+                background: 'transparent',
+                color: '#a78bfa',
+                border: 'none',
+                borderRadius: '4px',
+                padding: '3px 4px',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                outline: 'none'
+              }}
+              title="Select Lookback Days"
+            >
+              {[5, 10, 15, 20, 25, 30].map((d) => (
+                <option key={d} value={d} style={{ background: '#0f172a', color: '#ffffff' }}>
+                  {d}D
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Zoom Buttons */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '3px', background: '#2d2d2d', padding: '2px 5px', borderRadius: '3px', border: '1px solid #444444' }}>
-            <button onClick={() => setZoomLevel(prev => Math.max(0.4, prev * 0.8))} style={{ background: 'transparent', border: 'none', color: '#9ca3af', cursor: 'pointer', fontWeight: '900', padding: '0 2px' }}>
-              -
-            </button>
-            <span style={{ fontSize: '10px', fontWeight: '800', color: '#ffffff', padding: '0 2px' }}>
-              {Math.round(zoomLevel * 100)}%
-            </span>
-            <button onClick={() => setZoomLevel(prev => Math.min(5.0, prev * 1.25))} style={{ background: 'transparent', border: 'none', color: '#9ca3af', cursor: 'pointer', fontWeight: '900', padding: '0 2px' }}>
-              +
-            </button>
+          {/* Mode Selector Chips (T-V, T, V, T/V, GV, GVN) */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '3px', background: 'rgba(0,0,0,0.3)', padding: '2px', borderRadius: '6px' }}>
+            {[
+              { id: 'T-V', label: 'T-V (Split)' },
+              { id: 'T', label: 'T (TPO Only)' },
+              { id: 'V', label: 'V (Vol Only)' },
+              { id: 'T/V', label: 'T/V (Combined)' },
+              { id: 'GV', label: 'GV' },
+              { id: 'GVN', label: 'GVN' }
+            ].map((m) => (
+              <button
+                key={m.id}
+                onClick={() => setViewMode(m.id as any)}
+                style={{
+                  background: viewMode === m.id ? '#00f0ff' : 'transparent',
+                  color: viewMode === m.id ? '#000000' : '#94a3b8',
+                  border: 'none',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+                title={`View Mode: ${m.label}`}
+              >
+                {m.label}
+              </button>
+            ))}
           </div>
 
-          {/* Pin / Unpin */}
+          {/* 2-Day Balance Toggle */}
           <button
-            onClick={() => {
-              if (pinnedInfo) {
-                setPinnedInfo(null);
-              } else if (hoverInfo) {
-                setPinnedInfo(hoverInfo);
-              } else if (dayProfiles.length > 0) {
-                const latestProf = dayProfiles[dayProfiles.length - 1];
-                const pocBin = latestProf.bins.find(b => b.price === latestProf.pocPrice) || latestProf.bins[0];
-                setPinnedInfo({
-                  profile: latestProf,
-                  bin: pocBin,
-                  x: 150,
-                  y: 110
-                });
-              }
-            }}
+            onClick={() => setShowTwoDayBalance(prev => !prev)}
             style={{
+              background: showTwoDayBalance ? 'rgba(245, 158, 11, 0.2)' : 'rgba(0,0,0,0.3)',
+              color: showTwoDayBalance ? '#fbbf24' : '#94a3b8',
+              border: `1px solid ${showTwoDayBalance ? '#f59e0b' : 'rgba(255,255,255,0.08)'}`,
+              padding: '4px 10px',
+              borderRadius: '6px',
+              fontSize: '11px',
+              fontWeight: '700',
+              cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '3px',
-              background: pinnedInfo ? 'rgba(16, 185, 129, 0.22)' : '#2d2d2d',
-              color: pinnedInfo ? '#10b981' : '#9ca3af',
-              border: '1px solid #444444',
-              borderRadius: '3px',
-              padding: '3px 6px',
-              fontSize: '10px',
-              fontWeight: '700',
-              cursor: 'pointer'
+              gap: '4px'
             }}
-            title="Pin Session Info (P)"
+            title="Two-Day Balance Structure (High-Confidence Breakout Edge)"
           >
-            {pinnedInfo ? <PinOff size={12} /> : <Pin size={12} />}
+            <span>📦</span> 2D Balance {showTwoDayBalance ? 'ON' : 'OFF'}
           </button>
-
-          {/* Screenshot */}
-          <button
-            onClick={handleTakeScreenshot}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '3px',
-              background: '#2d2d2d',
-              color: '#9ca3af',
-              border: '1px solid #444444',
-              borderRadius: '3px',
-              padding: '3px 6px',
-              fontSize: '10px',
-              fontWeight: '700',
-              cursor: 'pointer'
-            }}
-            title="Take Screenshot"
-          >
-            <Camera size={12} />
-          </button>
-
-          {/* Pop Out */}
-          <button
-            onClick={handlePopOut}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '3px',
-              background: '#2d2d2d',
-              color: '#9ca3af',
-              border: '1px solid #444444',
-              borderRadius: '3px',
-              padding: '3px 6px',
-              fontSize: '10px',
-              fontWeight: '700',
-              cursor: 'pointer'
-            }}
-            title="Pop out into new window"
-          >
-            <ExternalLink size={12} />
-          </button>
-
-          {/* Fullscreen */}
-          <button
-            onClick={toggleFullscreen}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '3px',
-              background: isExpanded ? '#1d4ed8' : '#2d2d2d',
-              color: isExpanded ? '#ffffff' : '#9ca3af',
-              border: '1px solid #444444',
-              borderRadius: '3px',
-              padding: '3px 6px',
-              fontSize: '10px',
-              fontWeight: '700',
-              cursor: 'pointer'
-            }}
-            title={isExpanded ? 'Exit Fullscreen' : 'Fullscreen'}
-          >
-            {isExpanded ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
-          </button>
-
-          {onSwitchToChart && (
-            <button
-              onClick={onSwitchToChart}
-              style={{ background: '#10b981', border: 'none', color: '#ffffff', padding: '3px 8px', borderRadius: '3px', fontSize: '10px', fontWeight: '800', cursor: 'pointer' }}
-            >
-              CHART
-            </button>
-          )}
         </div>
 
+        {/* Row 2: Symbol Context & Secondary Action Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', paddingTop: '4px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <div style={{ background: '#ea580c', color: '#ffffff', fontWeight: '900', padding: '3px 8px', borderRadius: '4px', fontSize: '11px', letterSpacing: '0.5px' }}>
+              Pro TPO
+            </div>
+
+            {/* Symbol Selector */}
+            <select
+              value={symbol}
+              onChange={(e) => {
+                const newSym = e.target.value;
+                setSymbol(newSym);
+                if (onSymbolSelect) onSymbolSelect(newSym);
+              }}
+              style={{
+                background: '#1e293b',
+                color: '#ffffff',
+                border: '1px solid rgba(255,255,255,0.15)',
+                borderRadius: '4px',
+                padding: '4px 8px',
+                fontSize: '11px',
+                fontWeight: '800',
+                cursor: 'pointer',
+                outline: 'none'
+              }}
+            >
+              {QUICK_SYMBOLS.map(qs => (
+                <option key={qs.symbol} value={qs.symbol} style={{ background: '#1e293b', color: '#ffffff' }}>
+                  {qs.label}
+                </option>
+              ))}
+            </select>
+
+            {/* Dynamic Date & Time Range text */}
+            {dateRangeStr && (
+              <span style={{ fontSize: '11px', color: '#94a3b8', fontFamily: '"JetBrains Mono", monospace' }}>
+                {dateRangeStr}
+              </span>
+            )}
+          </div>
+
+          {/* Action Buttons: Pin, Screenshot, Refresh, Pop Out, Fullscreen, Chart */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => {
+                if (pinnedInfo) {
+                  setPinnedInfo(null);
+                } else if (hoverInfo) {
+                  setPinnedInfo(hoverInfo);
+                } else if (dayProfiles.length > 0) {
+                  const latestProf = dayProfiles[dayProfiles.length - 1];
+                  const pocBin = latestProf.bins.find(b => b.price === latestProf.pocPrice) || latestProf.bins[0];
+                  setPinnedInfo({
+                    profile: latestProf,
+                    bin: pocBin,
+                    x: 150,
+                    y: 110
+                  });
+                }
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '3px',
+                background: pinnedInfo ? 'rgba(16, 185, 129, 0.22)' : 'rgba(0,0,0,0.4)',
+                color: pinnedInfo ? '#10b981' : '#9ca3af',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '4px',
+                padding: '4px 8px',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer'
+              }}
+              title="Pin Session Info (P)"
+            >
+              {pinnedInfo ? <PinOff size={12} /> : <Pin size={12} />}
+              <span>Pin Info (P)</span>
+            </button>
+
+            <button
+              onClick={handleTakeScreenshot}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '3px',
+                background: 'rgba(0,0,0,0.4)',
+                color: '#00f0ff',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '4px',
+                padding: '4px 8px',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer'
+              }}
+              title="Take Screenshot"
+            >
+              <Camera size={12} />
+              <span>Screenshot</span>
+            </button>
+
+            <button
+              onClick={() => fetchCandles(false)}
+              style={{
+                background: 'rgba(0,0,0,0.4)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                color: '#9ca3af',
+                cursor: 'pointer',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                display: 'flex',
+                alignItems: 'center'
+              }}
+              title="Refresh Data"
+            >
+              <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
+            </button>
+
+            <button
+              onClick={handlePopOut}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '3px',
+                background: 'rgba(0,0,0,0.4)',
+                color: '#9ca3af',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '4px',
+                padding: '4px 8px',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer'
+              }}
+              title="Pop out into new window"
+            >
+              <ExternalLink size={12} />
+              <span>Pop Out</span>
+            </button>
+
+            <button
+              onClick={toggleFullscreen}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '3px',
+                background: isExpanded ? '#1d4ed8' : 'rgba(0,0,0,0.4)',
+                color: isExpanded ? '#ffffff' : '#9ca3af',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '4px',
+                padding: '4px 8px',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer'
+              }}
+              title={isExpanded ? 'Exit Fullscreen' : 'Fullscreen'}
+            >
+              {isExpanded ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
+              <span>Fullscreen</span>
+            </button>
+
+            {onSwitchToChart && (
+              <button
+                onClick={onSwitchToChart}
+                style={{ background: '#10b981', border: 'none', color: '#ffffff', padding: '4px 10px', borderRadius: '4px', fontSize: '11px', fontWeight: '800', cursor: 'pointer' }}
+              >
+                CHART
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Main Canvas Viewport */}
@@ -1780,58 +2628,21 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
           overflow: 'hidden'
         }}
       >
-        {/* Floating Scroll Arrows */}
-        <button
-          onClick={() => setPanOffset(prev => ({ ...prev, x: prev.x + 240 }))}
-          style={{
-            position: 'absolute',
-            left: '140px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            zIndex: 15,
-            background: isDark ? 'rgba(32, 32, 32, 0.9)' : 'rgba(255, 255, 255, 0.9)',
-            border: `1px solid ${isDark ? '#444444' : '#cbd5e1'}`,
-            color: isDark ? '#d1d5db' : '#475569',
-            padding: '10px 6px',
-            borderRadius: '6px',
-            cursor: 'pointer'
-          }}
-          title="Scroll Left"
-        >
-          <ChevronLeft size={20} />
-        </button>
-
-        <button
-          onClick={() => setPanOffset(prev => ({ ...prev, x: prev.x - 240 }))}
-          style={{
-            position: 'absolute',
-            right: '85px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            zIndex: 15,
-            background: isDark ? 'rgba(32, 32, 32, 0.9)' : 'rgba(255, 255, 255, 0.9)',
-            border: `1px solid ${isDark ? '#444444' : '#cbd5e1'}`,
-            color: isDark ? '#d1d5db' : '#475569',
-            padding: '10px 6px',
-            borderRadius: '6px',
-            cursor: 'pointer'
-          }}
-          title="Scroll Right"
-        >
-          <ChevronRight size={20} />
-        </button>
-
         <canvas
           ref={canvasRef}
           onMouseDown={handleCanvasMouseDown}
           onMouseMove={handleCanvasMouseMove}
           onMouseUp={handleCanvasMouseUp}
+          onTouchStart={handleCanvasTouchStart}
+          onTouchMove={handleCanvasTouchMove}
+          onTouchEnd={handleCanvasTouchEnd}
+          onTouchCancel={handleCanvasTouchEnd}
           onMouseLeave={() => {
             setDragMode('none');
             setCrosshairPos(null);
             if (!pinnedInfo) setHoverInfo(null);
           }}
-          style={{ cursor: cursorStyle, display: 'block' }}
+          style={{ cursor: cursorStyle, display: 'block', touchAction: 'none' }}
         />
 
         {/* Hover / Pinned Tooltip Overlay */}
@@ -2061,6 +2872,121 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
         </div>
       )}
 
+      {/* Bottom Horizontal Quick Scroll Bar & Touch Zoom Controls (Matches Market Profile bottom bar) */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '10px',
+        padding: '8px 12px',
+        background: '#0b111b',
+        borderTop: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: '4px',
+        flexWrap: 'wrap'
+      }}>
+        <button
+          onClick={() => setPanOffset(prev => ({ ...prev, x: prev.x + 240 }))}
+          style={{
+            background: '#1e293b',
+            border: '1px solid rgba(0, 240, 255, 0.3)',
+            color: '#60a5fa',
+            padding: '7px 14px',
+            borderRadius: '6px',
+            fontSize: '11px',
+            fontWeight: '800',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px'
+          }}
+          title="Scroll chart to the left to view older sessions"
+        >
+          <ChevronLeft size={16} /> ◀ SCROLL LEFT (OLDER)
+        </button>
+
+        <button
+          onClick={() => { setPanOffset({ x: 0, y: 0 }); setZoomLevel(1.0); }}
+          style={{
+            background: 'rgba(0, 240, 255, 0.15)',
+            border: '1px solid #00f0ff',
+            color: '#00f0ff',
+            padding: '7px 16px',
+            borderRadius: '6px',
+            fontSize: '11px',
+            fontWeight: '800',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px'
+          }}
+          title="Reset zoom & return to the latest session"
+        >
+          🎯 RESET TO LATEST
+        </button>
+
+        <button
+          onClick={() => setPanOffset(prev => ({ ...prev, x: prev.x - 240 }))}
+          style={{
+            background: '#1e293b',
+            border: '1px solid rgba(0, 240, 255, 0.3)',
+            color: '#60a5fa',
+            padding: '7px 14px',
+            borderRadius: '6px',
+            fontSize: '11px',
+            fontWeight: '800',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px'
+          }}
+          title="Scroll chart to the right to view recent sessions"
+        >
+          SCROLL RIGHT (RECENT) ▶ <ChevronRight size={16} />
+        </button>
+
+        {/* Touch Zoom Buttons */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginLeft: '6px' }}>
+          <button
+            onClick={() => setZoomLevel(prev => Math.min(prev * 1.25, 4.0))}
+            style={{
+              background: '#1e293b',
+              border: '1px solid rgba(255,255,255,0.2)',
+              color: '#38bdf8',
+              padding: '6px 12px',
+              borderRadius: '6px',
+              fontSize: '12px',
+              fontWeight: '800',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+            title="Zoom In"
+          >
+            <ZoomIn size={14} /> +
+          </button>
+          <button
+            onClick={() => setZoomLevel(prev => Math.max(prev * 0.8, 0.25))}
+            style={{
+              background: '#1e293b',
+              border: '1px solid rgba(255,255,255,0.2)',
+              color: '#38bdf8',
+              padding: '6px 12px',
+              borderRadius: '6px',
+              fontSize: '12px',
+              fontWeight: '800',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+            title="Zoom Out"
+          >
+            <ZoomOut size={14} /> -
+          </button>
+        </div>
+      </div>
+
       {/* Bottom Mode Selector Toolbar */}
       {!isExpanded && (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0a0a0a', padding: '6px 10px', borderRadius: '4px', border: '1px solid #1f1f1f', flexWrap: 'wrap', gap: '6px' }}>
@@ -2075,7 +3001,13 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
                   if (p === 'Y') {
                     setTimeframe('D');
                     setLookbackDays(6);
-                  } else if (sessionPeriod === 'Y') {
+                  } else if (p === 'M_S') {
+                    setTimeframe('D');
+                    setLookbackDays(25);
+                  } else if (p === 'W' || p === 'W_S') {
+                    setTimeframe('D');
+                    setLookbackDays(50);
+                  } else {
                     setLookbackDays(5);
                   }
                 }}
@@ -2090,7 +3022,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
                   cursor: 'pointer'
                 }}
               >
-                {p === 'Y' ? 'Y (6Y)' : p}
+                {p === 'Y' ? 'Y (6Y)' : p === 'M_S' ? 'M (25M)' : p === 'W' ? 'W (50W)' : p === 'W_S' ? 'W_S (50W)' : p}
               </button>
             ))}
           </div>
