@@ -185,7 +185,8 @@ export const HomeContainer: React.FC<HomeContainerProps> = ({
         gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))',
         gap: '6px',
         width: '100%',
-        minHeight: '440px',
+        minHeight: '480px',
+        height: '520px',
         flex: 1,
         boxSizing: 'border-box'
       }}>
@@ -196,7 +197,7 @@ export const HomeContainer: React.FC<HomeContainerProps> = ({
           flexDirection: 'column',
           width: '100%',
           height: '100%',
-          minHeight: '400px',
+          minHeight: '460px',
           background: isDark ? 'rgba(15, 23, 42, 0.45)' : '#ffffff',
           borderRadius: '8px',
           border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0'}`,
@@ -237,7 +238,7 @@ export const HomeContainer: React.FC<HomeContainerProps> = ({
           flexDirection: 'column',
           width: '100%',
           height: '100%',
-          minHeight: '400px',
+          minHeight: '460px',
           background: isDark ? 'rgba(15, 23, 42, 0.45)' : '#ffffff',
           borderRadius: '8px',
           border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0'}`,

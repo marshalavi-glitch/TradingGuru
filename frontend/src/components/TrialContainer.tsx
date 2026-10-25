@@ -477,28 +477,41 @@ export const TrialContainer: React.FC<TrialContainerProps> = ({
     };
   }, [dayProfiles, tpoSize]);
 
-  // Container resize listener
+  // Container resize listener with ResizeObserver for dynamic flex container fitting
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(typeof window !== 'undefined' && window.innerWidth <= 768);
       if (canvasContainerRef.current) {
         const clientH = canvasContainerRef.current.clientHeight;
+        const clientW = canvasContainerRef.current.clientWidth;
         const targetH = isExpanded || isStandalone
           ? Math.max(650, window.innerHeight - 65)
-          : Math.max(280, clientH || 380);
-        setDimensions({
-          width: canvasContainerRef.current.clientWidth,
-          height: targetH
-        });
+          : Math.max(380, clientH);
+        if (clientW > 0 && targetH > 0) {
+          setDimensions({
+            width: clientW,
+            height: targetH
+          });
+        }
       }
     };
+
     window.addEventListener('resize', handleResize);
     handleResize();
 
-    const timer = setTimeout(handleResize, 100);
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined' && canvasContainerRef.current) {
+      ro = new ResizeObserver(() => {
+        handleResize();
+      });
+      ro.observe(canvasContainerRef.current);
+    }
+
+    const timer = setTimeout(handleResize, 150);
     return () => {
       window.removeEventListener('resize', handleResize);
       clearTimeout(timer);
+      if (ro) ro.disconnect();
     };
   }, [isExpanded, isStandalone]);
 
@@ -1032,13 +1045,14 @@ export const TrialContainer: React.FC<TrialContainerProps> = ({
         bottom: isExpanded ? 0 : 'auto',
         zIndex: isExpanded ? 999999 : 'auto',
         width: isExpanded ? '100vw' : '100%',
-        height: isExpanded || isStandalone ? '100vh' : 'auto',
+        height: isExpanded || isStandalone ? '100vh' : '100%',
+        flex: 1,
         margin: 0,
-        padding: isExpanded ? '10px 14px' : '16px',
+        padding: isExpanded ? '10px 14px' : '6px 8px',
         backgroundColor: isExpanded ? (!isDark ? '#f8fafc' : (theme === 'dark-slate' ? '#0f172a' : '#090d16')) : undefined,
-        gap: isExpanded ? '10px' : '16px',
+        gap: isExpanded ? '10px' : '6px',
         boxSizing: 'border-box',
-        overflowY: isExpanded || isStandalone ? 'hidden' : 'auto'
+        overflow: 'hidden'
       }}
     >
       {/* Controls Toolbar (Exact same navigation & features as Market Profile) */}
@@ -1339,7 +1353,7 @@ export const TrialContainer: React.FC<TrialContainerProps> = ({
           position: 'relative', 
           width: '100%', 
           flex: 1,
-          minHeight: isExpanded || isStandalone ? '500px' : (typeof window !== 'undefined' && window.innerWidth <= 768 ? '360px' : '280px'),
+          minHeight: isExpanded || isStandalone ? '500px' : (typeof window !== 'undefined' && window.innerWidth <= 768 ? '360px' : '380px'),
           height: isExpanded || isStandalone ? 'calc(100vh - 65px)' : '100%',
           backgroundColor: theme === 'dark-slate' ? '#181c27' : '#0d1017', 
           borderRadius: isExpanded ? '0' : '8px', 
