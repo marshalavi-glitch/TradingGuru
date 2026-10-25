@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { ChartContainer } from './ChartContainer';
-import { TrialContainer } from './TrialContainer';
 import { tvStreamer, getBackendHttpUrl } from '../utils/tvStreamer';
 import type { Candle } from '../utils/profileCalculator';
 import { calculateMatrixSeriesData, type MatrixSeriesData } from '../utils/matrixCalculator';
@@ -16,7 +15,7 @@ export interface MultiChartSlot {
 
 const DEFAULT_SLOTS: MultiChartSlot[] = [
   { id: 0, symbol: 'NSE:NIFTY', timeframe: '5' },
-  { id: 1, symbol: 'NSE:NIFTY', timeframe: '30' },
+  { id: 1, symbol: 'NSE:BANKNIFTY', timeframe: '5' },
   { id: 2, symbol: 'NSE:FINNIFTY', timeframe: '5' },
   { id: 3, symbol: 'NSE:RELIANCE', timeframe: '5' },
   { id: 4, symbol: 'MCX:CRUDEOIL', timeframe: '5' },
@@ -575,22 +574,6 @@ export const MultiChartContainer: React.FC<MultiChartContainerProps> = ({
           (() => {
             const maxSlot = slots.find((s) => s.id === maximizedChartId) || slots[0];
             const maxIndex = slots.findIndex((s) => s.id === maxSlot.id);
-            if (layout === 2 && maxSlot.id === 1) {
-              return (
-                <div style={{ width: '100%', height: '100%', minHeight: 0, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-                  <TrialContainer
-                    selectedSymbol={maxSlot.symbol || currentSymbol || 'NSE:NIFTY'}
-                    initialTimeframe="30"
-                    initialLookbackDays={1}
-                    singleDayOnly={true}
-                    onSymbolSelect={(sym) => {
-                      handlePaneSymbolChange(maxSlot.id, sym);
-                      if (onActiveSymbolChange) onActiveSymbolChange(sym);
-                    }}
-                  />
-                </div>
-              );
-            }
             return (
               <div style={{ width: '100%', height: '100%', minHeight: 0, minWidth: 0 }}>
                 <ChartSlotPane
@@ -622,22 +605,6 @@ export const MultiChartContainer: React.FC<MultiChartContainerProps> = ({
           (() => {
             const currentSlot = slots.find((s) => s.id === activeChartId) || visibleSlots[0];
             const currentIndex = visibleSlots.findIndex((s) => s.id === currentSlot.id);
-            if (layout === 2 && currentSlot.id === 1) {
-              return (
-                <div style={{ width: '100%', height: '100%', minHeight: 0, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-                  <TrialContainer
-                    selectedSymbol={currentSlot.symbol || currentSymbol || 'NSE:NIFTY'}
-                    initialTimeframe="30"
-                    initialLookbackDays={1}
-                    singleDayOnly={true}
-                    onSymbolSelect={(sym) => {
-                      handlePaneSymbolChange(currentSlot.id, sym);
-                      if (onActiveSymbolChange) onActiveSymbolChange(sym);
-                    }}
-                  />
-                </div>
-              );
-            }
             return (
               <div style={{ width: '100%', height: '100%', minHeight: 0, minWidth: 0 }}>
                 <ChartSlotPane
@@ -668,25 +635,6 @@ export const MultiChartContainer: React.FC<MultiChartContainerProps> = ({
           // Render all visible slots in CSS Grid
           visibleSlots.map((slot, index) => {
             const isActive = activeChartId === slot.id;
-
-            // In 2-chart layout, second chart is replaced with TrialContainer (30m candles, Volume Delta, TPO, today only)
-            if (layout === 2 && index === 1) {
-              return (
-                <div key={`grid-${slot.id}`} style={{ ...getCellGridStyle(index), display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, minWidth: 0, overflow: 'hidden' }}>
-                  <TrialContainer
-                    selectedSymbol={slot.symbol || currentSymbol || 'NSE:NIFTY'}
-                    initialTimeframe="30"
-                    initialLookbackDays={1}
-                    singleDayOnly={true}
-                    onSymbolSelect={(sym) => {
-                      handlePaneSymbolChange(slot.id, sym);
-                      if (onActiveSymbolChange) onActiveSymbolChange(sym);
-                    }}
-                  />
-                </div>
-              );
-            }
-
             return (
               <div key={`grid-${slot.id}`} style={getCellGridStyle(index)}>
                 <ChartSlotPane

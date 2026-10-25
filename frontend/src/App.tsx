@@ -35,10 +35,12 @@ import { Test2Container } from './components/Test2Container';
 import { Mp3DayPatternContainer } from './components/Mp3DayPatternContainer';
 import { LoginScreen, getStoredAuthUser, clearStoredAuthUser, AUTH_EPOCH_KEY, CURRENT_AUTH_EPOCH } from './components/LoginScreen';
 import { UserManagementModal } from './components/UserManagementModal';
+import { HomeContainer } from './components/HomeContainer';
 import { HomeBottomWidgets } from './components/HomeBottomWidgets';
 import { WATCHLIST_DATA } from './data/watchlistData';
 
 export type TabType = 
+  | 'home'
   | 'chart' | 'fifteen_min' 
   | 'scanner' | 'options' | 'signals' | 'doji' | 'doji_novol' 
   | 'hourly_updates' | 'backtest_results' 
@@ -140,6 +142,7 @@ function sanitizeFavoriteTabs(raw: any): TabType[] {
 }
 
 const TABS_LIST: TabItem[] = [
+  { id: 'home', label: '🏠 Home', color: '#38bdf8' },
   { id: 'manual_trades', label: '📝 Manual Trades', color: '#10b981' },
   { id: 'test', label: '📊 Orderflow Chart', color: '#38bdf8' },
   { id: 'test2', label: '🛡️ Test 2: Exhaustion Radar', color: '#ef4444', badge: 'PRO' },
@@ -1056,6 +1059,31 @@ function App() {
             overflowY: 'auto' 
           }}
         >
+          {/* HOME TAB (Prominent Blue Home Pill Matching Screenshot) */}
+          <button
+            onClick={() => setActiveTab('home')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '7px 10px',
+              marginBottom: '8px',
+              borderRadius: '6px',
+              border: activeTab === 'home' ? '1px solid #38bdf8' : '1px solid transparent',
+              background: activeTab === 'home' ? (isDark ? '#0284c7' : '#e0f2fe') : (isDark ? 'rgba(255, 255, 255, 0.04)' : '#f1f5f9'),
+              color: activeTab === 'home' ? '#ffffff' : 'var(--text-primary)',
+              fontSize: '11.5px',
+              fontWeight: '800',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+              width: '100%',
+              boxSizing: 'border-box'
+            }}
+          >
+            <span style={{ fontSize: '13px' }}>🏠</span>
+            <span>Home</span>
+          </button>
+
           {/* FAVORITES SECTION (Direct access to starred tabs) */}
           <div style={{ marginBottom: '8px', paddingBottom: '6px', borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0'}` }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '2px 4px' }}>
@@ -1499,75 +1527,39 @@ function App() {
               onSwitchToChart={() => setActiveTab('chart')}
             />
           </TabErrorBoundary>
+        ) : activeTab === 'home' ? (
+          <TabErrorBoundary tabName="Home">
+            <HomeContainer
+              currentSymbol={symbol}
+              onSymbolSelect={setSymbol}
+              onSwitchTab={(t) => setActiveTab(t as TabType)}
+              levelAlert={levelAlert}
+              onCloseLevelAlert={handleCloseLevelAlert}
+              onResetSetupAlerts={handleResetSetupAlerts}
+              levelAlertsMuted={levelAlertsMuted}
+              onToggleAlertsMuted={() => setLevelAlertsMuted(!levelAlertsMuted)}
+              levelAlertsFiredCount={levelAlertsFiredCount}
+            />
+          </TabErrorBoundary>
         ) : (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, minWidth: 0, height: '100%', width: '100%', overflowY: 'auto', gap: '8px' }}>
-            {/* Top Sub-Tab Navigation Bar matching screenshot */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '4px 6px',
-              background: isDark ? 'rgba(15, 23, 42, 0.45)' : '#ffffff',
-              borderRadius: '8px',
-              border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0'}`,
-              flexShrink: 0
-            }}>
-              {[
-                { id: 'chart', label: 'Chart' },
-                { id: 'test', label: 'Orderflow' },
-                { id: 'footprint_chart', label: 'Footprint' },
-                { id: 'market_profile', label: 'Market Profile' },
-                { id: 'cvd_adv', label: 'Volume Profile' },
-                { id: 'sr_breakout', label: 'VSA' }
-              ].map((tab) => {
-                const isActive = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id as TabType)}
-                    style={{
-                      padding: '4px 14px',
-                      fontSize: '11px',
-                      fontWeight: '700',
-                      borderRadius: '6px',
-                      border: 'none',
-                      background: isActive ? '#0284c7' : 'transparent',
-                      color: isActive ? '#ffffff' : 'var(--text-secondary)',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease'
-                    }}
-                  >
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Split 2-Chart Workspace */}
-            <div style={{ flex: 1, minHeight: '440px', width: '100%', display: 'flex', flexDirection: 'column' }}>
-              <TabErrorBoundary tabName="Candlestick Chart">
-                <MultiChartContainer
-                  currentSymbol={symbol}
-                  currentTimeframe={timeframe}
-                  layout={multiChartLayout}
-                  syncSymbol={syncSymbol}
-                  onLayoutChange={handleLayoutChange}
-                  onToggleSyncSymbol={handleToggleSyncSymbol}
-                  onActiveSymbolChange={(newSym) => setSymbol(newSym)}
-                  onActiveTimeframeChange={(newTf) => setTimeframe(newTf)}
-                  levelAlert={levelAlert}
-                  onCloseLevelAlert={handleCloseLevelAlert}
-                  onResetSetupAlerts={handleResetSetupAlerts}
-                  levelAlertsMuted={levelAlertsMuted}
-                  onToggleAlertsMuted={() => setLevelAlertsMuted(!levelAlertsMuted)}
-                  levelAlertsFiredCount={levelAlertsFiredCount}
-                />
-              </TabErrorBoundary>
-            </div>
-
-            {/* Bottom Widgets: Top Movers (Gainers) & Market Breadth */}
-            <TabErrorBoundary tabName="Home Bottom Widgets">
-              <HomeBottomWidgets onSymbolSelect={setSymbol} />
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, minWidth: 0, height: '100%', width: '100%', overflow: 'hidden' }}>
+            <TabErrorBoundary tabName="Candlestick Chart">
+              <MultiChartContainer
+                currentSymbol={symbol}
+                currentTimeframe={timeframe}
+                layout={multiChartLayout}
+                syncSymbol={syncSymbol}
+                onLayoutChange={handleLayoutChange}
+                onToggleSyncSymbol={handleToggleSyncSymbol}
+                onActiveSymbolChange={(newSym) => setSymbol(newSym)}
+                onActiveTimeframeChange={(newTf) => setTimeframe(newTf)}
+                levelAlert={levelAlert}
+                onCloseLevelAlert={handleCloseLevelAlert}
+                onResetSetupAlerts={handleResetSetupAlerts}
+                levelAlertsMuted={levelAlertsMuted}
+                onToggleAlertsMuted={() => setLevelAlertsMuted(!levelAlertsMuted)}
+                levelAlertsFiredCount={levelAlertsFiredCount}
+              />
             </TabErrorBoundary>
           </div>
         )}
@@ -1693,6 +1685,7 @@ function App() {
             boxSizing: 'border-box'
           }}>
             {[
+              { id: 'home', label: 'Home', icon: '🏠' },
               { id: 'chart', label: 'Chart', icon: '📈' },
               { id: 'pro_market_profile', label: 'Pro TPO', icon: '🏛️' },
               { id: 'footprint_chart', label: 'Footprint', icon: '👣' },
