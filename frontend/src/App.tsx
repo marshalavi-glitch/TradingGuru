@@ -3,6 +3,7 @@ import { useTheme } from './context/ThemeContext';
 import { DashboardHeader } from './components/DashboardHeader';
 import { TopMarketTickerBar } from './components/TopMarketTickerBar';
 import { ChartContainer } from './components/ChartContainer';
+import { MultiChartContainer } from './components/MultiChartContainer';
 import { tvStreamer, getBackendHttpUrl } from './utils/tvStreamer';
 import type { Candle } from './utils/profileCalculator';
 import { calculateMatrixSeriesData } from './utils/matrixCalculator';
@@ -16,41 +17,33 @@ import { ScannerContainer } from './components/ScannerContainer';
 import { OptionsChain } from './components/OptionsChain';
 import { SignalsContainer } from './components/SignalsContainer';
 import { DojiContainer } from './components/DojiContainer';
-import { VolumeContainer } from './components/VolumeContainer';
-import { OpeningBiasContainer } from './components/OpeningBiasContainer';
-import { EarlyPicksContainer } from './components/EarlyPicksContainer';
-import { DadaThoughtsContainer } from './components/DadaThoughtsContainer';
 import { HourlyUpdatesContainer } from './components/HourlyUpdatesContainer';
 import { BacktestResultsContainer } from './components/BacktestResultsContainer';
 import { FifteenMinForensicContainer } from './components/FifteenMinForensicContainer';
 import { Nr7BreakoutContainer } from './components/Nr7BreakoutContainer';
-import { OrderFlowContainer } from './components/OrderFlowContainer';
 import { CvdAdvContainer } from './components/CvdAdvContainer';
 import { HeatMapContainer } from './components/HeatMapContainer';
 import { MarketProfileContainer } from './components/MarketProfileContainer';
 import { ProMarketProfileContainer } from './components/ProMarketProfileContainer';
+import { TrialContainer } from './components/TrialContainer';
 import { FootprintChartContainer } from './components/FootprintChartContainer';
-import { VsaContainer } from './components/VsaContainer';
 import { HighBetaTradesContainer } from './components/HighBetaTradesContainer';
 import { ManualTradesContainer } from './components/ManualTradesContainer';
-import { ValueBreakoutContainer } from './components/ValueBreakoutContainer';
 import { SrBreakoutContainer } from './components/SrBreakoutContainer';
 import { TestContainer } from './components/TestContainer';
 import { Test2Container } from './components/Test2Container';
-import { TestingContainer } from './components/TestingContainer';
-import { LogicTestContainer } from './components/LogicTestContainer';
 import { Mp3DayPatternContainer } from './components/Mp3DayPatternContainer';
-import { OrderFlowReportContainer } from './components/OrderFlowReportContainer';
 import { LoginScreen, getStoredAuthUser, clearStoredAuthUser, AUTH_EPOCH_KEY, CURRENT_AUTH_EPOCH } from './components/LoginScreen';
 import { UserManagementModal } from './components/UserManagementModal';
+import { HomeBottomWidgets } from './components/HomeBottomWidgets';
 import { WATCHLIST_DATA } from './data/watchlistData';
 
 export type TabType = 
-  | 'chart' | 'logic_test' | 'dada_thoughts' | 'fifteen_min' 
-  | 'scanner' | 'options' | 'signals' | 'doji' | 'doji_novol' | 'volume' 
-  | 'opening_bias' | 'hourly_updates' | 'backtest_results' 
-  | 'early_picks' | 'nr7_breakout' | 'order_flow' 
-  | 'cvd_adv' | 'heatmap' | 'market_profile' | 'pro_market_profile' | 'mp_3day_pattern' | 'value_breakout' | 'footprint_chart' | 'vsa' | 'high_beta' | 'manual_trades' | 'sr_breakout' | 'test' | 'test2' | 'testing' | 'report';
+  | 'chart' | 'fifteen_min' 
+  | 'scanner' | 'options' | 'signals' | 'doji' | 'doji_novol' 
+  | 'hourly_updates' | 'backtest_results' 
+  | 'nr7_breakout' 
+  | 'cvd_adv' | 'heatmap' | 'market_profile' | 'pro_market_profile' | 'trial' | 'mp_3day_pattern' | 'footprint_chart' | 'high_beta' | 'manual_trades' | 'sr_breakout' | 'test' | 'test2';
 
 interface TabItem {
   id: TabType;
@@ -70,10 +63,9 @@ const TOOL_GROUPS: ToolGroup[] = [
     name: 'Charts',
     items: [
       { id: 'chart', label: 'Candlestick' },
-      { id: 'testing', label: 'Testing' },
-      { id: 'logic_test', label: 'Logic Test' },
       { id: 'market_profile', label: 'Market Profile' },
       { id: 'pro_market_profile', label: 'Pro TPO' },
+      { id: 'trial', label: 'Trial Tab' },
       { id: 'test', label: 'Orderflow Chart' }
     ]
   },
@@ -81,7 +73,6 @@ const TOOL_GROUPS: ToolGroup[] = [
     name: 'Signals',
     items: [
       { id: 'scanner', label: 'Scanner' },
-      { id: 'report', label: 'Order Flow Report' },
       { id: 'mp_3day_pattern', label: 'MP 3-Day Pattern' },
       { id: 'backtest_results', label: 'Live Math' },
       { id: 'options', label: 'Options Chain' },
@@ -94,32 +85,25 @@ const TOOL_GROUPS: ToolGroup[] = [
     name: 'Breakouts',
     items: [
       { id: 'sr_breakout', label: 'SR Breakout' },
-      { id: 'volume', label: 'Volume' },
-      { id: 'value_breakout', label: 'Value' },
       { id: 'high_beta', label: 'High Beta Trades' },
-      { id: 'early_picks', label: 'Early Picks' },
       { id: 'nr7_breakout', label: '20% UC Potential' }
     ]
   },
   {
     name: 'Flow',
     items: [
-      { id: 'footprint_chart', label: 'Footprint' },
-      { id: 'vsa', label: 'VSA' },
-      { id: 'order_flow', label: 'Lucky Flow' }
+      { id: 'footprint_chart', label: 'Footprint' }
     ]
   },
   {
     name: 'Others',
     items: [
       { id: 'manual_trades', label: 'Manual Trades' },
-      { id: 'test2', label: 'Test 2' },
+      { id: 'test2', label: 'Test 2 (Exhaustion Radar)' },
       { id: 'cvd_adv', label: 'CVD / ADV' },
       { id: 'heatmap', label: 'Heat Map' },
       { id: 'doji', label: 'First Doji' },
-      { id: 'doji_novol', label: 'Doji (No Vol)' },
-      { id: 'opening_bias', label: 'Opening Bias' },
-      { id: 'dada_thoughts', label: 'Dada Thoughts' }
+      { id: 'doji_novol', label: 'Doji (No Vol)' }
     ]
   }
 ];
@@ -156,22 +140,17 @@ function sanitizeFavoriteTabs(raw: any): TabType[] {
 }
 
 const TABS_LIST: TabItem[] = [
-  { id: 'logic_test', label: '🔬 Logic Test', color: '#00f0ff', badge: 'NEW' },
-  { id: 'report', label: '📑 Order Flow Report', color: '#10b981', badge: '1000' },
-  { id: 'testing', label: '🧪 Testing', color: '#ec4899', badge: 'NEW' },
   { id: 'manual_trades', label: '📝 Manual Trades', color: '#10b981' },
   { id: 'test', label: '📊 Orderflow Chart', color: '#38bdf8' },
-  { id: 'test2', label: '🧪 Test 2', color: '#8b5cf6' },
+  { id: 'test2', label: '🛡️ Test 2: Exhaustion Radar', color: '#ef4444', badge: 'PRO' },
   { id: 'sr_breakout', label: '🎯 SR Breakout', color: '#06b6d4' },
   { id: 'chart', label: '📈 Candlestick Chart', color: '#3b82f6' },
   { id: 'market_profile', label: '🏛️ Market Profile', color: '#00f0ff' },
   { id: 'pro_market_profile', label: '🏛️ Pro TPO Profile', color: '#60a5fa' },
+  { id: 'trial', label: '🏛️ Trial', color: '#f59e0b', badge: 'NEW' },
   { id: 'mp_3day_pattern', label: '🏛️ MP - 3 Day Pattern', color: '#ec4899', badge: 'NEW' },
-  { id: 'value_breakout', label: '⚡ Value Breakout', color: '#f59e0b' },
   { id: 'high_beta', label: '🚀 High Beta Trades', color: '#f97316' },
-  { id: 'vsa', label: '📊 VSA', color: '#a855f7' },
   { id: 'footprint_chart', label: '👣 Footprint', color: '#34d399' },
-  { id: 'order_flow', label: '🍀 Lucky Flow', color: '#10b981' },
   { id: 'cvd_adv', label: '📊 CVD / ADV', color: '#60a5fa' },
   { id: 'heatmap', label: '🔥 Heat Map', color: '#f87171' },
   { id: 'scanner', label: '🔍 Scanner', color: '#3b82f6' },
@@ -182,11 +161,7 @@ const TABS_LIST: TabItem[] = [
   { id: 'signals', label: '📡 Signals', color: '#3b82f6' },
   { id: 'doji', label: '🎯 First Doji', color: '#3b82f6' },
   { id: 'doji_novol', label: '🎯 Doji (No Vol)', color: '#3b82f6' },
-  { id: 'volume', label: '📊 Volume Breakouts', color: '#3b82f6' },
-  { id: 'opening_bias', label: '🌅 Opening Bias', color: '#3b82f6' },
-  { id: 'early_picks', label: '🌅 Early Picks', color: '#3b82f6' },
-  { id: 'nr7_breakout', label: '🚀 20% UC Potential', color: '#f59e0b' },
-  { id: 'dada_thoughts', label: '🧠 Dada Thoughts', color: '#eab308' }
+  { id: 'nr7_breakout', label: '🚀 20% UC Potential', color: '#f59e0b' }
 ];
 
 function App() {
@@ -306,6 +281,40 @@ function App() {
     } catch (e) {}
     return '5';
   });
+  const [multiChartLayout, setMultiChartLayout] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('tradingguru_multichart_layout');
+      if (saved) {
+        const val = parseInt(saved, 10);
+        if (val >= 1 && val <= 6) return val;
+      }
+    } catch {}
+    return 2;
+  });
+  const [syncSymbol, setSyncSymbol] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('tradingguru_multichart_sync_symbol');
+      if (saved !== null) return saved === 'true';
+    } catch {}
+    return true;
+  });
+
+  const handleLayoutChange = (newLayout: number) => {
+    setMultiChartLayout(newLayout);
+    try {
+      localStorage.setItem('tradingguru_multichart_layout', String(newLayout));
+    } catch {}
+  };
+
+  const handleToggleSyncSymbol = () => {
+    setSyncSymbol((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('tradingguru_multichart_sync_symbol', String(next));
+      } catch {}
+      return next;
+    });
+  };
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
   const [candles, setCandles] = useState<Candle[]>([]);
   const [matrixHistory, setMatrixHistory] = useState<Record<string, any> | null>(null);
@@ -792,6 +801,8 @@ function App() {
   const [watchlistSearch, setWatchlistSearch] = useState('');
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
   const [isWatchlistDrawerOpen, setIsWatchlistDrawerOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mobileMenuTab, setMobileMenuTab] = useState<'watchlist' | 'favorites' | 'tools'>('watchlist');
 
   const filteredWatchlist = useMemo(() => {
     const list = WATCHLIST_DATA[watchlistCategory] || [];
@@ -854,7 +865,7 @@ function App() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: isStandalone ? '0' : '6px', width: '100%', minHeight: '100vh', height: (isStandalone || activeTab === 'chart' || activeTab === 'testing' || activeTab === 'logic_test') ? '100vh' : 'auto', maxHeight: (isStandalone || activeTab === 'chart' || activeTab === 'testing' || activeTab === 'logic_test') ? '100vh' : 'none', boxSizing: 'border-box', overflowY: (isStandalone || activeTab === 'chart' || activeTab === 'testing' || activeTab === 'logic_test') ? 'hidden' : 'auto' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: isStandalone ? '0' : '6px', width: '100%', minHeight: '100vh', height: (isStandalone || activeTab === 'chart' || activeTab === 'testing') ? '100vh' : 'auto', maxHeight: (isStandalone || activeTab === 'chart' || activeTab === 'testing') ? '100vh' : 'none', boxSizing: 'border-box', overflowY: (isStandalone || activeTab === 'chart' || activeTab === 'testing') ? 'hidden' : 'auto' }}>
       
       {/* Real-time Voice Alert Broadcast Notification Banner */}
       {!isStandalone && liveTradeAlert && (
@@ -1006,6 +1017,11 @@ function App() {
               authUser={authUser}
               onLogout={handleLogout}
               onOpenUserManagement={() => setIsUserManagementOpen(true)}
+              isChartTab={activeTab === 'chart'}
+              multiChartLayout={multiChartLayout}
+              onMultiChartLayoutChange={handleLayoutChange}
+              syncSymbol={syncSymbol}
+              onToggleSyncSymbol={handleToggleSyncSymbol}
             />
           </TabErrorBoundary>
 
@@ -1021,7 +1037,7 @@ function App() {
       )}
 
       {/* Main 3-Column Layout: Left Sidebar (~140px) | Center Chart Workspace (flex: 1) | Right Panel (~150px) */}
-      <div style={{ display: 'flex', flex: '1', minHeight: '0', gap: '8px', padding: '0 8px 8px 8px', width: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
+      <div style={{ display: 'flex', flex: '1', minHeight: '0', gap: isMobile ? '0' : '8px', padding: isMobile ? '0 2px 48px 2px' : '0 8px 8px 8px', width: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
         
         {/* LEFT SIDEBAR (~140px fixed): Collapsible tool groups matching media_1790927764907.png */}
         {!isStandalone && (
@@ -1264,42 +1280,44 @@ function App() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '6px 12px',
-            background: isDark ? 'rgba(15, 23, 42, 0.6)' : '#ffffff',
-            border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0'}`,
+            padding: isMobile ? '4px 8px' : '6px 12px',
+            background: isDark ? 'rgba(15, 28, 61, 0.7)' : '#ffffff',
+            border: `1px solid ${isDark ? 'rgba(56, 189, 248, 0.12)' : '#e2e8f0'}`,
             borderRadius: '8px 8px 0 0',
-            flexWrap: 'wrap',
-            gap: '8px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '15px', fontWeight: '900', color: 'var(--text-primary)' }}>
+            flexWrap: 'nowrap',
+            overflowX: 'auto',
+            gap: isMobile ? '6px' : '10px'
+          }} className="mobile-tab-scroll">
+            <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '6px' : '8px', flexShrink: 0 }}>
+              <span style={{ fontSize: isMobile ? '13px' : '15px', fontWeight: '900', color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
                 {symbolDisplayName}
               </span>
-              <span style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-primary)', fontFamily: 'monospace' }}>
+              <span style={{ fontSize: isMobile ? '13px' : '15px', fontWeight: '800', color: '#38bdf8', fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
                 {typeof lastPrice === 'number' && !isNaN(lastPrice) ? lastPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '--'}
               </span>
               <span style={{
-                fontSize: '12px',
+                fontSize: isMobile ? '11px' : '12px',
                 fontWeight: '700',
                 color: (priceChange || 0) >= 0 ? '#10b981' : '#ef4444',
-                fontFamily: 'monospace'
+                fontFamily: 'monospace',
+                whiteSpace: 'nowrap'
               }}>
                 {typeof priceChange === 'number' && !isNaN(priceChange) ? `${priceChange >= 0 ? '+' : ''}${priceChange.toFixed(2)}` : '--'} ({typeof priceChangePct === 'number' && !isNaN(priceChangePct) ? `${priceChangePct >= 0 ? '+' : ''}${priceChangePct.toFixed(2)}%` : '--'})
               </span>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600' }}>Contract:</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+              <span className="desktop-only" style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600' }}>Contract:</span>
               <select
                 value={symbol}
                 onChange={(e) => setSymbol(e.target.value)}
                 style={{
                   background: isDark ? 'rgba(30, 41, 59, 0.8)' : '#f8fafc',
-                  border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.15)' : '#cbd5e1'}`,
+                  border: `1px solid ${isDark ? 'rgba(56, 189, 248, 0.2)' : '#cbd5e1'}`,
                   color: 'var(--text-primary)',
                   fontSize: '11px',
                   fontWeight: '700',
-                  padding: '3px 8px',
+                  padding: '2px 6px',
                   borderRadius: '6px',
                   cursor: 'pointer'
                 }}
@@ -1321,14 +1339,8 @@ function App() {
           </div>
 
           {/* Active Workspace Component */}
-          <div style={{ flex: 1, minHeight: 0, overflow: (activeTab === 'chart' || activeTab === 'testing' || activeTab === 'logic_test') ? 'hidden' : 'auto', display: 'flex', flexDirection: 'column' }}>
-        {activeTab === 'logic_test' ? (
-          <TabErrorBoundary tabName="Logic Test">
-            <LogicTestContainer
-              onSwitchToChart={() => setActiveTab('chart')}
-            />
-          </TabErrorBoundary>
-        ) : activeTab === 'manual_trades' ? (
+          <div style={{ flex: 1, minHeight: 0, overflow: (activeTab === 'chart' || activeTab === 'testing') ? 'hidden' : 'auto', display: 'flex', flexDirection: 'column' }}>
+        {activeTab === 'manual_trades' ? (
           <TabErrorBoundary tabName="Manual Trades">
             <ManualTradesContainer
               onSymbolSelect={setSymbol}
@@ -1338,16 +1350,6 @@ function App() {
         ) : activeTab === 'test' ? (
           <TabErrorBoundary tabName="Orderflow Chart">
             <TestContainer
-              selectedSymbol={symbol}
-              selectedTimeframe={timeframe}
-              onSymbolSelect={setSymbol}
-              onTimeframeChange={setTimeframe}
-              onSwitchToChart={() => setActiveTab('chart')}
-            />
-          </TabErrorBoundary>
-        ) : activeTab === 'testing' ? (
-          <TabErrorBoundary tabName="Testing">
-            <TestingContainer
               selectedSymbol={symbol}
               selectedTimeframe={timeframe}
               onSymbolSelect={setSymbol}
@@ -1378,13 +1380,6 @@ function App() {
           <TabErrorBoundary tabName="High Beta Trades">
             <HighBetaTradesContainer />
           </TabErrorBoundary>
-        ) : activeTab === 'vsa' ? (
-          <TabErrorBoundary tabName="VSA">
-            <VsaContainer
-              onSymbolSelect={setSymbol}
-              onSwitchToChart={() => setActiveTab('chart')}
-            />
-          </TabErrorBoundary>
         ) : activeTab === 'footprint_chart' ? (
           <TabErrorBoundary tabName="Footprint">
             <FootprintChartContainer
@@ -1411,9 +1406,10 @@ function App() {
               onSwitchToChart={() => setActiveTab('chart')}
             />
           </TabErrorBoundary>
-        ) : activeTab === 'report' ? (
-          <TabErrorBoundary tabName="Order Flow Report">
-            <OrderFlowReportContainer
+        ) : activeTab === 'trial' ? (
+          <TabErrorBoundary tabName="Trial">
+            <TrialContainer
+              selectedSymbol={symbol}
               onSymbolSelect={setSymbol}
               onSwitchToChart={() => setActiveTab('chart')}
             />
@@ -1430,14 +1426,6 @@ function App() {
                 setSymbol(sym);
                 setActiveTab('market_profile');
               }}
-            />
-          </TabErrorBoundary>
-        ) : activeTab === 'value_breakout' ? (
-          <TabErrorBoundary tabName="Value Breakout">
-            <ValueBreakoutContainer
-              onSymbolSelect={setSymbol}
-              onSwitchToChart={() => setActiveTab('chart')}
-              onSwitchToMarketProfile={() => setActiveTab('market_profile')}
             />
           </TabErrorBoundary>
         ) : activeTab === 'heatmap' ? (
@@ -1457,13 +1445,6 @@ function App() {
         ) : activeTab === 'fifteen_min' ? (
           <TabErrorBoundary tabName="15 Mins Forensic">
             <FifteenMinForensicContainer />
-          </TabErrorBoundary>
-        ) : activeTab === 'dada_thoughts' ? (
-          <TabErrorBoundary tabName="Dada Thoughts">
-            <DadaThoughtsContainer
-              onSymbolSelect={setSymbol}
-              onSwitchToChart={() => setActiveTab('chart')}
-            />
           </TabErrorBoundary>
         ) : activeTab === 'hourly_updates' ? (
           <TabErrorBoundary tabName="Hourly Updates">
@@ -1511,24 +1492,6 @@ function App() {
               noVolumeFilter={true}
             />
           </TabErrorBoundary>
-        ) : activeTab === 'volume' ? (
-          <TabErrorBoundary tabName="Volume Breakouts">
-            <VolumeContainer
-              onSymbolSelect={setSymbol}
-              onSwitchToChart={() => setActiveTab('chart')}
-            />
-          </TabErrorBoundary>
-        ) : activeTab === 'opening_bias' ? (
-          <TabErrorBoundary tabName="Opening Bias">
-            <OpeningBiasContainer />
-          </TabErrorBoundary>
-        ) : activeTab === 'early_picks' ? (
-          <TabErrorBoundary tabName="Early Picks">
-            <EarlyPicksContainer
-              onSymbolSelect={setSymbol}
-              onSwitchToChart={() => setActiveTab('chart')}
-            />
-          </TabErrorBoundary>
         ) : activeTab === 'nr7_breakout' ? (
           <TabErrorBoundary tabName="20% UC Potential">
             <Nr7BreakoutContainer
@@ -1536,54 +1499,77 @@ function App() {
               onSwitchToChart={() => setActiveTab('chart')}
             />
           </TabErrorBoundary>
-        ) : activeTab === 'order_flow' ? (
-          <TabErrorBoundary tabName="Lucky Flow">
-            <OrderFlowContainer
-              candles={candles}
-              currentSymbol={symbol}
-              onSymbolSelect={setSymbol}
-              onSwitchToChart={() => setActiveTab('chart')}
-            />
-          </TabErrorBoundary>
         ) : (
-          <>
-            {error && (
-              <div className="glass-panel animate-fade-in" style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid rgba(239, 68, 68, 0.3)', backgroundColor: 'rgba(239, 68, 68, 0.05)', borderRadius: '12px', marginBottom: '20px' }}>
-                <AlertCircle color="#ef4444" size={20} />
-                <div>
-                  <strong style={{ color: '#ef4444', fontSize: '14px' }}>Connection Error:</strong>
-                  <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)' }}>{error}</p>
-                </div>
-              </div>
-            )}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, minWidth: 0, height: '100%', width: '100%', overflowY: 'auto', gap: '8px' }}>
+            {/* Top Sub-Tab Navigation Bar matching screenshot */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '4px 6px',
+              background: isDark ? 'rgba(15, 23, 42, 0.45)' : '#ffffff',
+              borderRadius: '8px',
+              border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0'}`,
+              flexShrink: 0
+            }}>
+              {[
+                { id: 'chart', label: 'Chart' },
+                { id: 'test', label: 'Orderflow' },
+                { id: 'footprint_chart', label: 'Footprint' },
+                { id: 'market_profile', label: 'Market Profile' },
+                { id: 'cvd_adv', label: 'Volume Profile' },
+                { id: 'sr_breakout', label: 'VSA' }
+              ].map((tab) => {
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as TabType)}
+                    style={{
+                      padding: '4px 14px',
+                      fontSize: '11px',
+                      fontWeight: '700',
+                      borderRadius: '6px',
+                      border: 'none',
+                      background: isActive ? '#0284c7' : 'transparent',
+                      color: isActive ? '#ffffff' : 'var(--text-secondary)',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
 
-            {loading || loadedSymbol !== symbol || candles.length === 0 ? (
-              <div className="glass-panel" style={{ flex: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px', minHeight: '400px' }}>
-                <Loader2 className="animate-spin" size={32} color="var(--accent-blue)" style={{ animation: 'spin 1.5s linear infinite' }} />
-                <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: 0 }}>Connecting to Angel One SmartAPI & loading {symbol}...</p>
-              </div>
-            ) : (
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, minWidth: 0, height: '100%', width: '100%', overflow: 'hidden' }}>
-                <TabErrorBoundary tabName="Candlestick Chart">
-                  <ChartContainer
-                    key={`${symbol}-${timeframe}`}
-                    candles={candles}
-                    symbol={symbol}
-                    timeframe={timeframe}
-                    matrixSeriesData={matrixSeriesData}
-                    connectionStatus={connectionStatus}
-                    connectionError={error}
-                    activeAlert={levelAlert}
-                    onCloseAlert={handleCloseLevelAlert}
-                    onResetSetupAlerts={handleResetSetupAlerts}
-                    alertsMuted={levelAlertsMuted}
-                    onToggleAlertsMuted={() => setLevelAlertsMuted(!levelAlertsMuted)}
-                    firedAlertsCount={levelAlertsFiredCount}
-                  />
-                </TabErrorBoundary>
-              </div>
-            )}
-          </>
+            {/* Split 2-Chart Workspace */}
+            <div style={{ flex: 1, minHeight: '440px', width: '100%', display: 'flex', flexDirection: 'column' }}>
+              <TabErrorBoundary tabName="Candlestick Chart">
+                <MultiChartContainer
+                  currentSymbol={symbol}
+                  currentTimeframe={timeframe}
+                  layout={multiChartLayout}
+                  syncSymbol={syncSymbol}
+                  onLayoutChange={handleLayoutChange}
+                  onToggleSyncSymbol={handleToggleSyncSymbol}
+                  onActiveSymbolChange={(newSym) => setSymbol(newSym)}
+                  onActiveTimeframeChange={(newTf) => setTimeframe(newTf)}
+                  levelAlert={levelAlert}
+                  onCloseLevelAlert={handleCloseLevelAlert}
+                  onResetSetupAlerts={handleResetSetupAlerts}
+                  levelAlertsMuted={levelAlertsMuted}
+                  onToggleAlertsMuted={() => setLevelAlertsMuted(!levelAlertsMuted)}
+                  levelAlertsFiredCount={levelAlertsFiredCount}
+                />
+              </TabErrorBoundary>
+            </div>
+
+            {/* Bottom Widgets: Top Movers (Gainers) & Market Breadth */}
+            <TabErrorBoundary tabName="Home Bottom Widgets">
+              <HomeBottomWidgets onSymbolSelect={setSymbol} />
+            </TabErrorBoundary>
+          </div>
         )}
           </div>
         </main>
@@ -1689,169 +1675,302 @@ function App() {
       {/* Mobile Bottom Navigation & Slide-Up Drawer (< 768px) */}
       {isMobile && (
         <>
-          <div style={{
+          <nav style={{
             position: 'fixed',
             bottom: 0,
             left: 0,
             right: 0,
-            background: isDark ? '#0f172a' : '#ffffff',
-            borderTop: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.12)' : '#e2e8f0'}`,
-            padding: '6px 12px',
+            background: isDark ? 'rgba(8, 13, 26, 0.96)' : '#ffffff',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            borderTop: `1px solid ${isDark ? 'rgba(56, 189, 248, 0.2)' : '#e2e8f0'}`,
+            padding: '4px 6px',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            zIndex: 1000
+            justifyContent: 'space-around',
+            zIndex: 1000,
+            boxShadow: isDark ? '0 -4px 20px rgba(0,0,0,0.6)' : '0 -2px 10px rgba(0,0,0,0.06)',
+            boxSizing: 'border-box'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Layers size={14} color="#38bdf8" />
-              <select
-                value={activeTab}
-                onChange={(e) => setActiveTab(e.target.value as TabType)}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: 'var(--text-primary)',
-                  fontSize: '12px',
-                  fontWeight: '800'
-                }}
-              >
-                {favoriteTabs.length > 0 && (
-                  <optgroup label="⭐ Favorites">
-                    {favoriteTabs.map(tabId => {
-                      const item = ALL_TABS_MAP.get(tabId);
-                      return item ? (
-                        <option key={`fav-mob-${item.id}`} value={item.id}>⭐ {item.label}</option>
-                      ) : null;
-                    })}
-                  </optgroup>
-                )}
-                {TOOL_GROUPS.map((g) => (
-                  <optgroup key={g.name} label={g.name}>
-                    {g.items.map((i) => (
-                      <option key={i.id} value={i.id}>{i.label}</option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
-            </div>
+            {[
+              { id: 'chart', label: 'Chart', icon: '📈' },
+              { id: 'pro_market_profile', label: 'Pro TPO', icon: '🏛️' },
+              { id: 'footprint_chart', label: 'Footprint', icon: '👣' },
+              { id: 'scanner', label: 'Scanner', icon: '🔍' },
+              { id: 'menu', label: 'More Tools', icon: '☰' },
+            ].map((item) => {
+              const isActive = item.id === 'menu' ? isMobileMenuOpen : activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    if (item.id === 'menu') {
+                      setIsMobileMenuOpen(!isMobileMenuOpen);
+                    } else {
+                      setActiveTab(item.id as TabType);
+                      setIsMobileMenuOpen(false);
+                    }
+                  }}
+                  style={{
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '2px',
+                    padding: '5px 2px',
+                    background: isActive ? (isDark ? 'rgba(56, 189, 248, 0.16)' : '#e0f2fe') : 'transparent',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: isActive ? '#38bdf8' : (isDark ? '#94a3b8' : '#64748b'),
+                    cursor: 'pointer',
+                    minHeight: '44px',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <span style={{ fontSize: '16px', lineHeight: 1 }}>{item.icon}</span>
+                  <span style={{ fontSize: '10px', fontWeight: isActive ? '800' : '600', letterSpacing: '0.2px' }}>
+                    {item.label}
+                  </span>
+                </button>
+              );
+            })}
+          </nav>
 
-            <button
-              onClick={() => setIsWatchlistDrawerOpen(!isWatchlistDrawerOpen)}
-              style={{
-                background: 'rgba(56, 189, 248, 0.15)',
-                border: '1px solid #38bdf8',
-                color: '#38bdf8',
-                padding: '4px 10px',
-                borderRadius: '6px',
-                fontSize: '11px',
-                fontWeight: '800',
-                cursor: 'pointer'
-              }}
-            >
-              📋 Watchlist
-            </button>
-          </div>
-
-          {/* Mobile Watchlist Slide-Up Drawer */}
-          {isWatchlistDrawerOpen && (
+          {/* Mobile All-In-One Slide-Up Drawer */}
+          {(isMobileMenuOpen || isWatchlistDrawerOpen) && (
             <div 
-              onClick={() => setIsWatchlistDrawerOpen(false)}
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                setIsWatchlistDrawerOpen(false);
+              }}
               style={{
                 position: 'fixed',
                 inset: 0,
-                background: 'rgba(0,0,0,0.6)',
+                background: 'rgba(0,0,0,0.65)',
                 zIndex: 9999,
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'flex-end'
+                justifyContent: 'flex-end',
+                backdropFilter: 'blur(4px)',
+                WebkitBackdropFilter: 'blur(4px)'
               }}
             >
               <div 
                 onClick={(e) => e.stopPropagation()}
                 style={{
-                  background: isDark ? '#0f172a' : '#ffffff',
-                  borderTopLeftRadius: '14px',
-                  borderTopRightRadius: '14px',
-                  padding: '16px',
-                  maxHeight: '60vh',
+                  background: isDark ? '#0b1329' : '#ffffff',
+                  borderTop: `1px solid ${isDark ? 'rgba(56, 189, 248, 0.3)' : '#cbd5e1'}`,
+                  borderTopLeftRadius: '16px',
+                  borderTopRightRadius: '16px',
+                  padding: '14px 16px',
+                  maxHeight: '75vh',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '10px'
+                  gap: '10px',
+                  boxShadow: '0 -10px 40px rgba(0,0,0,0.7)'
                 }}
               >
+                {/* Header with Switchable Tabs */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-primary)' }}>Market Watchlist</span>
-                  <button onClick={() => setIsWatchlistDrawerOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}>✕</button>
-                </div>
-                <div style={{ display: 'flex', borderRadius: '6px', padding: '2px', background: isDark ? 'rgba(0, 0, 0, 0.25)' : '#f1f5f9' }}>
-                  {(['Futures', 'Stocks', 'MCX', 'Indices'] as const).map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => setWatchlistCategory(cat)}
-                      style={{
-                        flex: 1,
-                        padding: '4px 0',
-                        fontSize: '11px',
-                        fontWeight: '800',
-                        borderRadius: '4px',
-                        border: 'none',
-                        background: watchlistCategory === cat ? (isDark ? '#0284c7' : '#e0f2fe') : 'transparent',
-                        color: watchlistCategory === cat ? (isDark ? '#ffffff' : '#0284c7') : 'var(--text-secondary)',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {cat}
-                    </button>
-                  ))}
+                  <div style={{ display: 'flex', gap: '4px', background: isDark ? 'rgba(0,0,0,0.3)' : '#f1f5f9', padding: '3px', borderRadius: '8px' }}>
+                    {(['watchlist', 'favorites', 'tools'] as const).map(t => (
+                      <button
+                        key={t}
+                        onClick={() => setMobileMenuTab(t)}
+                        style={{
+                          background: mobileMenuTab === t ? (isDark ? '#0284c7' : '#e0f2fe') : 'transparent',
+                          color: mobileMenuTab === t ? (isDark ? '#ffffff' : '#0284c7') : 'var(--text-secondary)',
+                          border: 'none',
+                          padding: '4px 10px',
+                          borderRadius: '6px',
+                          fontSize: '11px',
+                          fontWeight: '800',
+                          cursor: 'pointer',
+                          textTransform: 'capitalize'
+                        }}
+                      >
+                        {t === 'watchlist' ? '📋 Watchlist' : t === 'favorites' ? '⭐ Favorites' : '🛠️ All Tools'}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button 
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      setIsWatchlistDrawerOpen(false);
+                    }}
+                    style={{ background: 'rgba(255,255,255,0.06)', border: 'none', color: 'var(--text-secondary)', width: '28px', height: '28px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px' }}
+                  >
+                    ✕
+                  </button>
                 </div>
 
-                {/* Mobile Quick Search */}
-                <input
-                  type="text"
-                  placeholder={`🔍 Search ${watchlistCategory}...`}
-                  value={watchlistSearch}
-                  onChange={(e) => setWatchlistSearch(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '6px 10px',
-                    fontSize: '12px',
-                    borderRadius: '6px',
-                    border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.15)' : '#cbd5e1'}`,
-                    background: isDark ? 'rgba(0, 0, 0, 0.25)' : '#f8fafc',
-                    color: 'var(--text-primary)',
-                    outline: 'none',
-                    boxSizing: 'border-box',
-                    marginBottom: '6px'
-                  }}
-                />
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', overflowY: 'auto' }}>
-                  {filteredWatchlist.length === 0 ? (
-                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', textAlign: 'center', padding: '16px 0', fontStyle: 'italic' }}>
-                      No matching {watchlistCategory} found
+                {/* Tab Content 1: Watchlist */}
+                {mobileMenuTab === 'watchlist' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', overflowY: 'auto' }}>
+                    <div style={{ display: 'flex', borderRadius: '6px', padding: '2px', background: isDark ? 'rgba(0, 0, 0, 0.25)' : '#f1f5f9' }}>
+                      {(['Futures', 'Stocks', 'MCX', 'Indices'] as const).map((cat) => (
+                        <button
+                          key={cat}
+                          onClick={() => setWatchlistCategory(cat)}
+                          style={{
+                            flex: 1,
+                            padding: '5px 0',
+                            fontSize: '11px',
+                            fontWeight: '800',
+                            borderRadius: '4px',
+                            border: 'none',
+                            background: watchlistCategory === cat ? (isDark ? '#0284c7' : '#e0f2fe') : 'transparent',
+                            color: watchlistCategory === cat ? (isDark ? '#ffffff' : '#0284c7') : 'var(--text-secondary)',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {cat}
+                        </button>
+                      ))}
                     </div>
-                  ) : (
-                    filteredWatchlist.map((item) => (
-                    <div
-                      key={item.symbol}
-                      onClick={() => {
-                        setSymbol(item.symbol);
-                        setIsWatchlistDrawerOpen(false);
-                      }}
+
+                    <input
+                      type="text"
+                      placeholder={`🔍 Search ${watchlistCategory}...`}
+                      value={watchlistSearch}
+                      onChange={(e) => setWatchlistSearch(e.target.value)}
                       style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '8px 10px',
+                        width: '100%',
+                        padding: '7px 12px',
+                        fontSize: '12px',
                         borderRadius: '6px',
-                        background: symbol === item.symbol ? (isDark ? 'rgba(56, 189, 248, 0.15)' : '#e0f2fe') : 'transparent'
+                        border: `1px solid ${isDark ? 'rgba(56, 189, 248, 0.2)' : '#cbd5e1'}`,
+                        background: isDark ? 'rgba(15, 28, 61, 0.5)' : '#f8fafc',
+                        color: 'var(--text-primary)',
+                        outline: 'none',
+                        boxSizing: 'border-box'
                       }}
-                    >
-                      <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)' }}>{item.name}</span>
-                      <span style={{ fontSize: '11.5px', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>₹{item.price}</span>
+                    />
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '35vh', overflowY: 'auto' }}>
+                      {filteredWatchlist.length === 0 ? (
+                        <div style={{ fontSize: '11px', color: 'var(--text-secondary)', textAlign: 'center', padding: '16px 0', fontStyle: 'italic' }}>
+                          No matching {watchlistCategory} found
+                        </div>
+                      ) : (
+                        filteredWatchlist.map((item) => (
+                          <div
+                            key={item.symbol}
+                            onClick={() => {
+                              setSymbol(item.symbol);
+                              setIsMobileMenuOpen(false);
+                              setIsWatchlistDrawerOpen(false);
+                            }}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              padding: '9px 12px',
+                              borderRadius: '6px',
+                              background: symbol === item.symbol ? (isDark ? 'rgba(56, 189, 248, 0.15)' : '#e0f2fe') : 'transparent',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            <span style={{ fontSize: '12.5px', fontWeight: '700', color: 'var(--text-primary)' }}>{item.name}</span>
+                            <span style={{ fontSize: '12px', fontFamily: 'monospace', color: '#38bdf8', fontWeight: '700' }}>₹{item.price}</span>
+                          </div>
+                        ))
+                      )}
                     </div>
-                  )))}
-                </div>
+                  </div>
+                )}
+
+                {/* Tab Content 2: Favorites */}
+                {mobileMenuTab === 'favorites' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '42vh', overflowY: 'auto' }}>
+                    {favoriteTabs.length === 0 ? (
+                      <div style={{ fontSize: '12px', color: 'var(--text-secondary)', textAlign: 'center', padding: '24px 0', fontStyle: 'italic' }}>
+                        No favorite tabs saved yet. Click the star ⭐ next to any tool to add it here.
+                      </div>
+                    ) : (
+                      favoriteTabs.map(tabId => {
+                        const item = ALL_TABS_MAP.get(tabId);
+                        if (!item) return null;
+                        const isActive = activeTab === item.id;
+                        return (
+                          <div
+                            key={`fav-drawer-${item.id}`}
+                            onClick={() => {
+                              setActiveTab(item.id);
+                              setIsMobileMenuOpen(false);
+                              setIsWatchlistDrawerOpen(false);
+                            }}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              padding: '10px 14px',
+                              borderRadius: '8px',
+                              background: isActive ? (isDark ? 'rgba(56, 189, 248, 0.2)' : '#e0f2fe') : 'rgba(255,255,255,0.03)',
+                              cursor: 'pointer',
+                              border: `1px solid ${isActive ? 'rgba(56, 189, 248, 0.4)' : 'transparent'}`
+                            }}
+                          >
+                            <span style={{ fontSize: '13px', fontWeight: '700', color: isActive ? '#38bdf8' : 'var(--text-primary)' }}>
+                              ⭐ {item.label}
+                            </span>
+                            <span style={{ fontSize: '11px', color: '#f59e0b', fontWeight: '800' }}>FAVORITE</span>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
+
+                {/* Tab Content 3: All Tools */}
+                {mobileMenuTab === 'tools' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '45vh', overflowY: 'auto' }}>
+                    {TOOL_GROUPS.map(g => (
+                      <div key={`tool-grp-${g.name}`}>
+                        <div style={{ fontSize: '11px', fontWeight: '800', color: '#60a5fa', textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.5px' }}>
+                          {g.name}
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                          {g.items.map(item => {
+                            const isActive = activeTab === item.id;
+                            return (
+                              <button
+                                key={`drawer-tool-${item.id}`}
+                                onClick={() => {
+                                  setActiveTab(item.id);
+                                  setIsMobileMenuOpen(false);
+                                  setIsWatchlistDrawerOpen(false);
+                                }}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  padding: '8px 10px',
+                                  borderRadius: '6px',
+                                  background: isActive ? (isDark ? 'rgba(56, 189, 248, 0.25)' : '#e0f2fe') : (isDark ? 'rgba(15, 28, 61, 0.5)' : '#f8fafc'),
+                                  border: `1px solid ${isActive ? '#38bdf8' : 'rgba(255,255,255,0.05)'}`,
+                                  color: isActive ? '#38bdf8' : 'var(--text-primary)',
+                                  fontSize: '11px',
+                                  fontWeight: '700',
+                                  cursor: 'pointer',
+                                  textAlign: 'left',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis'
+                                }}
+                              >
+                                {item.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
               </div>
             </div>
           )}
