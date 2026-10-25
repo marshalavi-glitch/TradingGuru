@@ -4168,7 +4168,10 @@ app.get('/api/scanner/opening-bias', async (req, res) => {
         const spotRisk = item.interval * 1.5;
         const spotSL = isBullish ? (spot - spotRisk) : (spot + spotRisk);
         const optSL = parseFloat(Math.max(1, optPrice - (spotRisk * 0.5)).toFixed(2));
-        const nowTimeStr = new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const now = new Date();
+        const todayDateStr = now.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric' });
+        const nowTimeStr = now.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const fullDateTimeStr = `${todayDateStr}, ${nowTimeStr}`;
         
         stockSignals.push({
           id: `${item.name}-FO-${isBullish ? 'CE' : 'PE'}-${atmStrike}`,
@@ -4185,8 +4188,9 @@ app.get('/api/scanner/opening-bias', async (req, res) => {
           target2: parseFloat((optPrice * 1.65).toFixed(2)),
           confidence: 88,
           skewSpreadPct: isBullish ? 16.4 : -14.2,
-          timestamp: nowTimeStr,
-          lastUpdated: nowTimeStr,
+          date: todayDateStr,
+          timestamp: fullDateTimeStr,
+          lastUpdated: fullDateTimeStr,
           lastUpdatedMs: Date.now(),
           mathTrigger: `${item.name} Spot (₹${spot.toFixed(2)}) defended S5/S6 Support with +16.4% Call Skew accumulation.`,
           conceptUsed: 'TPO Stock Breakout + Dynamic SL (Δ=0.5)'

@@ -70,7 +70,10 @@ async function run() {
 
     const distBackendPath = path.join(__dirname, 'frontend/dist/live_backend.json');
     if (fs.existsSync(liveBackendPath)) {
-      fs.copyFileSync(liveBackendPath, distBackendPath);
+      try {
+        const liveBackendContent = fs.readFileSync(liveBackendPath, 'utf8');
+        fs.writeFileSync(distBackendPath, liveBackendContent);
+      } catch (e) {}
     }
 
     const rootAssetsDir = path.join(__dirname, 'assets');

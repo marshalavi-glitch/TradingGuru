@@ -4,6 +4,7 @@ import { getBackendHttpUrl, getBackendHttpUrlSync } from '../utils/tvStreamer';
 
 interface LiveSignal {
   id: string;
+  date?: string;
   timestamp: string;
   lastUpdated?: string;
   lastUpdatedMs?: number;
@@ -25,6 +26,43 @@ interface LiveSignal {
   mathTrigger: string;
   conceptUsed: string;
   isUrgent: boolean;
+}
+
+export function formatTriggerDateTime(rawTimestamp?: string, lastUpdatedMs?: number, rawDate?: string): string {
+  if (!rawTimestamp) return 'Live';
+  
+  // If timestamp already has full date format (e.g. "25 Oct 2026, 10:52:17 am" or "25-10-2026 10:52")
+  if (/[a-zA-Z]{3}|\d{4}|[-/]/.test(rawTimestamp) && rawTimestamp.includes(':')) {
+    return rawTimestamp;
+  }
+  
+  if (rawDate) {
+    return `${rawDate}, ${rawTimestamp}`;
+  }
+  
+  if (lastUpdatedMs) {
+    const d = new Date(lastUpdatedMs);
+    const day = String(d.getDate()).padStart(2, '0');
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return `${day} ${months[d.getMonth()]} ${d.getFullYear()}, ${rawTimestamp}`;
+  }
+  
+  const now = new Date();
+  const day = String(now.getDate()).padStart(2, '0');
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `${day} ${months[now.getMonth()]} ${now.getFullYear()}, ${rawTimestamp}`;
+}
+
+export function isMarketOpenNow(): boolean {
+  try {
+    const istDate = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+    const day = istDate.getDay();
+    if (day === 0 || day === 6) return false; // Saturday or Sunday
+    const minutes = istDate.getHours() * 60 + istDate.getMinutes();
+    return minutes >= (9 * 60 + 15) && minutes <= (15 * 60 + 30);
+  } catch (e) {
+    return false;
+  }
 }
 
 export function BacktestResultsContainer() {
@@ -219,7 +257,10 @@ export function BacktestResultsContainer() {
               }
             };
 
-            const nowTimeStr = new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const now = new Date();
+            const todayDateStr = now.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric' });
+            const nowTimeStr = now.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const nowDateTimeStr = `${todayDateStr}, ${nowTimeStr}`;
             const signals: LiveSignal[] = [];
             const currentHistory = historicalSignalsRef.current.length > 0 ? historicalSignalsRef.current : getSavedSignals();
 
@@ -238,10 +279,15 @@ export function BacktestResultsContainer() {
               const t2 = existingSig?.target2 || Number((entryPrice * 1.60).toFixed(2));
               const pnl = Number((((optLtp - entryPrice) / entryPrice) * 100).toFixed(1));
 
+              const initialTrigger = existingSig?.timestamp
+                ? (/[a-zA-Z]{3}|\d{4}|[-/]/.test(existingSig.timestamp) ? existingSig.timestamp : `${existingSig.date || todayDateStr}, ${existingSig.timestamp}`)
+                : nowDateTimeStr;
+
               signals.push({
                 id: existingSig?.id || `BN-LIVE-${isCall ? 'CE' : 'PE'}-${atmStrike}`,
-                timestamp: existingSig?.timestamp || nowTimeStr,
-                lastUpdated: nowTimeStr,
+                date: existingSig?.date || todayDateStr,
+                timestamp: initialTrigger,
+                lastUpdated: nowDateTimeStr,
                 lastUpdatedMs: Date.now(),
                 symbol: 'BANKNIFTY',
                 action: expectedAction,
@@ -279,10 +325,15 @@ export function BacktestResultsContainer() {
               const t2 = existingSig?.target2 || Number((entryPrice * 1.70).toFixed(2));
               const pnl = Number((((optLtp - entryPrice) / entryPrice) * 100).toFixed(1));
 
+              const initialTrigger = existingSig?.timestamp
+                ? (/[a-zA-Z]{3}|\d{4}|[-/]/.test(existingSig.timestamp) ? existingSig.timestamp : `${existingSig.date || todayDateStr}, ${existingSig.timestamp}`)
+                : nowDateTimeStr;
+
               signals.push({
                 id: existingSig?.id || `NIFTY-LIVE-${isCall ? 'CE' : 'PE'}-${atmStrike}`,
-                timestamp: existingSig?.timestamp || nowTimeStr,
-                lastUpdated: nowTimeStr,
+                date: existingSig?.date || todayDateStr,
+                timestamp: initialTrigger,
+                lastUpdated: nowDateTimeStr,
                 lastUpdatedMs: Date.now(),
                 symbol: 'NIFTY 50',
                 action: expectedAction,
@@ -313,10 +364,15 @@ export function BacktestResultsContainer() {
                 const liveOptPrice = Number(stk.currentOptionPrice);
                 const pnl = Number((((liveOptPrice - entryPrice) / entryPrice) * 100).toFixed(1));
 
+                const initialTrigger = existingSig?.timestamp
+                  ? (/[a-zA-Z]{3}|\d{4}|[-/]/.test(existingSig.timestamp) ? existingSig.timestamp : `${existingSig.date || todayDateStr}, ${existingSig.timestamp}`)
+                  : (stk.timestamp && /[a-zA-Z]{3}|\d{4}|[-/]/.test(stk.timestamp) ? stk.timestamp : `${stk.date || todayDateStr}, ${stk.timestamp || nowTimeStr}`);
+
                 signals.push({
                   id: existingSig?.id || `STK-${stk.id}`,
-                  timestamp: existingSig?.timestamp || stk.timestamp || nowTimeStr,
-                  lastUpdated: nowTimeStr,
+                  date: existingSig?.date || stk.date || todayDateStr,
+                  timestamp: initialTrigger,
+                  lastUpdated: nowDateTimeStr,
                   lastUpdatedMs: Date.now(),
                   symbol: stk.symbol,
                   action: stk.action,
@@ -352,16 +408,17 @@ export function BacktestResultsContainer() {
                   map.set(s.id, {
                     ...existing,
                     ...s,
+                    date: existing.date || s.date || todayDateStr,
+                    timestamp: existing.timestamp || s.timestamp,
                     entryPrice: existing.entryPrice || existing.currentOptionPrice,
                     entryRange: existing.entryRange,
-                    timestamp: existing.timestamp || s.timestamp,
                     currentOptionPrice: s.currentOptionPrice,
                     spotPrice: s.spotPrice,
                     target1Hit: s.target1Hit,
                     target2Hit: s.target2Hit,
                     pnlPct: s.pnlPct,
-                    lastUpdated: s.lastUpdated,
-                    lastUpdatedMs: s.lastUpdatedMs
+                    lastUpdated: s.lastUpdated || nowDateTimeStr,
+                    lastUpdatedMs: s.lastUpdatedMs || Date.now()
                   });
                 } else {
                   map.set(s.id, s);
@@ -433,8 +490,20 @@ export function BacktestResultsContainer() {
               <h2 style={{ margin: 0, fontSize: '24px', fontWeight: '900', color: 'white', letterSpacing: '-0.3px' }}>
                 🎯 Live Math Trade Alerts (Zero-Delay Feed)
               </h2>
-              <span style={{ fontSize: '11px', fontWeight: '900', background: '#ef4444', color: 'white', padding: '4px 12px', borderRadius: '20px', animation: 'pulse 1.5s infinite' }}>
-                LIVE PRE-MOVE RADAR
+              <span style={{
+                fontSize: '11px',
+                fontWeight: '900',
+                background: isMarketOpenNow() ? '#ef4444' : 'rgba(100, 116, 139, 0.45)',
+                border: isMarketOpenNow() ? 'none' : '1px solid rgba(148, 163, 184, 0.35)',
+                color: isMarketOpenNow() ? 'white' : '#e2e8f0',
+                padding: '4px 12px',
+                borderRadius: '20px',
+                animation: isMarketOpenNow() ? 'pulse 1.5s infinite' : 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px'
+              }}>
+                {isMarketOpenNow() ? '● LIVE PRE-MOVE RADAR' : '🌙 MARKET CLOSED (Holding Last Session Snapshot)'}
               </span>
             </div>
             <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-secondary)' }}>
@@ -718,10 +787,10 @@ export function BacktestResultsContainer() {
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                   <span style={{ fontSize: '11px', fontWeight: '800', background: 'rgba(59, 130, 246, 0.2)', color: '#93c5fd', padding: '5px 10px', borderRadius: '6px', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
-                    ⏰ Triggered: {sig.timestamp}
+                    ⏰ Triggered: {formatTriggerDateTime(sig.timestamp, sig.lastUpdatedMs, sig.date)}
                   </span>
                   <span style={{ fontSize: '11px', fontWeight: '800', background: 'rgba(16, 185, 129, 0.15)', color: '#86efac', padding: '5px 10px', borderRadius: '6px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-                    🔄 Updated: {sig.lastUpdated || 'Live'}
+                    🔄 Updated: {formatTriggerDateTime(sig.lastUpdated, sig.lastUpdatedMs, sig.date)}
                   </span>
                   <span style={{ fontSize: '12px', fontWeight: '800', background: 'rgba(255,255,255,0.1)', color: '#fef08a', padding: '5px 12px', borderRadius: '6px' }}>
                     ⚡ CONFIDENCE: {sig.confidence}%
