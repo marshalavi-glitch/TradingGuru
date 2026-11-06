@@ -5,7 +5,16 @@ import type { Candle } from '../utils/profileCalculator';
 import { calculateMatrixSeriesData, type MatrixSeriesData } from '../utils/matrixCalculator';
 import { filterMarketHoursCandles, isWithinMarketHours } from '../utils/marketHours';
 import { useTheme } from '../context/ThemeContext';
-import { Loader2, AlertCircle, LayoutGrid, Maximize2, Minimize2, Check, RefreshCw } from 'lucide-react';
+import {
+  ALL_CHART_LAYOUTS,
+  MultiChartLayoutId,
+  getLayoutConfig
+} from '../utils/multiChartLayouts';
+import {
+  Loader2,
+  Maximize2,
+  Minimize2
+} from 'lucide-react';
 
 export interface MultiChartSlot {
   id: number;
@@ -13,26 +22,27 @@ export interface MultiChartSlot {
   timeframe: string;
 }
 
-const DEFAULT_SLOTS: MultiChartSlot[] = [
+// 8 Default Slots for up to 8 simultaneous charts
+export const DEFAULT_8_SLOTS: MultiChartSlot[] = [
   { id: 0, symbol: 'NSE:NIFTY', timeframe: '5' },
   { id: 1, symbol: 'NSE:BANKNIFTY', timeframe: '5' },
-  { id: 2, symbol: 'NSE:FINNIFTY', timeframe: '5' },
+  { id: 2, symbol: 'NSE:FINNIFTY', timeframe: '15' },
   { id: 3, symbol: 'NSE:RELIANCE', timeframe: '5' },
-  { id: 4, symbol: 'MCX:CRUDEOIL', timeframe: '5' },
+  { id: 4, symbol: 'MCX:CRUDEOIL', timeframe: '15' },
   { id: 5, symbol: 'MCX:GOLD', timeframe: '5' },
+  { id: 6, symbol: 'NSE:HDFCBANK', timeframe: '5' },
+  { id: 7, symbol: 'NSE:INFY', timeframe: '5' }
 ];
 
 const STORAGE_LAYOUT_KEY = 'tradingguru_multichart_layout';
 const STORAGE_SYNC_KEY = 'tradingguru_multichart_sync_symbol';
 const STORAGE_SLOTS_KEY = 'tradingguru_multichart_slots';
 
-interface MultiChartContainerProps {
+export interface MultiChartContainerProps {
   currentSymbol: string;
   currentTimeframe: string;
-  layout: number; // 1 | 2 | 3 | 4 | 5 | 6
-  syncSymbol: boolean;
-  onLayoutChange: (layout: number) => void;
-  onToggleSyncSymbol: () => void;
+  layout: MultiChartLayoutId | number | string;
+  onLayoutChange: (layout: MultiChartLayoutId | any) => void;
   onActiveSymbolChange?: (symbol: string) => void;
   onActiveTimeframeChange?: (timeframe: string) => void;
   levelAlert?: any;
@@ -121,7 +131,8 @@ const ChartSlotPane: React.FC<{
           const sym = data.symbol || symbol;
           if (data.candles && Array.isArray(data.candles) && data.candles.length > 0 && tvStreamer.isSymbolMatch(sym, symbol)) {
             const filtered = filterMarketHoursCandles(data.candles, symbol, timeframe);
-            setCandles(filtered);
+            const sanitized = [...filtered].map(c => ({ ...c, time: Number(c.time) })).sort((a, b) => (a.time as number) - (b.time as number));
+            setCandles(sanitized);
             setLoading(false);
             setConnectionStatus('connected');
             loadedKeyRef.current = currentKey;
@@ -161,14 +172,16 @@ const ChartSlotPane: React.FC<{
           setCandles((prevCandles) => {
             if (data.isSnapshot) {
               const filtered = filterMarketHoursCandles(data.candles, symbol, timeframe);
-              return [...filtered].sort((a, b) => (a.time as number) - (b.time as number));
+              return [...filtered].map(c => ({ ...c, time: Number(c.time) })).sort((a, b) => a.time - b.time);
             } else {
               if (prevCandles.length === 0) return prevCandles;
-              const tick = data.candles[0];
-              if (!isWithinMarketHours(tick.time as number, symbol, timeframe)) {
+              const rawTick = data.candles[0];
+              const tickTime = Number(rawTick.time);
+              if (isNaN(tickTime) || !isWithinMarketHours(tickTime, symbol, timeframe)) {
                 return prevCandles;
               }
-              const idx = prevCandles.findIndex((c) => c.time === tick.time);
+              const tick = { ...rawTick, time: tickTime };
+              const idx = prevCandles.findIndex((c) => Number(c.time) === tickTime);
               if (idx !== -1) {
                 const updated = [...prevCandles];
                 updated[idx] = tick;
@@ -265,9 +278,7 @@ export const MultiChartContainer: React.FC<MultiChartContainerProps> = ({
   currentSymbol,
   currentTimeframe,
   layout,
-  syncSymbol,
   onLayoutChange,
-  onToggleSyncSymbol,
   onActiveSymbolChange,
   onActiveTimeframeChange,
   levelAlert,
@@ -279,18 +290,29 @@ export const MultiChartContainer: React.FC<MultiChartContainerProps> = ({
 }) => {
   const { isDark } = useTheme();
 
-  // Load slots from localStorage or fallback
+  // Resolve layout config (supporting up to 8 charts)
+  const layoutConfig = useMemo(() => getLayoutConfig(layout), [layout]);
+  const activeChartCount = layoutConfig.chartCount;
+
+  // Load up to 8 slots from localStorage or fallback
   const [slots, setSlots] = useState<MultiChartSlot[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_SLOTS_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length >= 6) {
+        if (Array.isArray(parsed) && parsed.length >= 8) {
           return parsed;
+        } else if (Array.isArray(parsed) && parsed.length > 0) {
+          // Merge with DEFAULT_8_SLOTS to ensure at least 8 slots
+          const merged = [...DEFAULT_8_SLOTS];
+          parsed.forEach((p, idx) => {
+            if (idx < 8) merged[idx] = { ...merged[idx], ...p };
+          });
+          return merged;
         }
       }
     } catch {}
-    const init = [...DEFAULT_SLOTS];
+    const init = [...DEFAULT_8_SLOTS];
     if (currentSymbol) init[0].symbol = currentSymbol;
     if (currentTimeframe) init[0].timeframe = currentTimeframe;
     return init;
@@ -300,8 +322,9 @@ export const MultiChartContainer: React.FC<MultiChartContainerProps> = ({
   const [maximizedChartId, setMaximizedChartId] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState<boolean>(() => typeof window !== 'undefined' && window.innerWidth < 768);
   const [mobileMode, setMobileMode] = useState<'tabs' | 'grid'>('tabs');
+  const [isLayoutSelectorOpen, setIsLayoutSelectorOpen] = useState<boolean>(false);
 
-  // Handle window resizing for responsive mobile adjustments
+  // Handle window resizing for responsive adjustments
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
@@ -317,45 +340,30 @@ export const MultiChartContainer: React.FC<MultiChartContainerProps> = ({
     } catch {}
   }, [slots]);
 
-  // Synchronize slot 0 with external currentSymbol when needed
+  // When external currentSymbol changes (e.g. from top search or watchlist),
+  // update ONLY the currently active/focused chart slot
   useEffect(() => {
     if (currentSymbol) {
-      if (syncSymbol) {
-        // Sync to all slots if changed externally
-        setSlots((prev) =>
-          prev.map((s, idx) => (idx < layout ? { ...s, symbol: currentSymbol } : s))
-        );
-      } else {
-        // Update active slot
-        setSlots((prev) =>
-          prev.map((s) => (s.id === activeChartId ? { ...s, symbol: currentSymbol } : s))
-        );
-      }
+      setSlots((prev) =>
+        prev.map((s) => (s.id === activeChartId ? { ...s, symbol: currentSymbol } : s))
+      );
     }
-  }, [currentSymbol, syncSymbol, layout]);
+  }, [currentSymbol, activeChartId]);
 
-  // Handle symbol change from within a chart pane
+  // Handle symbol change from within an individual chart pane (always independent)
   const handlePaneSymbolChange = useCallback(
     (slotId: number, newSymbol: string) => {
-      if (syncSymbol) {
-        // Update all visible slots
-        setSlots((prev) =>
-          prev.map((s, idx) => (idx < layout ? { ...s, symbol: newSymbol } : s))
-        );
-      } else {
-        // Update only this slot
-        setSlots((prev) =>
-          prev.map((s) => (s.id === slotId ? { ...s, symbol: newSymbol } : s))
-        );
-      }
+      setSlots((prev) =>
+        prev.map((s) => (s.id === slotId ? { ...s, symbol: newSymbol } : s))
+      );
       if (onActiveSymbolChange) {
         onActiveSymbolChange(newSymbol);
       }
     },
-    [syncSymbol, layout, onActiveSymbolChange]
+    [onActiveSymbolChange]
   );
 
-  // Handle timeframe change for a specific slot (always independent!)
+  // Handle timeframe change for a specific slot (independent per chart)
   const handlePaneTimeframeChange = useCallback(
     (slotId: number, newTf: string) => {
       setSlots((prev) =>
@@ -368,14 +376,13 @@ export const MultiChartContainer: React.FC<MultiChartContainerProps> = ({
     [activeChartId, onActiveTimeframeChange]
   );
 
-  // Number of active visible slots (1 to 6)
+  // Visible slots based on the active layout's chart count (1 to 8)
   const visibleSlots = useMemo(() => {
-    const count = Math.min(Math.max(1, layout), 6);
-    return slots.slice(0, count);
-  }, [slots, layout]);
+    return slots.slice(0, activeChartCount);
+  }, [slots, activeChartCount]);
 
   // Grid styling based on active layout
-  const getGridStyle = (): React.CSSProperties => {
+  const gridContainerStyle = useMemo((): React.CSSProperties => {
     if (maximizedChartId !== null) {
       return {
         display: 'flex',
@@ -402,95 +409,8 @@ export const MultiChartContainer: React.FC<MultiChartContainerProps> = ({
       };
     }
 
-    const baseStyle: React.CSSProperties = {
-      display: 'grid',
-      gap: '4px',
-      width: '100%',
-      height: '100%',
-      flex: 1,
-      minHeight: 0,
-      minWidth: 0,
-      overflow: 'hidden'
-    };
-
-    switch (layout) {
-      case 1:
-        return {
-          ...baseStyle,
-          gridTemplateColumns: '1fr',
-          gridTemplateRows: '1fr'
-        };
-      case 2:
-        return {
-          ...baseStyle,
-          gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
-          gridTemplateRows: isMobile ? '1fr 1fr' : '1fr'
-        };
-      case 3:
-        return {
-          ...baseStyle,
-          gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
-          gridTemplateRows: isMobile ? '1fr 1fr 1fr' : '1fr 1fr'
-        };
-      case 4:
-        return {
-          ...baseStyle,
-          gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
-          gridTemplateRows: isMobile ? 'repeat(4, 1fr)' : '1fr 1fr'
-        };
-      case 5:
-        return {
-          ...baseStyle,
-          gridTemplateColumns: isMobile ? '1fr' : 'repeat(6, 1fr)',
-          gridTemplateRows: isMobile ? 'repeat(5, 1fr)' : '1fr 1fr'
-        };
-      case 6:
-        return {
-          ...baseStyle,
-          gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
-          gridTemplateRows: isMobile ? 'repeat(6, 1fr)' : '1fr 1fr'
-        };
-      default:
-        return {
-          ...baseStyle,
-          gridTemplateColumns: '1fr',
-          gridTemplateRows: '1fr'
-        };
-    }
-  };
-
-  // Specific cell styling for irregular layouts (3 and 5 charts)
-  const getCellGridStyle = (index: number): React.CSSProperties => {
-    if (maximizedChartId !== null || isMobile) {
-      return { width: '100%', height: '100%', minHeight: 0, minWidth: 0 };
-    }
-
-    if (layout === 3) {
-      if (index === 0) {
-        return { gridColumn: '1 / span 2', gridRow: '1', width: '100%', height: '100%', minHeight: 0, minWidth: 0 };
-      } else if (index === 1) {
-        return { gridColumn: '1 / 2', gridRow: '2', width: '100%', height: '100%', minHeight: 0, minWidth: 0 };
-      } else if (index === 2) {
-        return { gridColumn: '2 / 3', gridRow: '2', width: '100%', height: '100%', minHeight: 0, minWidth: 0 };
-      }
-    }
-
-    if (layout === 5) {
-      if (index === 0) {
-        return { gridColumn: 'span 3', gridRow: '1', width: '100%', height: '100%', minHeight: 0, minWidth: 0 };
-      } else if (index === 1) {
-        return { gridColumn: 'span 3', gridRow: '1', width: '100%', height: '100%', minHeight: 0, minWidth: 0 };
-      } else if (index === 2) {
-        return { gridColumn: 'span 2', gridRow: '2', width: '100%', height: '100%', minHeight: 0, minWidth: 0 };
-      } else if (index === 3) {
-        return { gridColumn: 'span 2', gridRow: '2', width: '100%', height: '100%', minHeight: 0, minWidth: 0 };
-      } else if (index === 4) {
-        return { gridColumn: 'span 2', gridRow: '2', width: '100%', height: '100%', minHeight: 0, minWidth: 0 };
-      }
-    }
-
-    return { width: '100%', height: '100%', minHeight: 0, minWidth: 0 };
-  };
+    return layoutConfig.gridStyle(isMobile);
+  }, [maximizedChartId, isMobile, mobileMode, layoutConfig]);
 
   return (
     <div
@@ -506,14 +426,61 @@ export const MultiChartContainer: React.FC<MultiChartContainerProps> = ({
         overflow: 'hidden'
       }}
     >
-      {/* Mobile Mode Selector & Chart Switcher Tabs */}
-      {isMobile && layout > 1 && maximizedChartId === null && (
+      {/* Maximized Restore Banner (Only visible when a chart is expanded) */}
+      {maximizedChartId !== null && (
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: '6px',
+            padding: '5px 12px',
+            background: isDark ? 'rgba(2, 132, 199, 0.2)' : '#e0f2fe',
+            borderBottom: '1px solid rgba(56, 189, 248, 0.35)',
+            flexShrink: 0,
+            gap: '8px',
+            zIndex: 10
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '12px', fontWeight: '800', color: '#38bdf8' }}>
+              🔍 Chart {(slots.findIndex(s => s.id === maximizedChartId) >= 0 ? slots.findIndex(s => s.id === maximizedChartId) + 1 : 1)} is EXPANDED (Fullscreen)
+            </span>
+            <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+              (Double-click header or click Restore to return to {activeChartCount}-chart grid)
+            </span>
+          </div>
+
+          <button
+            onClick={() => setMaximizedChartId(null)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              padding: '4px 12px',
+              borderRadius: '6px',
+              background: '#0284c7',
+              border: 'none',
+              color: '#ffffff',
+              fontSize: '11px',
+              fontWeight: '800',
+              cursor: 'pointer',
+              boxShadow: '0 0 10px rgba(2, 132, 199, 0.4)'
+            }}
+            title="Return to the multi-chart grid layout"
+          >
+            <Minimize2 size={13} />
+            <span>Restore Grid ({activeChartCount} Charts)</span>
+          </button>
+        </div>
+      )}
+
+      {/* Mobile Mode Chart Switcher Tabs */}
+      {isMobile && activeChartCount > 1 && maximizedChartId === null && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
             padding: '4px 6px',
             background: isDark ? 'rgba(15, 23, 42, 0.7)' : '#f8fafc',
             borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0'}`,
@@ -521,147 +488,105 @@ export const MultiChartContainer: React.FC<MultiChartContainerProps> = ({
             overflowX: 'auto'
           }}
         >
-          {/* Chart selection tabs */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', overflowX: 'auto' }}>
-            {visibleSlots.map((s, idx) => {
-              const isSelected = activeChartId === s.id;
-              return (
-                <button
-                  key={s.id}
-                  onClick={() => setActiveChartId(s.id)}
-                  style={{
-                    padding: '3px 8px',
-                    fontSize: '11px',
-                    fontWeight: isSelected ? '800' : '600',
-                    borderRadius: '6px',
-                    border: 'none',
-                    background: isSelected ? '#0284c7' : (isDark ? 'rgba(255,255,255,0.06)' : '#e2e8f0'),
-                    color: isSelected ? '#ffffff' : 'var(--text-secondary)',
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  {idx + 1}: {s.symbol.replace('NSE:', '').replace('MCX:', '')} ({s.timeframe}m)
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Toggle Mobile Tabs vs Stacked Grid */}
-          <button
-            onClick={() => setMobileMode(mobileMode === 'tabs' ? 'grid' : 'tabs')}
-            style={{
-              padding: '3px 7px',
-              fontSize: '10.5px',
-              fontWeight: '700',
-              borderRadius: '5px',
-              border: `1px solid ${isDark ? 'rgba(56, 189, 248, 0.3)' : '#bae6fd'}`,
-              background: 'transparent',
-              color: '#38bdf8',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap'
-            }}
-          >
-            {mobileMode === 'tabs' ? '📱 Grid' : '📱 Tab View'}
-          </button>
+          {visibleSlots.map((s, idx) => {
+            const isSelected = activeChartId === s.id;
+            return (
+              <button
+                key={s.id}
+                onClick={() => setActiveChartId(s.id)}
+                style={{
+                  padding: '3px 8px',
+                  fontSize: '11px',
+                  fontWeight: isSelected ? '800' : '600',
+                  borderRadius: '6px',
+                  border: 'none',
+                  background: isSelected ? '#0284c7' : (isDark ? 'rgba(255,255,255,0.06)' : '#e2e8f0'),
+                  color: isSelected ? '#ffffff' : 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {idx + 1}: {s.symbol.replace('NSE:', '').replace('MCX:', '')} ({s.timeframe}m)
+              </button>
+            );
+          })}
         </div>
       )}
 
-      {/* Grid Canvas for 1-6 Charts */}
-      <div style={getGridStyle()}>
-        {maximizedChartId !== null ? (
-          // Render only the single maximized chart
-          (() => {
-            const maxSlot = slots.find((s) => s.id === maximizedChartId) || slots[0];
-            const maxIndex = slots.findIndex((s) => s.id === maxSlot.id);
+      {/* Grid Canvas for 1-8 Charts */}
+      <div style={gridContainerStyle}>
+        {/*
+          PERFORMANCE CRITICAL:
+          We preserve all visible slots mounted in the DOM.
+          When maximized, we simply hide other slots via CSS (display: 'none')
+          so that lightweight-charts canvas stays in memory without unmounting,
+          avoiding unnecessary chart reloads or re-fetching candles!
+        */}
+        {visibleSlots.map((slot, index) => {
+          const isActive = activeChartId === slot.id;
+          const isSlotMaximized = maximizedChartId === slot.id;
+
+          // If a chart is maximized and it's NOT this slot, hide it cleanly
+          if (maximizedChartId !== null && !isSlotMaximized) {
             return (
-              <div style={{ width: '100%', height: '100%', minHeight: 0, minWidth: 0 }}>
-                <ChartSlotPane
-                  key={`max-${maxSlot.id}-${maxSlot.symbol}-${maxSlot.timeframe}`}
-                  slot={maxSlot}
-                  index={maxIndex >= 0 ? maxIndex : 0}
-                  isActive={true}
-                  isMaximized={true}
-                  isMultiChart={layout > 1}
-                  onSelect={() => {
-                    setActiveChartId(maxSlot.id);
-                    if (onActiveSymbolChange) onActiveSymbolChange(maxSlot.symbol);
-                  }}
-                  onToggleMaximize={() => setMaximizedChartId(null)}
-                  onSymbolChange={(sym) => handlePaneSymbolChange(maxSlot.id, sym)}
-                  onTimeframeChange={(tf) => handlePaneTimeframeChange(maxSlot.id, tf)}
-                  levelAlert={levelAlert}
-                  onCloseLevelAlert={onCloseLevelAlert}
-                  onResetSetupAlerts={onResetSetupAlerts}
-                  levelAlertsMuted={levelAlertsMuted}
-                  onToggleAlertsMuted={onToggleAlertsMuted}
-                  levelAlertsFiredCount={levelAlertsFiredCount}
-                />
-              </div>
+              <div
+                key={`slot-${slot.id}`}
+                style={{ display: 'none' }}
+              />
             );
-          })()
-        ) : isMobile && mobileMode === 'tabs' ? (
-          // Render active chart in mobile tab mode
-          (() => {
-            const currentSlot = slots.find((s) => s.id === activeChartId) || visibleSlots[0];
-            const currentIndex = visibleSlots.findIndex((s) => s.id === currentSlot.id);
+          }
+
+          // In mobile tabs mode, hide inactive slots
+          if (isMobile && mobileMode === 'tabs' && maximizedChartId === null && !isActive) {
             return (
-              <div style={{ width: '100%', height: '100%', minHeight: 0, minWidth: 0 }}>
-                <ChartSlotPane
-                  key={`mob-${currentSlot.id}-${currentSlot.symbol}-${currentSlot.timeframe}`}
-                  slot={currentSlot}
-                  index={currentIndex >= 0 ? currentIndex : 0}
-                  isActive={true}
-                  isMaximized={false}
-                  isMultiChart={layout > 1}
-                  onSelect={() => {
-                    setActiveChartId(currentSlot.id);
-                    if (onActiveSymbolChange) onActiveSymbolChange(currentSlot.symbol);
-                  }}
-                  onToggleMaximize={() => setMaximizedChartId(currentSlot.id)}
-                  onSymbolChange={(sym) => handlePaneSymbolChange(currentSlot.id, sym)}
-                  onTimeframeChange={(tf) => handlePaneTimeframeChange(currentSlot.id, tf)}
-                  levelAlert={levelAlert}
-                  onCloseLevelAlert={onCloseLevelAlert}
-                  onResetSetupAlerts={onResetSetupAlerts}
-                  levelAlertsMuted={levelAlertsMuted}
-                  onToggleAlertsMuted={onToggleAlertsMuted}
-                  levelAlertsFiredCount={levelAlertsFiredCount}
-                />
-              </div>
+              <div
+                key={`slot-${slot.id}`}
+                style={{ display: 'none' }}
+              />
             );
-          })()
-        ) : (
-          // Render all visible slots in CSS Grid
-          visibleSlots.map((slot, index) => {
-            const isActive = activeChartId === slot.id;
-            return (
-              <div key={`grid-${slot.id}`} style={getCellGridStyle(index)}>
-                <ChartSlotPane
-                  slot={slot}
-                  index={index}
-                  isActive={isActive}
-                  isMaximized={false}
-                  isMultiChart={layout > 1}
-                  onSelect={() => {
-                    setActiveChartId(slot.id);
-                    if (onActiveSymbolChange) onActiveSymbolChange(slot.symbol);
-                    if (onActiveTimeframeChange) onActiveTimeframeChange(slot.timeframe);
-                  }}
-                  onToggleMaximize={() => setMaximizedChartId(slot.id)}
-                  onSymbolChange={(sym) => handlePaneSymbolChange(slot.id, sym)}
-                  onTimeframeChange={(tf) => handlePaneTimeframeChange(slot.id, tf)}
-                  levelAlert={isActive ? levelAlert : null}
-                  onCloseLevelAlert={onCloseLevelAlert}
-                  onResetSetupAlerts={onResetSetupAlerts}
-                  levelAlertsMuted={levelAlertsMuted}
-                  onToggleAlertsMuted={onToggleAlertsMuted}
-                  levelAlertsFiredCount={levelAlertsFiredCount}
-                />
-              </div>
-            );
-          })
-        )}
+          }
+
+          const cellStyle: React.CSSProperties = maximizedChartId !== null
+            ? { width: '100%', height: '100%', minHeight: 0, minWidth: 0, flex: 1 }
+            : layoutConfig.getCellStyle(index, isMobile);
+
+          return (
+            <div
+              key={`slot-${slot.id}`}
+              style={{
+                ...cellStyle,
+                display: 'flex',
+                flexDirection: 'column',
+                position: 'relative',
+                overflow: 'hidden'
+              }}
+            >
+              <ChartSlotPane
+                slot={slot}
+                index={index}
+                isActive={isActive}
+                isMaximized={isSlotMaximized}
+                isMultiChart={activeChartCount > 1}
+                onSelect={() => {
+                  setActiveChartId(slot.id);
+                  if (onActiveSymbolChange) onActiveSymbolChange(slot.symbol);
+                  if (onActiveTimeframeChange) onActiveTimeframeChange(slot.timeframe);
+                }}
+                onToggleMaximize={() => {
+                  setMaximizedChartId((prev) => (prev === slot.id ? null : slot.id));
+                }}
+                onSymbolChange={(sym) => handlePaneSymbolChange(slot.id, sym)}
+                onTimeframeChange={(tf) => handlePaneTimeframeChange(slot.id, tf)}
+                levelAlert={isActive ? levelAlert : null}
+                onCloseLevelAlert={onCloseLevelAlert}
+                onResetSetupAlerts={onResetSetupAlerts}
+                levelAlertsMuted={levelAlertsMuted}
+                onToggleAlertsMuted={onToggleAlertsMuted}
+                levelAlertsFiredCount={levelAlertsFiredCount}
+              />
+            </div>
+          );
+        })}
       </div>
     </div>
   );

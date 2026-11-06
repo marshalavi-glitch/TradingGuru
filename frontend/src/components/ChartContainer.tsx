@@ -6,7 +6,7 @@ import { calculateMatrixSeriesData, type MatrixSeriesData } from '../utils/matri
 import { AdvIndicatorPanel } from './AdvIndicatorPanel';
 import { RealtimeLevelAlertPopup } from './RealtimeLevelAlertPopup';
 import type { LevelAlert } from './RealtimeLevelAlertPopup';
-import { Bell, RotateCcw, Zap, AlertCircle, Wifi, WifiOff, Plus, Minus } from 'lucide-react';
+import { Bell, RotateCcw, Zap, AlertCircle, Wifi, WifiOff, Plus, Minus, Maximize2, Minimize2, Search, X } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { isWithinMarketHours } from '../utils/marketHours';
 
@@ -63,6 +63,16 @@ interface ChartContainerProps {
   alertsMuted?: boolean;
   onToggleAlertsMuted?: () => void;
   firedAlertsCount?: number;
+
+  // Multi-Chart Layout props
+  isMultiChart?: boolean;
+  chartIndex?: number;
+  isActive?: boolean;
+  isMaximized?: boolean;
+  onSelect?: () => void;
+  onToggleMaximize?: () => void;
+  onSymbolChange?: (newSymbol: string) => void;
+  onTimeframeChange?: (newTimeframe: string) => void;
 }
 
 // Indian Standard Time (IST) is UTC + 5:30 (19,800 seconds).
@@ -109,11 +119,23 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
   onResetSetupAlerts: globalOnResetSetupAlerts,
   alertsMuted: globalAlertsMuted,
   onToggleAlertsMuted: globalOnToggleAlertsMuted,
-  firedAlertsCount: globalFiredAlertsCount
+  firedAlertsCount: globalFiredAlertsCount,
+  isMultiChart = false,
+  chartIndex,
+  isActive = false,
+  isMaximized = false,
+  onSelect,
+  onToggleMaximize,
+  onSymbolChange,
+  onTimeframeChange
 }) => {
   const { isDark } = useTheme();
   const [candleStyle, setCandleStyle] = useState<'japanese' | 'heikin-ashi'>('japanese');
   const [showAdvPanel, setShowAdvPanel] = useState<boolean>(false);
+  const [showMobileChartTools, setShowMobileChartTools] = useState<boolean>(false);
+  const [isPaneSearchOpen, setIsPaneSearchOpen] = useState(false);
+  const [paneSearchQuery, setPaneSearchQuery] = useState('');
+
   const [hoveredCandle, setHoveredCandle] = useState<{
     open: number;
     high: number;
@@ -279,6 +301,8 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
   const levelsSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
   const prevDatasetKeyRef = useRef<string>('');
   const prevCandlesCountRef = useRef<number>(0);
+  const lastAppliedCandleTimeRef = useRef<number | null>(null);
+  const lastVwapAppliedTimeRef = useRef<number | null>(null);
   
   // Custom price lines for profile metrics
   const pocLineRef = useRef<any>(null);
@@ -866,6 +890,10 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
       vwapSeriesRef.current = null;
       levelsSeriesRef.current = null;
       matrixSeriesRef.current = [];
+      prevDatasetKeyRef.current = '';
+      prevCandlesCountRef.current = 0;
+      lastAppliedCandleTimeRef.current = null;
+      lastVwapAppliedTimeRef.current = null;
     };
   }, []);
 
@@ -884,15 +912,19 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
       }
       prevDatasetKeyRef.current = '';
       prevCandlesCountRef.current = 0;
+      lastAppliedCandleTimeRef.current = null;
+      lastVwapAppliedTimeRef.current = null;
       return;
     }
 
     // Sanitize candles: filter out invalid numbers, deduplicate timestamps, filter market hours, and sort ascending
     const validCandlesMap = new Map<number, Candle>();
     candles.forEach((c) => {
-      if (c && typeof c.time === 'number' && !isNaN(c.time) && !isNaN(c.close) && !isNaN(c.open) && !isNaN(c.high) && !isNaN(c.low)) {
-        if (isWithinMarketHours(c.time, symbol, timeframe)) {
-          validCandlesMap.set(c.time, c);
+      if (!c) return;
+      const t = typeof c.time === 'number' ? c.time : (typeof c.time === 'string' ? (isNaN(Number(c.time)) ? Math.floor(new Date(c.time).getTime() / 1000) : Number(c.time)) : Number(c.time));
+      if (!isNaN(t) && t > 0 && !isNaN(c.close) && !isNaN(c.open) && !isNaN(c.high) && !isNaN(c.low)) {
+        if (isWithinMarketHours(t, symbol, timeframe)) {
+          validCandlesMap.set(t, { ...c, time: t });
         }
       }
     });
@@ -959,141 +991,211 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
       };
     });
 
-    const datasetKey = `${symbol}_${timeframe}_${sessionPeriod || 'daily'}_${candleStyle}`;
-    const isDatasetChange = prevDatasetKeyRef.current !== datasetKey;
-    const isMajorCountChange = Math.abs(sortedCandles.length - prevCandlesCountRef.current) > 1;
-
-    if (isDatasetChange || isMajorCountChange || prevCandlesCountRef.current === 0) {
-      candlestickSeriesRef.current.setData(chartData);
-      volumeSeriesRef.current.setData(volumeData);
-      prevDatasetKeyRef.current = datasetKey;
-      prevCandlesCountRef.current = sortedCandles.length;
-    } else {
-      // Incremental real-time tick update: only update the latest candle in-place!
-      // This prevents Lightweight Charts from repeatedly resetting/expanding the Y-axis!
+    try {
+      const datasetKey = `${symbol}_${timeframe}_${sessionPeriod || 'daily'}_${candleStyle}`;
+      const isDatasetChange = prevDatasetKeyRef.current !== datasetKey;
       const lastCandle = chartData[chartData.length - 1];
       const lastVol = volumeData[volumeData.length - 1];
-      if (lastCandle) {
-        candlestickSeriesRef.current.update(lastCandle);
-      }
-      if (lastVol) {
-        volumeSeriesRef.current.update(lastVol);
-      }
-      prevCandlesCountRef.current = sortedCandles.length;
-    }
+      const lastCandleTime = lastCandle ? (lastCandle.time as number) : null;
 
-    // Calculate and set daily-anchored VWAP
-    if (vwapSeriesRef.current) {
-      let currentDayStr = '';
-      let cumulativeVolume = 0;
-      let cumulativePriceVolume = 0;
+      // In-place update is strictly allowed ONLY when:
+      // 1. Same dataset (symbol, timeframe, sessionPeriod, candleStyle)
+      // 2. Exact same candle count (meaning updating currently open bar, no bar added or removed)
+      // 3. Exact same candle timestamp as previously applied
+      const isInPlaceUpdate =
+        !isDatasetChange &&
+        prevCandlesCountRef.current === sortedCandles.length &&
+        lastAppliedCandleTimeRef.current !== null &&
+        lastCandleTime === lastAppliedCandleTimeRef.current;
 
-      const vwapData = sortedCandles.map((c) => {
-        const date = new Date((c.time as number) * 1000);
-        const dayStr = date.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
-
-        if (dayStr !== currentDayStr) {
-          currentDayStr = dayStr;
-          cumulativeVolume = 0;
-          cumulativePriceVolume = 0;
-        }
-
-        const ohlcPrice = (c.open + c.high + c.low + c.close) / 4;
-        const vol = typeof c.volume === 'number' && !isNaN(c.volume) ? c.volume : 0;
-        cumulativePriceVolume += ohlcPrice * vol;
-        cumulativeVolume += vol;
-
-        return {
-          time: ((c.time as number) + IST_OFFSET_SECONDS) as Time,
-          value: cumulativeVolume > 0 ? cumulativePriceVolume / cumulativeVolume : ohlcPrice
-        };
-      });
-
-      if (isDatasetChange || isMajorCountChange) {
-        vwapSeriesRef.current.setData(vwapData);
-      } else {
-        const lastVwap = vwapData[vwapData.length - 1];
-        if (lastVwap) {
-          vwapSeriesRef.current.update(lastVwap);
-        }
-      }
-    }
-
-    // Set Matrix series data with strict deduplication & ascending time order
-    if (matrixSeriesRef.current.length === 10 && matrixSeriesData) {
-      const shiftSeries = (seriesArr: any[]) => {
-        if (!Array.isArray(seriesArr)) return [];
-        const seen = new Set<number>();
-        const valid = [];
-        for (const item of seriesArr) {
-          if (item && typeof item.time === 'number' && !isNaN(item.time) && !isNaN(item.value)) {
-            if (!seen.has(item.time)) {
-              seen.add(item.time);
-              valid.push(item);
-            }
+      if (!isInPlaceUpdate) {
+        try {
+          candlestickSeriesRef.current.setData(chartData);
+          volumeSeriesRef.current.setData(volumeData);
+          prevDatasetKeyRef.current = datasetKey;
+          prevCandlesCountRef.current = sortedCandles.length;
+          lastAppliedCandleTimeRef.current = lastCandleTime;
+        } catch (setErr) {
+          console.warn('[Chart] Initial setData failed, retrying clean:', setErr);
+          try {
+            candlestickSeriesRef.current.setData([]);
+            volumeSeriesRef.current.setData([]);
+            candlestickSeriesRef.current.setData(chartData);
+            volumeSeriesRef.current.setData(volumeData);
+            prevDatasetKeyRef.current = datasetKey;
+            prevCandlesCountRef.current = sortedCandles.length;
+            lastAppliedCandleTimeRef.current = lastCandleTime;
+          } catch (cleanErr) {
+            console.error('[Chart] Clean setData failed:', cleanErr);
           }
         }
-        const sorted = valid
-          .sort((a, b) => a.time - b.time)
-          .map((item) => ({
-            time: ((item.time as number) + IST_OFFSET_SECONDS) as Time,
-            value: item.value
-          }));
+      } else {
+        // Incremental real-time tick update: only update the latest candle in-place!
+        try {
+          if (lastCandle) {
+            candlestickSeriesRef.current.update(lastCandle);
+          }
+          if (lastVol) {
+            volumeSeriesRef.current.update(lastVol);
+          }
+          prevCandlesCountRef.current = sortedCandles.length;
+          lastAppliedCandleTimeRef.current = lastCandleTime;
+        } catch (updateErr) {
+          // If update() throws (e.g. oldest data error or timestamp anomaly), recover safely via setData
+          console.warn('[Chart] update() failed, recovering safely with setData():', updateErr);
+          try {
+            candlestickSeriesRef.current.setData(chartData);
+            volumeSeriesRef.current.setData(volumeData);
+            prevDatasetKeyRef.current = datasetKey;
+            prevCandlesCountRef.current = sortedCandles.length;
+            lastAppliedCandleTimeRef.current = lastCandleTime;
+          } catch (recoverErr) {
+            console.error('[Chart] Recovery setData failed:', recoverErr);
+          }
+        }
+      }
 
-        // Extrapolate a 2nd point if only 1 data point exists so Lightweight Charts draws a visible horizontal line segment
-        if (sorted.length === 1) {
-          const stepSec = timeframe === 'D' ? 86400 : (parseInt(timeframe, 10) || 5) * 60;
-          sorted.push({
-            time: ((sorted[0].time as number) + stepSec) as Time,
-            value: sorted[0].value
+      // Calculate and set daily-anchored VWAP
+      if (vwapSeriesRef.current) {
+        try {
+          let currentDayStr = '';
+          let cumulativeVolume = 0;
+          let cumulativePriceVolume = 0;
+
+          const vwapData = sortedCandles.map((c) => {
+            const date = new Date((c.time as number) * 1000);
+            const dayStr = date.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+
+            if (dayStr !== currentDayStr) {
+              currentDayStr = dayStr;
+              cumulativeVolume = 0;
+              cumulativePriceVolume = 0;
+            }
+
+            const ohlcPrice = (c.open + c.high + c.low + c.close) / 4;
+            const vol = typeof c.volume === 'number' && !isNaN(c.volume) ? c.volume : 0;
+            cumulativePriceVolume += ohlcPrice * vol;
+            cumulativeVolume += vol;
+
+            return {
+              time: ((c.time as number) + IST_OFFSET_SECONDS) as Time,
+              value: cumulativeVolume > 0 ? cumulativePriceVolume / cumulativeVolume : ohlcPrice
+            };
+          });
+
+          const lastVwap = vwapData[vwapData.length - 1];
+          const lastVwapTime = lastVwap ? (lastVwap.time as number) : null;
+          const isVwapInPlaceUpdate =
+            !isDatasetChange &&
+            prevCandlesCountRef.current === sortedCandles.length &&
+            lastVwapAppliedTimeRef.current !== null &&
+            lastVwapTime === lastVwapAppliedTimeRef.current;
+
+          if (isVwapInPlaceUpdate) {
+            try {
+              if (lastVwap) {
+                vwapSeriesRef.current.update(lastVwap);
+              }
+              lastVwapAppliedTimeRef.current = lastVwapTime;
+            } catch (vwapUpdateErr) {
+              try {
+                vwapSeriesRef.current.setData(vwapData);
+                lastVwapAppliedTimeRef.current = lastVwapTime;
+              } catch (e) {}
+            }
+          } else {
+            try {
+              vwapSeriesRef.current.setData(vwapData);
+              lastVwapAppliedTimeRef.current = lastVwapTime;
+            } catch (e) {}
+          }
+        } catch (vwapErr) {
+          console.warn('[Chart] VWAP computation error:', vwapErr);
+        }
+      }
+
+      // Set Matrix series data with strict deduplication & ascending time order
+      if (matrixSeriesRef.current.length === 10 && matrixSeriesData) {
+        try {
+          const shiftSeries = (seriesArr: any[]) => {
+            if (!Array.isArray(seriesArr)) return [];
+            const seen = new Set<number>();
+            const valid = [];
+            for (const item of seriesArr) {
+              if (item && typeof item.time === 'number' && !isNaN(item.time) && !isNaN(item.value)) {
+                if (!seen.has(item.time)) {
+                  seen.add(item.time);
+                  valid.push(item);
+                }
+              }
+            }
+            const sorted = valid
+              .sort((a, b) => a.time - b.time)
+              .map((item) => ({
+                time: ((item.time as number) + IST_OFFSET_SECONDS) as Time,
+                value: item.value
+              }));
+
+            // Extrapolate a 2nd point if only 1 data point exists so Lightweight Charts draws a visible horizontal line segment
+            if (sorted.length === 1) {
+              const stepSec = timeframe === 'D' ? 86400 : (parseInt(timeframe, 10) || 5) * 60;
+              sorted.push({
+                time: ((sorted[0].time as number) + stepSec) as Time,
+                value: sorted[0].value
+              });
+            }
+            return sorted;
+          };
+
+          const s1 = shiftSeries(matrixSeriesData.level1);
+          if (s1.length > 0) {
+            matrixSeriesRef.current[0]?.setData(s1);
+            matrixSeriesRef.current[1]?.setData(shiftSeries(matrixSeriesData.level2));
+            matrixSeriesRef.current[2]?.setData(shiftSeries(matrixSeriesData.level3));
+            matrixSeriesRef.current[3]?.setData(shiftSeries(matrixSeriesData.level4));
+            matrixSeriesRef.current[4]?.setData(shiftSeries(matrixSeriesData.level5));
+            matrixSeriesRef.current[5]?.setData(shiftSeries(matrixSeriesData.level6));
+            matrixSeriesRef.current[6]?.setData(shiftSeries(matrixSeriesData.level7));
+            matrixSeriesRef.current[7]?.setData(shiftSeries(matrixSeriesData.level8));
+            matrixSeriesRef.current[8]?.setData(shiftSeries(matrixSeriesData.level9));
+            matrixSeriesRef.current[9]?.setData(shiftSeries(matrixSeriesData.level10));
+          }
+        } catch (matrixErr) {
+          console.warn('[Chart] Matrix series update error:', matrixErr);
+        }
+      }
+      
+      // Viewport visible range logic (TradingView standard default view)
+      const currentKey = `${symbol}-${timeframe}-${sessionPeriod || 'daily'}`;
+      if (lastSymbolTimeframeRef.current !== currentKey) {
+        if (sessionPeriod === 'monthly' && candles.length > 150) {
+          chartRef.current?.timeScale().setVisibleLogicalRange({
+            from: candles.length - 150,
+            to: candles.length + 5,
+          });
+        } else if (sessionPeriod === 'weekly' && candles.length > 100) {
+          chartRef.current?.timeScale().setVisibleLogicalRange({
+            from: candles.length - 100,
+            to: candles.length + 3,
+          });
+        } else {
+          const total = candles.length;
+          const visibleBars = Math.min(total, 70);
+          chartRef.current?.timeScale().setVisibleLogicalRange({
+            from: Math.max(0, total - visibleBars),
+            to: total + 4,
           });
         }
-        return sorted;
-      };
-
-      const s1 = shiftSeries(matrixSeriesData.level1);
-      if (s1.length > 0) {
-        matrixSeriesRef.current[0].setData(s1);
-        matrixSeriesRef.current[1].setData(shiftSeries(matrixSeriesData.level2));
-        matrixSeriesRef.current[2].setData(shiftSeries(matrixSeriesData.level3));
-        matrixSeriesRef.current[3].setData(shiftSeries(matrixSeriesData.level4));
-        matrixSeriesRef.current[4].setData(shiftSeries(matrixSeriesData.level5));
-        matrixSeriesRef.current[5].setData(shiftSeries(matrixSeriesData.level6));
-        matrixSeriesRef.current[6].setData(shiftSeries(matrixSeriesData.level7));
-        matrixSeriesRef.current[7].setData(shiftSeries(matrixSeriesData.level8));
-        matrixSeriesRef.current[8].setData(shiftSeries(matrixSeriesData.level9));
-        matrixSeriesRef.current[9].setData(shiftSeries(matrixSeriesData.level10));
+        lastSymbolTimeframeRef.current = currentKey;
       }
-    }
-    
-    // Viewport visible range logic (TradingView standard default view)
-    const currentKey = `${symbol}-${timeframe}-${sessionPeriod || 'daily'}`;
-    if (lastSymbolTimeframeRef.current !== currentKey) {
-      if (sessionPeriod === 'monthly' && candles.length > 150) {
-        chartRef.current?.timeScale().setVisibleLogicalRange({
-          from: candles.length - 150,
-          to: candles.length + 5,
-        });
-      } else if (sessionPeriod === 'weekly' && candles.length > 100) {
-        chartRef.current?.timeScale().setVisibleLogicalRange({
-          from: candles.length - 100,
-          to: candles.length + 3,
-        });
-      } else {
-        const total = candles.length;
-        const visibleBars = Math.min(total, 70);
-        chartRef.current?.timeScale().setVisibleLogicalRange({
-          from: Math.max(0, total - visibleBars),
-          to: total + 4,
-        });
-      }
-      lastSymbolTimeframeRef.current = currentKey;
-    }
 
-    // Propagate visible range
-    requestAnimationFrame(() => {
-      handleRangeChangeRef.current();
-    });
+      // Propagate visible range
+      requestAnimationFrame(() => {
+        handleRangeChangeRef.current();
+      });
+    } catch (globalChartErr) {
+      console.error('[Chart] Safe render effect caught error:', globalChartErr);
+    }
   }, [candles, symbol, timeframe, sessionPeriod, matrixSeriesData, candleStyle]);
 
   // Immediately render orderflow levels overlay whenever activeOrderflowLevels recalculates
@@ -1614,49 +1716,240 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
   }, [symbol]);
 
   return (
-    <div className="glass-panel animate-fade-in" style={{ display: 'flex', flexDirection: 'column', flex: 1, width: '100%', height: '100%', minHeight: 0, minWidth: 0, overflow: 'hidden', position: 'relative' }}>
-      
-      {/* Chart Title Overlay & Status Toolbar */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', borderBottom: '1px solid var(--border-color)', backgroundColor: 'rgba(13, 16, 23, 0.4)', gap: '10px', flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '15px', fontWeight: '700', color: 'white' }}>{symbol}</span>
-            <span style={{ fontSize: '11px', color: 'var(--text-secondary)', backgroundColor: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '4px' }}>
-              {timeframe === 'D' ? 'Daily' : timeframe === 'W' ? 'Weekly' : timeframe === 'M' ? 'Monthly' : `${timeframe}m`} Chart
+    <div
+      onClick={onSelect}
+      className="glass-panel animate-fade-in"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        flex: 1,
+        width: '100%',
+        height: '100%',
+        minHeight: 0,
+        minWidth: 0,
+        overflow: 'hidden',
+        position: 'relative',
+        boxSizing: 'border-box',
+        border: isMultiChart ? (isActive ? '1.5px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.08)') : undefined,
+        boxShadow: isMultiChart && isActive ? '0 0 12px rgba(56, 189, 248, 0.22)' : undefined
+      }}
+    >
+      {/* Inline Symbol Search Popover for Multi-Chart Panes */}
+      {isPaneSearchOpen && onSymbolChange && (
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: 'absolute',
+            top: '40px',
+            left: '8px',
+            zIndex: 9999,
+            background: isDark ? '#0f172a' : '#ffffff',
+            border: '1px solid #38bdf8',
+            borderRadius: '8px',
+            padding: '10px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
+            minWidth: '220px',
+            maxWidth: '300px'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
+            <span style={{ fontSize: '11px', fontWeight: '800', color: '#38bdf8' }}>
+              Change Symbol (Chart {typeof chartIndex === 'number' ? chartIndex + 1 : ''})
             </span>
+            <button
+              onClick={() => setIsPaneSearchOpen(false)}
+              style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '2px' }}
+            >
+              <X size={14} />
+            </button>
+          </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (paneSearchQuery.trim()) {
+                let q = paneSearchQuery.trim().toUpperCase();
+                if (!q.includes(':')) {
+                  const isDeriv = (q.endsWith('FUT') || q.endsWith('CE') || q.endsWith('PE')) && /\d/.test(q);
+                  const isMcx = ['CRUDEOIL', 'GOLD', 'SILVER', 'NATURALGAS', 'COPPER', 'ZINC'].some(c => q.includes(c));
+                  q = isDeriv ? `NFO:${q}` : isMcx ? `MCX:${q}` : `NSE:${q}`;
+                }
+                onSymbolChange(q);
+                setIsPaneSearchOpen(false);
+                setPaneSearchQuery('');
+              }
+            }}
+          >
+            <input
+              autoFocus
+              type="text"
+              placeholder="e.g. NIFTY, BANKNIFTY, RELIANCE..."
+              value={paneSearchQuery}
+              onChange={(e) => setPaneSearchQuery(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '6px 8px',
+                borderRadius: '6px',
+                border: `1px solid ${isDark ? 'rgba(255,255,255,0.18)' : '#cbd5e1'}`,
+                background: isDark ? 'rgba(0,0,0,0.35)' : '#f8fafc',
+                color: 'var(--text-primary)',
+                fontSize: '12px',
+                boxSizing: 'border-box',
+                outline: 'none'
+              }}
+            />
+          </form>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+            {['NSE:NIFTY', 'NSE:BANKNIFTY', 'NSE:FINNIFTY', 'NSE:RELIANCE', 'MCX:CRUDEOIL', 'MCX:GOLD'].map(preset => (
+              <button
+                key={preset}
+                type="button"
+                onClick={() => {
+                  onSymbolChange(preset);
+                  setIsPaneSearchOpen(false);
+                  setPaneSearchQuery('');
+                }}
+                style={{
+                  fontSize: '10px',
+                  fontWeight: '600',
+                  padding: '3px 6px',
+                  borderRadius: '4px',
+                  border: 'none',
+                  background: isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0',
+                  color: 'var(--text-primary)',
+                  cursor: 'pointer'
+                }}
+              >
+                {preset.replace('NSE:', '').replace('MCX:', '')}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Chart Title Overlay & Status Toolbar */}
+      <div 
+        onDoubleClick={() => onToggleMaximize && onToggleMaximize()}
+        title={onToggleMaximize ? (isMaximized ? "Double-click to restore grid" : "Double-click to expand this chart") : undefined}
+        style={{ display: 'flex', flexWrap: 'nowrap', justifyContent: 'space-between', alignItems: 'center', padding: isMultiChart ? '4px 8px' : '8px 14px', borderBottom: '1px solid var(--border-color)', backgroundColor: 'rgba(13, 16, 23, 0.4)', gap: '6px', flexShrink: 0, minHeight: isMultiChart ? '34px' : 'auto' }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'nowrap', overflowX: 'auto', minWidth: 0 }}>
+          {isMultiChart && typeof chartIndex === 'number' && (
+            <span
+              style={{
+                fontSize: '10px',
+                fontWeight: '900',
+                padding: '2px 5px',
+                borderRadius: '4px',
+                backgroundColor: isActive ? '#0284c7' : 'rgba(255,255,255,0.08)',
+                color: isActive ? '#ffffff' : 'var(--text-secondary)',
+                boxShadow: isActive ? '0 0 8px rgba(2, 132, 199, 0.5)' : 'none',
+                flexShrink: 0
+              }}
+              title={`Chart Pane ${chartIndex + 1} ${isActive ? '(Active Chart)' : ''}`}
+            >
+              {chartIndex + 1}
+            </span>
+          )}
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
+            <span
+              onClick={(e) => {
+                if (onSymbolChange) {
+                  e.stopPropagation();
+                  setIsPaneSearchOpen(!isPaneSearchOpen);
+                }
+              }}
+              style={{
+                fontSize: isMultiChart ? '12.5px' : '14px',
+                fontWeight: '700',
+                color: 'white',
+                cursor: onSymbolChange ? 'pointer' : 'default',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '3px',
+                padding: onSymbolChange ? '1px 4px' : 0,
+                borderRadius: '4px',
+                backgroundColor: isPaneSearchOpen ? 'rgba(56, 189, 248, 0.2)' : 'transparent',
+                border: isPaneSearchOpen ? '1px solid #38bdf8' : '1px solid transparent'
+              }}
+              title={onSymbolChange ? "Click to search/change symbol for this chart" : undefined}
+            >
+              {symbol}
+              {onSymbolChange && <Search size={11} style={{ opacity: 0.7 }} />}
+            </span>
+
             {isOption && (
               <span style={{
-                fontSize: '10px',
+                fontSize: '9px',
                 fontWeight: '800',
                 color: '#38bdf8',
                 backgroundColor: 'rgba(56, 189, 248, 0.15)',
                 border: '1px solid rgba(56, 189, 248, 0.4)',
-                padding: '2px 8px',
+                padding: '1px 5px',
                 borderRadius: '4px',
-                letterSpacing: '0.5px'
+                letterSpacing: '0.4px'
               }}>
-                🎯 OPTION CHART
+                🎯 OPTION
               </span>
             )}
           </div>
 
           {/* Connection Status Pill */}
-          <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
             {connectionStatus === 'connected' ? (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '11px', fontWeight: '600', color: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', padding: '2px 8px', borderRadius: '6px', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
-                <Wifi size={12} /> Live Ticks
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '9.5px', fontWeight: '600', color: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', padding: '2px 5px', borderRadius: '5px', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
+                <Wifi size={10} /> Live
               </span>
             ) : connectionStatus === 'connecting' ? (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '11px', fontWeight: '600', color: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', padding: '2px 8px', borderRadius: '6px', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
-                <Wifi size={12} /> Connecting...
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '9.5px', fontWeight: '600', color: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', padding: '2px 5px', borderRadius: '5px', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
+                <Wifi size={10} /> Conn...
               </span>
             ) : (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '11px', fontWeight: '600', color: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', padding: '2px 8px', borderRadius: '6px', border: '1px solid rgba(239, 68, 68, 0.25)' }}>
-                <WifiOff size={12} /> Disconnected
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '9.5px', fontWeight: '600', color: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', padding: '2px 5px', borderRadius: '5px', border: '1px solid rgba(239, 68, 68, 0.25)' }}>
+                <WifiOff size={10} /> Disconn
               </span>
             )}
           </div>
+        </div>
 
+        {/* Mobile-Only Toolbar Toggle Button */}
+        <div className="mobile-only" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <button
+            onClick={() => setShowMobileChartTools(!showMobileChartTools)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              fontSize: '11px',
+              fontWeight: '600',
+              padding: '4px 9px',
+              borderRadius: '6px',
+              border: '1px solid rgba(56, 189, 248, 0.3)',
+              backgroundColor: showMobileChartTools ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+              color: showMobileChartTools ? '#38bdf8' : 'var(--text-primary)',
+              cursor: 'pointer'
+            }}
+          >
+            🛠️ Tools {showMobileChartTools ? '▲' : '▼'}
+          </button>
+        </div>
+
+        {/* Secondary Tools Controls: always on desktop, toggled on mobile */}
+        <div
+          className={showMobileChartTools ? '' : 'desktop-only'}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            flexWrap: 'wrap',
+            width: showMobileChartTools ? '100%' : 'auto',
+            paddingTop: showMobileChartTools ? '6px' : '0',
+            borderTop: showMobileChartTools ? '1px dashed rgba(255, 255, 255, 0.1)' : 'none'
+          }}
+        >
           {/* Verified Angel One Data Feed Badge */}
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <span
@@ -1858,6 +2151,46 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Maximize / Restore Button for Multi-Chart */}
+        {onToggleMaximize && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleMaximize();
+            }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '4px',
+              padding: '0 8px',
+              height: '26px',
+              borderRadius: '6px',
+              border: `1px solid ${isMaximized ? '#38bdf8' : (isDark ? 'rgba(56, 189, 248, 0.4)' : '#bae6fd')}`,
+              backgroundColor: isMaximized ? 'rgba(56, 189, 248, 0.25)' : (isDark ? 'rgba(56, 189, 248, 0.1)' : 'rgba(2, 132, 199, 0.08)'),
+              color: isMaximized ? '#38bdf8' : (isDark ? '#38bdf8' : '#0284c7'),
+              cursor: 'pointer',
+              flexShrink: 0,
+              fontSize: '11px',
+              fontWeight: '700',
+              transition: 'all 0.15s ease'
+            }}
+            title={isMaximized ? "Restore grid layout (Show all charts)" : "Expand this chart to fullscreen (or double click top bar)"}
+          >
+            {isMaximized ? (
+              <>
+                <Minimize2 size={13} />
+                <span>Restore</span>
+              </>
+            ) : (
+              <>
+                <Maximize2 size={13} />
+                <span>Expand</span>
+              </>
+            )}
+          </button>
+        )}
       </div>
 
       {/* Delayed Data / WebSocket Disconnection Notice */}

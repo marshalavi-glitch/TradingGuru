@@ -36,6 +36,7 @@ import { Mp3DayPatternContainer } from './components/Mp3DayPatternContainer';
 import { LoginScreen, getStoredAuthUser, clearStoredAuthUser, AUTH_EPOCH_KEY, CURRENT_AUTH_EPOCH } from './components/LoginScreen';
 import { UserManagementModal } from './components/UserManagementModal';
 import { HomeContainer } from './components/HomeContainer';
+import { AlgoTradeContainer } from './components/AlgoTradeContainer';
 import { HomeBottomWidgets } from './components/HomeBottomWidgets';
 import { WATCHLIST_DATA } from './data/watchlistData';
 
@@ -45,7 +46,7 @@ export type TabType =
   | 'scanner' | 'options' | 'signals' | 'doji' | 'doji_novol' 
   | 'hourly_updates' | 'backtest_results' 
   | 'nr7_breakout' 
-  | 'cvd_adv' | 'heatmap' | 'market_profile' | 'pro_market_profile' | 'trial' | 'mp_3day_pattern' | 'footprint_chart' | 'high_beta' | 'manual_trades' | 'sr_breakout' | 'test' | 'test2';
+  | 'cvd_adv' | 'heatmap' | 'market_profile' | 'pro_market_profile' | 'trial' | 'mp_3day_pattern' | 'footprint_chart' | 'high_beta' | 'manual_trades' | 'algo_trade' | 'sr_breakout' | 'test' | 'test2';
 
 interface TabItem {
   id: TabType;
@@ -86,6 +87,7 @@ const TOOL_GROUPS: ToolGroup[] = [
   {
     name: 'Breakouts',
     items: [
+      { id: 'algo_trade', label: 'Algo Trade' },
       { id: 'sr_breakout', label: 'SR Breakout' },
       { id: 'high_beta', label: 'High Beta Trades' },
       { id: 'nr7_breakout', label: '20% UC Potential' }
@@ -284,39 +286,18 @@ function App() {
     } catch (e) {}
     return '5';
   });
-  const [multiChartLayout, setMultiChartLayout] = useState<number>(() => {
+  const [multiChartLayout, setMultiChartLayout] = useState<string | number>(() => {
     try {
       const saved = localStorage.getItem('tradingguru_multichart_layout');
-      if (saved) {
-        const val = parseInt(saved, 10);
-        if (val >= 1 && val <= 6) return val;
-      }
+      if (saved) return saved;
     } catch {}
-    return 2;
+    return '2_vertical';
   });
-  const [syncSymbol, setSyncSymbol] = useState<boolean>(() => {
-    try {
-      const saved = localStorage.getItem('tradingguru_multichart_sync_symbol');
-      if (saved !== null) return saved === 'true';
-    } catch {}
-    return true;
-  });
-
-  const handleLayoutChange = (newLayout: number) => {
+  const handleLayoutChange = (newLayout: string | number) => {
     setMultiChartLayout(newLayout);
     try {
       localStorage.setItem('tradingguru_multichart_layout', String(newLayout));
     } catch {}
-  };
-
-  const handleToggleSyncSymbol = () => {
-    setSyncSymbol((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem('tradingguru_multichart_sync_symbol', String(next));
-      } catch {}
-      return next;
-    });
   };
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
   const [candles, setCandles] = useState<Candle[]>([]);
@@ -1023,8 +1004,6 @@ function App() {
               isChartTab={activeTab === 'chart'}
               multiChartLayout={multiChartLayout}
               onMultiChartLayoutChange={handleLayoutChange}
-              syncSymbol={syncSymbol}
-              onToggleSyncSymbol={handleToggleSyncSymbol}
             />
           </TabErrorBoundary>
 
@@ -1368,7 +1347,14 @@ function App() {
 
           {/* Active Workspace Component */}
           <div style={{ flex: 1, minHeight: 0, overflow: (activeTab === 'chart' || activeTab === 'testing') ? 'hidden' : 'auto', display: 'flex', flexDirection: 'column' }}>
-        {activeTab === 'manual_trades' ? (
+        {activeTab === 'algo_trade' ? (
+          <TabErrorBoundary tabName="Algo Trade">
+            <AlgoTradeContainer
+              onSymbolSelect={setSymbol}
+              onSwitchToChart={() => setActiveTab('chart')}
+            />
+          </TabErrorBoundary>
+        ) : activeTab === 'manual_trades' ? (
           <TabErrorBoundary tabName="Manual Trades">
             <ManualTradesContainer
               onSymbolSelect={setSymbol}
@@ -1548,9 +1534,7 @@ function App() {
                 currentSymbol={symbol}
                 currentTimeframe={timeframe}
                 layout={multiChartLayout}
-                syncSymbol={syncSymbol}
                 onLayoutChange={handleLayoutChange}
-                onToggleSyncSymbol={handleToggleSyncSymbol}
                 onActiveSymbolChange={(newSym) => setSymbol(newSym)}
                 onActiveTimeframeChange={(newTf) => setTimeframe(newTf)}
                 levelAlert={levelAlert}
