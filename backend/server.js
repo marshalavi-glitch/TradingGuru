@@ -24,12 +24,11 @@ import {
   exportOrderFlowCsvString
 } from './orderflow_reporter.js';
 
-import {
-  startTelegramTradeIdeasEngine,
-  getCachedTradeIdeas,
-  scrapeTelegramChannel,
-  ingestManualTradeIdea
-} from './telegram_trade_ideas.js';
+const startTelegramTradeIdeasEngine = () => {};
+const getCachedTradeIdeas = () => ({ items: [] });
+const scrapeTelegramChannel = async () => [];
+const ingestManualTradeIdea = () => ({ action: 'none', message: 'Disabled', item: null });
+const MONITORED_CHANNELS = [];
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -100,7 +99,8 @@ const MCX_TRACKED_TOKENS = [
   '578249', // NATURALGAS28DEC26FUT
   '495213', // GOLD04DEC26FUT (Active Near-Month)
   '483079', // GOLD05OCT26FUT (Previous)
-  '495214'  // SILVER04DEC26FUT (Active Near-Month)
+  '495214', // SILVER04DEC26FUT (Active Near-Month)
+  '584329'  // ZINC Active Futures (MCX)
 ];
 
 const liveMcxQuotesCache = {};
@@ -138,7 +138,7 @@ async function fetchLiveMcxQuotes(force = false) {
             liveMcxQuotesCache['CRUDEOILM'] = entry;
             liveMcxQuotesCache['MCX:CRUDEOILM1!'] = entry;
             liveMcxQuotesCache['CRUDEOILM1!'] = entry;
-          } else if (ts.startsWith('NATURALGAS27OCT26FUT')) {
+          } else if (ts.startsWith('NATURALGAS')) {
             liveMcxQuotesCache['MCX:NATURALGAS'] = entry;
             liveMcxQuotesCache['NATURALGAS'] = entry;
             liveMcxQuotesCache['MCX:NATURALGAS1!'] = entry;
@@ -156,6 +156,12 @@ async function fetchLiveMcxQuotes(force = false) {
             liveMcxQuotesCache['MCX:SILVER1!'] = entry;
             liveMcxQuotesCache['SILVER1!'] = entry;
             liveMcxQuotesCache['SILVER FUT'] = entry;
+          } else if (ts.startsWith('ZINC')) {
+            liveMcxQuotesCache['MCX:ZINC'] = entry;
+            liveMcxQuotesCache['ZINC'] = entry;
+            liveMcxQuotesCache['MCX:ZINC1!'] = entry;
+            liveMcxQuotesCache['ZINC1!'] = entry;
+            liveMcxQuotesCache['ZINC FUT'] = entry;
           }
         }
       });
@@ -1958,7 +1964,7 @@ app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get(['/health', '/api/health'], (req, res) => {
   res.json({ status: 'OK', timestamp: new Date(), project: 'Angel One Trading Dashboard V2' });
 });
 

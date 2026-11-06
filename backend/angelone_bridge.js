@@ -57,6 +57,16 @@ export function generateTOTP(secret) {
 
 // Built-in symbol token dictionary for indices & top F&O stocks
 export const ANGEL_SYMBOL_MAP = {
+  // GIFT NIFTY (NSE IX)
+  'NSEIX:GIFTNIFTY': { exchange: 'NSE', symboltoken: '99926000', tradingsymbol: 'Nifty 50' },
+  'NSEIX:GIFTNIFTY1!': { exchange: 'NSE', symboltoken: '99926000', tradingsymbol: 'Nifty 50' },
+  'GIFTNIFTY': { exchange: 'NSE', symboltoken: '99926000', tradingsymbol: 'Nifty 50' },
+  'GIFTNIFTY1!': { exchange: 'NSE', symboltoken: '99926000', tradingsymbol: 'Nifty 50' },
+  'NSE:GIFTNIFTY': { exchange: 'NSE', symboltoken: '99926000', tradingsymbol: 'Nifty 50' },
+  'NSE:GIFTNIFTY1!': { exchange: 'NSE', symboltoken: '99926000', tradingsymbol: 'Nifty 50' },
+  'GIFT NIFTY': { exchange: 'NSE', symboltoken: '99926000', tradingsymbol: 'Nifty 50' },
+  'GIFT NIFTY FUT': { exchange: 'NSE', symboltoken: '99926000', tradingsymbol: 'Nifty 50' },
+
   'NSE:NIFTY': { exchange: 'NSE', symboltoken: '99926000', tradingsymbol: 'Nifty 50' },
   'NIFTY': { exchange: 'NSE', symboltoken: '99926000', tradingsymbol: 'Nifty 50' },
   'NSE:BANKNIFTY': { exchange: 'NSE', symboltoken: '99926009', tradingsymbol: 'Nifty Bank' },
@@ -95,65 +105,74 @@ export const ANGEL_SYMBOL_MAP = {
   'DIXON': { exchange: 'NSE', symboltoken: '21690', tradingsymbol: 'DIXON-EQ' },
 
   // Indian Commodities (MCX) - Active & Next 3 Months Futures
-  // Crude Oil Active Near-Month (November 2026 - rolled over from 19-Oct)
+  // Crude Oil Active Near-Month (November 2026)
   'MCX:CRUDEOIL': { exchange: 'MCX', symboltoken: '573422', tradingsymbol: 'CRUDEOIL19NOV26FUT' },
   'CRUDEOIL': { exchange: 'MCX', symboltoken: '573422', tradingsymbol: 'CRUDEOIL19NOV26FUT' },
   'MCX:CRUDEOIL1!': { exchange: 'MCX', symboltoken: '573422', tradingsymbol: 'CRUDEOIL19NOV26FUT' },
+  'MCX:CRUDEOIL!': { exchange: 'MCX', symboltoken: '573422', tradingsymbol: 'CRUDEOIL19NOV26FUT' },
   'CRUDEOIL FUT': { exchange: 'MCX', symboltoken: '573422', tradingsymbol: 'CRUDEOIL19NOV26FUT' },
+  'CRUDE OIL FUT': { exchange: 'MCX', symboltoken: '573422', tradingsymbol: 'CRUDEOIL19NOV26FUT' },
   'CRUDEOIL1!': { exchange: 'MCX', symboltoken: '573422', tradingsymbol: 'CRUDEOIL19NOV26FUT' },
+  'CRUDEOIL!': { exchange: 'MCX', symboltoken: '573422', tradingsymbol: 'CRUDEOIL19NOV26FUT' },
 
   // Crude Oil Next 3 Months Contracts
-  'MCX:CRUDEOIL19OCT26FUT': { exchange: 'MCX', symboltoken: '569900', tradingsymbol: 'CRUDEOIL19OCT26FUT' },
-  'CRUDEOIL19OCT26FUT': { exchange: 'MCX', symboltoken: '569900', tradingsymbol: 'CRUDEOIL19OCT26FUT' },
   'MCX:CRUDEOIL19NOV26FUT': { exchange: 'MCX', symboltoken: '573422', tradingsymbol: 'CRUDEOIL19NOV26FUT' },
   'CRUDEOIL19NOV26FUT': { exchange: 'MCX', symboltoken: '573422', tradingsymbol: 'CRUDEOIL19NOV26FUT' },
   'MCX:CRUDEOIL18DEC26FUT': { exchange: 'MCX', symboltoken: '576264', tradingsymbol: 'CRUDEOIL18DEC26FUT' },
   'CRUDEOIL18DEC26FUT': { exchange: 'MCX', symboltoken: '576264', tradingsymbol: 'CRUDEOIL18DEC26FUT' },
+  'MCX:CRUDEOIL19JAN27FUT': { exchange: 'MCX', symboltoken: '580377', tradingsymbol: 'CRUDEOIL19JAN27FUT' },
+  'CRUDEOIL19JAN27FUT': { exchange: 'MCX', symboltoken: '580377', tradingsymbol: 'CRUDEOIL19JAN27FUT' },
 
   // Crude Oil Mini (MCX)
   'MCX:CRUDEOILM': { exchange: 'MCX', symboltoken: '573423', tradingsymbol: 'CRUDEOILM19NOV26FUT' },
   'CRUDEOILM': { exchange: 'MCX', symboltoken: '573423', tradingsymbol: 'CRUDEOILM19NOV26FUT' },
   'MCX:CRUDEOILM1!': { exchange: 'MCX', symboltoken: '573423', tradingsymbol: 'CRUDEOILM19NOV26FUT' },
-  'CRUDEOILM1!': { exchange: 'MCX', symboltoken: '573423', tradingsymbol: 'CRUDEOILM19NOV26FUT' },
-  'MCX:CRUDEOILM19OCT26FUT': { exchange: 'MCX', symboltoken: '569901', tradingsymbol: 'CRUDEOILM19OCT26FUT' },
-  'CRUDEOILM19OCT26FUT': { exchange: 'MCX', symboltoken: '569901', tradingsymbol: 'CRUDEOILM19OCT26FUT' },
+  'MCX:CRUDEOILM!': { exchange: 'MCX', symboltoken: '573423', tradingsymbol: 'CRUDEOILM19NOV26FUT' },
   'MCX:CRUDEOILM19NOV26FUT': { exchange: 'MCX', symboltoken: '573423', tradingsymbol: 'CRUDEOILM19NOV26FUT' },
   'CRUDEOILM19NOV26FUT': { exchange: 'MCX', symboltoken: '573423', tradingsymbol: 'CRUDEOILM19NOV26FUT' },
   'MCX:CRUDEOILM18DEC26FUT': { exchange: 'MCX', symboltoken: '576265', tradingsymbol: 'CRUDEOILM18DEC26FUT' },
   'CRUDEOILM18DEC26FUT': { exchange: 'MCX', symboltoken: '576265', tradingsymbol: 'CRUDEOILM18DEC26FUT' },
 
   // Natural Gas Active & Next 3 Months Futures
-  'MCX:NATURALGAS': { exchange: 'MCX', symboltoken: '570750', tradingsymbol: 'NATURALGAS27OCT26FUT' },
-  'NATURALGAS': { exchange: 'MCX', symboltoken: '570750', tradingsymbol: 'NATURALGAS27OCT26FUT' },
-  'MCX:NATURALGAS1!': { exchange: 'MCX', symboltoken: '570750', tradingsymbol: 'NATURALGAS27OCT26FUT' },
-  'NATURALGAS FUT': { exchange: 'MCX', symboltoken: '570750', tradingsymbol: 'NATURALGAS27OCT26FUT' },
-  'NATURALGAS1!': { exchange: 'MCX', symboltoken: '570750', tradingsymbol: 'NATURALGAS27OCT26FUT' },
+  'MCX:NATURALGAS': { exchange: 'MCX', symboltoken: '574319', tradingsymbol: 'NATURALGAS24NOV26FUT' },
+  'NATURALGAS': { exchange: 'MCX', symboltoken: '574319', tradingsymbol: 'NATURALGAS24NOV26FUT' },
+  'MCX:NATURALGAS1!': { exchange: 'MCX', symboltoken: '574319', tradingsymbol: 'NATURALGAS24NOV26FUT' },
+  'MCX:NATURALGAS!': { exchange: 'MCX', symboltoken: '574319', tradingsymbol: 'NATURALGAS24NOV26FUT' },
+  'NATURALGAS FUT': { exchange: 'MCX', symboltoken: '574319', tradingsymbol: 'NATURALGAS24NOV26FUT' },
+  'NATURALGAS1!': { exchange: 'MCX', symboltoken: '574319', tradingsymbol: 'NATURALGAS24NOV26FUT' },
+  'NATURALGAS!': { exchange: 'MCX', symboltoken: '574319', tradingsymbol: 'NATURALGAS24NOV26FUT' },
 
-  'MCX:NATURALGAS27OCT26FUT': { exchange: 'MCX', symboltoken: '570750', tradingsymbol: 'NATURALGAS27OCT26FUT' },
-  'NATURALGAS27OCT26FUT': { exchange: 'MCX', symboltoken: '570750', tradingsymbol: 'NATURALGAS27OCT26FUT' },
   'MCX:NATURALGAS24NOV26FUT': { exchange: 'MCX', symboltoken: '574319', tradingsymbol: 'NATURALGAS24NOV26FUT' },
   'NATURALGAS24NOV26FUT': { exchange: 'MCX', symboltoken: '574319', tradingsymbol: 'NATURALGAS24NOV26FUT' },
   'MCX:NATURALGAS28DEC26FUT': { exchange: 'MCX', symboltoken: '578249', tradingsymbol: 'NATURALGAS28DEC26FUT' },
   'NATURALGAS28DEC26FUT': { exchange: 'MCX', symboltoken: '578249', tradingsymbol: 'NATURALGAS28DEC26FUT' },
 
-  // Gold Active Near-Month Futures (December 2026 - rolled over from 05-Oct)
+  // Gold Active Near-Month Futures (December 2026)
   'MCX:GOLD': { exchange: 'MCX', symboltoken: '495213', tradingsymbol: 'GOLD04DEC26FUT' },
   'GOLD': { exchange: 'MCX', symboltoken: '495213', tradingsymbol: 'GOLD04DEC26FUT' },
   'MCX:GOLD1!': { exchange: 'MCX', symboltoken: '495213', tradingsymbol: 'GOLD04DEC26FUT' },
+  'MCX:GOLD!': { exchange: 'MCX', symboltoken: '495213', tradingsymbol: 'GOLD04DEC26FUT' },
   'GOLD FUT': { exchange: 'MCX', symboltoken: '495213', tradingsymbol: 'GOLD04DEC26FUT' },
-  'GOLD1!': { exchange: 'MCX', symboltoken: '495213', tradingsymbol: 'GOLD04DEC26FUT' },
   'MCX:GOLD04DEC26FUT': { exchange: 'MCX', symboltoken: '495213', tradingsymbol: 'GOLD04DEC26FUT' },
   'GOLD04DEC26FUT': { exchange: 'MCX', symboltoken: '495213', tradingsymbol: 'GOLD04DEC26FUT' },
-  'MCX:GOLD05OCT26FUT': { exchange: 'MCX', symboltoken: '483079', tradingsymbol: 'GOLD05OCT26FUT' },
-  'GOLD05OCT26FUT': { exchange: 'MCX', symboltoken: '483079', tradingsymbol: 'GOLD05OCT26FUT' },
 
-  // Silver Active Near-Month Futures
+  // Silver Active Near-Month Futures (December 2026)
   'MCX:SILVER': { exchange: 'MCX', symboltoken: '495214', tradingsymbol: 'SILVER04DEC26FUT' },
   'SILVER': { exchange: 'MCX', symboltoken: '495214', tradingsymbol: 'SILVER04DEC26FUT' },
   'MCX:SILVER1!': { exchange: 'MCX', symboltoken: '495214', tradingsymbol: 'SILVER04DEC26FUT' },
+  'MCX:SILVER!': { exchange: 'MCX', symboltoken: '495214', tradingsymbol: 'SILVER04DEC26FUT' },
   'SILVER FUT': { exchange: 'MCX', symboltoken: '495214', tradingsymbol: 'SILVER04DEC26FUT' },
   'MCX:SILVER04DEC26FUT': { exchange: 'MCX', symboltoken: '495214', tradingsymbol: 'SILVER04DEC26FUT' },
   'SILVER04DEC26FUT': { exchange: 'MCX', symboltoken: '495214', tradingsymbol: 'SILVER04DEC26FUT' },
+
+  // Zinc Active Futures (MCX)
+  'MCX:ZINC': { exchange: 'MCX', symboltoken: '584329', tradingsymbol: 'ZINC30JUN27FUT' },
+  'ZINC': { exchange: 'MCX', symboltoken: '584329', tradingsymbol: 'ZINC30JUN27FUT' },
+  'MCX:ZINC1!': { exchange: 'MCX', symboltoken: '584329', tradingsymbol: 'ZINC30JUN27FUT' },
+  'ZINC1!': { exchange: 'MCX', symboltoken: '584329', tradingsymbol: 'ZINC30JUN27FUT' },
+  'ZINC FUT': { exchange: 'MCX', symboltoken: '584329', tradingsymbol: 'ZINC30JUN27FUT' },
+  'MCX:ZINC30JUN27FUT': { exchange: 'MCX', symboltoken: '584329', tradingsymbol: 'ZINC30JUN27FUT' },
+  'ZINC30JUN27FUT': { exchange: 'MCX', symboltoken: '584329', tradingsymbol: 'ZINC30JUN27FUT' },
 
   'NSE:RELIANCE': { exchange: 'NSE', symboltoken: '2885', tradingsymbol: 'RELIANCE-EQ' },
   'RELIANCE': { exchange: 'NSE', symboltoken: '2885', tradingsymbol: 'RELIANCE-EQ' },
@@ -265,12 +284,11 @@ export class AngelOneBridge {
     this.profileData = null;
     this.lastScheduledRunDate = null;
     this.candleCache = {};
-    this.highPriorityQueue = [];
-    this.lowPriorityQueue = [];
-    this.isProcessingQueue = false;
-    this.lastDispatchedAt = 0;
+    this.requestQueue = Promise.resolve();
+    this.lastRequestTimestamp = 0;
+    this.lastPriorityRequestTimestamp = 0;
     this.rateLimitBackoffUntil = 0;
-    this.minRequestSpacingMs = 450;
+    this.minRequestSpacingMs = 350;
     this.config = this.loadConfig();
     this.tokenCache = this.loadTokenCache();
     this.presetsList = this.loadPresets();
@@ -363,86 +381,43 @@ export class AngelOneBridge {
 
   async parseResponse(res) {
     const text = await res.text();
-    let data = null;
     try {
-      data = JSON.parse(text);
+      return JSON.parse(text);
     } catch (err) {
-      console.warn(`[SmartAPI Raw Non-JSON] URL: ${res.url} | Status: ${res.status} | Text: ${text.slice(0, 180)}`);
       if (text.includes('Access denied') || res.status === 403 || res.status === 429) {
-        return { status: false, errorcode: 'RATE_LIMIT', message: `SmartAPI Rate Limit/Blocked (${res.status}): ${text.slice(0, 60)}` };
+        return { status: false, errorcode: 'RATE_LIMIT', message: 'Rate limit / Access Denied from SmartAPI' };
       }
       return { status: false, message: `Invalid JSON response (${res.status}): ${text.slice(0, 100)}` };
     }
-
-    if (data && (data.status === false || data.errorcode === 'RATE_LIMIT' || data.errorcode === 'AG8004')) {
-      console.warn(`[SmartAPI Rejected] URL: ${res.url} | Status: ${res.status} | Code: ${data.errorcode} | Msg: ${data.message}`);
-    }
-    return data;
   }
 
-  throttleRequest(fn, isPriority = false) {
-    return new Promise((resolve, reject) => {
-      const task = { fn, resolve, reject, isPriority };
-      if (isPriority) {
-        this.highPriorityQueue.unshift(task); // Instant jump to the front of queue
-      } else {
-        this.lowPriorityQueue.push(task);
+  async throttleRequest(fn, isPriority = false) {
+    const execute = async () => {
+      const now = Date.now();
+      if (this.rateLimitBackoffUntil > now) {
+        const remaining = Math.min(2000, this.rateLimitBackoffUntil - now);
+        await new Promise(r => setTimeout(r, remaining));
       }
-      this.drainQueue();
+      const elapsed = Date.now() - this.lastRequestTimestamp;
+      const minSpacing = isPriority ? 250 : this.minRequestSpacingMs;
+      if (elapsed < minSpacing) {
+        await new Promise(r => setTimeout(r, minSpacing - elapsed));
+      }
+      this.lastRequestTimestamp = Date.now();
+      return await fn();
+    };
+
+    if (isPriority) {
+      // Execute priority request ahead of background backlog with safe spacing
+      return await execute();
+    }
+
+    const next = this.requestQueue.then(execute).catch(err => {
+      console.warn('[throttleRequest error]', err.message);
+      return { status: false, message: err.message };
     });
-  }
-
-  async drainQueue() {
-    if (this.isProcessingQueue) return;
-    this.isProcessingQueue = true;
-
-    try {
-      while (this.highPriorityQueue.length > 0 || this.lowPriorityQueue.length > 0) {
-        // 1. Respect rate-limit backoff across all pending tasks
-        const now = Date.now();
-        if (this.rateLimitBackoffUntil > now) {
-          const waitMs = this.rateLimitBackoffUntil - now;
-          await new Promise(r => setTimeout(r, waitMs));
-        }
-
-        // 2. Enforce strict serialized spacing between calls to guarantee <= 2.4 req/sec
-        const elapsed = Date.now() - this.lastDispatchedAt;
-        if (elapsed < this.minRequestSpacingMs) {
-          await new Promise(r => setTimeout(r, this.minRequestSpacingMs - elapsed));
-        }
-
-        const task = this.highPriorityQueue.length > 0
-          ? this.highPriorityQueue.shift()
-          : this.lowPriorityQueue.shift();
-
-        this.lastDispatchedAt = Date.now();
-
-        try {
-          const result = await task.fn();
-
-          // Immediately freeze queue if rate limit or access rate is exceeded
-          const isRateLimited = result && (
-            result.errorcode === 'RATE_LIMIT' ||
-            result.errorcode === 'AG8004' ||
-            result.message?.includes('Rate limit') ||
-            result.message?.includes('Access denied') ||
-            result.message?.includes('exceeding access rate')
-          );
-
-          if (isRateLimited) {
-            const freezeMs = 2600;
-            console.warn(`[Angel One SmartAPI] Rate limit/access rate tripped. Freezing queue for ${freezeMs}ms...`);
-            this.rateLimitBackoffUntil = Math.max(this.rateLimitBackoffUntil, Date.now() + freezeMs);
-          }
-
-          task.resolve(result);
-        } catch (err) {
-          task.reject(err);
-        }
-      }
-    } finally {
-      this.isProcessingQueue = false;
-    }
+    this.requestQueue = next.then(() => {}, () => {});
+    return next;
   }
 
   async login(newCredentials = null) {
@@ -515,7 +490,7 @@ export class AngelOneBridge {
   async autoRecover(fn, isPriority = false) {
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        const result = await this.throttleRequest(fn, isPriority);
+        let result = await this.throttleRequest(fn, isPriority);
 
         // Check token expiration first before rate limits
         const isTokenExpired = result && (
@@ -533,10 +508,10 @@ export class AngelOneBridge {
           }
         }
 
-        if (result && (result.errorcode === 'RATE_LIMIT' || result.errorcode === 'AG8004' || result.message?.includes('Rate limit') || result.message?.includes('Access denied') || result.message?.includes('exceeding access rate'))) {
-          const waitTime = 2600 * (attempt + 1);
-          console.warn(`[Angel One Rate Limit] SmartAPI busy (${result.errorcode || result.message}). Waiting ${waitTime}ms before retry (attempt ${attempt + 1})...`);
-          this.rateLimitBackoffUntil = Math.max(this.rateLimitBackoffUntil, Date.now() + waitTime);
+        if (result && (result.errorcode === 'RATE_LIMIT' || result.message?.includes('Rate limit') || result.message?.includes('Access denied'))) {
+          const waitTime = 1000 * (attempt + 1);
+          console.warn(`[Angel One Rate Limit] SmartAPI busy (${result.errorcode || result.message}). Backing off ${waitTime}ms (attempt ${attempt + 1})...`);
+          this.rateLimitBackoffUntil = Date.now() + waitTime;
           await new Promise(r => setTimeout(r, waitTime));
           continue;
         }
@@ -633,7 +608,7 @@ export class AngelOneBridge {
     }, true);
   }
 
-  async getCandles({ exchange = 'NSE', symboltoken = '', interval = 'FIVE_MINUTE', fromdate = '', todate = '' }, isPriority = false) {
+  async getCandles({ exchange = 'NSE', symboltoken = '', interval = 'FIVE_MINUTE', fromdate = '', todate = '' }, isPriority = true) {
     if (!symboltoken) {
       return { status: false, message: 'symboltoken required for candles' };
     }
@@ -661,7 +636,6 @@ export class AngelOneBridge {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 6000);
       try {
-        console.log(`[SmartAPI getCandleData call] ${exchange}:${symboltoken} (${interval}) from=${fromdate} to=${todate}`);
         const res = await fetch(`${this.baseUrl}/rest/secure/angelbroking/historical/v1/getCandleData`, {
           method: 'POST',
           headers: this.getHeaders(),
@@ -702,6 +676,9 @@ export class AngelOneBridge {
     } else if (clean.startsWith('NSE:')) {
       exchange = 'NSE';
       clean = clean.replace(/^NSE:/, '');
+    } else if (clean.startsWith('NSEIX:')) {
+      exchange = 'NSE';
+      clean = clean.replace(/^NSEIX:/, '');
     }
 
     // Auto-detect derivative / option / futures contracts for NFO exchange
@@ -715,8 +692,22 @@ export class AngelOneBridge {
     const derivMatch = clean.match(/^([A-Z0-9]+?)(?:\d{2}[A-Z]{3}\d{2})/);
     const underlyingSymbol = derivMatch ? derivMatch[1] : null;
 
-    // Strip futures suffixes e.g. 1!, .FUT, FUT, -FUT
-    const stripped = clean.replace(/(1!|\.FUT|FUT|-FUT)$/, '').trim();
+    // Strip futures suffixes e.g. 1!, !, .FUT, FUT, -FUT
+    const stripped = clean.replace(/(1!|!|\.FUT|FUT|-FUT)$/, '').trim();
+
+    // Direct commodity match
+    if (clean.includes('CRUDE') && (clean.includes('1!') || clean.endsWith('!') || clean.includes('FUT') || clean === 'CRUDEOIL')) {
+      return ANGEL_SYMBOL_MAP['CRUDEOIL'];
+    }
+    if (clean.includes('NATURALGAS') && (clean.includes('1!') || clean.endsWith('!') || clean.includes('FUT') || clean === 'NATURALGAS')) {
+      return ANGEL_SYMBOL_MAP['NATURALGAS'];
+    }
+    if (clean.includes('GOLD') && (clean.includes('1!') || clean.endsWith('!') || clean.includes('FUT') || clean === 'GOLD')) {
+      return ANGEL_SYMBOL_MAP['GOLD'];
+    }
+    if (clean.includes('SILVER') && (clean.includes('1!') || clean.endsWith('!') || clean.includes('FUT') || clean === 'SILVER')) {
+      return ANGEL_SYMBOL_MAP['SILVER'];
+    }
 
     // Check variations in built-in map
     if (ANGEL_SYMBOL_MAP[clean]) return ANGEL_SYMBOL_MAP[clean];
@@ -827,12 +818,43 @@ export class AngelOneBridge {
       }
     }
 
-    // 3. Query Angel One searchScrip API selectively based on query
+    // 3. Query Angel One searchScrip API for NSE and NFO (and MCX if commodity)
     if (this.isLoggedIn) {
       try {
         const isCommodity = ['CRUDE', 'GOLD', 'SILVER', 'NATURAL', 'COPPER', 'ZINC', 'MCX'].some(c => q.includes(c));
-        const isOptionOrFuture = /^(NFO:|[A-Z]+(\d{2}[A-Z]{3}|\d+[CP]E|FUT))/.test(q) || q.endsWith('CE') || q.endsWith('PE');
-        const tasks = [];
+        const tasks = [
+          this.autoRecover(async () => {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 5000);
+            try {
+              const r = await fetch(`${this.baseUrl}/rest/secure/angelbroking/order/v1/searchScrip`, {
+                method: 'POST',
+                headers: this.getHeaders(),
+                signal: controller.signal,
+                body: JSON.stringify({ exchange: 'NSE', searchscrip: q })
+              });
+              return await this.parseResponse(r);
+            } finally {
+              clearTimeout(timeout);
+            }
+          }, true).catch(() => null),
+
+          this.autoRecover(async () => {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 5000);
+            try {
+              const r = await fetch(`${this.baseUrl}/rest/secure/angelbroking/order/v1/searchScrip`, {
+                method: 'POST',
+                headers: this.getHeaders(),
+                signal: controller.signal,
+                body: JSON.stringify({ exchange: 'NFO', searchscrip: q })
+              });
+              return await this.parseResponse(r);
+            } finally {
+              clearTimeout(timeout);
+            }
+          }, true).catch(() => null)
+        ];
 
         if (isCommodity) {
           tasks.push(
@@ -850,43 +872,7 @@ export class AngelOneBridge {
               } finally {
                 clearTimeout(timeout);
               }
-            }, false).catch(() => null)
-          );
-        } else if (isOptionOrFuture) {
-          tasks.push(
-            this.autoRecover(async () => {
-              const controller = new AbortController();
-              const timeout = setTimeout(() => controller.abort(), 5000);
-              try {
-                const r = await fetch(`${this.baseUrl}/rest/secure/angelbroking/order/v1/searchScrip`, {
-                  method: 'POST',
-                  headers: this.getHeaders(),
-                  signal: controller.signal,
-                  body: JSON.stringify({ exchange: 'NFO', searchscrip: q })
-                });
-                return await this.parseResponse(r);
-              } finally {
-                clearTimeout(timeout);
-              }
-            }, false).catch(() => null)
-          );
-        } else {
-          tasks.push(
-            this.autoRecover(async () => {
-              const controller = new AbortController();
-              const timeout = setTimeout(() => controller.abort(), 5000);
-              try {
-                const r = await fetch(`${this.baseUrl}/rest/secure/angelbroking/order/v1/searchScrip`, {
-                  method: 'POST',
-                  headers: this.getHeaders(),
-                  signal: controller.signal,
-                  body: JSON.stringify({ exchange: 'NSE', searchscrip: q })
-                });
-                return await this.parseResponse(r);
-              } finally {
-                clearTimeout(timeout);
-              }
-            }, false).catch(() => null)
+            }, true).catch(() => null)
           );
         }
 
@@ -1020,18 +1006,12 @@ export class AngelOneBridge {
     return 'FIVE_MINUTE';
   }
 
-  async getNormalizedCandles({ symbol, timeframe = '5', limit = 100, isPriority = false }) {
+  async getNormalizedCandles({ symbol, timeframe = '5', limit = 100, isPriority = true }) {
     try {
       const cacheKey = `${symbol}_${timeframe}`;
       const nowMs = Date.now();
-      const s = String(timeframe).toUpperCase().trim();
-      const isWeekly = (s === 'W' || s === '1W' || s === 'WEEK');
-      const isMonthly = (s === 'M' || s === '1M' || s === 'MONTH');
-      const isDailyOrHigher = isWeekly || isMonthly || (s === 'D' || s === '1D' || s === 'DAY');
-      const maxAgeMs = isDailyOrHigher ? 600000 : 20000;
-
       const cached = this.candleCache[cacheKey];
-      if (cached && (nowMs - cached.timestamp < maxAgeMs) && Array.isArray(cached.candles) && (limit ? cached.candles.length >= limit : cached.candles.length >= 100)) {
+      if (cached && (nowMs - cached.timestamp < 20000) && Array.isArray(cached.candles) && cached.candles.length > 0) {
         return {
           status: true,
           symbol,
@@ -1042,26 +1022,23 @@ export class AngelOneBridge {
         };
       }
 
-      if (!this.inFlightCandles) this.inFlightCandles = new Map();
-      if (this.inFlightCandles.has(cacheKey)) {
-        return await this.inFlightCandles.get(cacheKey);
+      const resolved = await this.resolveSymbolToken(symbol);
+      if (!resolved || !resolved.symboltoken) {
+        return { status: false, message: `Token not found for ${symbol}`, candles: [] };
       }
 
-      const fetchPromise = (async () => {
-        const resolved = await this.resolveSymbolToken(symbol);
-        if (!resolved || !resolved.symboltoken) {
-          return { status: false, message: `Token not found for ${symbol}`, candles: [] };
-        }
-
-        const interval = (isWeekly || isMonthly) ? 'ONE_DAY' : this.mapTimeframeToAngelInterval(timeframe);
+      const s = String(timeframe).toUpperCase().trim();
+      const isWeekly = (s === 'W' || s === '1W' || s === 'WEEK');
+      const isMonthly = (s === 'M' || s === '1M' || s === 'MONTH');
+      const interval = (isWeekly || isMonthly) ? 'ONE_DAY' : this.mapTimeframeToAngelInterval(timeframe);
       
       // Calculate from/to dates based on timeframe and limit
       const now = new Date();
       let daysBack = 7;
       if (isWeekly) {
-        daysBack = Math.min(1500, Math.max(365, Math.ceil((limit || 50) * 7 * 1.5)));
+        daysBack = Math.min(2600, Math.max(365, Math.ceil((limit || 50) * 7 * 1.5)));
       } else if (isMonthly) {
-        daysBack = Math.min(1500, Math.max(730, Math.ceil((limit || 24) * 31 * 1.5)));
+        daysBack = Math.min(2600, Math.max(730, Math.ceil((limit || 24) * 31 * 1.5)));
       } else if (interval === 'ONE_MINUTE' || interval === 'THREE_MINUTE') {
         daysBack = Math.min(30, Math.max(15, Math.ceil((limit || 100) / 300 * 2)));
       } else if (interval === 'FIVE_MINUTE' || interval === 'TEN_MINUTE') {
@@ -1100,19 +1077,9 @@ export class AngelOneBridge {
       // If pre-market (before 9:15 AM for NSE, before 9:00 AM for MCX), request up to previous day
       if (currentMinOfDay < openMinOfDay) {
         toDateObj.setUTCDate(toDateObj.getUTCDate() - 1);
-        toHour = maxCloseHour;
-        toMinute = maxCloseMin;
-      } else {
-        // Market is open or post-market: if during market hours, cap to current IST time
-        const maxCloseTotal = maxCloseHour * 60 + maxCloseMin;
-        if (currentMinOfDay < maxCloseTotal) {
-          toHour = istH;
-          toMinute = istM;
-        } else {
-          toHour = maxCloseHour;
-          toMinute = maxCloseMin;
-        }
       }
+      toHour = maxCloseHour;
+      toMinute = maxCloseMin;
 
       const fmt = d => `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} ${startH}`;
       const fmtTo = d => `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} ${pad(toHour)}:${pad(toMinute)}`;
@@ -1146,6 +1113,18 @@ export class AngelOneBridge {
         res = await this.getCandles({
           exchange: resolved.exchange,
           symboltoken: resolved.symboltoken,
+          interval,
+          fromdate: fmt(tightFrom),
+          todate
+        }, isPriority);
+      }
+
+      // Fallback 3: If still empty and symbol is Crude Oil, fetch active November 2026 contract (573422)
+      if ((!res || !res.status || !Array.isArray(res.data) || res.data.length === 0) && symbol.toUpperCase().includes('CRUDE')) {
+        const tightFrom = new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000);
+        res = await this.getCandles({
+          exchange: 'MCX',
+          symboltoken: '573422',
           interval,
           fromdate: fmt(tightFrom),
           todate
@@ -1247,14 +1226,6 @@ export class AngelOneBridge {
         };
       }
       return { status: false, message: res?.message || 'Empty candle data from Angel One', candles: [] };
-    })();
-
-      this.inFlightCandles.set(cacheKey, fetchPromise);
-      try {
-        return await fetchPromise;
-      } finally {
-        this.inFlightCandles.delete(cacheKey);
-      }
     } catch (err) {
       console.warn(`[Angel One Candles Error] ${symbol}:`, err.message);
       return { status: false, message: err.message, candles: [] };

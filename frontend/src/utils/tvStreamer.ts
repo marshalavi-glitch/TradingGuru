@@ -25,6 +25,7 @@ export type OnManualTradeDeletedCallback = (id: string) => void;
 export type OnManualTradesClearedCallback = () => void;
 export type OnVoiceAnnouncementCallback = (alert: any) => void;
 export type OnManualTradesQuotesCallback = (quotes: Record<string, any>) => void;
+export type OnTelegramTradeIdeasUpdateCallback = (data: any) => void;
 
 class TVWebSocketStreamer {
   private ws: WebSocket | null = null;
@@ -43,6 +44,7 @@ class TVWebSocketStreamer {
   private onManualTradesQuotesCallbacks: OnManualTradesQuotesCallback[] = [];
   private onSrBreakoutsQuotesCallbacks: ((quotes: Record<string, any>) => void)[] = [];
   private onMarketIndicesCallbacks: ((data: any) => void)[] = [];
+  private onTelegramTradeIdeasCallbacks: OnTelegramTradeIdeasUpdateCallback[] = [];
   private onStatusCallbacks: OnStatusCallback[] = [];
   private onTickCallbacks: Array<(tick: { symbol: string; ltp: number; timestamp: number }) => void> = [];
   private dataListeners: Map<string, { symbol: string; timeframe?: string; callback: OnDataCallback }> = new Map();
@@ -56,6 +58,26 @@ class TVWebSocketStreamer {
 
   constructor() {
     // URL will be resolved dynamically via resolveBackendUrl()
+    if (typeof window !== 'undefined') {
+      window.addEventListener('focus', () => {
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+          console.log('[tvStreamer] Window focused - verifying live feed connection...');
+          this.connect(true);
+        }
+      });
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+            console.log('[tvStreamer] Tab became visible - verifying live feed connection...');
+            this.connect(true);
+          }
+        }
+      });
+      window.addEventListener('online', () => {
+        console.log('[tvStreamer] Network online event - reconnecting live feed...');
+        this.connect(true);
+      });
+    }
   }
 
   public computeBackendUrl(): string {
@@ -232,6 +254,15 @@ class TVWebSocketStreamer {
     };
   }
 
+  public addTelegramTradeIdeasListener(callback: OnTelegramTradeIdeasUpdateCallback): () => void {
+    if (!this.onTelegramTradeIdeasCallbacks.includes(callback)) {
+      this.onTelegramTradeIdeasCallbacks.push(callback);
+    }
+    return () => {
+      this.onTelegramTradeIdeasCallbacks = this.onTelegramTradeIdeasCallbacks.filter(cb => cb !== callback);
+    };
+  }
+
   public isSymbolMatch(a: string, b: string): boolean {
     if (a === b) return true;
     const cleanA = a.replace(/^(NSE:|BSE:|MCX:|NFO:)/, '').trim().toUpperCase();
@@ -357,7 +388,16 @@ class TVWebSocketStreamer {
           }
         }, 10000);
         
-        if (this.currentSubscription) {
+        if (this.dataListeners.size > 0) {
+          const sent = new Set<string>();
+          this.dataListeners.forEach((listener) => {
+            const key = `${listener.symbol}_${listener.timeframe || '5'}`;
+            if (!sent.has(key)) {
+              sent.add(key);
+              this.sendSubscription(listener.symbol, listener.timeframe || '5');
+            }
+          });
+        } else if (this.currentSubscription) {
           this.sendSubscription(this.currentSubscription.symbol, this.currentSubscription.timeframe);
         }
       };
@@ -374,16 +414,20 @@ class TVWebSocketStreamer {
                 this.updateLtpCache(payload.symbol, last.close);
               }
             }
-            if (this.onDataCallback && this.currentSubscription && this.isSymbolMatch(this.currentSubscription.symbol, payload.symbol)) {
-              try { this.onDataCallback(payload); } catch (e) {}
-            }
+            const notified = new Set<OnDataCallback>();
             this.dataListeners.forEach((listener) => {
-              if (listener.callback !== this.onDataCallback) {
-                if (!listener.symbol || this.isSymbolMatch(listener.symbol, payload.symbol)) {
+              const symbolMatches = !listener.symbol || this.isSymbolMatch(listener.symbol, payload.symbol);
+              const tfMatches = !listener.timeframe || !payload.timeframe || String(listener.timeframe) === String(payload.timeframe);
+              if (symbolMatches && tfMatches) {
+                if (!notified.has(listener.callback)) {
+                  notified.add(listener.callback);
                   try { listener.callback(payload); } catch (e) {}
                 }
               }
             });
+            if (this.onDataCallback && !notified.has(this.onDataCallback) && this.currentSubscription && this.isSymbolMatch(this.currentSubscription.symbol, payload.symbol)) {
+              try { this.onDataCallback(payload); } catch (e) {}
+            }
           } else if (payload.type === 'online_users') {
             if (this.onOnlineUsersCallback && typeof payload.count === 'number') {
               this.onOnlineUsersCallback(payload.count);
@@ -467,6 +511,12 @@ class TVWebSocketStreamer {
                 try { cb(payload.alert); } catch (e) { console.error('Voice callback error:', e); }
               });
             }
+          } else if (payload.type === 'TELEGRAM_TRADE_IDEAS_UPDATE') {
+            if (payload.data) {
+              this.onTelegramTradeIdeasCallbacks.forEach(cb => {
+                try { cb(payload.data); } catch (e) { console.error('Telegram trade ideas callback error:', e); }
+              });
+            }
           } else if (payload.type === 'error') {
             console.error('WebSocket error from server:', payload.message);
             if (this.onErrorCallback) {
@@ -522,51 +572,61 @@ class TVWebSocketStreamer {
   }
 
   private async pollHttpCandles() {
-    if (!this.currentSubscription) return;
-    const { symbol, timeframe } = this.currentSubscription;
+    const pairs = new Map<string, { symbol: string; timeframe: string }>();
+    if (this.dataListeners.size > 0) {
+      this.dataListeners.forEach((l) => {
+        const key = `${l.symbol}_${l.timeframe || '5'}`;
+        if (!pairs.has(key)) pairs.set(key, { symbol: l.symbol, timeframe: l.timeframe || '5' });
+      });
+    } else if (this.currentSubscription) {
+      pairs.set(`${this.currentSubscription.symbol}_${this.currentSubscription.timeframe}`, this.currentSubscription);
+    }
+    if (pairs.size === 0) return;
 
     try {
       const httpUrl = await resolveBackendUrl();
-      const url = `${httpUrl}/api/candles?symbol=${encodeURIComponent(symbol)}&timeframe=${timeframe}&limit=300`;
-      const res = await fetch(url, {
-        headers: { 'bypass-tunnel-reminder': 'true' }
-      });
-      if (res.ok) {
-        if (!this.currentSubscription || !this.isSymbolMatch(this.currentSubscription.symbol, symbol)) {
-          return;
-        }
-        const data = await res.json();
-        if (data.candles && data.candles.length > 0) {
-          const sym = data.symbol || symbol;
-          if (!this.isSymbolMatch(sym, symbol)) {
-            return;
-          }
-          const last = data.candles[data.candles.length - 1];
-          if (last && typeof last.close === 'number') {
-            this.updateLtpCache(sym, last.close);
-          }
-          this.setStatus('connected');
-          const payload: TVDataMessage = {
-            symbol: sym,
-            timeframe: data.timeframe || timeframe,
-            isSnapshot: true,
-            candles: data.candles
-          };
-          if (this.onDataCallback && this.currentSubscription && this.isSymbolMatch(this.currentSubscription.symbol, sym)) {
-            try { this.onDataCallback(payload); } catch (e) {}
-          }
-          this.dataListeners.forEach((listener) => {
-            if (listener.callback !== this.onDataCallback) {
-              if (!listener.symbol || this.isSymbolMatch(listener.symbol, sym)) {
-                try { listener.callback(payload); } catch (e) {}
+      for (const { symbol, timeframe } of pairs.values()) {
+        try {
+          const url = `${httpUrl}/api/candles?symbol=${encodeURIComponent(symbol)}&timeframe=${timeframe}&limit=300`;
+          const res = await fetch(url, {
+            headers: { 'bypass-tunnel-reminder': 'true' }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.candles && data.candles.length > 0) {
+              const sym = data.symbol || symbol;
+              const last = data.candles[data.candles.length - 1];
+              if (last && typeof last.close === 'number') {
+                this.updateLtpCache(sym, last.close);
+              }
+              this.setStatus('connected');
+              const payload: TVDataMessage = {
+                symbol: sym,
+                timeframe: data.timeframe || timeframe,
+                isSnapshot: true,
+                candles: data.candles
+              };
+              const notified = new Set<OnDataCallback>();
+              this.dataListeners.forEach((listener) => {
+                const symbolMatches = !listener.symbol || this.isSymbolMatch(listener.symbol, sym);
+                const tfMatches = !listener.timeframe || !payload.timeframe || String(listener.timeframe) === String(payload.timeframe);
+                if (symbolMatches && tfMatches) {
+                  if (!notified.has(listener.callback)) {
+                    notified.add(listener.callback);
+                    try { listener.callback(payload); } catch (e) {}
+                  }
+                }
+              });
+              if (this.onDataCallback && !notified.has(this.onDataCallback) && this.currentSubscription && this.isSymbolMatch(this.currentSubscription.symbol, sym)) {
+                try { this.onDataCallback(payload); } catch (e) {}
               }
             }
-          });
-        }
+          }
+        } catch (e) {}
       }
 
       // Check for MCX live quotes fallback
-      if (symbol.includes('MCX') || symbol.includes('CRUDE') || symbol.includes('NATURALGAS') || symbol.includes('GOLD') || symbol.includes('SILVER')) {
+      if (symbol.includes('MCX') || symbol.includes('CRUDE') || symbol.includes('NATURALGAS') || symbol.includes('GOLD') || symbol.includes('SILVER') || symbol.includes('ZINC')) {
         try {
           const mcxRes = await fetch(`${httpUrl}/api/mcx/live-quotes`, {
             headers: { 'bypass-tunnel-reminder': 'true' }
@@ -657,10 +717,17 @@ class TVWebSocketStreamer {
     this.sendSubscription(symbol, timeframe);
 
     return () => {
+      const item = this.dataListeners.get(subId);
       this.dataListeners.delete(subId);
       if (this.onDataCallback === onData) {
         const remaining = Array.from(this.dataListeners.values());
         this.onDataCallback = remaining.length > 0 ? remaining[remaining.length - 1].callback : null;
+      }
+      if (item) {
+        const stillListening = Array.from(this.dataListeners.values()).some(l => this.isSymbolMatch(l.symbol, item.symbol));
+        if (!stillListening) {
+          this.sendUnsubscribe(item.symbol);
+        }
       }
       if (this.dataListeners.size === 0) {
         this.sendUnsubscribe(symbol);

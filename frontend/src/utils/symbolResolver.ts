@@ -123,6 +123,12 @@ const INDEX_MAP: Record<string, { symbol: string; display: string; type?: 'index
   'MCX:SILVER1!': { symbol: 'MCX:SILVER1!', display: 'SILVER FUT', type: 'commodity' },
   'SILVER04DEC26FUT': { symbol: 'MCX:SILVER04DEC26FUT', display: 'SILVER (DEC 26)', type: 'commodity' },
   'MCX:SILVER04DEC26FUT': { symbol: 'MCX:SILVER04DEC26FUT', display: 'SILVER (DEC 26)', type: 'commodity' },
+
+  // Zinc (MCX)
+  'ZINC': { symbol: 'MCX:ZINC1!', display: 'ZINC FUT', type: 'commodity' },
+  'ZINC1!': { symbol: 'MCX:ZINC1!', display: 'ZINC FUT', type: 'commodity' },
+  'MCX:ZINC': { symbol: 'MCX:ZINC1!', display: 'ZINC FUT', type: 'commodity' },
+  'MCX:ZINC1!': { symbol: 'MCX:ZINC1!', display: 'ZINC FUT', type: 'commodity' },
 };
 
 export function resolveSymbol(input: string): SymbolInfo {

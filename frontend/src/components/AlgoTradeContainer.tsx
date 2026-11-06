@@ -34,7 +34,7 @@ export interface AlgoPosition {
   status: 'OPEN' | 'CLOSED';
   exitPrice?: number;
   exitTime?: string;
-  exitReason?: 'TARGET 1 HIT (PROFIT BOOKED)' | 'TARGET 1 HIT' | 'TARGET 2 HIT' | 'STOP LOSS HIT' | 'TRAILING SL HIT' | 'MIS EOD SQUARE-OFF (15:15)' | 'MANUAL SQUARE-OFF';
+  exitReason?: 'TARGET 1 HIT (PROFIT BOOKED)' | 'TARGET 1 HIT' | 'TARGET 2 HIT' | 'STOP LOSS HIT' | 'TRAILING SL HIT' | 'MIS EOD SQUARE-OFF (15:15)' | 'MCX EOD SQUARE-OFF (23:25)' | 'MANUAL SQUARE-OFF';
   realizedPnl?: number;
 }
 
@@ -100,8 +100,28 @@ const DEFAULT_UNIVERSE = [
   'NSE:LT',
   'NSE:AXISBANK',
   'NSE:BAJFINANCE',
-  'MCX:CRUDEOIL'
+  'MCX:CRUDEOIL',
+  'MCX:NATURALGAS',
+  'MCX:ZINC'
 ];
+
+export function isCommoditySymbol(symbol?: string): boolean {
+  if (!symbol) return false;
+  const s = symbol.toUpperCase();
+  return (
+    s.startsWith('MCX:') ||
+    s.includes('CRUDE') ||
+    s.includes('NATURALGAS') ||
+    s.includes('NATGAS') ||
+    s.includes('ZINC') ||
+    s.includes('GOLD') ||
+    s.includes('SILVER') ||
+    s.includes('COPPER') ||
+    s.includes('LEAD') ||
+    s.includes('ALUMINIUM') ||
+    s.includes('NICKEL')
+  );
+}
 
 export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
   onSymbolSelect,
@@ -220,7 +240,7 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
     setLogs(prev => [newLog, ...prev.slice(0, 99)]);
   };
 
-  // Pure Intraday Clock & 15:15 Cutoff Tracker
+  // Pure Intraday Clock & Dynamic Cutoff Tracker (Equity @ 15:15 IST, MCX Commodity @ 23:25 IST)
   useEffect(() => {
     const updateClock = () => {
       const now = new Date();
@@ -230,27 +250,87 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
 
       const [hours, minutes, seconds] = istTimeStr.split(':').map(Number);
       const currentSeconds = hours * 3600 + minutes * 60 + (seconds || 0);
-      const eodSeconds = 15 * 3600 + 15 * 60; // 15:15:00 IST (3:15 PM)
 
-      if (currentSeconds >= eodSeconds) {
-        setTimeToEodStr('MARKET CLOSED / MIS SQUARED OFF');
-        // Auto square-off all active positions if not already triggered today
-        if (positions.length > 0) {
-          handleSquareOffAll('MIS EOD SQUARE-OFF (15:15)');
-        }
+      const equityEodSeconds = 15 * 3600 + 15 * 60; // 15:15:00 IST (3:15 PM)
+      const mcxEodSeconds = 23 * 3600 + 25 * 60;    // 23:25:00 IST (11:25 PM)
+      const mcxCloseSeconds = 23 * 3600 + 30 * 60;  // 23:30:00 IST (11:30 PM)
+
+      // 1. Check Equity MIS Cutoff (15:15 IST): Auto square-off active Equity positions only!
+      if (currentSeconds >= equityEodSeconds) {
+        setPositions(prev => {
+          const equityPositions = prev.filter(p => !isCommoditySymbol(p.symbol));
+          if (equityPositions.length === 0) return prev;
+
+          const closed = equityPositions.map(pos => {
+            const ltp = livePrices[pos.symbol] || pos.currentPrice;
+            const pts = pos.side === 'BUY' ? (ltp - pos.entryPrice) : (pos.entryPrice - ltp);
+            const realizedPnl = Math.round(pts * pos.quantity * 100) / 100;
+            return {
+              ...pos,
+              currentPrice: ltp,
+              exitPrice: ltp,
+              exitTime: new Date().toLocaleTimeString('en-IN', { hour12: false }),
+              status: 'CLOSED' as const,
+              exitReason: 'MIS EOD SQUARE-OFF (15:15)' as const,
+              realizedPnl
+            };
+          });
+
+          setHistory(h => [...closed, ...h]);
+          addLog('EXIT', `⏰ MIS Cutoff (15:15 IST): Auto squared off ${closed.length} Equity positions. MCX Commodity trades (Crude / NatGas / Zinc) remain actively trading till 23:25 IST.`);
+          return prev.filter(p => isCommoditySymbol(p.symbol));
+        });
+      }
+
+      // 2. Check MCX Commodity MIS Cutoff (23:25 IST): Auto square-off active Commodity positions!
+      if (currentSeconds >= mcxEodSeconds) {
+        setPositions(prev => {
+          const commodityPositions = prev.filter(p => isCommoditySymbol(p.symbol));
+          if (commodityPositions.length === 0) return prev;
+
+          const closed = commodityPositions.map(pos => {
+            const ltp = livePrices[pos.symbol] || pos.currentPrice;
+            const pts = pos.side === 'BUY' ? (ltp - pos.entryPrice) : (pos.entryPrice - ltp);
+            const realizedPnl = Math.round(pts * pos.quantity * 100) / 100;
+            return {
+              ...pos,
+              currentPrice: ltp,
+              exitPrice: ltp,
+              exitTime: new Date().toLocaleTimeString('en-IN', { hour12: false }),
+              status: 'CLOSED' as const,
+              exitReason: 'MCX EOD SQUARE-OFF (23:25)' as const,
+              realizedPnl
+            };
+          });
+
+          setHistory(h => [...closed, ...h]);
+          addLog('EXIT', `🌙 MCX EOD Cutoff (23:25 IST): Auto squared off ${closed.length} Commodity positions (Crude / NatGas / Zinc).`);
+          return prev.filter(p => !isCommoditySymbol(p.symbol));
+        });
+      }
+
+      // 3. Dynamic Status Banner
+      if (currentSeconds >= mcxCloseSeconds) {
+        setTimeToEodStr('ALL MARKETS CLOSED (Equity & MCX Squared Off)');
+      } else if (currentSeconds >= equityEodSeconds) {
+        const diffMcx = mcxEodSeconds - currentSeconds;
+        const h = Math.floor(Math.max(0, diffMcx) / 3600);
+        const m = Math.floor((Math.max(0, diffMcx) % 3600) / 60);
+        const s = Math.max(0, diffMcx) % 60;
+        setTimeToEodStr(`Equity Closed (15:15) | MCX Active (Crude, NatGas, Zinc): ${h}h ${m}m ${s}s to 23:25 Cutoff`);
       } else {
-        const diff = eodSeconds - currentSeconds;
-        const h = Math.floor(diff / 3600);
-        const m = Math.floor((diff % 3600) / 60);
-        const s = diff % 60;
-        setTimeToEodStr(`${h}h ${m}m ${s}s to 15:15 MIS Cutoff`);
+        const diffEq = equityEodSeconds - currentSeconds;
+        const h = Math.floor(diffEq / 3600);
+        const m = Math.floor((diffEq % 3600) / 60);
+        const s = diffEq % 60;
+        setTimeToEodStr(`Equity: ${h}h ${m}m ${s}s to 15:15 | MCX (Crude, NatGas, Zinc) active till 23:25 IST`);
       }
     };
 
     updateClock();
     const interval = setInterval(updateClock, 1000);
     return () => clearInterval(interval);
-  }, [positions]);
+  }, [livePrices]);
 
   // Calculate Reversal Levels for Monitored Symbols
   const fetchRadarLevels = async () => {
@@ -599,15 +679,27 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
   useEffect(() => {
     if (!isEngineActive || radarItems.length === 0) return;
 
-    // Check if past cutoff time 15:00 IST
+    // Dynamic Market Timing Window Enforcement:
+    // Equity entries allowed: 09:15 to 15:00 IST (no new entries in final 15m before 15:15 cutoff)
+    // MCX Commodity entries (Crude, NatGas, Zinc) allowed: 09:00 to 23:15 IST (trades till MCX closes)
     const now = new Date();
     const istTimeStr = now.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour12: false });
-    const [h, m] = istTimeStr.split(':').map(Number);
-    if (h >= 15 && m >= 0) return; // No new entries after 3:00 PM IST
+    const [h, m, s] = istTimeStr.split(':').map(Number);
+    const currentSeconds = h * 3600 + m * 60 + (s || 0);
+
+    const isEquityEntryAllowed = currentSeconds >= (9 * 3600 + 15 * 60) && currentSeconds < (15 * 3600);
+    const isMcxEntryAllowed = currentSeconds >= (9 * 3600) && currentSeconds < (23 * 3600 + 15 * 60);
+
+    // If both markets are outside entry window, return early
+    if (!isEquityEntryAllowed && !isMcxEntryAllowed) return;
 
     for (const item of radarItems) {
       if (positions.some(p => p.symbol === item.symbol)) continue;
       if (positions.length >= maxOpenPositions) break;
+
+      const isCommodity = isCommoditySymbol(item.symbol);
+      if (isCommodity && !isMcxEntryAllowed) continue;
+      if (!isCommodity && !isEquityEntryAllowed) continue;
 
       const ltp = livePrices[item.symbol] || item.ltp;
       if (ltp <= 0) continue;
@@ -866,10 +958,10 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
             </span>
             <Clock size={16} color="#c084fc" />
           </div>
-          <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--text-primary)' }}>
-            Auto Square-Off @ 15:15 IST
+          <div style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-primary)' }}>
+            Equity: 15:15 IST | MCX (Crude/NatGas/Zinc): 23:25 IST
           </div>
-          <div style={{ fontSize: '10.5px', color: '#f59e0b', fontWeight: '700' }}>
+          <div style={{ fontSize: '10.5px', color: '#38bdf8', fontWeight: '700' }}>
             ⏳ {timeToEodStr}
           </div>
         </div>
@@ -1136,6 +1228,15 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
                         <td style={{ padding: '10px 12px', fontWeight: '800' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <span>{pos.displayName}</span>
+                            {isCommoditySymbol(pos.symbol) ? (
+                              <span style={{ fontSize: '9px', fontWeight: '800', background: 'rgba(234, 179, 8, 0.15)', color: '#eab308', padding: '1px 5px', borderRadius: '4px', border: '1px solid rgba(234, 179, 8, 0.3)' }}>
+                                MCX (Till 23:25)
+                              </span>
+                            ) : (
+                              <span style={{ fontSize: '9px', fontWeight: '800', background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', padding: '1px 5px', borderRadius: '4px', border: '1px solid rgba(56, 189, 248, 0.3)' }}>
+                                NSE (15:15 Cutoff)
+                              </span>
+                            )}
                             <button
                               onClick={() => {
                                 onSymbolSelect(pos.symbol);
@@ -1282,6 +1383,15 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
                       <td style={{ padding: '10px 12px', fontWeight: '800' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <span>{item.displayName}</span>
+                          {isCommoditySymbol(item.symbol) ? (
+                            <span style={{ fontSize: '9px', fontWeight: '800', background: 'rgba(234, 179, 8, 0.15)', color: '#eab308', padding: '1px 5px', borderRadius: '4px', border: '1px solid rgba(234, 179, 8, 0.3)' }}>
+                              MCX (Till 23:25)
+                            </span>
+                          ) : (
+                            <span style={{ fontSize: '9px', fontWeight: '800', background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', padding: '1px 5px', borderRadius: '4px', border: '1px solid rgba(56, 189, 248, 0.3)' }}>
+                              NSE (15:15 Cutoff)
+                            </span>
+                          )}
                           <button
                             onClick={() => {
                               onSymbolSelect(item.symbol);
