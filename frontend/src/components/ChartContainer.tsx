@@ -998,60 +998,29 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
       const lastVol = volumeData[volumeData.length - 1];
       const lastCandleTime = lastCandle ? (lastCandle.time as number) : null;
 
-      // In-place update is strictly allowed ONLY when:
-      // 1. Same dataset (symbol, timeframe, sessionPeriod, candleStyle)
-      // 2. Exact same candle count (meaning updating currently open bar, no bar added or removed)
-      // 3. Exact same candle timestamp as previously applied
-      const isInPlaceUpdate =
-        !isDatasetChange &&
-        prevCandlesCountRef.current === sortedCandles.length &&
-        lastAppliedCandleTimeRef.current !== null &&
-        lastCandleTime === lastAppliedCandleTimeRef.current;
-
-      if (!isInPlaceUpdate) {
+      // Always use setData() with strictly sorted ascending data.
+      // Calling series.update() with real-time websocket ticks is fragile in Lightweight Charts
+      // and throws fatal "Cannot update oldest data, last time=[object Object], new time=[object Object]"
+      // whenever ticks arrive slightly out of order or on bar transitions.
+      // setData() on ~300 items is virtually instant (<1ms) and 100% immune to this failure.
+      try {
+        candlestickSeriesRef.current.setData(chartData);
+        volumeSeriesRef.current.setData(volumeData);
+        prevDatasetKeyRef.current = datasetKey;
+        prevCandlesCountRef.current = sortedCandles.length;
+        lastAppliedCandleTimeRef.current = lastCandleTime;
+      } catch (setErr) {
+        console.warn('[Chart] Initial setData failed, retrying clean reset:', setErr);
         try {
+          candlestickSeriesRef.current.setData([]);
+          volumeSeriesRef.current.setData([]);
           candlestickSeriesRef.current.setData(chartData);
           volumeSeriesRef.current.setData(volumeData);
           prevDatasetKeyRef.current = datasetKey;
           prevCandlesCountRef.current = sortedCandles.length;
           lastAppliedCandleTimeRef.current = lastCandleTime;
-        } catch (setErr) {
-          console.warn('[Chart] Initial setData failed, retrying clean:', setErr);
-          try {
-            candlestickSeriesRef.current.setData([]);
-            volumeSeriesRef.current.setData([]);
-            candlestickSeriesRef.current.setData(chartData);
-            volumeSeriesRef.current.setData(volumeData);
-            prevDatasetKeyRef.current = datasetKey;
-            prevCandlesCountRef.current = sortedCandles.length;
-            lastAppliedCandleTimeRef.current = lastCandleTime;
-          } catch (cleanErr) {
-            console.error('[Chart] Clean setData failed:', cleanErr);
-          }
-        }
-      } else {
-        // Incremental real-time tick update: only update the latest candle in-place!
-        try {
-          if (lastCandle) {
-            candlestickSeriesRef.current.update(lastCandle);
-          }
-          if (lastVol) {
-            volumeSeriesRef.current.update(lastVol);
-          }
-          prevCandlesCountRef.current = sortedCandles.length;
-          lastAppliedCandleTimeRef.current = lastCandleTime;
-        } catch (updateErr) {
-          // If update() throws (e.g. oldest data error or timestamp anomaly), recover safely via setData
-          console.warn('[Chart] update() failed, recovering safely with setData():', updateErr);
-          try {
-            candlestickSeriesRef.current.setData(chartData);
-            volumeSeriesRef.current.setData(volumeData);
-            prevDatasetKeyRef.current = datasetKey;
-            prevCandlesCountRef.current = sortedCandles.length;
-            lastAppliedCandleTimeRef.current = lastCandleTime;
-          } catch (recoverErr) {
-            console.error('[Chart] Recovery setData failed:', recoverErr);
-          }
+        } catch (cleanErr) {
+          console.error('[Chart] Clean setData failed:', cleanErr);
         }
       }
 
@@ -1085,26 +1054,13 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
 
           const lastVwap = vwapData[vwapData.length - 1];
           const lastVwapTime = lastVwap ? (lastVwap.time as number) : null;
-          const isVwapInPlaceUpdate =
-            !isDatasetChange &&
-            prevCandlesCountRef.current === sortedCandles.length &&
-            lastVwapAppliedTimeRef.current !== null &&
-            lastVwapTime === lastVwapAppliedTimeRef.current;
 
-          if (isVwapInPlaceUpdate) {
+          try {
+            vwapSeriesRef.current.setData(vwapData);
+            lastVwapAppliedTimeRef.current = lastVwapTime;
+          } catch (vwapErr) {
             try {
-              if (lastVwap) {
-                vwapSeriesRef.current.update(lastVwap);
-              }
-              lastVwapAppliedTimeRef.current = lastVwapTime;
-            } catch (vwapUpdateErr) {
-              try {
-                vwapSeriesRef.current.setData(vwapData);
-                lastVwapAppliedTimeRef.current = lastVwapTime;
-              } catch (e) {}
-            }
-          } else {
-            try {
+              vwapSeriesRef.current.setData([]);
               vwapSeriesRef.current.setData(vwapData);
               lastVwapAppliedTimeRef.current = lastVwapTime;
             } catch (e) {}
