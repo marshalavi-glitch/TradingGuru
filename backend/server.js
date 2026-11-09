@@ -4,6 +4,7 @@ import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
 import cors from 'cors';
 import { angelOneBridge } from './angelone_bridge.js';
+import { zerodhaBridge } from './zerodha_bridge.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import compression from 'compression';
@@ -1495,6 +1496,122 @@ app.get('/api/angelone/candles', async (req, res) => {
 });
 
 // GET /api/market-indices
+
+// ==============================================================================
+// ZERODHA KITE CONNECT API ENDPOINTS
+// ==============================================================================
+
+// GET /api/zerodha/status
+app.get('/api/zerodha/status', (req, res) => {
+  res.json(zerodhaBridge.getStatus());
+});
+
+// POST /api/zerodha/credentials
+app.post('/api/zerodha/credentials', (req, res) => {
+  try {
+    const { apiKey, apiSecret } = req.body || {};
+    zerodhaBridge.updateCredentials(apiKey, apiSecret);
+    res.json({ success: true, message: 'Zerodha credentials saved successfully.', status: zerodhaBridge.getStatus() });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// GET /api/zerodha/login-url
+app.get('/api/zerodha/login-url', (req, res) => {
+  try {
+    const host = req.get('host');
+    const proto = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https' ? 'https' : 'http';
+    const redirectUri = `${proto}://${host}/api/zerodha/callback`;
+    const url = zerodhaBridge.getLoginUrl(redirectUri);
+    res.json({ success: true, loginUrl: url, redirectUri });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+});
+
+// GET /api/zerodha/callback (Kite Connect login redirect handler)
+app.get('/api/zerodha/callback', async (req, res) => {
+  try {
+    const { request_token, status } = req.query;
+    if (status === 'cancelled') {
+      return res.redirect('/?zerodha_auth=cancelled');
+    }
+    if (!request_token) {
+      return res.status(400).send('Missing request_token in Kite callback');
+    }
+
+    await zerodhaBridge.generateSession(request_token);
+    res.redirect('/?zerodha_auth=success');
+  } catch (err) {
+    console.error('[Zerodha Callback] Error:', err.message);
+    res.redirect(`/?zerodha_auth=error&message=${encodeURIComponent(err.message)}`);
+  }
+});
+
+// POST /api/zerodha/session (Manual token exchange)
+app.post('/api/zerodha/session', async (req, res) => {
+  try {
+    const { requestToken } = req.body || {};
+    const result = await zerodhaBridge.generateSession(requestToken);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// GET /api/zerodha/profile
+app.get('/api/zerodha/profile', async (req, res) => {
+  try {
+    const profile = await zerodhaBridge.getProfile();
+    res.json({ success: true, profile });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// GET /api/zerodha/positions
+app.get('/api/zerodha/positions', async (req, res) => {
+  try {
+    const positions = await zerodhaBridge.getPositions();
+    res.json({ success: true, positions });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// GET /api/zerodha/orders
+app.get('/api/zerodha/orders', async (req, res) => {
+  try {
+    const orders = await zerodhaBridge.getOrders();
+    res.json({ success: true, orders });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// POST /api/zerodha/order (Live Order Execution for Algo Trade)
+app.post('/api/zerodha/order', async (req, res) => {
+  try {
+    const orderParams = req.body || {};
+    const result = await zerodhaBridge.placeOrder(orderParams);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// POST /api/zerodha/cancel-order
+app.post('/api/zerodha/cancel-order', async (req, res) => {
+  try {
+    const { orderId, variety } = req.body || {};
+    const result = await zerodhaBridge.cancelOrder(orderId, variety);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 app.get('/api/market-indices', async (req, res) => {
   const indices = await fetchLiveMarketIndices();
   res.json(indices);

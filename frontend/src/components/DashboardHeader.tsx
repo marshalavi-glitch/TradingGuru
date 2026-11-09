@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, X, Activity, RefreshCw, Settings, Users, Volume2, Sun, Moon, LogOut, User, UserPlus, Landmark, TrendingUp, Layers } from 'lucide-react';
+import { Search, X, Activity, RefreshCw, Settings, Users, Volume2, Sun, Moon, LogOut, User, UserPlus, Landmark, TrendingUp, Layers, LayoutGrid, ChevronDown, Link2, Unlink2 } from 'lucide-react';
 import { tvStreamer, getBackendHttpUrl } from '../utils/tvStreamer';
 import { useTheme } from '../context/ThemeContext';
+import { getLayoutConfig } from '../utils/multiChartLayouts';
 
-interface DashboardHeaderProps {
+export interface DashboardHeaderProps {
   currentSymbol: string;
   currentTimeframe: string;
   connectionStatus: 'connecting' | 'connected' | 'disconnected';
@@ -13,6 +14,10 @@ interface DashboardHeaderProps {
   authUser?: string | null;
   onLogout?: () => void;
   onOpenUserManagement?: () => void;
+  onOpenZerodha?: () => void;
+  isChartTab?: boolean;
+  multiChartLayout?: any;
+  onMultiChartLayoutChange?: (layout: any) => void;
 }
 
 interface SymbolPreset {
@@ -31,7 +36,10 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   onRefresh,
   authUser,
   onLogout,
-  onOpenUserManagement
+  onOpenUserManagement,
+  isChartTab,
+  multiChartLayout,
+  onMultiChartLayoutChange
 }) => {
   const { isDark, toggleTheme } = useTheme();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -47,6 +55,8 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   const modalInputRef = useRef<HTMLInputElement>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
+  const [isLayoutMenuOpen, setIsLayoutMenuOpen] = useState(false);
+  const layoutBtnRef = useRef<HTMLDivElement>(null);
 
   const handleRefreshClick = () => {
     setIsRefreshing(true);
@@ -138,7 +148,15 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         const res = await fetch(`${backendUrl}/api/search?query=${encodeURIComponent(searchQuery)}`);
         if (res.ok) {
           const data = await res.json();
-          setApiResults(data);
+          if (Array.isArray(data)) {
+            setApiResults(data);
+          } else if (data && Array.isArray(data.results)) {
+            setApiResults(data.results);
+          } else {
+            setApiResults([]);
+          }
+        } else {
+          setApiResults([]);
         }
       } catch (err) {
         console.error('Failed to fetch symbols from backend search API:', err);
@@ -353,6 +371,89 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             </span>
           </div>
 
+          {/* 1 to 8 Chart Layout Quick Icons (Near Refresh) */}
+          {isChartTab && onMultiChartLayoutChange && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '2px',
+                background: isDark ? 'rgba(15, 23, 42, 0.7)' : '#f1f5f9',
+                padding: '2px 4px',
+                borderRadius: '8px',
+                border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : '#cbd5e1'}`
+              }}
+            >
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => {
+                const activeCount = getLayoutConfig(multiChartLayout || 1).chartCount;
+                const isSelected = activeCount === num;
+                return (
+                  <button
+                    key={`chart-btn-${num}`}
+                    onClick={() => {
+                      const layoutMap: Record<number, string> = {
+                        1: '1_single',
+                        2: '2_vertical',
+                        3: '3_top_one_bottom_two',
+                        4: '4_grid',
+                        5: '5_two_top_three_bottom',
+                        6: '6_grid_3x2',
+                        7: '7_three_top_four_bottom',
+                        8: '8_grid_4x2'
+                      };
+                      onMultiChartLayoutChange(layoutMap[num] || '1_single');
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '5px',
+                      border: isSelected ? '1px solid #38bdf8' : '1px solid transparent',
+                      background: isSelected ? '#0284c7' : 'transparent',
+                      color: isSelected ? '#ffffff' : (isDark ? 'rgba(255, 255, 255, 0.75)' : '#475569'),
+                      fontSize: '11px',
+                      fontWeight: isSelected ? '900' : '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      boxShadow: isSelected ? '0 0 8px rgba(56, 189, 248, 0.4)' : 'none'
+                    }}
+                    title={`${num} Chart${num > 1 ? 's' : ''} Layout`}
+                  >
+                    {num}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          
+          {/* Zerodha Kite Connect Button */}
+          <button
+            onClick={onOpenZerodha}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              height: '30px',
+              padding: '0 10px',
+              background: 'rgba(249, 115, 22, 0.12)',
+              border: '1px solid rgba(249, 115, 22, 0.35)',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              color: '#f97316',
+              fontSize: '11px',
+              fontWeight: '700',
+              transition: 'all 0.2s ease'
+            }}
+            title="Zerodha Kite Connect API Integration"
+          >
+            <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#f97316' }} />
+            <span>Zerodha Kite</span>
+          </button>
+  
           {/* Refresh Button (Near Live) */}
           <button
             onClick={handleRefreshClick}
@@ -486,6 +587,31 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                   <span>Test AI Voice Alert</span>
                 </button>
 
+                
+                {/* Zerodha Kite API Settings */}
+                <button
+                  onClick={() => {
+                    setIsSettingsOpen(false);
+                    if (onOpenZerodha) onOpenZerodha();
+                  }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: 'rgba(249, 115, 22, 0.08)',
+                    border: '1px solid rgba(249, 115, 22, 0.25)',
+                    padding: '6px 10px',
+                    borderRadius: '6px',
+                    color: '#f97316',
+                    fontSize: '11.5px',
+                    fontWeight: '700',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f97316' }} />
+                  <span>Zerodha Kite API Settings</span>
+                </button>
+  
                 {/* Refresh Data */}
                 <button
                   onClick={() => {
@@ -774,9 +900,13 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                   onClick={() => {
                     let formatted = searchQuery.trim().toUpperCase();
                     if (!formatted.includes(':')) {
-                      const isDeriv = (formatted.endsWith('FUT') || formatted.endsWith('CE') || formatted.endsWith('PE')) && /\d/.test(formatted);
-                      const isMcx = ['CRUDEOIL', 'GOLD', 'SILVER', 'NATURALGAS', 'COPPER', 'ZINC'].some(c => formatted.includes(c));
-                      formatted = isDeriv ? `NFO:${formatted}` : isMcx ? `MCX:${formatted}` : `NSE:${formatted}`;
+                      if (formatted.includes('GIFT')) {
+                        formatted = (formatted.endsWith('1!') || formatted.endsWith('FUT')) ? 'NSEIX:GIFTNIFTY1!' : 'NSEIX:GIFTNIFTY';
+                      } else {
+                        const isDeriv = (formatted.endsWith('FUT') || formatted.endsWith('CE') || formatted.endsWith('PE')) && /\d/.test(formatted);
+                        const isMcx = ['CRUDEOIL', 'GOLD', 'SILVER', 'NATURALGAS', 'COPPER', 'ZINC'].some(c => formatted.includes(c));
+                        formatted = isDeriv ? `NFO:${formatted}` : isMcx ? `MCX:${formatted}` : `NSE:${formatted}`;
+                      }
                     }
                     handleSelectSymbol(formatted);
                   }}
@@ -800,7 +930,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 </div>
               ) : searchQuery ? (
                 (() => {
-                  const activeApiResults = apiResults.filter(item => activeTab === 'all' || item.type === activeTab);
+                  const activeApiResults = (Array.isArray(apiResults) ? apiResults : []).filter(item => activeTab === 'all' || item.type === activeTab);
                   if (activeApiResults.length === 0) {
                     return (
                       <div style={{ padding: '30px 20px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13px' }}>
