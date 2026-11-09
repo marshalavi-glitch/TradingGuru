@@ -226,6 +226,9 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
   // Live Prices Map: Symbol -> Price
   const [livePrices, setLivePrices] = useState<Record<string, number>>({});
 
+  // Fixed Static Daily Anchor Levels (Locked per session date in IST to prevent intraday level jitter)
+  const staticAnchorLevelsRef = useRef<Record<string, { s3: number; r3: number; s4: number; r4: number; pivot: number; date: string }>>({});
+
   // Time & Pure Intraday Square-off
   const [currentTimeStr, setCurrentTimeStr] = useState<string>('');
   const [timeToEodStr, setTimeToEodStr] = useState<string>('');
@@ -376,15 +379,37 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
           const currentCandle = candles[candles.length - 1];
           const ltp = livePrices[symbol] || currentCandle.close;
 
-          const matrixData = calculateMatrixSeriesData(candles, '5');
-          const getVal = (points?: { value: number }[]) => 
-            points && points.length > 0 ? points[points.length - 1].value : 0;
+          const todayDateStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
 
-          const s3 = getVal(matrixData.level7); // Buy Reversal
-          const r3 = getVal(matrixData.level4); // Sell Reversal
-          const s4 = getVal(matrixData.level8); // Breakdown
-          const r4 = getVal(matrixData.level3); // Breakout
-          const pivot = (r3 + s3) / 2;
+          let s3 = 0;
+          let r3 = 0;
+          let s4 = 0;
+          let r4 = 0;
+          let pivot = 0;
+
+          // Check if static levels are already locked for today's session
+          const cachedLvl = staticAnchorLevelsRef.current[symbol];
+          if (cachedLvl && cachedLvl.date === todayDateStr && cachedLvl.s3 > 0 && cachedLvl.r3 > 0) {
+            s3 = cachedLvl.s3;
+            r3 = cachedLvl.r3;
+            s4 = cachedLvl.s4;
+            r4 = cachedLvl.r4;
+            pivot = cachedLvl.pivot;
+          } else {
+            const matrixData = calculateMatrixSeriesData(candles, '5', data.matrixHistory);
+            const getVal = (points?: { value: number }[]) => 
+              points && points.length > 0 ? points[points.length - 1].value : 0;
+
+            s3 = getVal(matrixData.level7); // Buy Reversal
+            r3 = getVal(matrixData.level4); // Sell Reversal
+            s4 = getVal(matrixData.level8); // Breakdown
+            r4 = getVal(matrixData.level3); // Breakout
+            pivot = (r3 + s3) / 2;
+
+            if (s3 > 0 && r3 > 0) {
+              staticAnchorLevelsRef.current[symbol] = { s3, r3, s4, r4, pivot, date: todayDateStr };
+            }
+          }
 
           if (s3 <= 0 || r3 <= 0) continue;
 
@@ -399,7 +424,6 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
           // 5. Pivot Point breakdown (LTP < Pivot)
           // 6. Enter SHORT (Triggered only after Pivot breakdown)
           // 7. Stop Loss: Sell Reversal (R3)
-          const todayDateStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
           let sessionCandles = candles.filter(c => {
             const d = new Date(c.time * 1000).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
             return d === todayDateStr;

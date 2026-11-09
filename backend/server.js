@@ -1104,7 +1104,9 @@ app.get('/api/candles', async (req, res) => {
       candles = candles.slice(candles.length - limit);
     }
 
-    res.json({ symbol, timeframe, source, candles: candles || [] });
+    const anchorLevels = await fetchAnchorLevels(symbol, timeframe).catch(() => null);
+
+    res.json({ symbol, timeframe, source, candles: candles || [], matrixHistory: anchorLevels || undefined });
   } catch (err) {
     console.error(`[API /api/candles] Error fetching candles for ${req.query.symbol}:`, err.message);
     res.status(500).json({ error: err.message, candles: [] });
@@ -2588,14 +2590,16 @@ async function fetchAnchorLevels(symbol, timeframe) {
       const currentDate = new Date(currentCandle.time * 1000);
       let dateKey;
       if (anchorTf === 'M') {
-        dateKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+        dateKey = currentDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }).substring(0, 7);
       } else {
-        dateKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+        dateKey = currentDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
       }
       
       matrixHistory[dateKey] = {
-        level1: r6, level2: r5, level3: r4, level4: r3, level5: r2,
-        level6: s2, level7: s3, level8: s4, level9: s5, level10: s6
+        level1: Number(r6.toFixed(2)), level2: Number(r5.toFixed(2)), level3: Number(r4.toFixed(2)),
+        level4: Number(r3.toFixed(2)), level5: Number(r2.toFixed(2)), level6: Number(s2.toFixed(2)),
+        level7: Number(s3.toFixed(2)), level8: Number(s4.toFixed(2)), level9: Number(s5.toFixed(2)),
+        level10: Number(s6.toFixed(2))
       };
     }
     
@@ -2615,6 +2619,19 @@ async function fetchAnchorLevels(symbol, timeframe) {
     return null;
   }
 }
+
+app.get('/api/matrix-levels', async (req, res) => {
+  try {
+    const symbol = req.query.symbol || 'NSE:NIFTY';
+    const timeframe = req.query.timeframe || '5';
+    const levels = await fetchAnchorLevels(symbol, timeframe);
+    const todayIST = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+    const todayLevels = levels ? (levels[todayIST] || Object.values(levels)[Object.values(levels).length - 1]) : null;
+    res.json({ symbol, todayIST, levels: todayLevels, matrixHistory: levels });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 function broadcastOnlineUsers() {
   const onlineSet = getOnlineUsersSet();

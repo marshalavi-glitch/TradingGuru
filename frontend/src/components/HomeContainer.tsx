@@ -120,7 +120,7 @@ export const HomeContainer: React.FC<HomeContainerProps> = ({
     };
   }, [leftSymbol, leftTimeframe]);
 
-  const leftMatrixData = calculateMatrixSeriesData(leftCandles, leftMatrixHistory);
+  const leftMatrixData = calculateMatrixSeriesData(leftCandles, leftTimeframe, leftMatrixHistory);
 
   return (
     <div style={{
