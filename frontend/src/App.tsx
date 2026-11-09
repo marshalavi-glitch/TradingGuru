@@ -620,68 +620,7 @@ function App() {
   };
 
   const matrixSeriesData = useMemo(() => {
-    if (matrixHistory && candles && candles.length > 0) {
-      const isDailyAnchor = !(timeframe === 'D' || timeframe === 'W' || timeframe === 'M');
-      
-      const seriesData = {
-        level1: [], level2: [], level3: [], level4: [], level5: [],
-        level6: [], level7: [], level8: [], level9: [], level10: []
-      };
-
-      const groups: Record<string, Candle[]> = {};
-      const groupKeys: string[] = [];
-      
-      candles.forEach(c => {
-        const date = new Date(c.time * 1000);
-        let key = '';
-        if (isDailyAnchor) {
-          key = date.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
-        } else {
-          key = date.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }).substring(0, 7);
-        }
-        if (!groups[key]) {
-          groups[key] = [];
-          groupKeys.push(key);
-        }
-        groups[key].push(c);
-      });
-
-      groupKeys.sort();
-
-      if (groupKeys.length > 0) {
-        const latestKey = groupKeys[groupKeys.length - 1];
-        const latestCandles = groups[latestKey];
-        let levels = matrixHistory[latestKey];
-        if (!levels) {
-          const sortedHistoryKeys = Object.keys(matrixHistory).sort();
-          if (sortedHistoryKeys.length > 0) {
-            levels = matrixHistory[sortedHistoryKeys[sortedHistoryKeys.length - 1]];
-          }
-        }
-        if (levels && latestCandles && latestCandles.length > 0) {
-          const samplePrice = latestCandles[latestCandles.length - 1].close;
-          const isPlausible = !levels.level1 || samplePrice <= 0 || (Math.abs(levels.level1 - samplePrice) / samplePrice < 2.5);
-          if (isPlausible) {
-            latestCandles.forEach(c => {
-              seriesData.level1.push({ time: c.time as any, value: levels.level1 });
-              seriesData.level2.push({ time: c.time as any, value: levels.level2 });
-              seriesData.level3.push({ time: c.time as any, value: levels.level3 });
-              seriesData.level4.push({ time: c.time as any, value: levels.level4 });
-              seriesData.level5.push({ time: c.time as any, value: levels.level5 });
-              seriesData.level6.push({ time: c.time as any, value: levels.level6 });
-              seriesData.level7.push({ time: c.time as any, value: levels.level7 });
-              seriesData.level8.push({ time: c.time as any, value: levels.level8 });
-              seriesData.level9.push({ time: c.time as any, value: levels.level9 });
-              seriesData.level10.push({ time: c.time as any, value: levels.level10 });
-            });
-          }
-        }
-      }
-      if (seriesData.level1.length > 0) {
-        return seriesData;
-      }
-    }
-    return calculateMatrixSeriesData(candles, timeframe);
+    return calculateMatrixSeriesData(candles, timeframe, matrixHistory);
   }, [candles, timeframe, matrixHistory]);
 
   // Global Real-time Candlestick Chart Level Alerts Engine & Calling Bell Synthesizer

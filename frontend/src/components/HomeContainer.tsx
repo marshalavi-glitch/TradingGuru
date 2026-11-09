@@ -83,7 +83,22 @@ export const HomeContainer: React.FC<HomeContainerProps> = ({
             setLeftLoading(false);
             setLeftConnectionStatus('connected');
           }
+          if (data.matrixHistory) {
+            setLeftMatrixHistory(data.matrixHistory);
+          }
         }
+
+        // Parallel fetch matrix-levels to guarantee anchor levels are always fresh & locked
+        fetch(`${backendHttp}/api/matrix-levels?symbol=${encodeURIComponent(leftSymbol)}&timeframe=${leftTimeframe}`, {
+          headers: { 'bypass-tunnel-reminder': 'true' }
+        })
+          .then(r => r.ok ? r.json() : null)
+          .then(mlData => {
+            if (mlData?.matrixHistory && isSubscribed && isMountedRef.current) {
+              setLeftMatrixHistory(mlData.matrixHistory);
+            }
+          })
+          .catch(() => {});
       } catch (err: any) {
         if (isMountedRef.current && isSubscribed) {
           setLeftError(err.message || 'Failed to fetch NIFTY candles');

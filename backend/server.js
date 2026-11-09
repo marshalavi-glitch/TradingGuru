@@ -2537,26 +2537,47 @@ app.post('/api/trade-ideas/manual', (req, res) => {
 });
 
 
+const anchorLevelsMemoryCache = new Map();
+
 async function fetchAnchorLevels(symbol, timeframe) {
   const optInfo = parseOptionSymbol(symbol);
   if (optInfo) {
     const setupLevels = getOptionSetupLevels(symbol, optInfo);
     if (setupLevels) {
       const now = new Date();
-      const dateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      const dateKey = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
       return { [dateKey]: setupLevels };
     }
-    // For option contracts without explicit setup, do not query underlying spot candles
-    // to avoid contaminating option charts with spot index numbers (e.g. 24,000).
     return null;
   }
 
   const anchorTf = (timeframe === 'D' || timeframe === 'W' || timeframe === 'M') ? 'M' : 'D';
+  const targetSymbol = optInfo ? optInfo.underlying : symbol;
+  const memKey = `${targetSymbol}_${anchorTf}`;
+
+  // 1. In-memory cache check (cached for 15 minutes)
+  const cachedMem = anchorLevelsMemoryCache.get(memKey);
+  if (cachedMem && (Date.now() - cachedMem.timestamp < 900000) && cachedMem.data) {
+    return cachedMem.data;
+  }
   
   try {
-    const targetSymbol = optInfo ? optInfo.underlying : symbol;
-    const res = await angelOneBridge.getNormalizedCandles({ symbol: targetSymbol, timeframe: anchorTf, limit: 60 });
-    const candles = res?.candles;
+    let candles = null;
+
+    // 2. Check local fastCandlesCache FIRST to prevent Angel One RATE_LIMIT
+    const fc = fastCandlesCache?.get ? fastCandlesCache.get(`${targetSymbol}_${anchorTf}`) : null;
+    if (fc && Array.isArray(fc.candles) && fc.candles.length >= 2) {
+      candles = fc.candles;
+    }
+
+    // 3. Fallback to live Angel One fetch if not available in local cache
+    if (!candles || candles.length < 2) {
+      const res = await angelOneBridge.getNormalizedCandles({ symbol: targetSymbol, timeframe: anchorTf, limit: 60 });
+      if (res?.candles && res.candles.length >= 2) {
+        candles = res.candles;
+      }
+    }
+
     if (!candles || candles.length < 2) {
       return null;
     }
@@ -2566,8 +2587,17 @@ async function fetchAnchorLevels(symbol, timeframe) {
     
     const matrixHistory = {};
     for (let i = 1; i < sorted.length; i++) {
-      const prevCandle = sorted[i - 1];
+      let prevCandle = sorted[i - 1];
       const currentCandle = sorted[i];
+
+      // If prevCandle was a special 1-hour Muhurat session (e.g. Sunday session with low volume),
+      // look back to the preceding full regular session for standard daily pivot calculations
+      const prevDateObj = new Date(prevCandle.time * 1000);
+      const prevDateIST = prevDateObj.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+      const isSundayMuhurat = prevDateObj.getUTCDay() === 0 || prevDateIST === '2026-11-08';
+      if (isSundayMuhurat && i >= 2) {
+        prevCandle = sorted[i - 2];
+      }
       
       const h_prev = prevCandle.high;
       const l_prev = prevCandle.low;
@@ -2613,6 +2643,7 @@ async function fetchAnchorLevels(symbol, timeframe) {
       }
     }
     
+    anchorLevelsMemoryCache.set(memKey, { data: matrixHistory, timestamp: Date.now() });
     return matrixHistory;
   } catch (err) {
     console.warn(`[fetchAnchorLevels] Error for ${symbol}:`, err.message);

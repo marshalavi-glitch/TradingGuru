@@ -73,31 +73,36 @@ export function calculateMatrixSeriesData(
 
   // 2. PRIORITY A: Use official pre-calculated static anchor levels from backend matrixHistory
   if (effMatrixHistory && typeof effMatrixHistory === 'object') {
-    let levels = effMatrixHistory[currentKey];
-    if (!levels) {
-      const historyKeys = Object.keys(effMatrixHistory).sort();
-      if (historyKeys.length > 0) {
-        levels = effMatrixHistory[historyKeys[historyKeys.length - 1]];
+    let hasAdded = false;
+    groupKeys.forEach((key) => {
+      let levels = effMatrixHistory[key];
+      if (!levels) {
+        const historyKeys = Object.keys(effMatrixHistory).sort();
+        if (historyKeys.length > 0) {
+          levels = effMatrixHistory[historyKeys[historyKeys.length - 1]];
+        }
       }
-    }
 
-    if (levels && typeof levels.level4 === 'number' && typeof levels.level7 === 'number') {
-      const sortedCurrent = [...currentCandles].sort((a, b) => a.time - b.time);
-      sortedCurrent.forEach((c) => {
-        seriesData.level1.push({ time: c.time, value: levels.level1 });
-        seriesData.level2.push({ time: c.time, value: levels.level2 });
-        seriesData.level3.push({ time: c.time, value: levels.level3 });
-        seriesData.level4.push({ time: c.time, value: levels.level4 }); // R3 Sell Reversal
-        seriesData.level5.push({ time: c.time, value: levels.level5 });
-        seriesData.level6.push({ time: c.time, value: levels.level6 });
-        seriesData.level7.push({ time: c.time, value: levels.level7 }); // S3 Buy Reversal
-        seriesData.level8.push({ time: c.time, value: levels.level8 }); // S4 Breakdown
-        seriesData.level9.push({ time: c.time, value: levels.level9 });
-        seriesData.level10.push({ time: c.time, value: levels.level10 });
-      });
+      const dayCandles = groups[key] || [];
+      if (levels && typeof levels.level4 === 'number' && typeof levels.level7 === 'number') {
+        const sortedDay = [...dayCandles].sort((a, b) => a.time - b.time);
+        sortedDay.forEach((c) => {
+          seriesData.level1.push({ time: c.time, value: levels.level1 });
+          seriesData.level2.push({ time: c.time, value: levels.level2 });
+          seriesData.level3.push({ time: c.time, value: levels.level3 });
+          seriesData.level4.push({ time: c.time, value: levels.level4 }); // R3 Sell Reversal
+          seriesData.level5.push({ time: c.time, value: levels.level5 });
+          seriesData.level6.push({ time: c.time, value: levels.level6 });
+          seriesData.level7.push({ time: c.time, value: levels.level7 }); // S3 Buy Reversal
+          seriesData.level8.push({ time: c.time, value: levels.level8 }); // S4 Breakdown
+          seriesData.level9.push({ time: c.time, value: levels.level9 });
+          seriesData.level10.push({ time: c.time, value: levels.level10 });
+        });
+        hasAdded = true;
+      }
+    });
 
-      // Save to static cache for this session
-      dailyLevelsCache.set(currentKey, levels);
+    if (hasAdded && seriesData.level4.length > 0) {
       return seriesData;
     }
   }
