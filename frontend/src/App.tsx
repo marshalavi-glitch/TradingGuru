@@ -530,10 +530,13 @@ function App() {
       try {
         const backendHttp = await getBackendHttpUrl();
         const url = `${backendHttp}/api/candles?symbol=${encodeURIComponent(symbol)}&timeframe=${timeframe}&limit=500`;
-        const res = await fetch(url);
+        const res = await fetch(url, { headers: { 'bypass-tunnel-reminder': 'true' } });
         if (res.ok && isMounted) {
           const data = await res.json();
           const sym = data.symbol || symbol;
+          if (data.matrixHistory) {
+            setMatrixHistory(data.matrixHistory);
+          }
           if (data.candles && data.candles.length > 0 && isMounted && tvStreamer.isSymbolMatch(sym, symbol)) {
             setCandles(filterMarketHoursCandles(data.candles, symbol, timeframe));
             setLoadedSymbol(symbol);
@@ -541,6 +544,18 @@ function App() {
             setConnectionStatus('connected');
           }
         }
+
+        // Parallel fetch matrix-levels to ensure anchor levels are fresh and locked
+        fetch(`${backendHttp}/api/matrix-levels?symbol=${encodeURIComponent(symbol)}&timeframe=${timeframe}`, {
+          headers: { 'bypass-tunnel-reminder': 'true' }
+        })
+          .then(r => r.json())
+          .then(mlData => {
+            if (mlData?.matrixHistory && isMounted) {
+              setMatrixHistory(mlData.matrixHistory);
+            }
+          })
+          .catch(() => {});
       } catch (e) {
         // Fallback handled by WebSocket stream below
       }

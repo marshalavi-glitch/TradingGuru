@@ -108,74 +108,88 @@ export function calculateMatrixSeriesData(
   }
 
   // 3. PRIORITY B: Calculate from Completed Previous Session Candles
-  let levels: any = null;
-
-  if (groupKeys.length >= 2) {
-    const prevKey = groupKeys[groupKeys.length - 2];
+  for (let i = 1; i < groupKeys.length; i++) {
+    const dayKey = groupKeys[i];
+    const prevKey = groupKeys[i - 1];
     const prevCandles = groups[prevKey];
+    const dayCandles = groups[dayKey];
 
-    if (prevCandles && prevCandles.length > 0) {
-      const h_prev = Math.max(...prevCandles.map((c) => c.high));
-      const l_prev = Math.min(...prevCandles.map((c) => c.low));
-      const sortedPrev = [...prevCandles].sort((a, b) => a.time - b.time);
-      const c_prev = sortedPrev[sortedPrev.length - 1].close;
+    if (!prevCandles || prevCandles.length === 0 || !dayCandles || dayCandles.length === 0) continue;
 
-      let r_prev = h_prev - l_prev;
-      if (r_prev <= 0) {
-        r_prev = Math.max(1, c_prev * 0.01);
-      }
+    const h_prev = Math.max(...prevCandles.map((c) => c.high));
+    const l_prev = Math.min(...prevCandles.map((c) => c.low));
+    const sortedPrev = [...prevCandles].sort((a, b) => a.time - b.time);
+    const c_prev = sortedPrev[sortedPrev.length - 1].close;
 
-      if (r_prev > 0) {
-        const r2 = c_prev + (r_prev * 1.1 / 6.0);
-        const s2 = c_prev - (r_prev * 1.1 / 6.0);
-        const r3 = c_prev + (r_prev * 1.1 / 4.0);
-        const s3 = c_prev - (r_prev * 1.1 / 4.0);
-        const r4 = c_prev + (r_prev * 1.1 / 2.0);
-        const s4 = c_prev - (r_prev * 1.1 / 2.0);
-
-        const r5 = r4 + 1.168 * (r4 - r3);
-        const s5 = s4 - 1.168 * (s3 - s4);
-        const r6 = (h_prev / l_prev) * c_prev;
-        const s6 = c_prev - (r6 - c_prev);
-
-        levels = {
-          level1: Math.round(r6 * 100) / 100,
-          level2: Math.round(r5 * 100) / 100,
-          level3: Math.round(r4 * 100) / 100,
-          level4: Math.round(r3 * 100) / 100,
-          level5: Math.round(r2 * 100) / 100,
-          level6: Math.max(0.05, Math.round(s2 * 100) / 100),
-          level7: Math.max(0.05, Math.round(s3 * 100) / 100),
-          level8: Math.max(0.05, Math.round(s4 * 100) / 100),
-          level9: Math.max(0.05, Math.round(s5 * 100) / 100),
-          level10: Math.max(0.05, Math.round(s6 * 100) / 100)
-        };
-
-        // Cache so levels remain permanently frozen today even if previous candles roll off
-        dailyLevelsCache.set(currentKey, levels);
-      }
+    let r_prev = h_prev - l_prev;
+    if (r_prev <= 0) {
+      r_prev = Math.max(1, c_prev * 0.01);
     }
-  } else {
-    // Only 1 day of candles in slice (today):
-    // DO NOT calculate from today's forming candles! Check static session cache first
-    levels = dailyLevelsCache.get(currentKey);
+
+    if (r_prev > 0) {
+      const r2 = c_prev + (r_prev * 1.1 / 6.0);
+      const s2 = c_prev - (r_prev * 1.1 / 6.0);
+      const r3 = c_prev + (r_prev * 1.1 / 4.0);
+      const s3 = c_prev - (r_prev * 1.1 / 4.0);
+      const r4 = c_prev + (r_prev * 1.1 / 2.0);
+      const s4 = c_prev - (r_prev * 1.1 / 2.0);
+
+      const r5 = r4 + 1.168 * (r4 - r3);
+      const s5 = s4 - 1.168 * (s3 - s4);
+      const r6 = (h_prev / l_prev) * c_prev;
+      const s6 = c_prev - (r6 - c_prev);
+
+      const dayLevels = {
+        level1: Math.round(r6 * 100) / 100,
+        level2: Math.round(r5 * 100) / 100,
+        level3: Math.round(r4 * 100) / 100,
+        level4: Math.round(r3 * 100) / 100,
+        level5: Math.round(r2 * 100) / 100,
+        level6: Math.max(0.05, Math.round(s2 * 100) / 100),
+        level7: Math.max(0.05, Math.round(s3 * 100) / 100),
+        level8: Math.max(0.05, Math.round(s4 * 100) / 100),
+        level9: Math.max(0.05, Math.round(s5 * 100) / 100),
+        level10: Math.max(0.05, Math.round(s6 * 100) / 100)
+      };
+
+      if (i === groupKeys.length - 1) {
+        dailyLevelsCache.set(dayKey, dayLevels);
+      }
+
+      const sortedDay = [...dayCandles].sort((a, b) => a.time - b.time);
+      sortedDay.forEach((c) => {
+        seriesData.level1.push({ time: c.time, value: dayLevels.level1 });
+        seriesData.level2.push({ time: c.time, value: dayLevels.level2 });
+        seriesData.level3.push({ time: c.time, value: dayLevels.level3 });
+        seriesData.level4.push({ time: c.time, value: dayLevels.level4 });
+        seriesData.level5.push({ time: c.time, value: dayLevels.level5 });
+        seriesData.level6.push({ time: c.time, value: dayLevels.level6 });
+        seriesData.level7.push({ time: c.time, value: dayLevels.level7 });
+        seriesData.level8.push({ time: c.time, value: dayLevels.level8 });
+        seriesData.level9.push({ time: c.time, value: dayLevels.level9 });
+        seriesData.level10.push({ time: c.time, value: dayLevels.level10 });
+      });
+    }
   }
 
-  // 4. Apply static levels to today's candles
-  if (levels) {
-    const sortedCurrent = [...currentCandles].sort((a, b) => a.time - b.time);
-    sortedCurrent.forEach((c) => {
-      seriesData.level1.push({ time: c.time, value: levels.level1 });
-      seriesData.level2.push({ time: c.time, value: levels.level2 });
-      seriesData.level3.push({ time: c.time, value: levels.level3 });
-      seriesData.level4.push({ time: c.time, value: levels.level4 });
-      seriesData.level5.push({ time: c.time, value: levels.level5 });
-      seriesData.level6.push({ time: c.time, value: levels.level6 });
-      seriesData.level7.push({ time: c.time, value: levels.level7 });
-      seriesData.level8.push({ time: c.time, value: levels.level8 });
-      seriesData.level9.push({ time: c.time, value: levels.level9 });
-      seriesData.level10.push({ time: c.time, value: levels.level10 });
-    });
+  // If groupKeys has only 1 day (today) and cache has levels for it:
+  if (groupKeys.length === 1 && seriesData.level4.length === 0) {
+    const cachedLevels = dailyLevelsCache.get(currentKey);
+    if (cachedLevels) {
+      const sortedCurrent = [...currentCandles].sort((a, b) => a.time - b.time);
+      sortedCurrent.forEach((c) => {
+        seriesData.level1.push({ time: c.time, value: cachedLevels.level1 });
+        seriesData.level2.push({ time: c.time, value: cachedLevels.level2 });
+        seriesData.level3.push({ time: c.time, value: cachedLevels.level3 });
+        seriesData.level4.push({ time: c.time, value: cachedLevels.level4 });
+        seriesData.level5.push({ time: c.time, value: cachedLevels.level5 });
+        seriesData.level6.push({ time: c.time, value: cachedLevels.level6 });
+        seriesData.level7.push({ time: c.time, value: cachedLevels.level7 });
+        seriesData.level8.push({ time: c.time, value: cachedLevels.level8 });
+        seriesData.level9.push({ time: c.time, value: cachedLevels.level9 });
+        seriesData.level10.push({ time: c.time, value: cachedLevels.level10 });
+      });
+    }
   }
 
   return seriesData;

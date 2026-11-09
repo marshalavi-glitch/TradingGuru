@@ -129,6 +129,9 @@ const ChartSlotPane: React.FC<{
         if (res.ok && isSubscribed && isMountedRef.current) {
           const data = await res.json();
           const sym = data.symbol || symbol;
+          if (data.matrixHistory) {
+            setMatrixHistory(data.matrixHistory);
+          }
           if (data.candles && Array.isArray(data.candles) && data.candles.length > 0 && tvStreamer.isSymbolMatch(sym, symbol)) {
             const filtered = filterMarketHoursCandles(data.candles, symbol, timeframe);
             const sanitized = [...filtered].map(c => ({ ...c, time: Number(c.time) })).sort((a, b) => (a.time as number) - (b.time as number));
@@ -142,6 +145,18 @@ const ChartSlotPane: React.FC<{
         } else {
           setLoading(false);
         }
+
+        // Parallel fetch matrix-levels to guarantee static anchor levels are locked and available
+        fetch(`${backendHttp}/api/matrix-levels?symbol=${encodeURIComponent(symbol)}&timeframe=${timeframe}`, {
+          headers: { 'bypass-tunnel-reminder': 'true' }
+        })
+          .then(r => r.json())
+          .then(mlData => {
+            if (mlData?.matrixHistory && isSubscribed && isMountedRef.current) {
+              setMatrixHistory(mlData.matrixHistory);
+            }
+          })
+          .catch(() => {});
       } catch (err: any) {
         if (isMountedRef.current && isSubscribed) {
           setLoading(false);
