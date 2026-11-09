@@ -2590,15 +2590,6 @@ async function fetchAnchorLevels(symbol, timeframe) {
       let prevCandle = sorted[i - 1];
       const currentCandle = sorted[i];
 
-      // If prevCandle was a special 1-hour Muhurat session (e.g. Sunday session with low volume),
-      // look back to the preceding full regular session for standard daily pivot calculations
-      const prevDateObj = new Date(prevCandle.time * 1000);
-      const prevDateIST = prevDateObj.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
-      const isSundayMuhurat = prevDateObj.getUTCDay() === 0 || prevDateIST === '2026-11-08';
-      if (isSundayMuhurat && i >= 2) {
-        prevCandle = sorted[i - 2];
-      }
-      
       const h_prev = prevCandle.high;
       const l_prev = prevCandle.low;
       const c_prev = prevCandle.close;
