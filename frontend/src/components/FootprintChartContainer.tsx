@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { getBackendHttpUrl } from '../utils/tvStreamer';
+import { resolveBackendUrl, clearBackendUrlCache } from '../utils/config';
 import { Candle } from '../utils/profileCalculator';
 import { resolveSymbol } from '../utils/symbolResolver';
 import { filterMarketHoursCandles } from '../utils/marketHours';
@@ -798,8 +799,12 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
   const [yDragStartY, setYDragStartY] = useState<number>(0);
   const [yDragStartZoom, setYDragStartZoom] = useState<number>(24);
   const [cursorStyle, setCursorStyle] = useState<string>('grab');
+  const [showMobileFootprintTools, setShowMobileFootprintTools] = useState<boolean>(false);
+  const pinchDistRef = useRef<number | null>(null);
+  const pinchZoomRef = useRef<number>(1.0);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const retryTimeoutRef = useRef<any>(null);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 640 });
 
@@ -815,13 +820,22 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
 
   const activeSymbolInfo = useMemo(() => resolveSymbol(symbol), [symbol]);
 
-  // Fetch candles
-  const fetchCandles = async (sym: string, tf: string) => {
-    setLoading(true);
-    setError(null);
+  // Fetch candles with auto-retry and fresh tunnel resolution
+  const fetchCandles = async (sym: string, tf: string, forceFreshUrl = false, attempt = 1) => {
+    if (attempt === 1) {
+      setLoading(true);
+      setError(null);
+    }
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+      retryTimeoutRef.current = null;
+    }
+
     try {
-      const backendHttp = await getBackendHttpUrl();
-      // Dynamic candle limit to cover last 15-20 trading days (~3 calendar weeks)
+      if (forceFreshUrl) {
+        clearBackendUrlCache();
+      }
+      const backendHttp = forceFreshUrl ? await resolveBackendUrl(true) : await getBackendHttpUrl();
       const sTf = String(tf).toUpperCase();
       let limitCount = 1200;
       if (sTf === '1') limitCount = 2000;
@@ -833,18 +847,31 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
       else if (sTf === '60' || sTf === '1H') limitCount = 150;
       else if (sTf === 'D' || sTf === '1D') limitCount = 30;
 
-      const res = await fetch(`${backendHttp}/api/candles?symbol=${encodeURIComponent(sym)}&timeframe=${tf}&limit=${limitCount}&force=true`);
+      const res = await fetch(`${backendHttp}/api/candles?symbol=${encodeURIComponent(sym)}&timeframe=${tf}&limit=${limitCount}`, {
+        headers: { 'bypass-tunnel-reminder': 'true' }
+      });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (data.candles && data.candles.length > 0) {
         setCandles(filterMarketHoursCandles(data.candles, sym, tf));
+        setError(null);
       } else {
-        setCandles([]);
-        setError('No candle data available for footprint analysis.');
+        if (!candles || candles.length === 0) {
+          setError('No candle data available for footprint analysis.');
+        }
       }
     } catch (err: any) {
-      console.error('[FootprintChartContainer] Fetch error:', err);
-      setError(err.message || 'Failed to load footprint data.');
+      console.error(`[FootprintChartContainer] Fetch error (attempt ${attempt}):`, err);
+      if (attempt < 3) {
+        console.log(`[FootprintChartContainer] Auto-retrying fetch in 2s (attempt ${attempt + 1})...`);
+        retryTimeoutRef.current = setTimeout(() => {
+          fetchCandles(sym, tf, true, attempt + 1);
+        }, 2000);
+        return;
+      }
+      if (!candles || candles.length === 0) {
+        setError(err.message || 'Failed to load footprint data.');
+      }
     } finally {
       setLoading(false);
     }
@@ -1131,9 +1158,10 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
   useEffect(() => {
     const handleResize = () => {
       if (canvasContainerRef.current) {
+        const isMobile = window.innerWidth <= 768;
         setDimensions({
           width: canvasContainerRef.current.clientWidth,
-          height: Math.max(540, canvasContainerRef.current.clientHeight || 640)
+          height: isMobile ? Math.max(380, canvasContainerRef.current.clientHeight || 460) : Math.max(540, canvasContainerRef.current.clientHeight || 640)
         });
       }
     };
@@ -2285,10 +2313,31 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
               <option value={3.0}>Imbalance: 3.0x</option>
               <option value={4.0}>Imbalance: 4.0x</option>
             </select>
+
+            {/* Mobile Tool Toggle */}
+            <button
+              className="mobile-only"
+              onClick={() => setShowMobileFootprintTools(!showMobileFootprintTools)}
+              style={{
+                background: showMobileFootprintTools ? 'rgba(56, 189, 248, 0.25)' : 'rgba(255, 255, 255, 0.08)',
+                border: '1px solid rgba(56, 189, 248, 0.4)',
+                color: showMobileFootprintTools ? '#38bdf8' : '#e2e8f0',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              🛠️ Tools {showMobileFootprintTools ? '▲' : '▼'}
+            </button>
           </div>
 
           {/* Right Group: Feature Toggles, Tick Size & Quick Presets */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+          <div className={showMobileFootprintTools ? '' : 'desktop-only'} style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
             {/* POC Line Pill Button */}
             <button
               onClick={() => setShowPocLine(prev => !prev)}
@@ -2497,8 +2546,10 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
           </div>
         </div>
 
-        {/* ROW 2: Status Badges, Zoom Controls, Navigation, Auto-Scroll & FII Stats */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px', borderTop: '1px dashed rgba(255, 255, 255, 0.1)', paddingTop: '6px' }}>
+        {/* ROW 2 & ROW 3: Collapsible on Mobile, always on Desktop */}
+        <div className={showMobileFootprintTools ? '' : 'desktop-only'} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {/* ROW 2: Status Badges, Zoom Controls, Navigation, Auto-Scroll & FII Stats */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px', borderTop: '1px dashed rgba(255, 255, 255, 0.1)', paddingTop: '6px' }}>
           
           {/* Status Badges on Left */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -2739,6 +2790,7 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
             </div>
           </div>
         </div>
+        </div>
       </div>
 
       {/* Main Canvas Chart Area */}
@@ -2747,7 +2799,7 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
         style={{ 
           position: 'relative', 
           width: '100%', 
-          minHeight: '640px', 
+          minHeight: typeof window !== 'undefined' && window.innerWidth <= 768 ? '420px' : '640px', 
           backgroundColor: theme === 'light' ? '#ffffff' : '#181c27', 
           borderRadius: '8px', 
           border: '1px solid var(--border-color)',
@@ -2769,10 +2821,34 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
           </div>
         )}
 
-        {error && !loading && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(15, 23, 42, 0.9)', zIndex: 10 }}>
-            <ShieldAlert size={32} style={{ color: '#ef4444', marginBottom: '12px' }} />
-            <span style={{ fontSize: '14px', color: '#ef4444', fontWeight: '600' }}>{error}</span>
+        {error && !loading && (!candles || candles.length === 0) && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(15, 23, 42, 0.92)', zIndex: 10, padding: '20px' }}>
+            <ShieldAlert size={36} style={{ color: '#ef4444', marginBottom: '12px' }} />
+            <span style={{ fontSize: '15px', color: '#ef4444', fontWeight: '600', marginBottom: '6px' }}>{error}</span>
+            <span style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '16px', maxWidth: '360px', textAlign: 'center' }}>
+              The live stream or tunnel reconnected. Click below to reconnect.
+            </span>
+            <button
+              onClick={() => fetchCandles(symbol, timeframe, true, 1)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 20px',
+                backgroundColor: '#0284c7',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '13px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(2, 132, 199, 0.3)'
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#0369a1')}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#0284c7')}
+            >
+              <RefreshCw size={14} /> Retry Connection
+            </button>
           </div>
         )}
 
@@ -2811,6 +2887,14 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
             if (e.touches.length === 1) {
               setIsDragging(true);
               setDragStart({ x: e.touches[0].clientX - panOffset.x, y: e.touches[0].clientY - panOffset.y });
+            } else if (e.touches.length === 2) {
+              setIsDragging(false);
+              const dist = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+              );
+              pinchDistRef.current = dist;
+              pinchZoomRef.current = zoomLevel;
             }
           }}
           onTouchMove={(e) => {
@@ -2819,9 +2903,20 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
                 x: e.touches[0].clientX - dragStart.x,
                 y: e.touches[0].clientY - dragStart.y
               });
+            } else if (e.touches.length === 2 && pinchDistRef.current) {
+              const dist = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+              );
+              const ratio = dist / pinchDistRef.current;
+              const nextZoom = Math.min(4.0, Math.max(0.3, pinchZoomRef.current * ratio));
+              setZoomLevel(nextZoom);
             }
           }}
-          onTouchEnd={() => setIsDragging(false)}
+          onTouchEnd={() => {
+            setIsDragging(false);
+            pinchDistRef.current = null;
+          }}
           onDoubleClick={handleDoubleClick}
           style={{ cursor: cursorStyle, display: 'block', touchAction: 'none' }}
         />
