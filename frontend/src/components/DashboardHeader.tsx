@@ -14,7 +14,6 @@ export interface DashboardHeaderProps {
   authUser?: string | null;
   onLogout?: () => void;
   onOpenUserManagement?: () => void;
-  onOpenZerodha?: () => void;
   isChartTab?: boolean;
   multiChartLayout?: any;
   onMultiChartLayoutChange?: (layout: any) => void;
@@ -427,32 +426,6 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               })}
             </div>
           )}
-
-          
-          {/* Zerodha Kite Connect Button */}
-          <button
-            onClick={onOpenZerodha}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              height: '30px',
-              padding: '0 10px',
-              background: 'rgba(249, 115, 22, 0.12)',
-              border: '1px solid rgba(249, 115, 22, 0.35)',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              color: '#f97316',
-              fontSize: '11px',
-              fontWeight: '700',
-              transition: 'all 0.2s ease'
-            }}
-            title="Zerodha Kite Connect API Integration"
-          >
-            <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#f97316' }} />
-            <span>Zerodha Kite</span>
-          </button>
   
           {/* Refresh Button (Near Live) */}
           <button
@@ -585,31 +558,6 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 >
                   <Volume2 size={14} color="#60a5fa" />
                   <span>Test AI Voice Alert</span>
-                </button>
-
-                
-                {/* Zerodha Kite API Settings */}
-                <button
-                  onClick={() => {
-                    setIsSettingsOpen(false);
-                    if (onOpenZerodha) onOpenZerodha();
-                  }}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    background: 'rgba(249, 115, 22, 0.08)',
-                    border: '1px solid rgba(249, 115, 22, 0.25)',
-                    padding: '6px 10px',
-                    borderRadius: '6px',
-                    color: '#f97316',
-                    fontSize: '11.5px',
-                    fontWeight: '700',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f97316' }} />
-                  <span>Zerodha Kite API Settings</span>
                 </button>
   
                 {/* Refresh Data */}

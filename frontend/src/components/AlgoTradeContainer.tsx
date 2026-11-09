@@ -152,39 +152,8 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
   onSwitchToChart
 }) => {
   const { isDark } = useTheme();
-
   // Engine Configuration State
-  
-  const [brokerMode, setBrokerMode] = useState<'SIMULATED' | 'ZERODHA'>(() => {
-    try {
-      return (localStorage.getItem('TRADING_GURU_ALGO_BROKER') as any) || 'SIMULATED';
-    } catch {
-      return 'SIMULATED';
-    }
-  });
-  const [zerodhaStatus, setZerodhaStatus] = useState<any>(null);
 
-  useEffect(() => {
-    localStorage.setItem('TRADING_GURU_ALGO_BROKER', brokerMode);
-  }, [brokerMode]);
-
-  useEffect(() => {
-    const checkZerodha = async () => {
-      try {
-        const backendHttp = await getBackendHttpUrl();
-        const res = await fetch(`${backendHttp}/api/zerodha/status`, {
-          headers: { 'bypass-tunnel-reminder': 'true' }
-        });
-        if (res.ok) {
-          const d = await res.json();
-          setZerodhaStatus(d);
-        }
-      } catch {}
-    };
-    checkZerodha();
-    const interval = setInterval(checkZerodha, 15000);
-    return () => clearInterval(interval);
-  }, []);
 
   const [isEngineActive, setIsEngineActive] = useState<boolean>(() => {
     try {
@@ -809,45 +778,6 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
       reversalLevel,
       status: 'OPEN'
     };
-
-    
-    // Send live order to Zerodha if live broker mode is active
-    if (brokerMode === 'ZERODHA') {
-      (async () => {
-        try {
-          const backendHttp = await getBackendHttpUrl();
-          const isMcx = symbol.includes('CRUDE') || symbol.includes('NATURAL') || symbol.includes('ZINC');
-          const exchange = isMcx ? 'MCX' : (symbol.includes(':') ? symbol.split(':')[0] : 'NSE');
-          const cleanSymbol = symbol.includes(':') ? symbol.split(':')[1] : symbol;
-
-          const res = await fetch(`${backendHttp}/api/zerodha/order`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'bypass-tunnel-reminder': 'true'
-            },
-            body: JSON.stringify({
-              tradingsymbol: cleanSymbol,
-              exchange,
-              transaction_type: side,
-              quantity,
-              order_type: 'MARKET',
-              product: 'MIS',
-              validity: 'DAY',
-              tag: 'TradingGuruAlgo'
-            })
-          });
-          const d = await res.json();
-          if (d.success && d.orderId) {
-            addLog('SUCCESS', `🚀 [ZERODHA LIVE] Order confirmed! OrderID: ${d.orderId} (${side} ${quantity} ${cleanSymbol})`, symbol);
-          } else {
-            addLog('ERROR', `❌ [ZERODHA LIVE] Order rejected: ${d.message || 'Execution failed'}`, symbol);
-          }
-        } catch (err: any) {
-          addLog('ERROR', `❌ [ZERODHA LIVE] Order exception: ${err.message}`, symbol);
-        }
-      })();
-    }
   
     setPositions(prev => [newPosition, ...prev]);
     addLog(
@@ -1223,52 +1153,6 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
 
         {/* Right: Risk per trade, Emergency Square-off, Reset */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-          
-          {/* Broker Execution Mode Selector */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: 'var(--text-secondary)' }}>
-            <span>Execution:</span>
-            <div style={{ display: 'flex', borderRadius: '4px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
-              <button
-                onClick={() => setBrokerMode('SIMULATED')}
-                style={{
-                  padding: '3px 8px',
-                  border: 'none',
-                  fontSize: '11px',
-                  fontWeight: '700',
-                  cursor: 'pointer',
-                  background: brokerMode === 'SIMULATED' ? '#3b82f6' : (isDark ? 'rgba(30, 41, 59, 0.8)' : '#f1f5f9'),
-                  color: brokerMode === 'SIMULATED' ? '#ffffff' : 'var(--text-secondary)'
-                }}
-                title="Paper trade with simulated 10L capital"
-              >
-                Paper (10L)
-              </button>
-              <button
-                onClick={() => setBrokerMode('ZERODHA')}
-                style={{
-                  padding: '3px 8px',
-                  border: 'none',
-                  fontSize: '11px',
-                  fontWeight: '700',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  background: brokerMode === 'ZERODHA' ? '#f97316' : (isDark ? 'rgba(30, 41, 59, 0.8)' : '#f1f5f9'),
-                  color: brokerMode === 'ZERODHA' ? '#ffffff' : 'var(--text-secondary)'
-                }}
-                title={zerodhaStatus?.isConnected ? `Zerodha Live (${zerodhaStatus.userId})` : 'Zerodha Disconnected - Click to enable'}
-              >
-                <span style={{
-                  width: '6px',
-                  height: '6px',
-                  borderRadius: '50%',
-                  background: zerodhaStatus?.isConnected ? '#10b981' : '#ef4444'
-                }} />
-                <span>Zerodha Kite</span>
-              </button>
-            </div>
-          </div>
   
           {/* Max Positions Selector */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: 'var(--text-secondary)' }}>

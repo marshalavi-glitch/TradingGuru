@@ -35,7 +35,6 @@ import { Test2Container } from './components/Test2Container';
 import { Mp3DayPatternContainer } from './components/Mp3DayPatternContainer';
 import { LoginScreen, getStoredAuthUser, clearStoredAuthUser, AUTH_EPOCH_KEY, CURRENT_AUTH_EPOCH } from './components/LoginScreen';
 import { UserManagementModal } from './components/UserManagementModal';
-import { ZerodhaConnectModal } from './components/ZerodhaConnectModal';
 import { HomeContainer } from './components/HomeContainer';
 import { AlgoTradeContainer } from './components/AlgoTradeContainer';
 import { HomeBottomWidgets } from './components/HomeBottomWidgets';
@@ -174,7 +173,6 @@ function App() {
   const { isDark } = useTheme();
   const [authUser, setAuthUser] = useState<string | null>(() => getStoredAuthUser());
   const [isUserManagementOpen, setIsUserManagementOpen] = useState(false);
-  const [isZerodhaModalOpen, setIsZerodhaModalOpen] = useState(false);
 
   const handleLogout = () => {
     try {
@@ -957,7 +955,6 @@ function App() {
               authUser={authUser}
               onLogout={handleLogout}
               onOpenUserManagement={() => setIsUserManagementOpen(true)}
-              onOpenZerodha={() => setIsZerodhaModalOpen(true)}
               isChartTab={activeTab === 'chart'}
               multiChartLayout={multiChartLayout}
               onMultiChartLayoutChange={handleLayoutChange}
@@ -965,11 +962,6 @@ function App() {
           </TabErrorBoundary>
 
           <TabErrorBoundary tabName="User Access Management">
-            <ZerodhaConnectModal
-        isOpen={isZerodhaModalOpen}
-        onClose={() => setIsZerodhaModalOpen(false)}
-        isDark={isDark}
-      />
 
       <UserManagementModal
               isOpen={isUserManagementOpen}
