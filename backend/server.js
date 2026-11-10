@@ -1494,11 +1494,6 @@ app.get('/api/angelone/candles', async (req, res) => {
   }
 });
 
-// GET /api/market-indices
-
-  }
-});
-
 app.get('/api/market-indices', async (req, res) => {
   const indices = await fetchLiveMarketIndices();
   res.json(indices);
