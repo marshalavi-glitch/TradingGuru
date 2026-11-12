@@ -4,6 +4,7 @@ import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
 import cors from 'cors';
 import { angelOneBridge } from './angelone_bridge.js';
+import { buildExcelWorkbook } from './excel_generator.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import compression from 'compression';
@@ -5190,6 +5191,209 @@ app.get('/api/orderflow-report/export-excel', requireAdminRole, async (req, res)
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.send(buffer);
   } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+
+// POST /api/algo-trade/export-excel - Download multi-sheet Excel report (.xlsx) for Algo Trades
+app.post('/api/algo-trade/export-excel', (req, res) => {
+  try {
+    const { positions = [], history = [], metrics = {}, logs = [] } = req.body || {};
+
+    const formatIst = (ts, fallbackStr) => {
+      if (ts && !isNaN(Number(ts))) {
+        return new Date(Number(ts)).toLocaleString('en-IN', {
+          timeZone: 'Asia/Kolkata',
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        });
+      }
+      return fallbackStr || '-';
+    };
+
+    const formatDateOnly = (ts, fallbackDate) => {
+      if (fallbackDate) return fallbackDate;
+      if (ts && !isNaN(Number(ts))) {
+        return new Date(Number(ts)).toLocaleDateString('en-IN', {
+          timeZone: 'Asia/Kolkata',
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric'
+        });
+      }
+      return new Date().toLocaleDateString('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      });
+    };
+
+    const generatedAt = formatIst(Date.now());
+
+    // Sheet 1: Summary
+    const totalClosed = history.length;
+    const winners = history.filter(h => (Number(h.realizedPnl) || 0) > 0).length;
+    const losers = history.filter(h => (Number(h.realizedPnl) || 0) < 0).length;
+    const winRate = totalClosed > 0 ? ((winners / totalClosed) * 100).toFixed(2) + '%' : '0.00%';
+    const totalRealized = history.reduce((acc, h) => acc + (Number(h.realizedPnl) || 0), 0);
+    const totalUnrealized = positions.reduce((acc, p) => acc + (Number(p.unrealizedPnl) || 0), 0);
+
+    const summaryRows = [
+      ['TradingGuru Algo Trade Portfolio Report', ''],
+      ['Generated On (IST)', generatedAt],
+      ['', ''],
+      ['Metric', 'Value'],
+      ['Initial Capital (INR)', Number(metrics.totalCapital || 1000000)],
+      ['Available Margin (INR)', Number(metrics.availableMargin || 0)],
+      ['Used Margin (INR)', Number(metrics.usedMargin || 0)],
+      ['Realized P&L (INR)', Math.round(totalRealized * 100) / 100],
+      ['Unrealized P&L (INR)', Math.round(totalUnrealized * 100) / 100],
+      ['Total Net Day P&L (INR)', Math.round((totalRealized + totalUnrealized) * 100) / 100],
+      ['Total Open Positions', positions.length],
+      ['Total Closed Trades', totalClosed],
+      ['Winning Trades', winners],
+      ['Losing Trades', losers],
+      ['Win Rate', winRate]
+    ];
+
+    // Sheet 2: Closed Trades History
+    const historyRows = [
+      [
+        'S.No',
+        'Symbol',
+        'Side',
+        'Setup Strategy',
+        'Qty',
+        'Allocated Capital (INR)',
+        'Entry Date',
+        'Entry Time (IST)',
+        'Entry Price (INR)',
+        'Exit Date',
+        'Exit Time (IST)',
+        'Exit Price (INR)',
+        'Exit Reason',
+        'Stop Loss (INR)',
+        'Target 1 (INR)',
+        'Target 2 (INR)',
+        'Realized P&L (INR)',
+        'Return (%)'
+      ]
+    ];
+
+    history.forEach((item, idx) => {
+      const cap = Number(item.allocatedCapital) || (Number(item.entryPrice) * Number(item.quantity)) || 1;
+      const pnl = Number(item.realizedPnl) || 0;
+      const roiPct = ((pnl / cap) * 100).toFixed(2) + '%';
+      historyRows.push([
+        idx + 1,
+        item.displayName || item.symbol || '-',
+        item.side || '-',
+        item.setupType || '-',
+        Number(item.quantity) || 0,
+        Math.round(cap * 100) / 100,
+        formatDateOnly(item.entryTimestamp, item.entryDate),
+        item.entryTime || formatIst(item.entryTimestamp),
+        Number(item.entryPrice) || 0,
+        formatDateOnly(item.exitTimestamp || item.entryTimestamp, item.exitDate),
+        item.exitTime || formatIst(item.exitTimestamp),
+        Number(item.exitPrice) || 0,
+        item.exitReason || '-',
+        Number(item.stopLoss) || 0,
+        Number(item.target1) || 0,
+        Number(item.target2) || 0,
+        Math.round(pnl * 100) / 100,
+        roiPct
+      ]);
+    });
+
+    if (history.length > 0) {
+      historyRows.push([
+        '', 'TOTAL', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
+        Math.round(totalRealized * 100) / 100,
+        ''
+      ]);
+    }
+
+    // Sheet 3: Open Positions
+    const openRows = [
+      [
+        'S.No',
+        'Symbol',
+        'Side',
+        'Setup Strategy',
+        'Qty',
+        'Allocated Capital (INR)',
+        'Entry Date',
+        'Entry Time (IST)',
+        'Entry Price (INR)',
+        'Current LTP (INR)',
+        'Stop Loss (INR)',
+        'Target 1 (INR)',
+        'Target 2 (INR)',
+        'Trailing/BE',
+        'Unrealized P&L (INR)',
+        'P&L (%)'
+      ]
+    ];
+
+    positions.forEach((pos, idx) => {
+      openRows.push([
+        idx + 1,
+        pos.displayName || pos.symbol || '-',
+        pos.side || '-',
+        pos.setupType || '-',
+        Number(pos.quantity) || 0,
+        Number(pos.allocatedCapital) || 0,
+        formatDateOnly(pos.entryTimestamp, pos.entryDate),
+        pos.entryTime || formatIst(pos.entryTimestamp),
+        Number(pos.entryPrice) || 0,
+        Number(pos.currentPrice) || 0,
+        Number(pos.stopLoss) || 0,
+        Number(pos.target1) || 0,
+        Number(pos.target2) || 0,
+        pos.isBreakeven ? 'Breakeven' : (pos.isTrailingActive ? 'Trailing' : 'Initial'),
+        Number(pos.unrealizedPnl) || 0,
+        (Number(pos.unrealizedPnlPct) || 0).toFixed(2) + '%'
+      ]);
+    });
+
+    // Sheet 4: Execution Logs
+    const logRows = [
+      ['S.No', 'Date', 'Time (IST)', 'Type', 'Symbol', 'Message']
+    ];
+    logs.forEach((l, idx) => {
+      logRows.push([
+        idx + 1,
+        l.date || formatDateOnly(Date.now()),
+        l.time || '-',
+        l.type || '-',
+        l.symbol || '-',
+        l.message || '-'
+      ]);
+    });
+
+    const sheets = [
+      { name: 'Summary', rows: summaryRows, colWidths: [30, 28] },
+      { name: 'Closed Trades', rows: historyRows, colWidths: [8, 16, 8, 28, 10, 18, 15, 22, 14, 15, 22, 14, 24, 14, 14, 14, 16, 12] },
+      { name: 'Open Positions', rows: openRows, colWidths: [8, 16, 8, 28, 10, 18, 15, 22, 14, 14, 14, 14, 14, 14, 16, 12] },
+      { name: 'Audit Logs', rows: logRows, colWidths: [8, 15, 16, 10, 16, 65] }
+    ];
+
+    const buffer = buildExcelWorkbook(sheets);
+    const dateStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+    const filename = `AlgoTrade_Report_${dateStr}.xlsx`;
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.send(buffer);
+  } catch (err) {
+    console.error('[AlgoTrade Export] Error:', err);
     res.status(500).json({ success: false, error: err.message });
   }
 });

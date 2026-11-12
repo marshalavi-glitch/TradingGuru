@@ -3,7 +3,7 @@ import {
   Bot, Play, Pause, ShieldAlert, TrendingUp, TrendingDown, RefreshCw, 
   Clock, Zap, CheckCircle2, AlertTriangle, ArrowUpRight, ArrowDownRight, 
   ExternalLink, XCircle, RotateCcw, Wallet, Target, Activity, Settings2,
-  DollarSign, PieChart, ShieldCheck, Flame, ListFilter
+  DollarSign, PieChart, ShieldCheck, Flame, ListFilter, Download
 } from 'lucide-react';
 import { tvStreamer, getBackendHttpUrl } from '../utils/tvStreamer';
 import { useTheme } from '../context/ThemeContext';
@@ -16,6 +16,7 @@ export interface AlgoPosition {
   displayName: string;
   side: 'BUY' | 'SELL';
   setupType: 'BUY REVERSAL (S3)' | 'BUY REVERSAL (S3 RECLAIM)' | 'BUY REVERSAL BREAKDOWN (SHORT)' | 'SELL REVERSAL (PIVOT BREAKDOWN)' | 'SELL REVERSAL (R3)';
+  entryDate?: string;
   entryTime: string;
   entryTimestamp: number;
   entryPrice: number;
@@ -33,13 +34,16 @@ export interface AlgoPosition {
   reversalLevel: number;
   status: 'OPEN' | 'CLOSED';
   exitPrice?: number;
+  exitDate?: string;
   exitTime?: string;
+  exitTimestamp?: number;
   exitReason?: 'TARGET 1 HIT (PROFIT BOOKED)' | 'TARGET 1 HIT' | 'TARGET 2 HIT' | 'STOP LOSS HIT' | 'TRAILING SL HIT' | 'MIS EOD SQUARE-OFF (15:15)' | 'MCX EOD SQUARE-OFF (23:25)' | 'MANUAL SQUARE-OFF';
   realizedPnl?: number;
 }
 
 export interface AlgoLog {
   id: string;
+  date?: string;
   time: string;
   type: 'ORDER' | 'SIGNAL' | 'EXIT' | 'INFO' | 'WARNING';
   message: string;
@@ -147,6 +151,33 @@ export function isCommoditySymbol(symbol?: string): boolean {
   );
 }
 
+
+export function formatIstDate(ms = Date.now()): string {
+  return new Date(ms).toLocaleDateString('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+}
+
+export function formatIstTime(ms = Date.now()): string {
+  return new Date(ms).toLocaleTimeString('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+}
+
+export function formatTradeDateTimeDisplay(timeStr?: string, dateStr?: string, timestamp?: number): string {
+  const resolvedDate = dateStr || (timestamp ? formatIstDate(timestamp) : '');
+  const resolvedTime = timeStr || (timestamp ? formatIstTime(timestamp) : '');
+  if (resolvedDate && resolvedTime) return `${resolvedDate}, ${resolvedTime}`;
+  return resolvedTime || resolvedDate || '-';
+}
+
 export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
   onSymbolSelect,
   onSwitchToChart
@@ -209,7 +240,8 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
       return saved ? JSON.parse(saved) : [
         {
           id: 'log-0',
-          time: new Date().toLocaleTimeString('en-IN', { hour12: false }),
+          date: formatIstDate(),
+          time: formatIstTime(),
           type: 'INFO',
           message: 'Intraday Algo Trading Engine initialized with ₹10,00,000 Capital. Strategy: S3 Buy & R3 Sell Reversals.'
         }
@@ -222,6 +254,7 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
   // Reversal Radar Items
   const [radarItems, setRadarItems] = useState<ReversalRadarItem[]>([]);
   const [isRadarLoading, setIsRadarLoading] = useState<boolean>(true);
+  const [isExporting, setIsExporting] = useState<boolean>(false);
   const [lastScanTime, setLastScanTime] = useState<string>('');
 
   // Live Prices Map: Symbol -> Price
@@ -260,7 +293,8 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
   const addLog = (type: AlgoLog['type'], message: string, symbol?: string) => {
     const newLog: AlgoLog = {
       id: `log-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
-      time: new Date().toLocaleTimeString('en-IN', { hour12: false }),
+      date: formatIstDate(),
+      time: formatIstTime(),
       type,
       message,
       symbol
@@ -297,7 +331,9 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
               ...pos,
               currentPrice: ltp,
               exitPrice: ltp,
-              exitTime: new Date().toLocaleTimeString('en-IN', { hour12: false }),
+              exitDate: formatIstDate(),
+              exitTime: formatIstTime(),
+              exitTimestamp: Date.now(),
               status: 'CLOSED' as const,
               exitReason: 'MIS EOD SQUARE-OFF (15:15)' as const,
               realizedPnl
@@ -324,7 +360,9 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
               ...pos,
               currentPrice: ltp,
               exitPrice: ltp,
-              exitTime: new Date().toLocaleTimeString('en-IN', { hour12: false }),
+              exitDate: formatIstDate(),
+              exitTime: formatIstTime(),
+              exitTimestamp: Date.now(),
               status: 'CLOSED' as const,
               exitReason: 'MCX EOD SQUARE-OFF (23:25)' as const,
               realizedPnl
@@ -668,7 +706,9 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
           status,
           exitReason,
           exitPrice: status === 'CLOSED' ? ltp : undefined,
-          exitTime: status === 'CLOSED' ? new Date().toLocaleTimeString('en-IN', { hour12: false }) : undefined,
+          exitDate: status === 'CLOSED' ? formatIstDate() : undefined,
+          exitTime: status === 'CLOSED' ? formatIstTime() : undefined,
+          exitTimestamp: status === 'CLOSED' ? Date.now() : undefined,
           realizedPnl: status === 'CLOSED' ? Math.round(unrealizedPnl * 100) / 100 : undefined
         };
 
@@ -761,7 +801,8 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
       displayName,
       side,
       setupType,
-      entryTime: new Date().toLocaleTimeString('en-IN', { hour12: false }),
+      entryDate: formatIstDate(),
+      entryTime: formatIstTime(),
       entryTimestamp: Date.now(),
       entryPrice,
       currentPrice: entryPrice,
@@ -897,7 +938,9 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
         ...pos,
         currentPrice: ltp,
         exitPrice: ltp,
-        exitTime: new Date().toLocaleTimeString('en-IN', { hour12: false }),
+        exitDate: formatIstDate(),
+        exitTime: formatIstTime(),
+        exitTimestamp: Date.now(),
         status: 'CLOSED',
         exitReason: reason,
         realizedPnl
@@ -923,7 +966,9 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
         ...pos,
         currentPrice: ltp,
         exitPrice: ltp,
-        exitTime: new Date().toLocaleTimeString('en-IN', { hour12: false }),
+        exitDate: formatIstDate(),
+        exitTime: formatIstTime(),
+        exitTimestamp: Date.now(),
         status: 'CLOSED' as const,
         exitReason: reason,
         realizedPnl
@@ -933,6 +978,79 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
     setHistory(prev => [...closed, ...prev]);
     setPositions([]);
     addLog('EXIT', `🚨 All ${closed.length} open positions squared off (${reason}).`);
+  };
+
+  // Download Multi-Sheet Excel Report (.xlsx)
+  const handleDownloadExcel = async () => {
+    if (isExporting) return;
+    setIsExporting(true);
+    try {
+      const backendHttp = await getBackendHttpUrl();
+      const res = await fetch(`${backendHttp}/api/algo-trade/export-excel`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'bypass-tunnel-reminder': 'true'
+        },
+        body: JSON.stringify({
+          positions,
+          history,
+          metrics,
+          logs
+        })
+      });
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const dateStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `AlgoTrade_Report_${dateStr}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      addLog('INFO', `📊 Downloaded Excel Report: AlgoTrade_Report_${dateStr}.xlsx`);
+    } catch (err: any) {
+      console.warn('[AlgoTrade] Backend Excel export failed, using CSV fallback:', err.message);
+      const escapeCsv = (v: any) => {
+        const s = String(v ?? '');
+        return (s.includes(',') || s.includes('"') || s.includes('\n')) ? `"${s.replace(/"/g, '""')}"` : s;
+      };
+      const headers = [
+        'Status', 'Symbol', 'Side', 'Setup', 'Qty', 'Entry Date', 'Entry Time',
+        'Entry Price', 'Exit Date', 'Exit Time', 'Exit Price', 'Exit Reason', 'P&L (INR)'
+      ];
+      const rows = [
+        ...history.map(h => [
+          'CLOSED', h.displayName, h.side, h.setupType, h.quantity,
+          h.entryDate || (h.entryTimestamp ? formatIstDate(h.entryTimestamp) : ''),
+          h.entryTime, h.entryPrice,
+          h.exitDate || h.entryDate || (h.exitTimestamp ? formatIstDate(h.exitTimestamp) : ''),
+          h.exitTime || '', h.exitPrice || '', h.exitReason || '', h.realizedPnl ?? 0
+        ]),
+        ...positions.map(p => [
+          'OPEN', p.displayName, p.side, p.setupType, p.quantity,
+          p.entryDate || (p.entryTimestamp ? formatIstDate(p.entryTimestamp) : ''),
+          p.entryTime, p.entryPrice, '', '', p.currentPrice, 'OPEN POSITION', p.unrealizedPnl ?? 0
+        ])
+      ];
+      const csv = '\uFEFF' + [headers, ...rows].map(r => r.map(escapeCsv).join(',')).join('\r\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const dateStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `AlgoTrade_Report_${dateStr}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      addLog('INFO', `📄 Downloaded CSV Report fallback: AlgoTrade_Report_${dateStr}.csv`);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   // Reset Portfolio / Capital to Initial ₹10L
@@ -1203,6 +1321,29 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
             </button>
           )}
 
+          {/* Download Excel Report */}
+          <button
+            onClick={handleDownloadExcel}
+            disabled={isExporting}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              padding: '6px 10px',
+              borderRadius: '6px',
+              border: '1px solid rgba(16, 185, 129, 0.4)',
+              background: 'rgba(16, 185, 129, 0.12)',
+              color: '#10b981',
+              fontSize: '11px',
+              fontWeight: '700',
+              cursor: isExporting ? 'wait' : 'pointer'
+            }}
+            title="Download Multi-Sheet Excel Report (.xlsx) with Open Positions, Closed Trades & Summary"
+          >
+            <Download size={13} className={isExporting ? 'animate-bounce' : ''} />
+            <span>{isExporting ? 'Exporting...' : 'Excel Report'}</span>
+          </button>
+
           {/* Refresh Radar */}
           <button
             onClick={fetchRadarLevels}
@@ -1395,7 +1536,7 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
                               <ExternalLink size={12} />
                             </button>
                           </div>
-                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Entry: {pos.entryTime}</span>
+                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Entry: {formatTradeDateTimeDisplay(pos.entryTime, pos.entryDate, pos.entryTimestamp)}</span>
                         </td>
                         <td style={{ padding: '10px 12px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -1817,8 +1958,8 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
                   }}>
                     <th style={{ padding: '8px 12px' }}>Symbol</th>
                     <th style={{ padding: '8px 12px' }}>Side / Setup</th>
-                    <th style={{ padding: '8px 12px' }}>Entry Time / Price</th>
-                    <th style={{ padding: '8px 12px' }}>Exit Time / Price</th>
+                    <th style={{ padding: '8px 12px' }}>Entry Date & Time / Price</th>
+                    <th style={{ padding: '8px 12px' }}>Exit Date & Time / Price</th>
                     <th style={{ padding: '8px 12px' }}>Exit Reason</th>
                     <th style={{ padding: '8px 12px', textAlign: 'right' }}>Realized P&L</th>
                   </tr>
@@ -1871,11 +2012,11 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
                         </td>
                         <td style={{ padding: '10px 12px' }}>
                           <div style={{ fontWeight: '700' }}>₹{item.entryPrice.toFixed(2)}</div>
-                          <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{item.entryTime}</div>
+                          <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{formatTradeDateTimeDisplay(item.entryTime, item.entryDate, item.entryTimestamp)}</div>
                         </td>
                         <td style={{ padding: '10px 12px' }}>
                           <div style={{ fontWeight: '700' }}>₹{item.exitPrice?.toFixed(2)}</div>
-                          <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{item.exitTime}</div>
+                          <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{formatTradeDateTimeDisplay(item.exitTime, item.exitDate || item.entryDate, item.exitTimestamp)}</div>
                         </td>
                         <td style={{ padding: '10px 12px' }}>
                           <span style={{
@@ -1941,7 +2082,7 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
                   paddingBottom: '4px'
                 }}
               >
-                <span style={{ color: 'var(--text-secondary)', flexShrink: 0 }}>[{log.time}]</span>
+                <span style={{ color: 'var(--text-secondary)', flexShrink: 0 }}>[{log.date ? `${log.date}, ${log.time}` : log.time}]</span>
                 <span style={{ 
                   color, 
                   fontWeight: '800', 
