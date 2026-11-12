@@ -178,6 +178,46 @@ export function formatTradeDateTimeDisplay(timeStr?: string, dateStr?: string, t
   return resolvedTime || resolvedDate || '-';
 }
 
+
+function isIstDateNov9(ms?: number | string | null): boolean {
+  if (!ms) return false;
+  const num = Number(ms);
+  if (isNaN(num) || num <= 0) return false;
+  return new Date(num).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }) === '2026-11-09';
+}
+
+function isNov9DateStr(str?: string): boolean {
+  if (!str) return false;
+  const s = String(str).trim().toLowerCase();
+  return (
+    /\b0?9[\s\-/]+nov(?:ember)?[\s,\-/]+2026\b/i.test(s) ||
+    /\b2026[\s\-/]+11[\s\-/]+0?9\b/.test(s) ||
+    /\b0?9[\s\-/]+11[\s\-/]+2026\b/.test(s) ||
+    /\b11[\s\-/]+0?9[\s\-/]+2026\b/.test(s)
+  );
+}
+
+export function isNov9AlgoTrade(item: any): boolean {
+  if (!item || typeof item !== 'object') return false;
+  if (isIstDateNov9(item.entryTimestamp) || isIstDateNov9(item.exitTimestamp)) return true;
+  if (isNov9DateStr(item.entryDate) || isNov9DateStr(item.exitDate)) return true;
+  if (typeof item.id === 'string' && item.id.startsWith('algo-pos-')) {
+    const parts = item.id.split('-');
+    if (parts.length >= 3 && isIstDateNov9(parts[2])) return true;
+  }
+  return false;
+}
+
+export function isNov9AlgoLog(log: any): boolean {
+  if (!log || typeof log !== 'object') return false;
+  if (isNov9DateStr(log.date)) return true;
+  if (typeof log.id === 'string' && log.id.startsWith('log-')) {
+    const parts = log.id.split('-');
+    if (parts.length >= 2 && isIstDateNov9(parts[1])) return true;
+  }
+  return false;
+}
+
 export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
   onSymbolSelect,
   onSwitchToChart
@@ -219,7 +259,8 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
   const [positions, setPositions] = useState<AlgoPosition[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_POSITIONS_KEY);
-      return saved ? JSON.parse(saved) : [];
+      const parsed = saved ? JSON.parse(saved) : [];
+      return Array.isArray(parsed) ? parsed.filter((p) => !isNov9AlgoTrade(p)) : [];
     } catch {
       return [];
     }
@@ -228,7 +269,8 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
   const [history, setHistory] = useState<AlgoPosition[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_HISTORY_KEY);
-      return saved ? JSON.parse(saved) : [];
+      const parsed = saved ? JSON.parse(saved) : [];
+      return Array.isArray(parsed) ? parsed.filter((h) => !isNov9AlgoTrade(h)) : [];
     } catch {
       return [];
     }
@@ -237,15 +279,19 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
   const [logs, setLogs] = useState<AlgoLog[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_LOGS_KEY);
-      return saved ? JSON.parse(saved) : [
-        {
-          id: 'log-0',
-          date: formatIstDate(),
-          time: formatIstTime(),
-          type: 'INFO',
-          message: 'Intraday Algo Trading Engine initialized with ₹10,00,000 Capital. Strategy: S3 Buy & R3 Sell Reversals.'
-        }
-      ];
+      if (!saved) {
+        return [
+          {
+            id: 'log-0',
+            date: formatIstDate(),
+            time: formatIstTime(),
+            type: 'INFO',
+            message: 'Intraday Algo Trading Engine initialized with ₹10,00,000 Capital. Strategy: S3 Buy & R3 Sell Reversals.'
+          }
+        ];
+      }
+      const parsed = JSON.parse(saved);
+      return Array.isArray(parsed) ? parsed.filter((l) => !isNov9AlgoLog(l)) : [];
     } catch {
       return [];
     }
