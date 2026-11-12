@@ -308,6 +308,7 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
 
   // Fixed Static Daily Anchor Levels (Locked per session date in IST to prevent intraday level jitter)
   const staticAnchorLevelsRef = useRef<Record<string, { s3: number; r3: number; s4: number; r4: number; pivot: number; date: string }>>({});
+  const tradeCooldownRef = useRef<Record<string, { lastExitTimestamp: number; setupType: string }>>({});
 
   // Time & Pure Intraday Square-off
   const [currentTimeStr, setCurrentTimeStr] = useState<string>('');
@@ -509,28 +510,57 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
           // 5. Pivot Point breakdown (LTP < Pivot)
           // 6. Enter SHORT (Triggered only after Pivot breakdown)
           // 7. Stop Loss: Sell Reversal (R3)
-          let sessionCandles = candles.filter(c => {
+                    // Filter candles strictly for TODAY'S trading session in IST (NO previous-day cross-leakage!)
+          const sessionCandles = candles.filter(c => {
             const d = new Date(c.time * 1000).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
             return d === todayDateStr;
-          });
-          if (sessionCandles.length < 5) {
-            sessionCandles = candles.slice(-50);
-          }
+          }).sort((a, b) => a.time - b.time);
 
-          let maxHigh = 0;
-          let minLow = Infinity;
-          for (const c of sessionCandles) {
-            if (c.high > maxHigh) maxHigh = c.high;
-            if (c.low < minLow) minLow = c.low;
+          // If session just opened and has fewer than 2 completed candles, remain neutral
+          if (sessionCandles.length < 2) {
+            continue;
           }
-          if (ltp > maxHigh) maxHigh = ltp;
-          if (ltp < minLow) minLow = ltp;
 
           // A) Sell Reversal (R3) Short Setup:
-          const hasTestedR3 = maxHigh >= (r3 * 0.999);
-          const hasBrokeOutAboveR3 = maxHigh > r3;
-          const hasRejectedBelowR3 = hasBrokeOutAboveR3 && (ltp < r3);
-          const hasBrokenPivot = hasRejectedBelowR3 && (ltp < pivot);
+          // Strict Chronological Sequence:
+          // Step 1: Candle tests R3 (high >= R3 * 0.9995)
+          // Step 2: Candle breaks out above R3 (high > R3)
+          // Step 3: Subsequent candle rejects and closes back below R3 (close < R3)
+          // Step 4: Candle breaks down below Central Pivot (close < pivot or ltp < pivot)
+          let r3TestIdx = -1;
+          let r3BreakoutIdx = -1;
+          let r3MaxHigh = 0;
+          let r3RejectIdx = -1;
+          let r3PivotBreakIdx = -1;
+
+          for (let i = 0; i < sessionCandles.length; i++) {
+            const c = sessionCandles[i];
+            if (c.high > r3MaxHigh) r3MaxHigh = c.high;
+
+            if (r3TestIdx === -1 && c.high >= r3 * 0.9995) {
+              r3TestIdx = i;
+            }
+            if (r3TestIdx !== -1 && r3BreakoutIdx === -1 && c.high > r3) {
+              r3BreakoutIdx = i;
+            }
+            if (r3BreakoutIdx !== -1 && r3RejectIdx === -1) {
+              if (i > r3BreakoutIdx && c.close < r3) {
+                r3RejectIdx = i;
+              } else if (i === r3BreakoutIdx && c.close < r3 && (c.high - r3) > 0) {
+                r3RejectIdx = i;
+              }
+            }
+            if (r3RejectIdx !== -1 && r3PivotBreakIdx === -1) {
+              if (c.close < pivot || c.low < pivot || ltp < pivot) {
+                r3PivotBreakIdx = i;
+              }
+            }
+          }
+
+          const hasTestedR3 = r3TestIdx !== -1;
+          const hasBrokeOutAboveR3 = r3BreakoutIdx !== -1;
+          const hasRejectedBelowR3 = r3RejectIdx !== -1 && (ltp < r3);
+          const hasBrokenPivot = r3PivotBreakIdx !== -1 && hasRejectedBelowR3 && (ltp < pivot);
           const isReadyToShort = hasBrokenPivot;
 
           let stageNumber = 0;
@@ -543,7 +573,7 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
             stageText = `4. Rejection ➔ Awaiting Pivot (₹${pivot.toFixed(2)})`;
           } else if (hasBrokeOutAboveR3) {
             stageNumber = 2;
-            stageText = `2. Breakout Above R3 (High: ₹${maxHigh.toFixed(2)})`;
+            stageText = `2. Breakout Above R3 (High: ₹${r3MaxHigh.toFixed(2)})`;
           } else if (hasTestedR3) {
             stageNumber = 1;
             stageText = '1. Testing Sell Rev (R3)';
@@ -552,7 +582,7 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
           const shortSetupState: ShortSetupState = {
             hasTestedR3,
             hasBrokeOutAboveR3,
-            maxHighAboveR3: Number(maxHigh.toFixed(2)),
+            maxHighAboveR3: Number(r3MaxHigh.toFixed(2)),
             hasRejectedBelowR3,
             hasBrokenPivot,
             isReadyToShort,
@@ -560,18 +590,45 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
             stageText
           };
 
-          // B) Buy Reversal (S3) Short Setup (User Request #10):
-          // 1. Price reaches Buy Reversal (tests S3)
-          // 2. Breakout above Buy Reversal (moves above S3)
-          // 3. Rejection: buyers fail to sustain
-          // 4. Move below Buy Reversal: price comes back below S3
-          // 5. Pivot Point breakdown: price breaks below Pivot / breakdown line
-          // 6. Enter SHORT (SL: S3 Buy Reversal, Target 1: S4 Breakdown)
-          const hasTestedS3 = minLow <= (s3 * 1.002) || Math.abs(distanceToBuyPct) <= 0.25;
-          const hasBrokeOutAboveS3 = hasTestedS3 && maxHigh > (s3 * 1.0005);
-          const hasRejectedBelowS3 = hasBrokeOutAboveS3 && (ltp < s3 * 0.9995);
+          // B) Buy Reversal (S3) Short Setup:
+          // Strict Chronological Sequence:
+          // Step 1: Candle tests S3
+          // Step 2: Candle pushes above S3 (high > S3)
+          // Step 3: Rejection: candle fails and moves back below S3 (close < S3)
+          // Step 4: Breakdown confirmation below S3 towards S4
+          let s3TestIdx = -1;
+          let s3BounceIdx = -1;
+          let s3MaxHigh = 0;
+          let s3RejectIdx = -1;
+          let s3BreakdownIdx = -1;
+
+          for (let i = 0; i < sessionCandles.length; i++) {
+            const c = sessionCandles[i];
+            if (c.high > s3MaxHigh) s3MaxHigh = c.high;
+
+            if (s3TestIdx === -1 && (c.low <= s3 * 1.002 || c.high >= s3 * 0.998)) {
+              s3TestIdx = i;
+            }
+            if (s3TestIdx !== -1 && s3BounceIdx === -1 && c.high > s3 * 1.0005) {
+              s3BounceIdx = i;
+            }
+            if (s3BounceIdx !== -1 && s3RejectIdx === -1) {
+              if (i >= s3BounceIdx && c.close < s3) {
+                s3RejectIdx = i;
+              }
+            }
+            if (s3RejectIdx !== -1 && s3BreakdownIdx === -1) {
+              if (c.close < s3 * 0.999 || (ltp < s3 && ltp <= s4 * 1.005)) {
+                s3BreakdownIdx = i;
+              }
+            }
+          }
+
+          const hasTestedS3 = s3TestIdx !== -1;
+          const hasBrokeOutAboveS3 = s3BounceIdx !== -1;
+          const hasRejectedBelowS3 = s3RejectIdx !== -1 && (ltp < s3);
           const hasMovedBelowS3 = hasRejectedBelowS3 && (ltp < s3);
-          const hasBrokenPivotS3 = hasMovedBelowS3 && (ltp < s3 && (ltp < pivot || ltp <= s4 * 1.002));
+          const hasBrokenPivotS3 = s3BreakdownIdx !== -1 && hasMovedBelowS3 && (ltp < s3);
           const isReadyToShortS3 = hasBrokenPivotS3;
 
           let s3StageNum = 0;
@@ -593,7 +650,7 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
           const buyRevShortSetupState: BuyRevShortSetupState = {
             hasTestedS3,
             hasBrokeOutAboveS3,
-            maxHighAboveS3: Number(maxHigh.toFixed(2)),
+            maxHighAboveS3: Number(s3MaxHigh.toFixed(2)),
             hasRejectedBelowS3,
             hasMovedBelowS3,
             hasBrokenPivot: hasBrokenPivotS3,
@@ -603,15 +660,34 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
           };
 
           // C) Confirmed Long Setup (Smart Money Liquidity Sweep Reclaim):
-          // 1. Price tests S3 -> 2. Dips/Sweeps below S3 -> 3. Rejection of lows -> 4. Reclaims back above S3
-          const hasSweptBelowS3 = minLow < (s3 * 0.999);
-          const hasReclaimedS3 = hasSweptBelowS3 && (ltp > s3 * 1.0005);
+          // Step 1: Candle sweeps below S3 (low < S3 * 0.999)
+          // Step 2: Candle reclaims and closes back above S3 (close > S3)
+          let s3SweepIdx = -1;
+          let s3ReclaimIdx = -1;
+          let s3MinLow = Infinity;
+
+          for (let i = 0; i < sessionCandles.length; i++) {
+            const c = sessionCandles[i];
+            if (c.low < s3MinLow) s3MinLow = c.low;
+
+            if (s3SweepIdx === -1 && c.low < s3 * 0.999) {
+              s3SweepIdx = i;
+            }
+            if (s3SweepIdx !== -1 && s3ReclaimIdx === -1) {
+              if (i >= s3SweepIdx && (c.close > s3 || ltp > s3 * 1.0005)) {
+                s3ReclaimIdx = i;
+              }
+            }
+          }
+
+          const hasSweptBelowS3 = s3SweepIdx !== -1;
+          const hasReclaimedS3 = s3ReclaimIdx !== -1 && (ltp > s3);
           const isReadyToLong = hasReclaimedS3;
 
           const longSetupState: ConfirmedLongSetupState = {
             hasTestedS3,
             hasSweptBelowS3,
-            minLowBelowS3: Number(minLow.toFixed(2)),
+            minLowBelowS3: s3MinLow < Infinity ? Number(s3MinLow.toFixed(2)) : 0,
             hasReclaimedS3,
             isReadyToLong,
             stageNumber: isReadyToLong ? 4 : (hasSweptBelowS3 ? 2 : (hasTestedS3 ? 1 : 0)),
@@ -767,6 +843,10 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
 
       if (closedTrades.length > 0) {
         closedTrades.forEach(t => {
+          tradeCooldownRef.current[t.symbol] = {
+            lastExitTimestamp: Date.now(),
+            setupType: t.setupType
+          };
           const isTarget1 = t.exitReason?.includes('TARGET 1');
           const icon = (t.realizedPnl || 0) >= 0 ? '🎯' : '🔴';
           const msg = isTarget1
@@ -900,6 +980,20 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
       if (isCommodity && !isMcxEntryAllowed) continue;
       if (!isCommodity && !isEquityEntryAllowed) continue;
 
+      // ⏱️ Anti-Churn Cooldown Protection: Prevent re-entering any stock within 20 minutes of an exit
+      const cooldown = tradeCooldownRef.current[item.symbol];
+      if (cooldown && (Date.now() - cooldown.lastExitTimestamp < 20 * 60 * 1000)) {
+        continue;
+      }
+      const recentClosed = history.find(h => 
+        h.symbol === item.symbol && 
+        h.exitTimestamp && 
+        (Date.now() - h.exitTimestamp < 20 * 60 * 1000)
+      );
+      if (recentClosed) {
+        continue;
+      }
+
       const ltp = livePrices[item.symbol] || item.ltp;
       if (ltp <= 0) continue;
 
@@ -992,6 +1086,10 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
         realizedPnl
       };
 
+      tradeCooldownRef.current[pos.symbol] = {
+        lastExitTimestamp: Date.now(),
+        setupType: pos.setupType
+      };
       setHistory(h => [closedPos, ...h]);
       addLog('EXIT', `Manual Square-Off: ${pos.side} ${pos.displayName} @ ₹${ltp.toFixed(2)} | Realized P&L: ₹${realizedPnl.toLocaleString('en-IN')}`, pos.symbol);
 

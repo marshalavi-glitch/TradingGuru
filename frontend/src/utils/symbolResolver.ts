@@ -79,10 +79,10 @@ const INDEX_MAP: Record<string, { symbol: string; display: string; type?: 'index
   'NSE:VEDL1!': { symbol: 'NSE:VEDL1!', display: 'VEDANTA FUT', type: 'futures' },
 
   // Crude Oil Active & Next 3 Months (MCX)
-  'CRUDEOIL': { symbol: 'MCX:CRUDEOIL19OCT26FUT', display: 'CRUDE OIL (OCT 26)', type: 'commodity' },
-  'CRUDEOIL1!': { symbol: 'MCX:CRUDEOIL19OCT26FUT', display: 'CRUDE OIL (OCT 26)', type: 'commodity' },
-  'MCX:CRUDEOIL': { symbol: 'MCX:CRUDEOIL19OCT26FUT', display: 'CRUDE OIL (OCT 26)', type: 'commodity' },
-  'MCX:CRUDEOIL1!': { symbol: 'MCX:CRUDEOIL19OCT26FUT', display: 'CRUDE OIL (OCT 26)', type: 'commodity' },
+  'CRUDEOIL': { symbol: 'MCX:CRUDEOIL19NOV26FUT', display: 'CRUDE OIL (NOV 26)', type: 'commodity' },
+  'CRUDEOIL1!': { symbol: 'MCX:CRUDEOIL19NOV26FUT', display: 'CRUDE OIL (NOV 26)', type: 'commodity' },
+  'MCX:CRUDEOIL': { symbol: 'MCX:CRUDEOIL19NOV26FUT', display: 'CRUDE OIL (NOV 26)', type: 'commodity' },
+  'MCX:CRUDEOIL1!': { symbol: 'MCX:CRUDEOIL19NOV26FUT', display: 'CRUDE OIL (NOV 26)', type: 'commodity' },
   'CRUDEOIL19OCT26FUT': { symbol: 'MCX:CRUDEOIL19OCT26FUT', display: 'CRUDE OIL (OCT 26)', type: 'commodity' },
   'MCX:CRUDEOIL19OCT26FUT': { symbol: 'MCX:CRUDEOIL19OCT26FUT', display: 'CRUDE OIL (OCT 26)', type: 'commodity' },
   'CRUDEOIL19NOV26FUT': { symbol: 'MCX:CRUDEOIL19NOV26FUT', display: 'CRUDE OIL (NOV 26)', type: 'commodity' },
@@ -91,8 +91,8 @@ const INDEX_MAP: Record<string, { symbol: string; display: string; type?: 'index
   'MCX:CRUDEOIL18DEC26FUT': { symbol: 'MCX:CRUDEOIL18DEC26FUT', display: 'CRUDE OIL (DEC 26)', type: 'commodity' },
 
   // Crude Oil Mini (MCX)
-  'CRUDEOILM': { symbol: 'MCX:CRUDEOILM19OCT26FUT', display: 'CRUDE OIL MINI (OCT 26)', type: 'commodity' },
-  'MCX:CRUDEOILM': { symbol: 'MCX:CRUDEOILM19OCT26FUT', display: 'CRUDE OIL MINI (OCT 26)', type: 'commodity' },
+  'CRUDEOILM': { symbol: 'MCX:CRUDEOILM19NOV26FUT', display: 'CRUDE OIL MINI (NOV 26)', type: 'commodity' },
+  'MCX:CRUDEOILM': { symbol: 'MCX:CRUDEOILM19NOV26FUT', display: 'CRUDE OIL MINI (NOV 26)', type: 'commodity' },
   'CRUDEOILM19OCT26FUT': { symbol: 'MCX:CRUDEOILM19OCT26FUT', display: 'CRUDE OIL MINI (OCT 26)', type: 'commodity' },
   'MCX:CRUDEOILM19OCT26FUT': { symbol: 'MCX:CRUDEOILM19OCT26FUT', display: 'CRUDE OIL MINI (OCT 26)', type: 'commodity' },
   'CRUDEOILM19NOV26FUT': { symbol: 'MCX:CRUDEOILM19NOV26FUT', display: 'CRUDE OIL MINI (NOV 26)', type: 'commodity' },
@@ -101,10 +101,10 @@ const INDEX_MAP: Record<string, { symbol: string; display: string; type?: 'index
   'MCX:CRUDEOILM18DEC26FUT': { symbol: 'MCX:CRUDEOILM18DEC26FUT', display: 'CRUDE OIL MINI (DEC 26)', type: 'commodity' },
 
   // Natural Gas Active & Next 3 Months (MCX)
-  'NATURALGAS': { symbol: 'MCX:NATURALGAS27OCT26FUT', display: 'NATURAL GAS (OCT 26)', type: 'commodity' },
-  'NATURALGAS1!': { symbol: 'MCX:NATURALGAS27OCT26FUT', display: 'NATURAL GAS (OCT 26)', type: 'commodity' },
-  'MCX:NATURALGAS': { symbol: 'MCX:NATURALGAS27OCT26FUT', display: 'NATURAL GAS (OCT 26)', type: 'commodity' },
-  'MCX:NATURALGAS1!': { symbol: 'MCX:NATURALGAS27OCT26FUT', display: 'NATURAL GAS (OCT 26)', type: 'commodity' },
+  'NATURALGAS': { symbol: 'MCX:NATURALGAS24NOV26FUT', display: 'NATURAL GAS (NOV 26)', type: 'commodity' },
+  'NATURALGAS1!': { symbol: 'MCX:NATURALGAS24NOV26FUT', display: 'NATURAL GAS (NOV 26)', type: 'commodity' },
+  'MCX:NATURALGAS': { symbol: 'MCX:NATURALGAS24NOV26FUT', display: 'NATURAL GAS (NOV 26)', type: 'commodity' },
+  'MCX:NATURALGAS1!': { symbol: 'MCX:NATURALGAS24NOV26FUT', display: 'NATURAL GAS (NOV 26)', type: 'commodity' },
   'NATURALGAS27OCT26FUT': { symbol: 'MCX:NATURALGAS27OCT26FUT', display: 'NATURAL GAS (OCT 26)', type: 'commodity' },
   'MCX:NATURALGAS27OCT26FUT': { symbol: 'MCX:NATURALGAS27OCT26FUT', display: 'NATURAL GAS (OCT 26)', type: 'commodity' },
   'NATURALGAS24NOV26FUT': { symbol: 'MCX:NATURALGAS24NOV26FUT', display: 'NATURAL GAS (NOV 26)', type: 'commodity' },
