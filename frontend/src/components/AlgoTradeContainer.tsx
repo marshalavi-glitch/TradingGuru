@@ -68,6 +68,7 @@ export interface BuyRevShortSetupState {
   hasRejectedBelowS3: boolean;
   hasMovedBelowS3: boolean;
   hasBrokenPivot: boolean;
+  isChasedBelowS4: boolean;
   isReadyToShort: boolean;
   stageNumber: number; // 0 to 6
   stageText: string;
@@ -91,6 +92,8 @@ export interface ReversalRadarItem {
   r3: number; // Sell Reversal
   s4: number; // Breakdown line
   r4: number; // Breakout line
+  s1_r1: number; // S1 / R1 level (Level 6)
+  s5: number; // Target 1 (Level 9)
   pivot: number;
   distanceToBuyPct: number;
   distanceToSellPct: number;
@@ -307,7 +310,7 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
   const [livePrices, setLivePrices] = useState<Record<string, number>>({});
 
   // Fixed Static Daily Anchor Levels (Locked per session date in IST to prevent intraday level jitter)
-  const staticAnchorLevelsRef = useRef<Record<string, { s3: number; r3: number; s4: number; r4: number; pivot: number; date: string }>>({});
+  const staticAnchorLevelsRef = useRef<Record<string, { s3: number; r3: number; s4: number; r4: number; s1_r1: number; s5: number; pivot: number; date: string }>>({});
   const tradeCooldownRef = useRef<Record<string, { lastExitTimestamp: number; setupType: string }>>({});
 
   // Time & Pure Intraday Square-off
@@ -471,6 +474,8 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
           let r3 = 0;
           let s4 = 0;
           let r4 = 0;
+          let s1_r1 = 0;
+          let s5 = 0;
           let pivot = 0;
 
           // Check if static levels are already locked for today's session
@@ -480,6 +485,8 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
             r3 = cachedLvl.r3;
             s4 = cachedLvl.s4;
             r4 = cachedLvl.r4;
+            s1_r1 = cachedLvl.s1_r1 || 0;
+            s5 = cachedLvl.s5 || 0;
             pivot = cachedLvl.pivot;
           } else {
             const matrixData = calculateMatrixSeriesData(candles, '5', data.matrixHistory);
@@ -490,10 +497,12 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
             r3 = getVal(matrixData.level4); // Sell Reversal
             s4 = getVal(matrixData.level8); // Breakdown
             r4 = getVal(matrixData.level3); // Breakout
+            s1_r1 = getVal(matrixData.level6); // S1 / R1
+            s5 = getVal(matrixData.level9); // S5 Target
             pivot = (r3 + s3) / 2;
 
             if (s3 > 0 && r3 > 0) {
-              staticAnchorLevelsRef.current[symbol] = { s3, r3, s4, r4, pivot, date: todayDateStr };
+              staticAnchorLevelsRef.current[symbol] = { s3, r3, s4, r4, s1_r1, s5, pivot, date: todayDateStr };
             }
           }
 
@@ -590,12 +599,11 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
             stageText
           };
 
-          // B) Buy Reversal (S3) Short Setup:
-          // Strict Chronological Sequence:
-          // Step 1: Candle tests S3
-          // Step 2: Candle pushes above S3 (high > S3)
-          // Step 3: Rejection: candle fails and moves back below S3 (close < S3)
-          // Step 4: Breakdown confirmation below S3 towards S4
+          // B) Buy Reversal Breakdown Short Setup (User Rule):
+          // Requirement: Entry strictly upon breakdown below Buy Reversal (S3)
+          // Stop Loss: Pivot / S1-R1 (Level 6 or Central Pivot)
+          // Target 1: S4 Breakdown Level; Target 2: S5 Target Level
+          // Entry Window: LTP must be < S3 AND must NOT be chased below S4! (ltp >= s4 * 0.998)
           let s3TestIdx = -1;
           let s3BounceIdx = -1;
           let s3MaxHigh = 0;
@@ -617,8 +625,8 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
                 s3RejectIdx = i;
               }
             }
-            if (s3RejectIdx !== -1 && s3BreakdownIdx === -1) {
-              if (c.close < s3 * 0.999 || (ltp < s3 && ltp <= s4 * 1.005)) {
+            if (s3TestIdx !== -1 && s3BreakdownIdx === -1) {
+              if (c.close < s3) {
                 s3BreakdownIdx = i;
               }
             }
@@ -626,25 +634,28 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
 
           const hasTestedS3 = s3TestIdx !== -1;
           const hasBrokeOutAboveS3 = s3BounceIdx !== -1;
-          const hasRejectedBelowS3 = s3RejectIdx !== -1 && (ltp < s3);
-          const hasMovedBelowS3 = hasRejectedBelowS3 && (ltp < s3);
-          const hasBrokenPivotS3 = s3BreakdownIdx !== -1 && hasMovedBelowS3 && (ltp < s3);
-          const isReadyToShortS3 = hasBrokenPivotS3;
+          const hasRejectedBelowS3 = s3RejectIdx !== -1;
+          const hasBrokenS3 = s3BreakdownIdx !== -1;
+
+          // CRITICAL: Entry must be between S3 and S4. If price has already broken below S4, the move is completed! Do NOT chase!
+          const isChasedBelowS4 = s4 > 0 && ltp < (s4 * 0.998);
+          const isWithinBreakdownEntry = hasBrokenS3 && ltp < s3 && !isChasedBelowS4;
+          const isReadyToShortS3 = isWithinBreakdownEntry;
 
           let s3StageNum = 0;
           let s3StageText = 'Awaiting S3 Test';
-          if (isReadyToShortS3) {
-            s3StageNum = 6;
-            s3StageText = '6. Breakdown Confirmed ➔ SHORT READY';
-          } else if (hasMovedBelowS3) {
+          if (isChasedBelowS4) {
+            s3StageNum = 5;
+            s3StageText = `Move Completed (< ₹${s4.toFixed(2)}) ➔ Avoid Chasing`;
+          } else if (isReadyToShortS3) {
             s3StageNum = 4;
-            s3StageText = '4. Below S3 ➔ Awaiting Breakdown';
-          } else if (hasBrokeOutAboveS3) {
-            s3StageNum = 2;
-            s3StageText = '2. Above S3 ➔ Watching Rejection';
+            s3StageText = '4. S3 Breakdown Confirmed ➔ SHORT READY';
+          } else if (hasBrokenS3) {
+            s3StageNum = 3;
+            s3StageText = '3. S3 Broken ➔ Watching Range';
           } else if (hasTestedS3) {
             s3StageNum = 1;
-            s3StageText = '1. Testing Buy Rev (S3)';
+            s3StageText = `1. Testing Buy Rev (₹${s3.toFixed(2)})`;
           }
 
           const buyRevShortSetupState: BuyRevShortSetupState = {
@@ -652,8 +663,9 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
             hasBrokeOutAboveS3,
             maxHighAboveS3: Number(s3MaxHigh.toFixed(2)),
             hasRejectedBelowS3,
-            hasMovedBelowS3,
-            hasBrokenPivot: hasBrokenPivotS3,
+            hasMovedBelowS3: hasBrokenS3 && ltp < s3,
+            hasBrokenPivot: hasBrokenS3,
+            isChasedBelowS4,
             isReadyToShort: isReadyToShortS3,
             stageNumber: s3StageNum,
             stageText: s3StageText
@@ -713,6 +725,8 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
             r3: Number(r3.toFixed(2)),
             s4: Number(s4.toFixed(2)),
             r4: Number(r4.toFixed(2)),
+            s1_r1: Number((s1_r1 || pivot).toFixed(2)),
+            s5: Number((s5 || (s4 > 0 ? s4 * 0.995 : 0)).toFixed(2)),
             pivot: Number(pivot.toFixed(2)),
             distanceToBuyPct: Number(distanceToBuyPct.toFixed(2)),
             distanceToSellPct: Number(distanceToSellPct.toFixed(2)),
@@ -754,10 +768,17 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
         if (data && data.candles && data.candles.length > 0) {
           const tick = data.candles[data.candles.length - 1];
           if (tick && tick.close > 0) {
-            setLivePrices(prev => ({
-              ...prev,
-              [sym]: tick.close
-            }));
+            setLivePrices(prev => {
+              const currentLtp = prev[sym];
+              // Spike protection: ignore single-tick price jumps > 3% from active price
+              if (currentLtp && currentLtp > 0 && Math.abs(tick.close - currentLtp) / currentLtp > 0.03) {
+                return prev;
+              }
+              return {
+                ...prev,
+                [sym]: tick.close
+              };
+            });
           }
         }
       });
@@ -909,16 +930,34 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
       target2 = r4Breakout > target1 ? r4Breakout : Math.round((entryPrice + riskPts * 2.5) * 100) / 100;
     } else {
       // Short Trade Sequence:
-      // Requirement 7: Stop Loss: Sell Reversal (R3) or Buy Reversal (S3) depending on setup
-      stopLoss = reversalLevel > 0 ? reversalLevel : Math.round(entryPrice * 1.008 * 100) / 100;
-      
-      const riskPts = Math.max(0.5, Math.abs(stopLoss - entryPrice));
-      // Target 1: S4 Breakdown or S3 Buy Reversal. Book profit once Target 1 hits!
-      const targetLvl = s3Target || s4Breakdown;
-      target1 = (targetLvl > 0 && targetLvl < entryPrice)
-        ? targetLvl
-        : Math.round((entryPrice - riskPts * 1.5) * 100) / 100;
-      target2 = Math.round((entryPrice - riskPts * 2.5) * 100) / 100;
+      if (setupType === 'BUY REVERSAL BREAKDOWN (SHORT)') {
+        // User Rule: Stop loss must be Pivot / S1-R1 (Level 6 or Central Pivot)
+        stopLoss = reversalLevel > entryPrice
+          ? reversalLevel
+          : (pivotPrice > entryPrice ? pivotPrice : Math.round(entryPrice * 1.006 * 100) / 100);
+        
+        const riskPts = Math.max(0.5, stopLoss - entryPrice);
+        // Target 1: S4 Breakdown Level
+        target1 = (s4Breakdown > 0 && s4Breakdown < entryPrice)
+          ? s4Breakdown
+          : Math.round((entryPrice - riskPts * 1.5) * 100) / 100;
+        // Target 2: S5 Target Level
+        target2 = (s3Target && s3Target < target1)
+          ? s3Target
+          : Math.round((entryPrice - riskPts * 2.5) * 100) / 100;
+      } else {
+        // SELL REVERSAL (PIVOT BREAKDOWN):
+        // Stop Loss: Sell Reversal (R3)
+        stopLoss = reversalLevel > entryPrice ? reversalLevel : Math.round(entryPrice * 1.008 * 100) / 100;
+        
+        const riskPts = Math.max(0.5, Math.abs(stopLoss - entryPrice));
+        // Target 1: S3 Buy Reversal. Book profit once Target 1 hits!
+        const targetLvl = s3Target || s4Breakdown;
+        target1 = (targetLvl > 0 && targetLvl < entryPrice)
+          ? targetLvl
+          : Math.round((entryPrice - riskPts * 1.5) * 100) / 100;
+        target2 = Math.round((entryPrice - riskPts * 2.5) * 100) / 100;
+      }
     }
 
     const newPosition: AlgoPosition = {
@@ -997,13 +1036,15 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
       const ltp = livePrices[item.symbol] || item.ltp;
       if (ltp <= 0) continue;
 
-      // 1. BUY REVERSAL SHORT SETUP (User Request #10):
-      // Strict 7-Step Short Trade Sequence:
-      // 1. Test S3 ➔ 2. Break above S3 ➔ 3. Rejection ➔ 4. Move below S3 ➔ 5. Breakdown ➔ 6. Enter SHORT with SL @ Buy Reversal (S3)
+      // 1. BUY REVERSAL BREAKDOWN SHORT SETUP (User Rule):
+      // Entry: strictly after breakdown below Buy Reversal (S3) and before S4 (avoid chasing)
+      // Stop Loss: Pivot / S1-R1 (Level 6 or Central Pivot)
+      // Target 1: S4 Breakdown Level | Target 2: S5 Target Level
       if (item.buyRevShortSetupState && item.buyRevShortSetupState.isReadyToShort) {
+        const slLevel = item.s1_r1 > ltp ? item.s1_r1 : (item.pivot > ltp ? item.pivot : item.s3);
         addLog(
           'SIGNAL',
-          `🚨 S3 Breakdown SHORT Triggered: ${item.displayName} tested S3 Buy Reversal (₹${item.s3.toFixed(2)}), rejected back below S3, and confirmed breakdown. Entering SHORT with SL @ Buy Reversal (₹${item.s3.toFixed(2)}).`,
+          `🚨 S3 Breakdown SHORT Triggered: ${item.displayName} broke down below S3 Buy Reversal (₹${item.s3.toFixed(2)}). Entering SHORT @ ₹${ltp.toFixed(2)} with SL @ Pivot/S1-R1 (₹${slLevel.toFixed(2)}) & Target @ S4 (₹${item.s4.toFixed(2)}).`,
           item.symbol
         );
         executeTrade(
@@ -1012,11 +1053,11 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
           'SELL',
           'BUY REVERSAL BREAKDOWN (SHORT)',
           ltp,
-          item.s3, // Stop Loss = S3 Buy Reversal!
-          item.s4,
+          slLevel, // Stop Loss = Pivot / S1-R1!
+          item.s4, // Target 1 = S4 Breakdown Level
           item.r4,
           item.pivot,
-          item.s4  // Target 1 = S4 Breakdown Level (Book profit immediately on hit)
+          item.s5 || item.s4 // Target 2 = S5 Target Level
         );
       }
       // 2. SELL REVERSAL (R3) SHORT SETUP:
@@ -1870,7 +1911,7 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
                               🚨 S3 BREAKDOWN ➔ SHORT READY
                             </span>
                             <span style={{ fontSize: '9.5px', color: '#ef4444', fontWeight: '700' }}>
-                              Stop Loss: ₹{item.s3.toFixed(2)} (Buy Reversal) | T1: ₹{item.s4.toFixed(2)}
+                              SL: ₹{(item.s1_r1 || item.pivot).toFixed(2)} (Pivot/S1-R1) | T1: ₹{item.s4.toFixed(2)}
                             </span>
                           </div>
                         ) : item.shortSetupState?.isReadyToShort ? (
@@ -1907,6 +1948,24 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
                             </span>
                             <span style={{ fontSize: '9.5px', color: '#10b981', fontWeight: '700' }}>
                               Stop Loss: ₹{item.s3.toFixed(2)} | Target 1: ₹{item.pivot.toFixed(2)}
+                            </span>
+                          </div>
+                        ) : item.buyRevShortSetupState?.isChasedBelowS4 ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            <span style={{
+                              padding: '3px 8px',
+                              borderRadius: '4px',
+                              fontSize: '10px',
+                              fontWeight: '800',
+                              background: 'rgba(148, 163, 184, 0.15)',
+                              color: '#94a3b8',
+                              border: '1px solid rgba(148, 163, 184, 0.3)',
+                              width: 'fit-content'
+                            }}>
+                              ⏹️ S4 Hit: &lt; ₹{item.s4.toFixed(2)}
+                            </span>
+                            <span style={{ fontSize: '9.5px', color: 'var(--text-secondary)' }}>
+                              Move completed ➔ Chasing avoided
                             </span>
                           </div>
                         ) : item.buyRevShortSetupState?.hasMovedBelowS3 ? (
@@ -2031,19 +2090,20 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
                                     return;
                                   }
                                 }
-                                const isS3Short = item.buyRevShortSetupState?.isReadyToShort;
-                                executeTrade(
-                                  item.symbol,
-                                  item.displayName,
-                                  'SELL',
-                                  isS3Short ? 'BUY REVERSAL BREAKDOWN (SHORT)' : 'SELL REVERSAL (PIVOT BREAKDOWN)',
-                                  item.ltp,
-                                  isS3Short ? item.s3 : item.r3,
-                                  item.s4,
-                                  item.r4,
-                                  item.pivot,
-                                  isS3Short ? item.s4 : item.s3
-                                );
+                                  const isS3Short = item.buyRevShortSetupState?.isReadyToShort;
+                                  const s3Sl = item.s1_r1 > item.ltp ? item.s1_r1 : (item.pivot > item.ltp ? item.pivot : item.s3);
+                                  executeTrade(
+                                    item.symbol,
+                                    item.displayName,
+                                    'SELL',
+                                    isS3Short ? 'BUY REVERSAL BREAKDOWN (SHORT)' : 'SELL REVERSAL (PIVOT BREAKDOWN)',
+                                    item.ltp,
+                                    isS3Short ? s3Sl : item.r3,
+                                    item.s4,
+                                    item.r4,
+                                    item.pivot,
+                                    isS3Short ? (item.s5 || item.s4) : item.s3
+                                  );
                               }}
                               style={{
                                 padding: '3px 7px',
