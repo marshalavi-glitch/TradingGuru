@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { getBackendHttpUrl } from '../utils/tvStreamer';
 import { resolveBackendUrl, clearBackendUrlCache } from '../utils/config';
 import { Candle } from '../utils/profileCalculator';
@@ -6,7 +6,8 @@ import { resolveSymbol } from '../utils/symbolResolver';
 import { filterMarketHoursCandles } from '../utils/marketHours';
 import { 
   RefreshCw, Search, ZoomIn, ZoomOut, Move, BarChart2, TrendingUp, TrendingDown, 
-  ShieldAlert, Zap, Layers, Settings, X, Check, Info, HelpCircle, Play 
+  ShieldAlert, Zap, Layers, Settings, X, Check, Info, HelpCircle, Play,
+  ExternalLink, Maximize2, Minimize2
 } from 'lucide-react';
 
 interface FootprintChartContainerProps {
@@ -806,7 +807,71 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const retryTimeoutRef = useRef<any>(null);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 640 });
+
+  // Fullscreen and Standalone Pop Out States
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const isStandalone = useMemo(() => {
+    try {
+      const p = new URLSearchParams(window.location.search);
+      return p.get('standalone') === 'true';
+    } catch (e) {
+      return false;
+    }
+  }, []);
+
+  // Pop Out into new browser tab / window
+  const handlePopOut = useCallback(() => {
+    const origin = window.location.origin;
+    const pathname = window.location.pathname;
+    const params = new URLSearchParams();
+    params.set('tab', 'footprint_chart');
+    params.set('symbol', symbol);
+    params.set('timeframe', String(timeframe));
+    params.set('standalone', 'true');
+    window.open(`${origin}${pathname}?${params.toString()}`, '_blank');
+  }, [symbol, timeframe]);
+
+  // Toggle Fullscreen: covers dashboard with fixed overlay + native fullscreen
+  const toggleFullscreen = useCallback(() => {
+    setIsExpanded((prev) => {
+      const next = !prev;
+      if (next) {
+        if (containerRef.current && containerRef.current.requestFullscreen) {
+          containerRef.current.requestFullscreen().catch(() => {});
+        }
+      } else {
+        if (document.fullscreenElement && document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        }
+      }
+      return next;
+    });
+  }, []);
+
+  // Sync with Escape key and fullscreenchange event
+  useEffect(() => {
+    const handleFsChange = () => {
+      if (!document.fullscreenElement && isExpanded) {
+        setIsExpanded(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isExpanded) {
+        setIsExpanded(false);
+        if (document.fullscreenElement && document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        }
+      }
+    };
+    document.addEventListener('fullscreenchange', handleFsChange);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFsChange);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isExpanded]);
 
   const watchSymbols = [
     { symbol: 'NSE:NIFTY', name: 'NIFTY 50' },
@@ -1159,9 +1224,12 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
     const handleResize = () => {
       if (canvasContainerRef.current) {
         const isMobile = window.innerWidth <= 768;
+        const targetH = isExpanded || isStandalone
+          ? Math.max(480, window.innerHeight - (isMobile ? 220 : 165))
+          : (isMobile ? Math.max(380, canvasContainerRef.current.clientHeight || 460) : Math.max(540, canvasContainerRef.current.clientHeight || 640));
         setDimensions({
           width: canvasContainerRef.current.clientWidth,
-          height: isMobile ? Math.max(380, canvasContainerRef.current.clientHeight || 460) : Math.max(540, canvasContainerRef.current.clientHeight || 640)
+          height: targetH
         });
       }
     };
@@ -1173,7 +1241,7 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
       window.removeEventListener('resize', handleResize);
       clearTimeout(timer);
     };
-  }, []);
+  }, [isExpanded, isStandalone]);
 
   // Scroll to latest candle helper
   const scrollToLatest = () => {
@@ -2181,7 +2249,29 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
   };
 
   return (
-    <div className="glass-panel animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%', padding: '16px', boxSizing: 'border-box' }}>
+    <div
+      ref={containerRef}
+      className={isExpanded ? '' : 'glass-panel animate-fade-in'}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        position: isExpanded ? 'fixed' : 'relative',
+        top: isExpanded ? 0 : 'auto',
+        left: isExpanded ? 0 : 'auto',
+        right: isExpanded ? 0 : 'auto',
+        bottom: isExpanded ? 0 : 'auto',
+        zIndex: isExpanded ? 999999 : 'auto',
+        width: isExpanded ? '100vw' : '100%',
+        height: isExpanded || isStandalone ? '100vh' : 'auto',
+        minHeight: isExpanded || isStandalone ? '100vh' : 'auto',
+        gap: isExpanded ? '8px' : '14px',
+        padding: isExpanded ? '10px 14px' : '16px',
+        margin: 0,
+        backgroundColor: '#080c14',
+        boxSizing: 'border-box',
+        overflowY: isExpanded || isStandalone ? 'hidden' : 'auto'
+      }}
+    >
       
       {/* 3-Row Institutional Controls Toolbar Matching media_1790858701478.png */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: '#080d1a', padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
@@ -2543,6 +2633,52 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
             >
               <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
             </button>
+
+            {/* Pop Out Button */}
+            {!isStandalone && (
+              <button
+                onClick={handlePopOut}
+                style={{
+                  background: 'rgba(56, 189, 248, 0.12)',
+                  border: '1px solid rgba(56, 189, 248, 0.35)',
+                  color: '#38bdf8',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+                title="Pop out Footprint into new browser tab / window"
+              >
+                <ExternalLink size={12} />
+                <span>Pop Out</span>
+              </button>
+            )}
+
+            {/* Fullscreen Button */}
+            <button
+              onClick={toggleFullscreen}
+              style={{
+                background: isExpanded ? 'rgba(56, 189, 248, 0.25)' : 'rgba(255, 255, 255, 0.08)',
+                border: isExpanded ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.15)',
+                color: isExpanded ? '#38bdf8' : '#ffffff',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+              title={isExpanded ? "Exit Fullscreen (Esc)" : "Expand Footprint to Fullscreen"}
+            >
+              {isExpanded ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
+              <span>{isExpanded ? "Exit Fullscreen" : "Fullscreen"}</span>
+            </button>
           </div>
         </div>
 
@@ -2799,7 +2935,9 @@ export const FootprintChartContainer: React.FC<FootprintChartContainerProps> = (
         style={{ 
           position: 'relative', 
           width: '100%', 
-          minHeight: typeof window !== 'undefined' && window.innerWidth <= 768 ? '420px' : '640px', 
+          flex: isExpanded || isStandalone ? 1 : 'none',
+          minHeight: isExpanded || isStandalone ? '400px' : (typeof window !== 'undefined' && window.innerWidth <= 768 ? '420px' : '640px'), 
+          height: isExpanded || isStandalone ? 'calc(100vh - 165px)' : 'auto',
           backgroundColor: theme === 'light' ? '#ffffff' : '#181c27', 
           borderRadius: '8px', 
           border: '1px solid var(--border-color)',
