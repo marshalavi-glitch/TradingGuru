@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Trading Guru Portal - Standard Operating Procedure (SOP)</title>
+<style>
+  @page {
+    size: A4;
+    margin: 18mm 14mm 18mm 14mm;
+    @bottom-right {
+      content: counter(page);
+    }
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #1e293b;
+    background: #ffffff;
+    line-height: 1.55;
+    font-size: 10.5pt;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Cover Page */
+  .cover {
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 90vh;
+    text-align: center;
+    background: linear-gradient(135deg, #090d16 0%, #111827 50%, #0f172a 100%);
+    color: #ffffff;
+    padding: 40px;
+    border-radius: 8px;
+    box-sizing: border-box;
+  }
+
+  .cover-badge {
+    display: inline-block;
+    background: rgba(56, 189, 248, 0.2);
+    border: 1px solid #38bdf8;
+    color: #38bdf8;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 11pt;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 25px;
+  }
+
+  .cover h1 {
+    font-size: 32pt;
+    font-weight: 900;
+    margin: 0 0 15px 0;
+    letter-spacing: -0.5px;
+    background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .cover-subtitle {
+    font-size: 15pt;
+    color: #94a3b8;
+    max-width: 600px;
+    margin-bottom: 40px;
+    font-weight: 400;
+    line-height: 1.4;
+  }
+
+  .cover-meta {
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    padding-top: 25px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    width: 80%;
+    max-width: 500px;
+    text-align: left;
+    font-size: 9.5pt;
+    color: #cbd5e1;
+  }
+
+  .cover-meta strong {
+    color: #ffffff;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  /* Typography & Layout */
+  h1, h2, h3, h4 {
+    color: #0f172a;
+    font-weight: 800;
+    margin-top: 22pt;
+    margin-bottom: 8pt;
+    page-break-after: avoid;
+  }
+
+  h1 {
+    font-size: 19pt;
+    border-bottom: 2.5px solid #0284c7;
+    padding-bottom: 6px;
+    margin-top: 28pt;
+  }
+
+  h2 {
+    font-size: 14pt;
+    color: #0369a1;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 4px;
+    margin-top: 18pt;
+  }
+
+  h3 {
+    font-size: 11.5pt;
+    color: #334155;
+    margin-top: 14pt;
+  }
+
+  p {
+    margin: 0 0 8pt 0;
+  }
+
+  .page-break {
+    page-break-before: always;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12pt 0 16pt 0;
+    font-size: 9pt;
+    page-break-inside: avoid;
+  }
+
+  th {
+    background: #0f172a;
+    color: #ffffff;
+    font-weight: 700;
+    text-align: left;
+    padding: 7px 10px;
+    border: 1px solid #0f172a;
+  }
+
+  td {
+    padding: 6px 10px;
+    border: 1px solid #cbd5e1;
+    vertical-align: top;
+  }
+
+  tr:nth-child(even) td {
+    background: #f8fafc;
+  }
+
+  /* Badges & Highlights */
+  .badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 8pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-blue { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+  .badge-green { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+  .badge-red { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+  .badge-amber { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+  .badge-purple { background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+
+  /* Callout Boxes */
+  .callout {
+    border-left: 4px solid #0284c7;
+    background: #f0f9ff;
+    padding: 10pt 14pt;
+    margin: 12pt 0;
+    border-radius: 0 6px 6px 0;
+    page-break-inside: avoid;
+  }
+
+  .callout-title {
+    font-weight: 800;
+    color: #0369a1;
+    margin-bottom: 4px;
+    font-size: 10pt;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .callout-warning {
+    border-left-color: #f59e0b;
+    background: #fffbeb;
+  }
+  .callout-warning .callout-title { color: #b45309; }
+
+  .callout-danger {
+    border-left-color: #ef4444;
+    background: #fef2f2;
+  }
+  .callout-danger .callout-title { color: #b91c1c; }
+
+  .callout-success {
+    border-left-color: #10b981;
+    background: #ecfdf5;
+  }
+  .callout-success .callout-title { color: #047857; }
+
+  /* Code / Rule Blocks */
+  .rule-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 10pt 12pt;
+    margin: 10pt 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+
+  .rule-header {
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px dashed #cbd5e1;
+    padding-bottom: 4px;
+  }
+
+  ul, ol {
+    margin: 0 0 10pt 0;
+    padding-left: 18pt;
+  }
+
+  li {
+    margin-bottom: 3.5pt;
+  }
+
+  .toc {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 16pt 20pt;
+    border-radius: 8px;
+    margin: 20pt 0;
+  }
+
+  .toc-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6pt;
+    border-bottom: 1px dotted #cbd5e1;
+    padding-bottom: 2pt;
+    font-weight: 600;
+  }
+
+  .toc-item span:first-child { color: #0f172a; }
+  .toc-item span:last-child { color: #0284c7; font-weight: 700; }
+
+  .footer-note {
+    font-size: 8pt;
+    color: #64748b;
+    text-align: center;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 10pt;
+    margin-top: 30pt;
+  }
+</style>
+</head>
+<body>
+
+<!-- COVER PAGE -->
+<div class="cover">
+  <div class="cover-badge">Institutional Operational Manual</div>
+  <h1>TRADING GURU PORTAL</h1>
+  <div class="cover-subtitle">Standard Operating Procedure (SOP), Quantitative Framework & Trading Engine Reference Manual</div>
+  
+  <div class="cover-meta">
+    <div>
+      <strong>Document Version:</strong>
+      <span>Version 3.2 (Production Release)</span>
+    </div>
+    <div>
+      <strong>Effective Date:</strong>
+      <span>November 2026</span>
+    </div>
+    <div>
+      <strong>Target Audience:</strong>
+      <span>Prop Traders, Quantitative Analysts, Algo Operators</span>
+    </div>
+    <div>
+      <strong>System Classification:</strong>
+      <span>Live Real-Time Market Microstructure Platform</span>
+    </div>
+  </div>
+</div>
+
+<!-- TABLE OF CONTENTS -->
+<h1>Table of Contents</h1>
+<div class="toc">
+  <div class="toc-item"><span>1. Executive Summary & Core Trading Philosophy</span><span>Page 2</span></div>
+  <div class="toc-item"><span>2. System Architecture & Live Data Pipelines</span><span>Page 3</span></div>
+  <div class="toc-item"><span>3. Portal Navigation & Workspace Controls (Pop Out / Fullscreen)</span><span>Page 4</span></div>
+  <div class="toc-item"><span>4. Candlestick Anatomy & Raw Price Action Manual</span><span>Page 5</span></div>
+  <div class="toc-item"><span>5. Order Flow Structural Levels (Camarilla Matrix)</span><span>Page 7</span></div>
+  <div class="toc-item"><span>6. Order Flow Footprint Canvas & Microstructure Engine</span><span>Page 9</span></div>
+  <div class="toc-item"><span>7. Market Profile & Pro TPO Workstation Guide</span><span>Page 11</span></div>
+  <div class="toc-item"><span>8. MP 3-Day Pattern Scanner & Value Migration</span><span>Page 13</span></div>
+  <div class="toc-item"><span>9. Algo Trading Workstation: Risk, Sequences & Execution</span><span>Page 14</span></div>
+  <div class="toc-item"><span>10. Derivatives & Quantitative Options Strategies</span><span>Page 17</span></div>
+  <div class="toc-item"><span>11. Volatility Breakouts, High Beta & 20% UC Setups</span><span>Page 19</span></div>
+  <div class="toc-item"><span>12. Operational Checklists, Failovers & Daily Maintenance</span><span>Page 20</span></div>
+</div>
+
+<!-- SECTION 1 -->
+<div class="page-break"></div>
+<h1>1. Executive Summary & Core Principles</h1>
+
+<p>The <strong>Trading Guru Portal</strong> is an institutional-grade, multi-asset algorithmic trading and market profile workstation designed for high-conviction decision making across Indian equities (NSE), index derivatives (NIFTY, BANKNIFTY, FINNIFTY, MIDCPNIFTY), and commodities (MCX Crude Oil, Gold, Silver, Natural Gas).</p>
+
+<p>Unlike retail platforms that rely on lagging technical indicators (e.g., RSI, MACD, Stochastics), the Trading Guru portal operates on **Raw Market Microstructure, Order Flow, Auction Market Theory (AMT), and Camarilla Equation Volatility Anchors**.</p>
+
+<div class="callout">
+  <div class="callout-title">🏛️ The Four-Step Execution Framework</div>
+  <p>Every discretionary and algorithmic execution must rigorously follow the sequence:</p>
+  <p><strong>1. DATA ➔ 2. STRUCTURE ➔ 3. CONTEXT ➔ 4. EXECUTION</strong></p>
+  <ul>
+    <li><strong>Data:</strong> Real-time WebSocket ticks, volume footprints, depth orderbook imbalances.</li>
+    <li><strong>Structure:</strong> Static Camarilla pivot boundaries, TPO value areas (VAH/VAL/POC), Initial Balance (IB).</li>
+    <li><strong>Context:</strong> Relative market position, institutional sentiment (FII net long/short), first-hour PCR velocity.</li>
+    <li><strong>Execution:</strong> Pre-defined entry trigger, mandatory structural stop-loss, dual-target scaling.</li>
+  </ul>
+</div>
+
+<h2>Core Tenets</h2>
+<ul>
+  <li><strong>Market Logic, Not Emotions:</strong> Execution must be triggered solely by confirmed structural breaches, sweep-reclaims, or institutional absorption. Subjective opinions, bias, or news sentiment are discarded.</li>
+  <li><strong>Clean Chart Discipline:</strong> Only Price Action, Order Flow Bins, and Dynamic Volume Profiles are plotted. Redundant indicators that introduce visual clutter and execution latency are prohibited.</li>
+  <li><strong>Strict Capital Preservation:</strong> Every trade maintains a hard mathematical risk ceiling. Chasing extended momentum past breakdown or breakout lines is systemically blocked.</li>
+</ul>
+
+<!-- SECTION 2 -->
+<h1>2. System Architecture & Live Data Pipelines</h1>
+
+<p>The Trading Guru infrastructure is designed for ultra-low latency, zero data loss, and seamless high-availability streaming across multi-session intraday regimes.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Layer</th>
+      <th>Technology</th>
+      <th>Function & Redundancy Protocol</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Frontend UI</strong></td>
+      <td>React 18 + Vite + HTML5 Canvas</td>
+      <td>High-performance 60 FPS hardware-accelerated canvas rendering for Order Flow Footprint and Pro TPO letter blocks. Zero DOM lag.</td>
+    </tr>
+    <tr>
+      <td><strong>WebSocket Streamer</strong></td>
+      <td>Angel One SmartAPI v2 + Node WS</td>
+      <td>Binary live tick streaming delivering sub-second LTP, bid/ask quantities, and open interest across equity and commodity contracts.</td>
+    </tr>
+    <tr>
+      <td><strong>Data Polling Fallback</strong></td>
+      <td>HTTP Express API (Port 3002)</td>
+      <td>Automatic background fallback poller executing every 750ms if WebSocket disconnects, guaranteeing zero UI freeze.</td>
+    </tr>
+    <tr>
+      <td><strong>Failover Tunnels</strong></td>
+      <td>Cloudflare Zero Trust + LocalTunnel</td>
+      <td>Dual-redundancy public tunneling allowing secure, remote cross-device access with auto-restarting background supervision.</td>
+    </tr>
+    <tr>
+      <td><strong>Static Levels Anchor</strong></td>
+      <td>In-Memory Ref + Disk Cache</td>
+      <td>Locks daily Camarilla levels at market open (09:15 IST) using official daily close prices (VWAP) to eliminate intraday level jitter.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- SECTION 3 -->
+<div class="page-break"></div>
+<h1>3. Portal Navigation & Workspace Controls</h1>
+
+<h2>3.1 Header Navigation & Status Indicators</h2>
+<ul>
+  <li><strong>Live Ticker Bar:</strong> Real-time streaming prices for NIFTY, NIFTY FUT, BANKNIFTY, BANKNIFTY FUT, SENSEX, and FINNIFTY with net points gain and percentage change.</li>
+  <li><strong>Angel One SmartAPI Indicator:</strong> Green badge indicates active authenticated connection; amber/red alerts indicate automatic reconnection in progress.</li>
+  <li><strong>Level Alerts Bell:</strong> Central notification bar broadcasting audible vocal alerts when high-conviction levels (S3 Reclaim, R3 Reversal, S4 Breakdown) are triggered.</li>
+</ul>
+
+<h2>3.2 Pop Out & Fullscreen Capabilities</h2>
+<p>To support multi-monitor professional trading desks, Trading Guru allows users to detach heavy visual modules into independent, hardware-accelerated floating windows.</p>
+
+<div class="callout callout-success">
+  <div class="callout-title">🖥️ Multi-Screen Pop Out Workflow</div>
+  <p>To pop out any workstation:</p>
+  <ol>
+    <li>Click the <strong>Pop Out</strong> button (<span class="badge badge-blue">Pop Out</span>) located on the upper-right toolbar of the <strong>Footprint</strong>, <strong>Pro TPO</strong>, or <strong>Candlestick Chart</strong> tabs.</li>
+    <li>A standalone browser instance opens with <code>?standalone=true</code> query parameter. In this view, sidebars and headers are hidden, granting 100% viewport space to the order flow canvas.</li>
+    <li>Drag the popped-out window to an auxiliary display for dedicated real-time monitoring.</li>
+  </ol>
+</div>
+
+<h2>3.3 Native Fullscreen Mode</h2>
+<p>Clicking <strong>Fullscreen</strong> (<span class="badge badge-blue">Fullscreen</span>) immediately scales the chart to <code>100vw × 100vh</code> with automatic resize handling. Pressing <kbd>Esc</kbd> or clicking <strong>Exit Fullscreen</strong> restores default layout without chart re-rendering or connection drops.</p>
+
+<!-- SECTION 4 -->
+<div class="page-break"></div>
+<h1>4. Candlestick Anatomy & Raw Price Action Manual</h1>
+
+<p>Candlesticks represent real-time auction battles between aggressive buyers and aggressive sellers. Trading Guru enforces strict mathematical ratios to validate candle formations.</p>
+
+<h2>4.1 Rejection Shadow Rules (2x Wick Rule)</h2>
+<p>For high-conviction reversals (Hammer, Inverted Hammer, Shooting Star, Hanging Man), the rejection wick must be <strong>at least $2	imes$ the size of the real body</strong>.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Candle Pattern</th>
+      <th>Structural Location</th>
+      <th>Mathematical Criteria</th>
+      <th>Trade Bias</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Hammer</strong></td>
+      <td>End of Downtrend (Support / S3)</td>
+      <td>Body at top; Lower Wick $ge 2	imes$ Body; Upper Wick $le 10%$ total range.</td>
+      <td><span class="badge badge-green">Bullish Reversal</span></td>
+    </tr>
+    <tr>
+      <td><strong>Shooting Star</strong></td>
+      <td>End of Uptrend (Resistance / R3)</td>
+      <td>Body at bottom; Upper Wick $ge 2	imes$ Body; Lower Wick $le 10%$ total range.</td>
+      <td><span class="badge badge-red">Bearish Reversal</span></td>
+    </tr>
+    <tr>
+      <td><strong>Hanging Man</strong></td>
+      <td>Top of Uptrend (Resistance / R4)</td>
+      <td>Same geometry as Hammer, but prints at peak of extended bullish move.</td>
+      <td><span class="badge badge-red">Bearish Exhaustion</span></td>
+    </tr>
+    <tr>
+      <td><strong>Inverted Hammer</strong></td>
+      <td>Bottom of Downtrend (Support / S4)</td>
+      <td>Same geometry as Shooting Star, but prints at trough of bearish extension.</td>
+      <td><span class="badge badge-green">Bullish Attempt</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>4.2 Doji Indecision & Balance Rules (Body $le 6%$ of Range)</h2>
+<ul>
+  <li><strong>Dragonfly Doji:</strong> Flat top (upper shadow $le 5%$ of total range) with long lower rejection tail. Indicates strong buyer absorption at lower prices.</li>
+  <li><strong>Gravestone Doji:</strong> Flat bottom (lower shadow $le 5%$ of total range) with long upper rejection shadow. Indicates aggressive seller rejection at highs.</li>
+  <li><strong>Long-Legged Doji:</strong> Long wicks extending symmetrically on both sides ($ge 25%$ range each). Signals extreme equilibrium and impending volatility expansion.</li>
+  <li><strong>Standard Doji:</strong> Microscopic body closing at exact midpoint. Indicates temporary exhaustion; wait for range breakout.</li>
+</ul>
+
+<h2>4.3 Marubozu Momentum Rules (Body $ge 90%$ of Range)</h2>
+<p>A Marubozu represents absolute dominance by one market participant with near-zero shadows:</p>
+<ul>
+  <li><strong>Bullish Marubozu (Green):</strong> Open = Low, Close = High. Confirms aggressive market buyers clearing all ask liquidity. High-probability continuation signal.</li>
+  <li><strong>Bearish Marubozu (Red):</strong> Open = High, Close = Low. Confirms aggressive market sellers clearing all bid liquidity. High-probability breakdown signal.</li>
+</ul>
+
+<div class="callout callout-warning">
+  <div class="callout-title">⚠️ Options Level S3/S4 Confluence Rule</div>
+  <p>When an option premium touches S3 or S4, enter long <strong>ONLY</strong> if the touch candle closes as a <strong>Bullish Marubozu</strong> ($ge 85%$ body size; 62.5% historical win rate). If the candle closes as a <strong>Bearish Marubozu</strong>, do NOT enter (indicates support collapse with a 78.6% failure rate).</p>
+</div>
+
+<!-- SECTION 5 -->
+<div class="page-break"></div>
+<h1>5. Order Flow Structural Levels (Camarilla Matrix)</h1>
+
+<p>Trading Guru plots 10 daily mathematical levels derived from previous session volatility (High, Low, Close). These levels serve as rigid objective anchors for both discretionary traders and the algorithmic execution engine.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Level Code</th>
+      <th>Display Name</th>
+      <th>Camarilla Formula</th>
+      <th>Role & Institutional Context</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Level 1 ($R6$)</strong></td>
+      <td>Max Extension</td>
+      <td>$(H_{prev} / L_{prev}) 	imes C_{prev}$</td>
+      <td>Extreme upper mathematical boundary. Fade exhaustion zone.</td>
+    </tr>
+    <tr>
+      <td><strong>Level 2 ($R5$)</strong></td>
+      <td>Extreme Target</td>
+      <td>$R4 + 1.168 	imes (R4 - R3)$</td>
+      <td>Primary target for major short-squeeze days. Option writing boundary.</td>
+    </tr>
+    <tr>
+      <td><strong>Level 3 ($R4$)</strong></td>
+      <td>Break Out</td>
+      <td>$C_{prev} + (R_{prev} 	imes 1.1 / 2.0)$</td>
+      <td>Bullish Expansion Trigger. Sustained close above $R4$ initiates trending day.</td>
+    </tr>
+    <tr>
+      <td><strong>Level 4 ($R3$)</strong></td>
+      <td>Sell Reversal</td>
+      <td>$C_{prev} + (R_{prev} 	imes 1.1 / 4.0)$</td>
+      <td>Key Resistance. Primary zone to watch for exhaustion and short reversals.</td>
+    </tr>
+    <tr>
+      <td><strong>Level 5 ($R2$)</strong></td>
+      <td>Upper Midpoint</td>
+      <td>$C_{prev} + (R_{prev} 	imes 1.1 / 6.0)$</td>
+      <td>Intermediate structural resistance inside equilibrium.</td>
+    </tr>
+    <tr>
+      <td><strong>Level 6 ($S2 / S1$)</strong></td>
+      <td>Pivot / S1-R1</td>
+      <td>$C_{prev} - (R_{prev} 	imes 1.1 / 6.0)$</td>
+      <td><strong>Mandatory Structural Stop Loss</strong> for S3 Breakdown Shorts.</td>
+    </tr>
+    <tr>
+      <td><strong>Level 7 ($S3$)</strong></td>
+      <td>Buy Reversal</td>
+      <td>$C_{prev} - (R_{prev} 	imes 1.1 / 4.0)$</td>
+      <td>Key Support. Primary zone for Sweep-Reclaim Longs or Breakdown Shorts.</td>
+    </tr>
+    <tr>
+      <td><strong>Level 8 ($S4$)</strong></td>
+      <td>Break Down</td>
+      <td>$C_{prev} - (R_{prev} 	imes 1.1 / 2.0)$</td>
+      <td>Bearish Expansion Trigger. Primary Target 1 for S3 Breakdown Shorts.</td>
+    </tr>
+    <tr>
+      <td><strong>Level 9 ($S5$)</strong></td>
+      <td>Target 1</td>
+      <td>$S4 - 1.168 	imes (S3 - S4)$</td>
+      <td>Primary target for major liquidations. Option writing support boundary.</td>
+    </tr>
+    <tr>
+      <td><strong>Level 10 ($S6$)</strong></td>
+      <td>Target 2</td>
+      <td>$C_{prev} - (R6 - C_{prev})$</td>
+      <td>Extreme lower mathematical boundary. Complete exhaustion fade.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <div class="callout-title">📌 Daily Pivot Alignment Rule</div>
+  <p>To eliminate sub-daily level distortion, Trading Guru strictly computes intraday pivots using the official Daily ($D$) Close price (the official Exchange VWAP close) rather than the last 5-minute closing tick (LTP).</p>
+</div>
+
+<!-- SECTION 6 -->
+<div class="page-break"></div>
+<h1>6. Order Flow Footprint Engine</h1>
+
+<p>The <strong>Footprint Workstation</strong> dissects each candlestick into discrete price buckets, revealing actual contracts traded at the bid and ask.</p>
+
+<h2>6.1 Bid / Ask Mechanics</h2>
+<ul>
+  <li><strong>Left Side (Red / Bid Volume):</strong> Aggressive market sell orders matched against passive limit buy orders.</li>
+  <li><strong>Right Side (Green / Ask Volume):</strong> Aggressive market buy orders matched against passive limit sell orders.</li>
+  <li><strong>Delta:</strong> Ask Volume minus Bid Volume. Positive delta indicates net aggressive buying; negative delta indicates net aggressive selling.</li>
+</ul>
+
+<h2>6.2 Volume Imbalance Detection</h2>
+<p>An imbalance occurs when volume at a specific price level significantly outweighs the diagonally opposite price level. Trading Guru provides selectable multipliers: <strong>1.5x, 2.0x, 3.0x, 4.0x</strong>.</p>
+<ul>
+  <li><strong>Stacked Buying Imbalance:</strong> 3 or more consecutive green imbalance rows. Confirms aggressive institutional initiative buying. Serves as dynamic support on pullbacks.</li>
+  <li><strong>Stacked Selling Imbalance:</strong> 3 or more consecutive red imbalance rows. Confirms aggressive institutional initiative selling. Serves as dynamic resistance on rallies.</li>
+</ul>
+
+<h2>6.3 Order Flow Signatures</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Signature</th>
+      <th>Visual Identifier</th>
+      <th>Microstructure Context</th>
+      <th>Trading Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Absorption</strong></td>
+      <td>Huge volume bin with near-zero delta; price fails to advance.</td>
+      <td>Passive institutional limit orders soaking up aggressive retail flow.</td>
+      <td>Look to enter counter to the aggressive flow on confirmation.</td>
+    </tr>
+    <tr>
+      <td><strong>Exhaustion</strong></td>
+      <td>Volume drops off dramatically at new extreme (e.g. 0 or single-digit contracts).</td>
+      <td>Lack of aggressive market orders willing to trade at higher/lower prices.</td>
+      <td>Fade the extreme; expect rapid mean reversion back to POC.</td>
+    </tr>
+    <tr>
+      <td><strong>Unfinished Auction</strong></td>
+      <td>Volume trades at both bid and ask on the exact candle high or low.</td>
+      <td>Price discovery incomplete; business remains uncompleted.</td>
+      <td>Price will revisit and breach the unfinished extreme in future periods.</td>
+    </tr>
+    <tr>
+      <td><strong>Delta Divergence</strong></td>
+      <td>Price prints higher high while session delta prints lower low (or vice versa).</td>
+      <td>Effort vs Result divergence; momentum failing to support price movement.</td>
+      <td>High-probability reversal setup in direction of delta.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- SECTION 7 -->
+<div class="page-break"></div>
+<h1>7. Market Profile & Pro TPO Workstation</h1>
+
+<p>Market Profile organizes trading activity across 30-minute lettered brackets ($A$ through $M$) to display time spent at price, revealing <strong>Value Area (VA)</strong> and <strong>Point of Control (POC)</strong>.</p>
+
+<h2>7.1 Profile Components</h2>
+<ul>
+  <li><strong>Initial Balance (IB):</strong> Range defined by periods $A$ and $B$ (09:15 to 10:15 IST). Sets the daily volatility baseline.</li>
+  <li><strong>Point of Control (POC):</strong> The exact price level where the greatest number of TPO letters accumulated. Represents the fairest price to conduct business.</li>
+  <li><strong>Value Area (70%):</strong> Price range containing 70% of total TPOs, bounded by **VAH (Value Area High)** and **VAL (Value Area Low)**.</li>
+  <li><strong>Single Prints:</strong> Columns with only one letter. Represents rapid price discovery where price moved too quickly for balance to form. Acts as future support/resistance.</li>
+  <li><strong>Buying / Selling Tails:</strong> Extreme single prints formed in periods $A$ or $M$ ($ge 3$ TPOs long). Signals aggressive long-term participant intervention.</li>
+</ul>
+
+<h2>7.2 Classical Day Types & Trading Playbook</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Profile Shape</th>
+      <th>Day Type</th>
+      <th>Auction Meaning</th>
+      <th>Execution Strategy</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Normal Day</strong></td>
+      <td>Balanced Bell Curve</td>
+      <td>Wide IB ($A$ & $B$) with zero range extension. Total balance.</td>
+      <td>Fade boundaries: Buy VAL, Sell VAH, Target POC.</td>
+    </tr>
+    <tr>
+      <td><strong>Normal Variation</strong></td>
+      <td>Extended Bell</td>
+      <td>Moderate IB with range extension in $C$ or $D$ period ($le 2	imes$ IB).</td>
+      <td>Trade direction of extension; pullback to IB high/low.</td>
+    </tr>
+    <tr>
+      <td><strong>Trend Day</strong></td>
+      <td>Elongated Vertical</td>
+      <td>Narrow IB; constant range extension every period. Multiple single prints.</td>
+      <td>Go with the trend; never fade. Keep trailing stops below prior period lows.</td>
+    </tr>
+    <tr>
+      <td><strong>P-Shape Profile</strong></td>
+      <td>Top Heavy (P)</td>
+      <td>Short Covering rally. Narrow lower stem, heavy volume at top.</td>
+      <td>Do not chase highs. Look for long consolidation or fade on exhaustion.</td>
+    </tr>
+    <tr>
+      <td><strong>b-Shape Profile</strong></td>
+      <td>Bottom Heavy (b)</td>
+      <td>Long Liquidation selloff. Narrow upper stem, heavy volume at bottom.</td>
+      <td>Do not chase lows. Look for accumulation or fade on exhaustion.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- SECTION 8 -->
+<div class="page-break"></div>
+<h1>8. MP 3-Day Pattern Scanner</h1>
+
+<p>Market Profile value migration over a 3-day window establishes multi-day institutional conviction.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Pattern Name</th>
+      <th>Value Migration Description</th>
+      <th>Market Context</th>
+      <th>Trading Directive</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Overlapping Higher</strong></td>
+      <td>Day 3 VA overlaps Day 2 VA, but both VAH and VAL shift higher.</td>
+      <td>Gradual institutional accumulation.</td>
+      <td>Look for buy pullbacks to Day 2 POC / VAL.</td>
+    </tr>
+    <tr>
+      <td><strong>Overlapping Lower</strong></td>
+      <td>Day 3 VA overlaps Day 2 VA, but both VAH and VAL shift lower.</td>
+      <td>Gradual institutional distribution.</td>
+      <td>Look for sell rallies to Day 2 POC / VAH.</td>
+    </tr>
+    <tr>
+      <td><strong>Higher Value (Unconnected)</strong></td>
+      <td>Day 3 VAL is completely above Day 2 VAH (Gap of Value).</td>
+      <td>Strong initiative buying momentum.</td>
+      <td>Aggressive long mode. Buy opens near Day 3 VAL.</td>
+    </tr>
+    <tr>
+      <td><strong>Lower Value (Unconnected)</strong></td>
+      <td>Day 3 VAH is completely below Day 2 VAL (Gap of Value).</td>
+      <td>Strong initiative selling momentum.</td>
+      <td>Aggressive short mode. Sell opens near Day 3 VAH.</td>
+    </tr>
+    <tr>
+      <td><strong>Inside Value (Compression)</strong></td>
+      <td>Day 3 Value Area is completely inside Day 2 Value Area.</td>
+      <td>Extreme volatility contraction (energy coiling).</td>
+      <td>Prepare for explosive breakout on Day 4.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- SECTION 9 -->
+<div class="page-break"></div>
+<h1>9. Algo Trading Workstation: Rules & Execution</h1>
+
+<p>The <strong>Algo Trade Workstation</strong> automates high-probability price action setups with strict capital allocation, structural stop losses, and anti-churn safety filters.</p>
+
+<h2>9.1 Capital Allocation & Sizing Parameters</h2>
+<ul>
+  <li><strong>Total Capital Pool:</strong> ₹10,00,000 (10 Lakhs).</li>
+  <li><strong>Maximum Concurrent Positions:</strong> 4 slots (₹2,50,000 allocated per position).</li>
+  <li><strong>Position Sizing Equation:</strong> $	ext{Quantity} = lfloor 	ext{Max Capital Per Trade} / 	ext{Entry Price} floor$.</li>
+  <li><strong>Anti-Churn Cooldown:</strong> 20 minutes mandatory lock on any symbol following an exit, preventing over-trading during chop.</li>
+  <li><strong>Session Intraday Square-off:</strong> Auto square-off at 15:15 IST for equities; 23:15 IST for MCX commodities.</li>
+</ul>
+
+<h2>9.2 The Three Institutional Algo Strategies</h2>
+
+<div class="rule-box">
+  <div class="rule-header">
+    <span>STRATEGY 1: BUY REVERSAL (S3 RECLAIM) — LONG SETUP</span>
+    <span class="badge badge-green">WIN RATE: ~65%</span>
+  </div>
+  <p><strong>Core Concept:</strong> Smart Money Liquidity Sweep below major support followed by rapid reclaim.</p>
+  <ul>
+    <li><strong>Step 1 (Test):</strong> Price approaches S3 Buy Reversal (within 0.2%).</li>
+    <li><strong>Step 2 (Sweep):</strong> Price sweeps below S3 ($	ext{Low} < S3 	imes 0.999$), triggering retail sell stop orders.</li>
+    <li><strong>Step 3 (Reclaim):</strong> Candle closes back above S3 ($	ext{Close} > S3$).</li>
+    <li><strong>Entry:</strong> Buy immediately on the close of the reclaim candle.</li>
+    <li><strong>Stop Loss:</strong> Placed at the sweep low or below S4 Breakdown line.</li>
+    <li><strong>Target 1:</strong> Central Pivot (Book 50% profit immediately; move SL to breakeven).</li>
+    <li><strong>Target 2:</strong> R4 Breakout Level.</li>
+  </ul>
+</div>
+
+<div class="rule-box">
+  <div class="rule-header">
+    <span>STRATEGY 2: BUY REVERSAL BREAKDOWN — SHORT SETUP</span>
+    <span class="badge badge-red">WIN RATE: ~68%</span>
+  </div>
+  <p><strong>Core Concept:</strong> Failure of buyers to hold S3 support, resulting in structural liquidation towards S4.</p>
+  <ul>
+    <li><strong>Step 1 (Test):</strong> Price tests S3 Buy Reversal.</li>
+    <li><strong>Step 2 (Breakdown):</strong> Candle confirms breakdown and closes below S3 ($	ext{Close} < S3$).</li>
+    <li><strong>Entry Window (Strict):</strong> $	ext{LTP} < S3$ AND $	ext{LTP} ge S4$. Must enter between S3 and S4.</li>
+    <li><strong>Chasing Prevention:</strong> If $	ext{LTP} < S4$, entry is <strong>BLOCKED</strong> (move completed; chasing avoided).</li>
+    <li><strong>Stop Loss:</strong> Must be placed strictly at <strong>Level 6 ($S1 / R1$) or Central Pivot</strong> above entry.</li>
+    <li><strong>Target 1:</strong> S4 Break Down Level (Book profit immediately).</li>
+    <li><strong>Target 2:</strong> S5 Target Level.</li>
+  </ul>
+</div>
+
+<div class="rule-box">
+  <div class="rule-header">
+    <span>STRATEGY 3: SELL REVERSAL PIVOT BREAKDOWN — SHORT SETUP</span>
+    <span class="badge badge-amber">WIN RATE: ~62%</span>
+  </div>
+  <p><strong>Core Concept:</strong> Rejection at R3 Sell Reversal followed by breakdown below Central Pivot equilibrium.</p>
+  <ul>
+    <li><strong>Step 1:</strong> Price tests R3 Sell Reversal ($	ext{High} ge R3$).</li>
+    <li><strong>Step 2:</strong> Rejection: price fails to sustain and closes back below R3.</li>
+    <li><strong>Step 3:</strong> Central Pivot breakdown: price falls and breaks below Central Pivot.</li>
+    <li><strong>Entry:</strong> Short immediately upon Central Pivot breakdown confirmation.</li>
+    <li><strong>Stop Loss:</strong> Placed at R3 Sell Reversal.</li>
+    <li><strong>Target 1:</strong> S3 Buy Reversal (Book profit).</li>
+    <li><strong>Target 2:</strong> S4 Breakdown Level.</li>
+  </ul>
+</div>
+
+<!-- SECTION 10 -->
+<div class="page-break"></div>
+<h1>10. Derivatives & Quantitative Options Rules</h1>
+
+<h2>10.1 The Lunchtime S4 Discount Trap (Option Buying)</h2>
+<ul>
+  <li><strong>Setup:</strong> During the lunchtime consolidation window (11:30 AM – 01:30 PM IST), institutional option writers push premiums down towards their daily S4 level.</li>
+  <li><strong>Action:</strong> Place buy limit orders at the S4 level of Call options when the underlying index is holding above daily Open.</li>
+  <li><strong>Stop Loss:</strong> Below S5 support.</li>
+  <li><strong>Target:</strong> Daily midpoint or R3 resistance during the afternoon breakout window (after 02:15 PM IST).</li>
+</ul>
+
+<h2>10.2 The R5 Extreme Short (Option Writing)</h2>
+<ul>
+  <li><strong>Setup:</strong> OTM Call or Put premiums that spike to touch their own daily R5 resistance level represent statistical overextension ($> 3sigma$).</li>
+  <li><strong>Action:</strong> Sell/Write OTM Call or Put options upon R5 touch.</li>
+  <li><strong>Risk Control:</strong> Strict 50% premium stop-loss ($	ext{Entry} 	imes 1.5$).</li>
+  <li><strong>Target:</strong> Cover position at ₹1.0 or let expire worthless at ₹0.</li>
+  <li><strong>Index Direction Filter:</strong> Never write Calls if Index is above daily Open; never write Puts if Index is below daily Open or PCR velocity is negative.</li>
+</ul>
+
+<h2>10.3 Stock Options Expiry Logic</h2>
+<ul>
+  <li><strong>NSE Monthly Cycle:</strong> NSE stock options expire on the **last Tuesday of each month**.</li>
+  <li><strong>Symbol Formatting:</strong> Strict <code>YYMMDD</code> format matching the last Tuesday date (e.g. <code>260728</code> for 28 July 2026).</li>
+  <li><strong>S3/S4 Confluence:</strong> On the 30-minute chart, enter long only on **Bullish Marubozu** (70.6% win rate) or **Doji** (68.8% win rate) closes. Avoid red candle touches.</li>
+</ul>
+
+<!-- SECTION 11 -->
+<h1>11. Volatility Breakouts & High Beta Setups</h1>
+
+<h2>11.1 NR7 (Narrow Range 7) Strategy</h2>
+<p>An NR7 day occurs when the daily range is narrower than the preceding 6 sessions. This represents absolute volatility compression.</p>
+<ul>
+  <li><strong>Long Trigger:</strong> Next session price breaks above NR7 High. Stop loss at NR7 Midpoint. Target: $2	imes$ to $3	imes$ risk.</li>
+  <li><strong>Short Trigger:</strong> Next session price breaks below NR7 Low. Stop loss at NR7 Midpoint. Target: $2	imes$ to $3	imes$ risk.</li>
+</ul>
+
+<h2>11.2 20% Upper Circuit (UC) Potential Scanner</h2>
+<p>Filters stocks demonstrating unusual pre-market volume surges, low free float, and clean multi-day base breakouts targeting upper circuit lockups.</p>
+
+<!-- SECTION 12 -->
+<div class="page-break"></div>
+<h1>12. Operational Checklists & Daily Maintenance</h1>
+
+<h2>12.1 Pre-Market Routine (08:45 AM – 09:15 AM IST)</h2>
+<ol>
+  <li>Log into Trading Guru Portal and verify green **Angel One SmartAPI** connection badge.</li>
+  <li>Check **Live Market Indices** banner for global opening cues (GIFT Nifty, Asian markets).</li>
+  <li>Review **MP 3-Day Patterns** tab to identify multi-day value migration (Overlapping Higher / Lower / Inside Value).</li>
+  <li>Open **Algo Trade Workstation** and ensure all previous day logs are archived and capital is reset to ₹10,00,000.</li>
+  <li>Verify that the **Service Supervisor** process is active on port 3002 (19/19 services operational).</li>
+</ol>
+
+<h2>12.2 Intraday Monitoring (09:15 AM – 03:30 PM IST)</h2>
+<ol>
+  <li><strong>09:15 – 10:15 (IB Period):</strong> Observe Initial Balance formation in Pro TPO. Avoid taking premature breakout trades until period $B$ completes.</li>
+  <li><strong>10:15 – 11:30 (Morning Auction):</strong> Monitor S3 Reclaim Longs and R3 Reversal Shorts on Algo Radar.</li>
+  <li><strong>11:30 – 13:30 (Lunchtime Regime):</strong> Watch for S4 Discount Trap setups on option buying desks. Avoid entering fresh equity momentum breakouts during lunchtime volume contraction.</li>
+  <li><strong>13:30 – 15:15 (Afternoon K-L-M Auction):</strong> Trend extension period. Target 1 profit bookings and trailing stops active.</li>
+  <li><strong>15:15 (Equity EOD Square-off):</strong> Verify automated closure of all intraday open positions.</li>
+</ol>
+
+<h2>12.3 Post-Market Reconciliation (15:30 – 16:30 IST)</h2>
+<ol>
+  <li>Click **Download Excel Report** in the Algo Trade Workstation to export full audited session trade logs.</li>
+  <li>Verify that all closed trades adhered to the structural stop loss rules (Central Pivot / S1-R1 for breakdowns).</li>
+  <li>Review Commodity Workstation (MCX Crude Oil / Gold) for evening session setups active through 23:15 IST.</li>
+</ol>
+
+<div class="footer-note">
+  <p>Trading Guru Portal SOP v3.2 &bull; Confidential & Proprietary &bull; Strictly for Authorized Personnel</p>
+</div>
+
+</body>
+</html>

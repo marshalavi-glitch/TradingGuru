@@ -5054,6 +5054,26 @@ app.post('/api/mp-3day-patterns/scan', async (req, res) => {
   }
 });
 
+// GET /api/sop-pdf - Direct download/view of Trading Guru Portal SOP PDF
+app.get('/api/sop-pdf', (req, res) => {
+  try {
+    const candidates = [
+      path.join(__dirname, '../Trading_Guru_Portal_SOP.pdf'),
+      path.join(__dirname, '../frontend/public/Trading_Guru_Portal_SOP.pdf'),
+      path.join(__dirname, 'Trading_Guru_Portal_SOP.pdf')
+    ];
+    const pdfPath = candidates.find(p => fs.existsSync(p));
+    if (!pdfPath) {
+      return res.status(404).json({ success: false, error: 'SOP PDF not found on server' });
+    }
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline; filename="Trading_Guru_Portal_SOP.pdf"');
+    fs.createReadStream(pdfPath).pipe(res);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 app.get('/api/mp-3day-patterns/download-backtest', (req, res) => {
   try {
     const candidates = [
