@@ -327,14 +327,50 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
     }));
   }, [isEngineActive, riskPerTradePct, maxOpenPositions]);
 
-  // Synchronize positions, history & logs to localStorage
+  // Synchronize positions, history & logs to localStorage and server disk
   useEffect(() => {
     localStorage.setItem(STORAGE_POSITIONS_KEY, JSON.stringify(positions));
   }, [positions]);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_HISTORY_KEY, JSON.stringify(history));
+    if (history.length > 0) {
+      getBackendHttpUrl().then(backendUrl => {
+        fetch(`${backendUrl}/api/algo-trade/sync`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ history, positions })
+        }).catch(() => {});
+      }).catch(() => {});
+    }
   }, [history]);
+
+  // Load persistent history from server on mount
+  useEffect(() => {
+    const loadServerHistory = async () => {
+      try {
+        const backendUrl = await getBackendHttpUrl();
+        const res = await fetch(`${backendUrl}/api/algo-trade/history`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data && data.success && Array.isArray(data.history) && data.history.length > 0) {
+          setHistory(prev => {
+            const map = new Map();
+            data.history.forEach((h: AlgoPosition) => {
+              if (h && h.id && !isNov9AlgoTrade(h)) map.set(h.id, h);
+            });
+            prev.forEach((h: AlgoPosition) => {
+              if (h && h.id && !isNov9AlgoTrade(h)) map.set(h.id, h);
+            });
+            return Array.from(map.values());
+          });
+        }
+      } catch (err) {
+        console.warn('Could not load algo history from server:', err);
+      }
+    };
+    loadServerHistory();
+  }, []);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_LOGS_KEY, JSON.stringify(logs.slice(-100)));
@@ -1579,8 +1615,8 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
       }}>
         {[
           { id: 'positions', label: `Active Positions (${positions.length})`, icon: Activity },
+          { id: 'history', label: `Closed Trades / History (${history.length})`, icon: Clock },
           { id: 'radar', label: `Reversal Radar / Scanner (${radarItems.length})`, icon: Target },
-          { id: 'history', label: `Trade History (${history.length})`, icon: Clock },
           { id: 'logs', label: `Execution Audit Logs (${logs.length})`, icon: Bot }
         ].map(tab => {
           const Icon = tab.icon;
@@ -1633,26 +1669,48 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
               <div style={{ fontSize: '11.5px', color: 'var(--text-secondary)', maxWidth: '440px' }}>
                 Auto-Pilot is actively monitoring S3 Buy Reversals and R3 Sell Reversals across top F&O stocks. When a level triggers, orders execute automatically with strict SL & Targets.
               </div>
-              <button
-                onClick={() => setActiveSubTab('radar')}
-                style={{
-                  marginTop: '6px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 12px',
-                  borderRadius: '6px',
-                  border: 'none',
-                  background: '#0284c7',
-                  color: '#ffffff',
-                  fontSize: '11px',
-                  fontWeight: '700',
-                  cursor: 'pointer'
-                }}
-              >
-                <Target size={13} />
-                <span>View Reversal Radar Setups</span>
-              </button>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                {history.length > 0 && (
+                  <button
+                    onClick={() => setActiveSubTab('history')}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '7px 14px',
+                      borderRadius: '6px',
+                      border: '1px solid #0284c7',
+                      background: 'rgba(2, 132, 199, 0.15)',
+                      color: '#38bdf8',
+                      fontSize: '11.5px',
+                      fontWeight: '800',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <Clock size={13} />
+                    <span>View Closed Trade History ({history.length} Trades)</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => setActiveSubTab('radar')}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '7px 14px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    background: '#0284c7',
+                    color: '#ffffff',
+                    fontSize: '11.5px',
+                    fontWeight: '800',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <Target size={13} />
+                  <span>View Reversal Radar Setups</span>
+                </button>
+              </div>
             </div>
           ) : (
             <div style={{

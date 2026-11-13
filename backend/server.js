@@ -5216,6 +5216,63 @@ app.get('/api/orderflow-report/export-excel', requireAdminRole, async (req, res)
 });
 
 
+// GET /api/algo-trade/history - Retrieve all persistent algo trades & positions from server disk
+app.get('/api/algo-trade/history', (req, res) => {
+  try {
+    const historyFile = path.join(__dirname, 'data/algo_trades_history.json');
+    let history = [];
+    if (fs.existsSync(historyFile)) {
+      try {
+        const raw = fs.readFileSync(historyFile, 'utf8');
+        history = JSON.parse(raw);
+        if (!Array.isArray(history)) history = [];
+      } catch (e) {
+        history = [];
+      }
+    }
+    const positionsFile = path.join(__dirname, 'data/algo_positions.json');
+    let positions = [];
+    if (fs.existsSync(positionsFile)) {
+      try {
+        const raw = fs.readFileSync(positionsFile, 'utf8');
+        positions = JSON.parse(raw);
+        if (!Array.isArray(positions)) positions = [];
+      } catch (e) {
+        positions = [];
+      }
+    }
+    res.json({ success: true, history, positions });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST /api/algo-trade/sync - Synchronize algo trades from frontend to server disk
+app.post('/api/algo-trade/sync', (req, res) => {
+  try {
+    const { history = [], positions = [] } = req.body || {};
+    const historyFile = path.join(__dirname, 'data/algo_trades_history.json');
+    let existingHistory = [];
+    if (fs.existsSync(historyFile)) {
+      try {
+        existingHistory = JSON.parse(fs.readFileSync(historyFile, 'utf8')) || [];
+      } catch (e) {}
+    }
+    const map = new Map();
+    existingHistory.forEach(item => { if (item && item.id) map.set(item.id, item); });
+    history.forEach(item => { if (item && item.id) map.set(item.id, item); });
+    const mergedHistory = Array.from(map.values());
+    fs.writeFileSync(historyFile, JSON.stringify(mergedHistory, null, 2), 'utf8');
+
+    const positionsFile = path.join(__dirname, 'data/algo_positions.json');
+    fs.writeFileSync(positionsFile, JSON.stringify(positions, null, 2), 'utf8');
+
+    res.json({ success: true, count: mergedHistory.length });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // POST /api/algo-trade/export-excel - Download multi-sheet Excel report (.xlsx) for Algo Trades
 app.post('/api/algo-trade/export-excel', (req, res) => {
   try {
