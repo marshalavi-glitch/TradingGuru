@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { X, UserPlus, Users, Trash2, Key, Shield, Copy, CheckCircle2, RefreshCw, ExternalLink, Clock } from 'lucide-react';
-import { DEFAULT_ACCOUNTS, UserAccount, getDeletedUsers, addDeletedUser, unmarkDeletedUser } from './LoginScreen';
+import { X, UserPlus, Users, Trash2, Key, Shield, Copy, CheckCircle2, RefreshCw, ExternalLink, Clock, AlertTriangle } from 'lucide-react';
+import { DEFAULT_ACCOUNTS, UserAccount, getDeletedUsers, addDeletedUser, unmarkDeletedUser, checkIsPasswordExpired, getDaysSinceLastLogin, getDaysSinceLastOnline } from './LoginScreen';
 import { tvStreamer, getBackendHttpUrl } from '../utils/tvStreamer';
 
 interface UserManagementModalProps {
@@ -316,6 +316,120 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
     } catch {}
 
     loadUsers();
+  };
+
+  // 1-Click Reactivate keeping the SAME OLD PASSWORD
+  const handleReactivateUser = async (user: UserAccount) => {
+    if (!isAdmin) return;
+    const cleanUser = user.username.trim().toLowerCase();
+
+    setIsSaving(true);
+    setStatusMsg(null);
+
+    try {
+      const backendUrl = await getBackendHttpUrl();
+      if (backendUrl) {
+        const res = await fetch(`${backendUrl}/api/auth/users/${encodeURIComponent(cleanUser)}/reactivate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-auth-user': currentUser || ''
+          }
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.success) {
+          setStatusMsg({ text: `Account reactivated for @${cleanUser} with their existing password! Valid for next 15 days.` });
+          await loadUsers();
+          setIsSaving(false);
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('Backend reactivate user error:', e);
+    }
+
+    // Local fallback update keeping existing password
+    try {
+      const stored = localStorage.getItem(CUSTOM_ACCOUNTS_KEY);
+      let list: UserAccount[] = stored ? JSON.parse(stored) : [];
+      const nowIso = new Date().toISOString();
+      const existingIdx = list.findIndex(u => u.username.toLowerCase() === cleanUser);
+      if (existingIdx >= 0) {
+        list[existingIdx].lastLogin = nowIso;
+        list[existingIdx].passwordUpdatedAt = nowIso;
+      } else {
+        list.push({ ...user, lastLogin: nowIso, passwordUpdatedAt: nowIso });
+      }
+      localStorage.setItem(CUSTOM_ACCOUNTS_KEY, JSON.stringify(list));
+
+      const rawLogins = localStorage.getItem('trading_guru_user_last_logins');
+      const logins = rawLogins ? JSON.parse(rawLogins) : {};
+      logins[cleanUser] = nowIso;
+      localStorage.setItem('trading_guru_user_last_logins', JSON.stringify(logins));
+
+      setStatusMsg({ text: `Account reactivated locally for @${cleanUser} with same existing password. Valid for next 15 days!` });
+      await loadUsers();
+    } catch {}
+    setIsSaving(false);
+  };
+
+  const handleResetUserPassword = async (user: UserAccount) => {
+    if (!isAdmin) return;
+    const cleanUser = user.username.trim().toLowerCase();
+    const promptMsg = `Change password for @${cleanUser}:\nEnter new password (valid for next 15 days):`;
+    const newPass = window.prompt(promptMsg, user.password || '');
+    if (!newPass || !newPass.trim()) return;
+
+    setIsSaving(true);
+    setStatusMsg(null);
+
+    try {
+      const backendUrl = await getBackendHttpUrl();
+      if (backendUrl) {
+        const res = await fetch(`${backendUrl}/api/auth/users/${encodeURIComponent(cleanUser)}/reset-password`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-auth-user': currentUser || ''
+          },
+          body: JSON.stringify({ newPassword: newPass.trim() })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.success) {
+          setStatusMsg({ text: `Password updated successfully for @${cleanUser}. Active for next 15 days!` });
+          await loadUsers();
+          setIsSaving(false);
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('Backend reset password error:', e);
+    }
+
+    // Local fallback update
+    try {
+      const stored = localStorage.getItem(CUSTOM_ACCOUNTS_KEY);
+      let list: UserAccount[] = stored ? JSON.parse(stored) : [];
+      const nowIso = new Date().toISOString();
+      const existingIdx = list.findIndex(u => u.username.toLowerCase() === cleanUser);
+      if (existingIdx >= 0) {
+        list[existingIdx].password = newPass.trim();
+        list[existingIdx].lastLogin = nowIso;
+        list[existingIdx].passwordUpdatedAt = nowIso;
+      } else {
+        list.push({ ...user, password: newPass.trim(), lastLogin: nowIso, passwordUpdatedAt: nowIso });
+      }
+      localStorage.setItem(CUSTOM_ACCOUNTS_KEY, JSON.stringify(list));
+
+      const rawLogins = localStorage.getItem('trading_guru_user_last_logins');
+      const logins = rawLogins ? JSON.parse(rawLogins) : {};
+      logins[cleanUser] = nowIso;
+      localStorage.setItem('trading_guru_user_last_logins', JSON.stringify(logins));
+
+      setStatusMsg({ text: `Password updated locally for @${cleanUser}. Active for next 15 days!` });
+      await loadUsers();
+    } catch {}
+    setIsSaving(false);
   };
 
   const copyShareLink = (user: UserAccount) => {
@@ -641,6 +755,8 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
                 const isCurrent = currentClean === u.username.toLowerCase() || currentClean === (u.name || '').toLowerCase();
                 const isOnline = isCurrent || !!u.isOnline;
                 const isCopied = copiedLinkUser === u.username;
+                const isExpired = u.isExpired !== undefined ? u.isExpired : checkIsPasswordExpired(u);
+                const daysSince = u.daysSinceLastLogin !== undefined ? u.daysSinceLastLogin : getDaysSinceLastLogin(u);
                 return (
                   <div
                     key={u.username}
@@ -649,7 +765,7 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       background: 'rgba(30, 41, 59, 0.4)',
-                      border: `1px solid ${isCurrent ? 'rgba(56, 189, 248, 0.4)' : (isOnline ? 'rgba(16, 185, 129, 0.25)' : 'rgba(255, 255, 255, 0.08)')}`,
+                      border: `1px solid ${isExpired ? 'rgba(239, 68, 68, 0.35)' : (isCurrent ? 'rgba(56, 189, 248, 0.4)' : (isOnline ? 'rgba(16, 185, 129, 0.25)' : 'rgba(255, 255, 255, 0.08)'))}`,
                       borderRadius: '8px',
                       padding: '10px 14px',
                       gap: '12px',
@@ -773,6 +889,29 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
                       </strong>
                     </div>
 
+                    {/* Expiration Status Badge (if expired) */}
+                    {isExpired && (
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        background: 'rgba(239, 68, 68, 0.15)',
+                        border: '1px solid rgba(239, 68, 68, 0.45)',
+                        padding: '4px 9px',
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        whiteSpace: 'nowrap',
+                        color: '#f87171'
+                      }}
+                      title={`Password expired: No online activity for >15 days (${daysSince != null ? `${daysSince}d since last online` : 'no activity recorded'}). Contact Admin or click Reactivate to restore access.`}
+                      >
+                        <AlertTriangle size={12} color="#f87171" />
+                        <strong style={{ fontWeight: '800' }}>
+                          Expired {daysSince != null ? `(${daysSince}d offline)` : '(>15d)'}
+                        </strong>
+                      </div>
+                    )}
+
                     {/* Action Buttons */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <button
@@ -795,6 +934,55 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
                         {isCopied ? <CheckCircle2 size={13} /> : <Copy size={13} />}
                         <span>{isCopied ? 'Link Copied!' : 'Copy 1-Click Link'}</span>
                       </button>
+
+                      {/* Reactivate Button (keeps same old password) */}
+                      {u.username.toLowerCase() !== 'admin' && isExpired && (
+                        <button
+                          onClick={() => handleReactivateUser(u)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            background: 'rgba(16, 185, 129, 0.2)',
+                            border: '1px solid #10b981',
+                            color: '#34d399',
+                            padding: '5px 9px',
+                            borderRadius: '6px',
+                            fontSize: '11px',
+                            fontWeight: '800',
+                            cursor: 'pointer',
+                            boxShadow: '0 0 10px rgba(16, 185, 129, 0.2)'
+                          }}
+                          title="Reactivate account with same old password (grants fresh 15 days)"
+                        >
+                          <CheckCircle2 size={12} />
+                          <span>Reactivate</span>
+                        </button>
+                      )}
+
+                      {/* Change Password Button */}
+                      {u.username.toLowerCase() !== 'admin' && (
+                        <button
+                          onClick={() => handleResetUserPassword(u)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            background: 'rgba(234, 179, 8, 0.12)',
+                            border: '1px solid rgba(234, 179, 8, 0.35)',
+                            color: '#facc15',
+                            padding: '5px 9px',
+                            borderRadius: '6px',
+                            fontSize: '11px',
+                            fontWeight: '700',
+                            cursor: 'pointer'
+                          }}
+                          title="Change user password and grant 15 fresh days"
+                        >
+                          <Key size={12} />
+                          <span>Change Pass</span>
+                        </button>
+                      )}
 
                       {u.username.toLowerCase() !== 'admin' && (
                         confirmDeleteUser === u.username ? (

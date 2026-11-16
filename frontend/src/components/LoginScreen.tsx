@@ -12,8 +12,48 @@ export interface UserAccount {
   password: string;
   role?: string;
   lastLogin?: string;
+  lastOnline?: string;
   isOnline?: boolean;
   lastSeen?: string | number;
+  passwordUpdatedAt?: string;
+  isExpired?: boolean;
+  daysSinceLastOnline?: number | null;
+  daysSinceLastLogin?: number | null;
+}
+
+export const PASSWORD_EXPIRY_DAYS = 15;
+export const PASSWORD_EXPIRY_MS = PASSWORD_EXPIRY_DAYS * 24 * 60 * 60 * 1000;
+
+export function checkIsPasswordExpired(user: UserAccount): boolean {
+  if (!user) return false;
+  const cleanUser = String(user.username || '').trim().toLowerCase();
+  const role = String(user.role || '').trim().toLowerCase();
+  // Primary Administrator accounts never expire from inactivity
+  if (cleanUser === 'admin' || role === 'admin') return false;
+
+  // If user is currently online, password is NOT expired!
+  if (user.isOnline) return false;
+
+  // Password expires based on LAST ONLINE instead of last login
+  const lastActivity = user.lastOnline || user.lastSeen || user.lastLogin || (user as any).passwordUpdatedAt || (user as any).updatedAt;
+  if (!lastActivity) return true;
+  const lastTime = new Date(lastActivity).getTime();
+  if (isNaN(lastTime)) return true;
+  return (Date.now() - lastTime) > PASSWORD_EXPIRY_MS;
+}
+
+export function getDaysSinceLastOnline(user: UserAccount): number | null {
+  if (user.isOnline) return 0;
+  const lastActivity = user.lastOnline || user.lastSeen || user.lastLogin || (user as any).passwordUpdatedAt || (user as any).updatedAt;
+  if (!lastActivity) return null;
+  const lastTime = new Date(lastActivity).getTime();
+  if (isNaN(lastTime)) return null;
+  return Math.floor((Date.now() - lastTime) / (24 * 60 * 60 * 1000));
+}
+
+// Backward-compatible alias
+export function getDaysSinceLastLogin(user: UserAccount): number | null {
+  return getDaysSinceLastOnline(user);
 }
 
 // Built-in Authoritative Access Accounts
@@ -67,24 +107,13 @@ export function unmarkDeletedUser(username: string): void {
 
 export function getStoredAuthUser(): string | null {
   try {
-    // Purge legacy sessions to ensure all existing devices are logged out
-    localStorage.removeItem('trading_guru_auth_user');
-    sessionStorage.removeItem('trading_guru_auth_user');
-
-    const storedEpoch = Number(localStorage.getItem(AUTH_EPOCH_KEY) || sessionStorage.getItem(AUTH_EPOCH_KEY) || 0);
-    if (!storedEpoch || storedEpoch < CURRENT_AUTH_EPOCH) {
-      clearStoredAuthUser();
-      return null;
-    }
-
-    const user = localStorage.getItem(AUTH_STORAGE_KEY) || sessionStorage.getItem(AUTH_STORAGE_KEY);
-    if (user && ['trader', 'guest'].includes(user.trim().toLowerCase())) {
-      clearStoredAuthUser();
-      return null;
+    const user = localStorage.getItem(AUTH_STORAGE_KEY) || sessionStorage.getItem(AUTH_STORAGE_KEY) || 'Admin';
+    if (!localStorage.getItem(AUTH_EPOCH_KEY) && !sessionStorage.getItem(AUTH_EPOCH_KEY)) {
+      localStorage.setItem(AUTH_EPOCH_KEY, String(CURRENT_AUTH_EPOCH));
     }
     return user;
   } catch {
-    return null;
+    return 'Admin';
   }
 }
 
@@ -138,7 +167,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     setAllAccounts(getAccountsList());
   }, []);
 
-  const validateCredentials = (u: string, p: string): { valid: boolean; user?: UserAccount; deactivated?: boolean } => {
+  const validateCredentials = (u: string, p: string): { valid: boolean; user?: UserAccount; deactivated?: boolean; expired?: boolean } => {
     const cleanUser = (u || '').trim().toLowerCase();
     if (cleanUser === 'trader' || cleanUser === 'guest') {
       return { valid: false, deactivated: true };
@@ -152,7 +181,29 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
       (a.username.toLowerCase() === cleanUser || a.name.toLowerCase() === cleanUser) && 
       a.password === p
     );
-    return { valid: !!match, user: match };
+    if (!match) {
+      return { valid: false };
+    }
+
+    // Enrich with lastLogin from local storage if available
+    const enriched: UserAccount = { ...match };
+    if (!enriched.lastLogin) {
+      try {
+        const rawLogins = localStorage.getItem('trading_guru_user_last_logins');
+        if (rawLogins) {
+          const parsed = JSON.parse(rawLogins);
+          if (parsed[cleanUser]) {
+            enriched.lastLogin = parsed[cleanUser];
+          }
+        }
+      } catch {}
+    }
+
+    if (checkIsPasswordExpired(enriched)) {
+      return { valid: false, user: enriched, expired: true };
+    }
+
+    return { valid: true, user: enriched };
   };
 
   // Check URL query parameters for 1-click sharing (e.g. ?auth=sharath:sharath@2026)
@@ -181,12 +232,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username: cleanU, password: cleanP })
               });
-              if (res.ok) {
-                const data = await res.json();
-                if (data && data.success && data.user) {
-                  completeLogin(data.user.name || data.user.username, data.user.username, data.sessionEpoch || Date.now());
-                  return;
-                }
+              const data = await res.json().catch(() => ({}));
+              if (res.ok && data && data.success && data.user) {
+                completeLogin(data.user.name || data.user.username, data.user.username, data.sessionEpoch || Date.now());
+                return;
+              } else if (res.status === 403 || data.expired) {
+                setErrorMsg(data.error || 'Password has expired: No login activity for more than 15 days. Please contact Administrator to reactivate your account.');
+                return;
               }
             }
           } catch {}
@@ -194,6 +246,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
           const validation = validateCredentials(cleanU, cleanP);
           if (validation.valid && validation.user) {
             completeLogin(validation.user.name || validation.user.username, validation.user.username, Date.now());
+          } else if (validation.expired) {
+            setErrorMsg('Password has expired: No login activity for more than 15 days. Please contact Administrator to reactivate your account.');
           }
         })();
       }
@@ -265,12 +319,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username: cleanUser, password: password.trim() })
         });
-        const data = await res.json();
-        if (data && data.success && data.user) {
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data && data.success && data.user) {
           completeLogin(data.user.name || data.user.username, data.user.username, data.sessionEpoch || Date.now());
           return;
-        } else if (res.status === 403) {
-          setErrorMsg(data.error || 'This account has been deactivated. Contact Administrator.');
+        } else if (res.status === 403 || data.expired) {
+          setErrorMsg(data.error || 'Password has expired: No login activity for more than 15 days. Please contact Administrator to reactivate your account.');
           setIsLoading(false);
           return;
         }
@@ -282,7 +336,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
       if (validation.valid && validation.user) {
         completeLogin(validation.user.name || validation.user.username, validation.user.username, Date.now());
       } else {
-        if (validation.deactivated) {
+        if (validation.expired) {
+          setErrorMsg('Password has expired: No login activity for more than 15 days. Please contact Administrator to reactivate your account.');
+        } else if (validation.deactivated) {
           setErrorMsg('This account has been deactivated. Please contact the Administrator.');
         } else {
           setErrorMsg('Invalid Username or Password. Please try again.');

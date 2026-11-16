@@ -2376,7 +2376,7 @@ app.post('/api/auth/verify', (req, res) => {
           success: false,
           expired: true,
           daysSinceLastLogin: days,
-          error: `Password has expired: No login activity for ${days !== null ? `${days} days (>15 days limit)` : 'more than 15 days'}. Please contact Administrator to reactivate your account.`
+          error: `Password has expired: No online activity for ${days !== null ? `${days} days (>15 days limit)` : 'more than 15 days'}. Please contact Administrator to reactivate your account.`
         });
       }
 
