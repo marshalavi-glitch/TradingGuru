@@ -151,27 +151,13 @@ async function startLocaltunnel() {
 }
 
 async function startCloudflareTunnel() {
-  // Check if quicktunnel API is already running and healthy
-  try {
-    const res = await fetch('http://127.0.0.1:20241/quicktunnel', { signal: AbortSignal.timeout(1500) });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.hostname) {
-        cloudflareUrl = `https://${data.hostname}`;
-        console.log(`[Cloudflare Engine] Reusing active quicktunnel: ${cloudflareUrl}`);
-        await publishToHuggingFace();
-        return;
-      }
-    }
-  } catch (e) {}
-
   killExistingTunnelProcesses();
   cloudflareUrl = null;
 
   const binary = fs.existsSync(cloudflaredPath) ? cloudflaredPath : 'cloudflared';
   console.log(`[Cloudflare Engine] Spawning binary: ${binary}`);
 
-  const child = spawn(binary, ['tunnel', '--url', 'http://localhost:3002']);
+  const child = spawn(binary, ['tunnel', '--url', 'http://127.0.0.1:3002', '--metrics', '127.0.0.1:20245', '--no-autoupdate']);
   let buffer = '';
 
   const handleData = (data) => {
@@ -205,7 +191,7 @@ async function startCloudflareTunnel() {
       return;
     }
     try {
-      const res = await fetch('http://127.0.0.1:20241/quicktunnel', { signal: AbortSignal.timeout(1000) });
+      const res = await fetch('http://127.0.0.1:20245/quicktunnel', { signal: AbortSignal.timeout(1000) });
       if (res.ok) {
         const data = await res.json();
         if (data && data.hostname) {

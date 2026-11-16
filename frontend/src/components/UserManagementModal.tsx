@@ -376,9 +376,16 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
   const handleResetUserPassword = async (user: UserAccount) => {
     if (!isAdmin) return;
     const cleanUser = user.username.trim().toLowerCase();
-    const promptMsg = `Change password for @${cleanUser}:\nEnter new password (valid for next 15 days):`;
-    const newPass = window.prompt(promptMsg, user.password || '');
-    if (!newPass || !newPass.trim()) return;
+    const currentPass = user.password || `${cleanUser}@2026`;
+
+    // Pre-fill prompt with same password so Admin can simply press Enter/OK to keep existing password
+    const promptMsg = `Change / Refresh Password for @${cleanUser}:\n\n• Current Password: "${currentPass}"\n\nPress OK to KEEP THE SAME PASSWORD and refresh access for next 15 days, or enter a new password:`;
+    const entered = window.prompt(promptMsg, currentPass);
+    if (entered === null) return; // Admin cancelled
+
+    // Keep same password if unchanged or left empty
+    const finalPass = (entered && entered.trim()) ? entered.trim() : currentPass;
+    const isSamePassword = (finalPass === currentPass);
 
     setIsSaving(true);
     setStatusMsg(null);
@@ -392,11 +399,14 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
             'Content-Type': 'application/json',
             'x-auth-user': currentUser || ''
           },
-          body: JSON.stringify({ newPassword: newPass.trim() })
+          body: JSON.stringify({ newPassword: finalPass })
         });
         const data = await res.json().catch(() => ({}));
         if (res.ok && data.success) {
-          setStatusMsg({ text: `Password updated successfully for @${cleanUser}. Active for next 15 days!` });
+          const successMsg = isSamePassword
+            ? `✅ Access renewed for @${cleanUser}. Password remains "${currentPass}" (no change needed). Valid for next 15 days!`
+            : `✅ Password updated for @${cleanUser} to "${finalPass}". Valid for next 15 days!`;
+          setStatusMsg({ text: successMsg });
           await loadUsers();
           setIsSaving(false);
           return;
@@ -413,11 +423,13 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
       const nowIso = new Date().toISOString();
       const existingIdx = list.findIndex(u => u.username.toLowerCase() === cleanUser);
       if (existingIdx >= 0) {
-        list[existingIdx].password = newPass.trim();
+        list[existingIdx].password = finalPass;
         list[existingIdx].lastLogin = nowIso;
+        list[existingIdx].lastOnline = nowIso;
+        list[existingIdx].lastSeen = nowIso;
         list[existingIdx].passwordUpdatedAt = nowIso;
       } else {
-        list.push({ ...user, password: newPass.trim(), lastLogin: nowIso, passwordUpdatedAt: nowIso });
+        list.push({ ...user, password: finalPass, lastLogin: nowIso, lastOnline: nowIso, lastSeen: nowIso, passwordUpdatedAt: nowIso });
       }
       localStorage.setItem(CUSTOM_ACCOUNTS_KEY, JSON.stringify(list));
 
@@ -426,7 +438,10 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
       logins[cleanUser] = nowIso;
       localStorage.setItem('trading_guru_user_last_logins', JSON.stringify(logins));
 
-      setStatusMsg({ text: `Password updated locally for @${cleanUser}. Active for next 15 days!` });
+      const successMsg = isSamePassword
+        ? `✅ Access renewed for @${cleanUser}. Password remains "${currentPass}". Valid for next 15 days!`
+        : `✅ Password updated for @${cleanUser} to "${finalPass}". Valid for next 15 days!`;
+      setStatusMsg({ text: successMsg });
       await loadUsers();
     } catch {}
     setIsSaving(false);

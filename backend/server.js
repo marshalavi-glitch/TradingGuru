@@ -2271,7 +2271,9 @@ app.post('/api/auth/users/:username/reset-password', (req, res) => {
     const nowIso = new Date().toISOString();
     match.password = freshPass;
     match.passwordUpdatedAt = nowIso;
-    match.lastLogin = nowIso; // Immediately clears expiration and grants fresh 15 days
+    match.lastLogin = nowIso;
+    match.lastOnline = nowIso;
+    match.lastSeen = nowIso; // Immediately clears expiration and grants fresh 15 days
     match.updatedAt = nowIso;
     saveUsersToDisk(users);
     console.log(`[Auth Engine] Password updated for "${targetUser}" by Admin. Active password: "${freshPass}".`);
