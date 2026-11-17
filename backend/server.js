@@ -1481,6 +1481,36 @@ app.get('/api/angelone/profile', async (req, res) => {
   }
 });
 
+// GET /api/angelone/positions
+app.get('/api/angelone/positions', async (req, res) => {
+  try {
+    const positions = await angelOneBridge.getPositions();
+    res.json(positions);
+  } catch (err) {
+    res.status(500).json({ status: false, message: err.message });
+  }
+});
+
+// GET /api/positions/live-quotes
+app.get('/api/positions/live-quotes', async (req, res) => {
+  try {
+    const symbolsParam = req.query.symbols;
+    const symbols = symbolsParam ? symbolsParam.split(',').map(s => s.trim()) : [];
+    const quotes = {};
+    for (const sym of symbols) {
+      if (sym) {
+        let ltp = await getRealtimeLtp(sym);
+        if (ltp && ltp > 0) {
+          quotes[sym] = ltp;
+        }
+      }
+    }
+    res.json({ success: true, quotes });
+  } catch (err) {
+    res.json({ success: false, quotes: {} });
+  }
+});
+
 // GET /api/angelone/candles
 app.get('/api/angelone/candles', async (req, res) => {
   try {
@@ -5217,6 +5247,24 @@ app.get('/api/orderflow-report/export-excel', requireAdminRole, async (req, res)
   }
 });
 
+
+// GET /api/algo-trade/trades - Return unified algo trades list
+app.get('/api/algo-trade/trades', (req, res) => {
+  try {
+    const historyFile = path.join(__dirname, 'data/algo_trades_history.json');
+    let trades = [];
+    if (fs.existsSync(historyFile)) {
+      try {
+        trades = JSON.parse(fs.readFileSync(historyFile, 'utf8')) || [];
+      } catch (e) {
+        trades = [];
+      }
+    }
+    res.json({ success: true, trades, count: trades.length });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
 
 // GET /api/algo-trade/history - Retrieve all persistent algo trades & positions from server disk
 app.get('/api/algo-trade/history', (req, res) => {

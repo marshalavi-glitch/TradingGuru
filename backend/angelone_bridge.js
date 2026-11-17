@@ -543,6 +543,21 @@ export class AngelOneBridge {
     });
   }
 
+  async getPositions() {
+    if (!this.config.jwtToken) {
+      await this.login();
+    }
+
+    return this.autoRecover(async () => {
+      const res = await fetch(`${this.baseUrl}/rest/secure/angelbroking/order/v1/getPosition`, {
+        method: 'GET',
+        headers: this.getHeaders()
+      });
+      const data = await this.parseResponse(res);
+      return data;
+    });
+  }
+
   async getLtp(exchange = 'NSE', tradingsymbol = '', symboltoken = '') {
     if (!symboltoken) {
       const mapped = ANGEL_SYMBOL_MAP[tradingsymbol.toUpperCase()];
