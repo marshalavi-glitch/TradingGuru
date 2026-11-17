@@ -257,13 +257,7 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
     }
   });
 
-  const [activeSubTab, setActiveSubTab] = useState<'positions' | 'angelone' | 'radar' | 'history' | 'logs'>(() => {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('subview') === 'angelone') return 'angelone';
-    } catch (e) {}
-    return 'positions';
-  });
+  const [activeSubTab, setActiveSubTab] = useState<'positions' | 'radar' | 'history' | 'logs'>('positions');
 
   // Wipe legacy trade caches
   useEffect(() => {
@@ -1366,23 +1360,6 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
     };
   }, [positions, history]);
 
-  const isStandaloneAngelOne = useMemo(() => {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      return params.get('subview') === 'angelone' && params.get('standalone') === 'true';
-    } catch {
-      return false;
-    }
-  }, []);
-
-  if (isStandaloneAngelOne) {
-    return (
-      <div style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column' }}>
-        <AngelOnePositionsContainer onSwitchToChart={onSwitchToChart} />
-      </div>
-    );
-  }
-
   return (
     <div style={{
       display: 'flex',
@@ -1708,7 +1685,6 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
       }}>
         {[
           { id: 'positions', label: `Active Positions (${positions.length})`, icon: Activity },
-          { id: 'angelone', label: 'Angel One Portfolio', icon: Wallet },
           { id: 'history', label: `Closed Trades / History (${history.length})`, icon: Clock },
           { id: 'radar', label: `Reversal Radar / Scanner (${radarItems.length})`, icon: Target },
           { id: 'logs', label: `Execution Audit Logs (${logs.length})`, icon: Bot }
@@ -1742,13 +1718,6 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
       </div>
 
       {/* 4. CONTENT SECTIONS */}
-
-      {/* 4A-1. ANGEL ONE POSITIONS VIEW */}
-      {activeSubTab === 'angelone' && (
-        <div style={{ flex: 1, minHeight: '600px', display: 'flex', flexDirection: 'column', borderRadius: '8px', overflow: 'hidden' }}>
-          <AngelOnePositionsContainer onSwitchToChart={onSwitchToChart} />
-        </div>
-      )}
 
       {/* 4A. ACTIVE POSITIONS VIEW */}
       {activeSubTab === 'positions' && (
