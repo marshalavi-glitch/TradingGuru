@@ -3,7 +3,7 @@ import {
   Bot, Play, Pause, ShieldAlert, TrendingUp, TrendingDown, RefreshCw, 
   Clock, Zap, CheckCircle2, AlertTriangle, ArrowUpRight, ArrowDownRight, 
   ExternalLink, XCircle, RotateCcw, Wallet, Target, Activity, Settings2,
-  DollarSign, PieChart, ShieldCheck, Flame, ListFilter, Download
+  DollarSign, PieChart, ShieldCheck, Flame, ListFilter, Download, Trash2
 } from 'lucide-react';
 import { tvStreamer, getBackendHttpUrl } from '../utils/tvStreamer';
 import { useTheme } from '../context/ThemeContext';
@@ -110,9 +110,9 @@ interface AlgoTradeContainerProps {
 }
 
 const TOTAL_CAPITAL = 1000000; // ₹10,00,000 (10 Lakhs)
-const STORAGE_POSITIONS_KEY = 'tradingguru_algo_positions_v1';
-const STORAGE_HISTORY_KEY = 'tradingguru_algo_history_v1';
-const STORAGE_LOGS_KEY = 'tradingguru_algo_logs_v1';
+const STORAGE_POSITIONS_KEY = 'tradingguru_algo_positions_v2';
+const STORAGE_HISTORY_KEY = 'tradingguru_algo_history_v2';
+const STORAGE_LOGS_KEY = 'tradingguru_algo_logs_v2';
 const STORAGE_CONFIG_KEY = 'tradingguru_algo_config_v1';
 
 const DEFAULT_UNIVERSE = [
@@ -258,6 +258,15 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
 
   const [activeSubTab, setActiveSubTab] = useState<'positions' | 'radar' | 'history' | 'logs'>('positions');
 
+  // Wipe legacy trade caches
+  useEffect(() => {
+    try {
+      localStorage.removeItem('tradingguru_algo_positions_v1');
+      localStorage.removeItem('tradingguru_algo_history_v1');
+      localStorage.removeItem('tradingguru_algo_logs_v1');
+    } catch (e) {}
+  }, []);
+
   // Positions, History & Logs State
   const [positions, setPositions] = useState<AlgoPosition[]>(() => {
     try {
@@ -353,17 +362,23 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
         const res = await fetch(`${backendUrl}/api/algo-trade/history`);
         if (!res.ok) return;
         const data = await res.json();
-        if (data && data.success && Array.isArray(data.history) && data.history.length > 0) {
-          setHistory(prev => {
-            const map = new Map();
-            data.history.forEach((h: AlgoPosition) => {
-              if (h && h.id && !isNov9AlgoTrade(h)) map.set(h.id, h);
-            });
-            prev.forEach((h: AlgoPosition) => {
-              if (h && h.id && !isNov9AlgoTrade(h)) map.set(h.id, h);
-            });
-            return Array.from(map.values());
-          });
+        if (data && data.success) {
+          if (Array.isArray(data.history)) {
+            if (data.history.length === 0) {
+              setHistory([]);
+              localStorage.setItem(STORAGE_HISTORY_KEY, JSON.stringify([]));
+            } else {
+              setHistory(data.history.filter((h: AlgoPosition) => h && h.id && !isNov9AlgoTrade(h)));
+            }
+          }
+          if (Array.isArray(data.positions)) {
+            if (data.positions.length === 0) {
+              setPositions([]);
+              localStorage.setItem(STORAGE_POSITIONS_KEY, JSON.stringify([]));
+            } else {
+              setPositions(data.positions.filter((p: AlgoPosition) => p && p.id && !isNov9AlgoTrade(p)));
+            }
+          }
         }
       } catch (err) {
         console.warn('Could not load algo history from server:', err);
@@ -1201,6 +1216,37 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
     addLog('EXIT', `🚨 All ${closed.length} open positions squared off (${reason}).`);
   };
 
+  const [isClearing, setIsClearing] = useState<boolean>(false);
+
+  // Clear all trades & positions
+  const handleClearAllTrades = async () => {
+    if (!window.confirm('Are you sure you want to clean and clear ALL trades from the Algo Trade tab? This will wipe all open positions, closed trade history, and reset the ledger.')) {
+      return;
+    }
+    setIsClearing(true);
+    try {
+      setPositions([]);
+      setHistory([]);
+      localStorage.setItem(STORAGE_POSITIONS_KEY, JSON.stringify([]));
+      localStorage.setItem(STORAGE_HISTORY_KEY, JSON.stringify([]));
+      localStorage.removeItem('tradingguru_algo_positions_v1');
+      localStorage.removeItem('tradingguru_algo_history_v1');
+      localStorage.removeItem('tradingguru_algo_logs_v1');
+
+      const backendUrl = await getBackendHttpUrl();
+      await fetch(`${backendUrl}/api/algo-trade/clear`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      }).catch(() => {});
+
+      addLog('INFO', '🧹 All trades and positions cleared from Algo Trade tab.');
+    } catch (e) {
+      console.error('Failed to clear algo trades:', e);
+    } finally {
+      setIsClearing(false);
+    }
+  };
+
   // Download Multi-Sheet Excel Report (.xlsx)
   const handleDownloadExcel = async () => {
     if (isExporting) return;
@@ -1541,6 +1587,29 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
               <span>SQUARE OFF ALL ({positions.length})</span>
             </button>
           )}
+
+          {/* Clear All Trades Button */}
+          <button
+            onClick={handleClearAllTrades}
+            disabled={isClearing}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              padding: '6px 10px',
+              borderRadius: '6px',
+              border: '1px solid rgba(239, 68, 68, 0.4)',
+              background: 'rgba(239, 68, 68, 0.12)',
+              color: '#ef4444',
+              fontSize: '11px',
+              fontWeight: '700',
+              cursor: isClearing ? 'wait' : 'pointer'
+            }}
+            title="Clean and clear all open positions and closed trades from Algo Trade tab"
+          >
+            <Trash2 size={13} className={isClearing ? 'animate-spin' : ''} />
+            <span>{isClearing ? 'Clearing...' : 'Clear Trades'}</span>
+          </button>
 
           {/* Download Excel Report */}
           <button

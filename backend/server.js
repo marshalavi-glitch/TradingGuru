@@ -5252,18 +5252,23 @@ app.get('/api/algo-trade/history', (req, res) => {
 // POST /api/algo-trade/sync - Synchronize algo trades from frontend to server disk
 app.post('/api/algo-trade/sync', (req, res) => {
   try {
-    const { history = [], positions = [] } = req.body || {};
+    const { history = [], positions = [], overwrite = false } = req.body || {};
     const historyFile = path.join(__dirname, 'data/algo_trades_history.json');
-    let existingHistory = [];
-    if (fs.existsSync(historyFile)) {
-      try {
-        existingHistory = JSON.parse(fs.readFileSync(historyFile, 'utf8')) || [];
-      } catch (e) {}
+    let mergedHistory = [];
+    if (overwrite) {
+      mergedHistory = Array.isArray(history) ? history : [];
+    } else {
+      let existingHistory = [];
+      if (fs.existsSync(historyFile)) {
+        try {
+          existingHistory = JSON.parse(fs.readFileSync(historyFile, 'utf8')) || [];
+        } catch (e) {}
+      }
+      const map = new Map();
+      existingHistory.forEach(item => { if (item && item.id) map.set(item.id, item); });
+      history.forEach(item => { if (item && item.id) map.set(item.id, item); });
+      mergedHistory = Array.from(map.values());
     }
-    const map = new Map();
-    existingHistory.forEach(item => { if (item && item.id) map.set(item.id, item); });
-    history.forEach(item => { if (item && item.id) map.set(item.id, item); });
-    const mergedHistory = Array.from(map.values());
     fs.writeFileSync(historyFile, JSON.stringify(mergedHistory, null, 2), 'utf8');
 
     const positionsFile = path.join(__dirname, 'data/algo_positions.json');
@@ -5274,6 +5279,21 @@ app.post('/api/algo-trade/sync', (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
+
+// POST /api/algo-trade/clear & /api/algo-trade/trades/clear - Clear all persistent algo trades & positions
+const handleClearAlgoTrades = (req, res) => {
+  try {
+    const historyFile = path.join(__dirname, 'data/algo_trades_history.json');
+    const positionsFile = path.join(__dirname, 'data/algo_positions.json');
+    fs.writeFileSync(historyFile, JSON.stringify([], null, 2), 'utf8');
+    fs.writeFileSync(positionsFile, JSON.stringify([], null, 2), 'utf8');
+    res.json({ success: true, count: 0, message: 'All algo trades and positions cleared' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+app.post('/api/algo-trade/clear', handleClearAlgoTrades);
+app.post('/api/algo-trade/trades/clear', handleClearAlgoTrades);
 
 // POST /api/algo-trade/export-excel - Download multi-sheet Excel report (.xlsx) for Algo Trades
 app.post('/api/algo-trade/export-excel', (req, res) => {
