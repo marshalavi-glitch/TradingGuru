@@ -61,10 +61,15 @@ npm run build
 
 # 6. Configure Nginx Web Server & WebSocket Proxy
 echo "🌐 [6/7] Configuring Nginx Web Server & Real-time WebSockets..."
+
+# Stop and disable Apache if pre-installed on VPS (frees up port 80)
+systemctl stop apache2 2>/dev/null || true
+systemctl disable apache2 2>/dev/null || true
+fuser -k 80/tcp 2>/dev/null || true
+
 cat << 'EOF' > /etc/nginx/sites-available/tradingguru
 server {
     listen 80 default_server;
-    listen [::]:80 default_server;
     server_name _;
 
     root /var/www/tradingguru/frontend/dist;
@@ -115,6 +120,8 @@ EOF
 
 rm -f /etc/nginx/sites-enabled/default
 ln -sf /etc/nginx/sites-available/tradingguru /etc/nginx/sites-enabled/tradingguru
+systemctl unmask nginx 2>/dev/null || true
+systemctl enable nginx 2>/dev/null || true
 nginx -t
 systemctl restart nginx
 
