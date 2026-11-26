@@ -33,7 +33,7 @@ import { SrBreakoutContainer } from './components/SrBreakoutContainer';
 import { TestContainer } from './components/TestContainer';
 import { Test2Container } from './components/Test2Container';
 import { Mp3DayPatternContainer } from './components/Mp3DayPatternContainer';
-import { LoginScreen, getStoredAuthUser, clearStoredAuthUser, AUTH_EPOCH_KEY, CURRENT_AUTH_EPOCH } from './components/LoginScreen';
+import { LoginScreen, getStoredAuthUser, clearStoredAuthUser, isUserAdmin, AUTH_EPOCH_KEY, CURRENT_AUTH_EPOCH } from './components/LoginScreen';
 import { UserManagementModal } from './components/UserManagementModal';
 import { HomeContainer } from './components/HomeContainer';
 import { AlgoTradeContainer } from './components/AlgoTradeContainer';
@@ -648,12 +648,15 @@ function App() {
     setRefreshKey((prev) => prev + 1);
   };
 
+  const isAdmin = useMemo(() => isUserAdmin(authUser), [authUser]);
+
   const matrixSeriesData = useMemo(() => {
+    if (!isAdmin) return null;
     return calculateMatrixSeriesData(candles, timeframe, matrixHistory);
-  }, [candles, timeframe, matrixHistory]);
+  }, [isAdmin, candles, timeframe, matrixHistory]);
 
   // Global Real-time Candlestick Chart Level Alerts Engine & Calling Bell Synthesizer
-  // Active 24/7 across all dashboard tabs
+  // Active 24/7 across all dashboard tabs for Admin users only
   const {
     activeAlert: levelAlert,
     alertsMuted: levelAlertsMuted,
@@ -664,7 +667,7 @@ function App() {
     playCallingBellSound: triggerCallingBell
   } = useLevelAlerts({
     candles,
-    matrixSeriesData,
+    matrixSeriesData: isAdmin ? matrixSeriesData : null,
     symbol,
     timeframe
   });
@@ -1494,6 +1497,7 @@ function App() {
               levelAlertsMuted={levelAlertsMuted}
               onToggleAlertsMuted={() => setLevelAlertsMuted(!levelAlertsMuted)}
               levelAlertsFiredCount={levelAlertsFiredCount}
+              authUser={authUser}
             />
           </TabErrorBoundary>
         ) : (
@@ -1512,6 +1516,7 @@ function App() {
                 levelAlertsMuted={levelAlertsMuted}
                 onToggleAlertsMuted={() => setLevelAlertsMuted(!levelAlertsMuted)}
                 levelAlertsFiredCount={levelAlertsFiredCount}
+                authUser={authUser}
               />
             </TabErrorBoundary>
           </div>

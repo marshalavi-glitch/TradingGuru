@@ -9,6 +9,7 @@ import type { LevelAlert } from './RealtimeLevelAlertPopup';
 import { Bell, RotateCcw, Zap, AlertCircle, Wifi, WifiOff, Plus, Minus, Maximize2, Minimize2, Search, X, Loader2 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { isWithinMarketHours } from '../utils/marketHours';
+import { isUserAdmin, getStoredAuthUser } from './LoginScreen';
 
 interface ChartContainerProps {
   candles: Candle[];
@@ -73,6 +74,9 @@ interface ChartContainerProps {
   onToggleMaximize?: () => void;
   onSymbolChange?: (newSymbol: string) => void;
   onTimeframeChange?: (newTimeframe: string) => void;
+
+  // Auth User context for restricting institutional orderflow levels to admin only
+  authUser?: string | null;
 }
 
 // Indian Standard Time (IST) is UTC + 5:30 (19,800 seconds).
@@ -127,9 +131,13 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
   onSelect,
   onToggleMaximize,
   onSymbolChange,
-  onTimeframeChange
+  onTimeframeChange,
+  authUser
 }) => {
   const { isDark } = useTheme();
+  const isAdmin = useMemo(() => {
+    return isUserAdmin(authUser || (typeof window !== 'undefined' ? getStoredAuthUser() : null));
+  }, [authUser]);
   const [candleStyle, setCandleStyle] = useState<'japanese' | 'heikin-ashi'>('japanese');
   const [showAdvPanel, setShowAdvPanel] = useState<boolean>(false);
   const [showMobileChartTools, setShowMobileChartTools] = useState<boolean>(false);
@@ -212,9 +220,9 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
     currentSetupRef.current = setupKey;
   }, [setupKey, isGloballyManaged]);
 
-  // Real-time touch/cross detection against matrix trading levels (local fallback)
+  // Real-time touch/cross detection against matrix trading levels (local fallback - Admin Only)
   useEffect(() => {
-    if (isGloballyManaged || alertsMuted || !candles || candles.length === 0 || !matrixSeriesData) return;
+    if (!isAdmin || isGloballyManaged || alertsMuted || !candles || candles.length === 0 || !matrixSeriesData) return;
 
     const currentCandle = candles[candles.length - 1];
     const currentPrice = currentCandle.close;
@@ -354,8 +362,10 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
     return symbol.replace('NSE:', '').replace('NFO:', '').replace('BSE:', '').replace('MCX:', '');
   }, [symbol]);
 
-  // Orderflow Levels (Marshall Matrix Engine)
+  // Orderflow Levels (Marshall Matrix Engine) - Restricted strictly to Admin
   const activeOrderflowLevels = useMemo(() => {
+    if (!isAdmin) return [];
+
     const currentPrice = (candles && candles.length > 0) ? candles[candles.length - 1].close : 0;
     const isMatrixCompatible = matrixSeriesData && matrixSeriesData.level1 && matrixSeriesData.level1.length > 0 &&
       currentPrice > 0 &&
@@ -397,7 +407,7 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
       { key: 's5', price: s5, title: 'Target', color: '#f23645', labelColor: '#f23645', lineStyle: 'solid' as const, lineWidth: 1.5, hasExtension: false },
       { key: 's6', price: s6, title: 'Target', color: '#f23645', labelColor: '#f23645', lineStyle: 'solid' as const, lineWidth: 1.5, hasExtension: true, extensionColor: '#f23645' },
     ];
-  }, [matrixSeriesData, candles, timeframe, isDark]);
+  }, [isAdmin, matrixSeriesData, candles, timeframe, isDark]);
 
   const activeOrderflowLevelsRef = useRef(activeOrderflowLevels);
   activeOrderflowLevelsRef.current = activeOrderflowLevels;
@@ -668,7 +678,7 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
     });
     vwapSeriesRef.current = vwapSeries;
 
-    // Add Matrix Step Line Series with TradingView intraday level labels
+    // Add Matrix Step Line Series with TradingView intraday level labels (Admin Only)
     const colors = {
       target: '#ef4444',    // Red
       breakout: '#f97316',  // Orange
@@ -677,7 +687,7 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
       buyRev: '#10b981'     // Green
     };
 
-    const matrixConfigs = [
+    const matrixConfigs = isAdmin ? [
       { color: colors.target,   title: 'Target' },
       { color: colors.target,   title: 'Target' },
       { color: colors.breakout, title: 'Breakout' },
@@ -688,7 +698,7 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
       { color: colors.breakout, title: 'Break Down' },
       { color: colors.target,   title: 'Target' },
       { color: colors.target,   title: 'Target' }
-    ];
+    ] : [];
 
     const matrixSeriesList = matrixConfigs.map((cfg) => {
       return chart.addLineSeries({
@@ -1070,10 +1080,15 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
         }
       }
 
-      // Set Matrix series data with strict deduplication & ascending time order
-      if (matrixSeriesRef.current.length === 10 && matrixSeriesData) {
-        try {
-          const shiftSeries = (seriesArr: any[]) => {
+      // Set Matrix series data with strict deduplication & ascending time order (Admin Only)
+      if (matrixSeriesRef.current.length === 10) {
+        if (!isAdmin || !matrixSeriesData) {
+          matrixSeriesRef.current.forEach(s => {
+            try { s?.setData([]); } catch {}
+          });
+        } else {
+          try {
+            const shiftSeries = (seriesArr: any[]) => {
             if (!Array.isArray(seriesArr)) return [];
             const seen = new Set<number>();
             const valid = [];
@@ -1120,6 +1135,7 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
           console.warn('[Chart] Matrix series update error:', matrixErr);
         }
       }
+    }
       
       // Viewport visible range logic (TradingView standard default view)
       const currentKey = `${symbol}-${timeframe}-${sessionPeriod || 'daily'}`;
@@ -2241,66 +2257,68 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
           })()}
         </div>
 
-        {/* SVG Orderflow Levels Overlay matching TradingView media_1791133477061.png */}
-        <svg
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            pointerEvents: 'none',
-            zIndex: 10
-          }}
-        >
-          {orderflowLines.lines.map((lvl) => {
-            const isLabelLess = !lvl.title;
-            const solidEndX = isLabelLess ? orderflowLines.rightX : orderflowLines.labelX;
-            return (
-              <g key={`ofl-${lvl.key}`}>
-                {/* Projected Solid Level Line */}
-                <line
-                  x1={orderflowLines.startX}
-                  y1={lvl.y}
-                  x2={solidEndX}
-                  y2={lvl.y}
-                  stroke={lvl.color}
-                  strokeWidth={lvl.lineWidth}
-                  strokeDasharray={lvl.lineStyle === 'dashed' ? '5,4' : 'none'}
-                  opacity={0.92}
-                />
-                {/* Right-aligned or End Level Label */}
-                {lvl.title && (
-                  <text
-                    x={orderflowLines.labelX + 6}
-                    y={lvl.y + 3.5}
-                    textAnchor="start"
-                    fill={lvl.labelColor}
-                    fontSize="11"
-                    fontWeight="700"
-                    fontFamily="'Outfit', -apple-system, BlinkMacSystemFont, sans-serif"
-                    style={{ letterSpacing: '0.2px' }}
-                  >
-                    {lvl.title} • {lvl.price.toFixed(1)}
-                  </text>
-                )}
-                {/* Dashed Continuation Extension to Right Price Scale */}
-                {lvl.hasExtension && (
+        {/* SVG Orderflow Levels Overlay matching TradingView media_1791133477061.png (Admin Only) */}
+        {isAdmin && orderflowLines.lines.length > 0 && (
+          <svg
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              pointerEvents: 'none',
+              zIndex: 10
+            }}
+          >
+            {orderflowLines.lines.map((lvl) => {
+              const isLabelLess = !lvl.title;
+              const solidEndX = isLabelLess ? orderflowLines.rightX : orderflowLines.labelX;
+              return (
+                <g key={`ofl-${lvl.key}`}>
+                  {/* Projected Solid Level Line */}
                   <line
-                    x1={orderflowLines.labelX + 125}
+                    x1={orderflowLines.startX}
                     y1={lvl.y}
-                    x2={orderflowLines.rightX}
+                    x2={solidEndX}
                     y2={lvl.y}
-                    stroke={lvl.extensionColor || lvl.color}
-                    strokeWidth={1.2}
-                    strokeDasharray="5,4"
-                    opacity={0.85}
+                    stroke={lvl.color}
+                    strokeWidth={lvl.lineWidth}
+                    strokeDasharray={lvl.lineStyle === 'dashed' ? '5,4' : 'none'}
+                    opacity={0.92}
                   />
-                )}
-              </g>
-            );
-          })}
-        </svg>
+                  {/* Right-aligned or End Level Label */}
+                  {lvl.title && (
+                    <text
+                      x={orderflowLines.labelX + 6}
+                      y={lvl.y + 3.5}
+                      textAnchor="start"
+                      fill={lvl.labelColor}
+                      fontSize="11"
+                      fontWeight="700"
+                      fontFamily="'Outfit', -apple-system, BlinkMacSystemFont, sans-serif"
+                      style={{ letterSpacing: '0.2px' }}
+                    >
+                      {lvl.title} • {lvl.price.toFixed(1)}
+                    </text>
+                  )}
+                  {/* Dashed Continuation Extension to Right Price Scale */}
+                  {lvl.hasExtension && (
+                    <line
+                      x1={orderflowLines.labelX + 125}
+                      y1={lvl.y}
+                      x2={orderflowLines.rightX}
+                      y2={lvl.y}
+                      stroke={lvl.extensionColor || lvl.color}
+                      strokeWidth={1.2}
+                      strokeDasharray="5,4"
+                      opacity={0.85}
+                    />
+                  )}
+                </g>
+              );
+            })}
+          </svg>
+        )}
 
         {/* Center Chart Background Watermark matching TradingView */}
         <div
@@ -2336,24 +2354,26 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
           </div>
         </div>
 
-        {/* Bottom Right TradingView-style Indicator Badge */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '36px',
-            right: '75px',
-            pointerEvents: 'none',
-            userSelect: 'none',
-            zIndex: 3,
-            fontWeight: '800',
-            fontSize: '11.5px',
-            letterSpacing: '1px',
-            color: '#ea580c',
-            textTransform: 'uppercase'
-          }}
-        >
-          ORDERFLOW LEVELS - MARSHALL
-        </div>
+        {/* Bottom Right TradingView-style Indicator Badge (Admin Only) */}
+        {isAdmin && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '36px',
+              right: '75px',
+              pointerEvents: 'none',
+              userSelect: 'none',
+              zIndex: 3,
+              fontWeight: '800',
+              fontSize: '11.5px',
+              letterSpacing: '1px',
+              color: '#ea580c',
+              textTransform: 'uppercase'
+            }}
+          >
+            ORDERFLOW LEVELS - MARSHALL
+          </div>
+        )}
 
         {/* Interactive Floating Y-Axis Zoom & Scale Handle on Price Scale */}
         <div

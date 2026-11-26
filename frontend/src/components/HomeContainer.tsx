@@ -8,6 +8,7 @@ import { calculateMatrixSeriesData, type MatrixSeriesData } from '../utils/matri
 import { filterMarketHoursCandles } from '../utils/marketHours';
 import { useTheme } from '../context/ThemeContext';
 import { Loader2 } from 'lucide-react';
+import { isUserAdmin, getStoredAuthUser } from './LoginScreen';
 
 interface HomeContainerProps {
   currentSymbol?: string;
@@ -19,6 +20,7 @@ interface HomeContainerProps {
   levelAlertsMuted?: boolean;
   onToggleAlertsMuted?: () => void;
   levelAlertsFiredCount?: number;
+  authUser?: string | null;
 }
 
 export const HomeContainer: React.FC<HomeContainerProps> = ({
@@ -30,7 +32,8 @@ export const HomeContainer: React.FC<HomeContainerProps> = ({
   onResetSetupAlerts,
   levelAlertsMuted,
   onToggleAlertsMuted,
-  levelAlertsFiredCount
+  levelAlertsFiredCount,
+  authUser
 }) => {
   const { isDark } = useTheme();
   
@@ -151,7 +154,11 @@ export const HomeContainer: React.FC<HomeContainerProps> = ({
     };
   }, [leftSymbol, leftTimeframe]);
 
-  const leftMatrixData = calculateMatrixSeriesData(leftCandles, leftTimeframe, leftMatrixHistory);
+  const isAdmin = useMemo(() => {
+    return isUserAdmin(authUser || (typeof window !== 'undefined' ? getStoredAuthUser() : null));
+  }, [authUser]);
+
+  const leftMatrixData = isAdmin ? calculateMatrixSeriesData(leftCandles, leftTimeframe, leftMatrixHistory) : null;
 
   return (
     <div style={{
@@ -258,6 +265,7 @@ export const HomeContainer: React.FC<HomeContainerProps> = ({
               alertsMuted={levelAlertsMuted}
               onToggleAlertsMuted={onToggleAlertsMuted}
               firedAlertsCount={levelAlertsFiredCount}
+              authUser={authUser}
             />
           )}
         </div>

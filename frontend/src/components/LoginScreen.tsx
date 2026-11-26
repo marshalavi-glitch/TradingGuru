@@ -105,15 +105,47 @@ export function unmarkDeletedUser(username: string): void {
   } catch {}
 }
 
+export function getAccountsList(): UserAccount[] {
+  const deleted = getDeletedUsers();
+  let combined = DEFAULT_ACCOUNTS.filter(a => !deleted.includes(a.username.toLowerCase()));
+  try {
+    const custom = localStorage.getItem(CUSTOM_ACCOUNTS_KEY);
+    if (custom) {
+      const parsed: UserAccount[] = JSON.parse(custom);
+      parsed.forEach(p => {
+        if (!deleted.includes(p.username.toLowerCase()) && !combined.some(c => c.username.toLowerCase() === p.username.toLowerCase())) {
+          combined.push(p);
+        }
+      });
+    }
+  } catch {}
+  return combined;
+}
+
+export function isUserAdmin(usernameOrName?: string | null): boolean {
+  if (!usernameOrName) return false;
+  const clean = usernameOrName.trim().toLowerCase();
+  if (clean === 'admin') return true;
+  try {
+    const list = getAccountsList();
+    const match = list.find(a => 
+      (a.username.toLowerCase() === clean || a.name.toLowerCase() === clean)
+    );
+    if (match && match.role === 'admin') return true;
+  } catch {}
+  return false;
+}
+
 export function getStoredAuthUser(): string | null {
   try {
-    const user = localStorage.getItem(AUTH_STORAGE_KEY) || sessionStorage.getItem(AUTH_STORAGE_KEY) || 'Admin';
+    const user = localStorage.getItem(AUTH_STORAGE_KEY) || sessionStorage.getItem(AUTH_STORAGE_KEY);
+    if (!user) return null;
     if (!localStorage.getItem(AUTH_EPOCH_KEY) && !sessionStorage.getItem(AUTH_EPOCH_KEY)) {
       localStorage.setItem(AUTH_EPOCH_KEY, String(CURRENT_AUTH_EPOCH));
     }
     return user;
   } catch {
-    return 'Admin';
+    return null;
   }
 }
 
@@ -138,23 +170,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [allAccounts, setAllAccounts] = useState<UserAccount[]>([]);
-
-  const getAccountsList = (): UserAccount[] => {
-    const deleted = getDeletedUsers();
-    let combined = DEFAULT_ACCOUNTS.filter(a => !deleted.includes(a.username.toLowerCase()));
-    try {
-      const custom = localStorage.getItem(CUSTOM_ACCOUNTS_KEY);
-      if (custom) {
-        const parsed: UserAccount[] = JSON.parse(custom);
-        parsed.forEach(p => {
-          if (!deleted.includes(p.username.toLowerCase()) && !combined.some(c => c.username.toLowerCase() === p.username.toLowerCase())) {
-            combined.push(p);
-          }
-        });
-      }
-    } catch {}
-    return combined;
-  };
 
   useEffect(() => {
     // Purge trader and guest permanently from any stored local storage cache

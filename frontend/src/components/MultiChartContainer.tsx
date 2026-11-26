@@ -5,6 +5,7 @@ import type { Candle } from '../utils/profileCalculator';
 import { calculateMatrixSeriesData, type MatrixSeriesData } from '../utils/matrixCalculator';
 import { filterMarketHoursCandles, isWithinMarketHours } from '../utils/marketHours';
 import { useTheme } from '../context/ThemeContext';
+import { isUserAdmin, getStoredAuthUser } from './LoginScreen';
 import {
   ALL_CHART_LAYOUTS,
   MultiChartLayoutId,
@@ -51,6 +52,7 @@ export interface MultiChartContainerProps {
   levelAlertsMuted?: boolean;
   onToggleAlertsMuted?: () => void;
   levelAlertsFiredCount?: number;
+  authUser?: string | null;
 }
 
 // Sub-component for an individual Chart Slot Pane
@@ -70,6 +72,7 @@ const ChartSlotPane: React.FC<{
   levelAlertsMuted?: boolean;
   onToggleAlertsMuted?: () => void;
   levelAlertsFiredCount?: number;
+  authUser?: string | null;
 }> = ({
   slot,
   index,
@@ -85,7 +88,8 @@ const ChartSlotPane: React.FC<{
   onResetSetupAlerts,
   levelAlertsMuted,
   onToggleAlertsMuted,
-  levelAlertsFiredCount
+  levelAlertsFiredCount,
+  authUser
 }) => {
   const { symbol, timeframe } = slot;
   const [candles, setCandles] = useState<Candle[]>([]);
@@ -238,10 +242,14 @@ const ChartSlotPane: React.FC<{
     };
   }, [symbol, timeframe]);
 
+  const isAdmin = useMemo(() => {
+    return isUserAdmin(authUser || (typeof window !== 'undefined' ? getStoredAuthUser() : null));
+  }, [authUser]);
+
   const matrixSeriesData: MatrixSeriesData | null = useMemo(() => {
-    if (!candles || candles.length === 0) return null;
+    if (!isAdmin || !candles || candles.length === 0) return null;
     return calculateMatrixSeriesData(candles, timeframe, matrixHistory);
-  }, [candles, timeframe, matrixHistory]);
+  }, [isAdmin, candles, timeframe, matrixHistory]);
 
   return (
     <div
@@ -298,6 +306,7 @@ const ChartSlotPane: React.FC<{
           alertsMuted={levelAlertsMuted}
           onToggleAlertsMuted={onToggleAlertsMuted}
           firedAlertsCount={levelAlertsFiredCount}
+          authUser={authUser}
         />
       )}
     </div>
@@ -316,7 +325,8 @@ export const MultiChartContainer: React.FC<MultiChartContainerProps> = ({
   onResetSetupAlerts,
   levelAlertsMuted,
   onToggleAlertsMuted,
-  levelAlertsFiredCount
+  levelAlertsFiredCount,
+  authUser
 }) => {
   const { isDark } = useTheme();
 
@@ -613,6 +623,7 @@ export const MultiChartContainer: React.FC<MultiChartContainerProps> = ({
                 levelAlertsMuted={levelAlertsMuted}
                 onToggleAlertsMuted={onToggleAlertsMuted}
                 levelAlertsFiredCount={levelAlertsFiredCount}
+                authUser={authUser}
               />
             </div>
           );

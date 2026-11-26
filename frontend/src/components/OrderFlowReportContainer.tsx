@@ -6,7 +6,7 @@ import {
   BarChart2, Activity, Layers, HelpCircle
 } from 'lucide-react';
 import { getBackendHttpUrl } from '../utils/tvStreamer';
-import { getStoredAuthUser } from './LoginScreen';
+import { getStoredAuthUser, isUserAdmin } from './LoginScreen';
 import { useTheme } from '../context/ThemeContext';
 
 export interface OrderFlowStockItem {
@@ -67,15 +67,17 @@ export interface OrderFlowStockItem {
 interface OrderFlowReportContainerProps {
   onSymbolSelect?: (symbol: string) => void;
   onSwitchToChart?: () => void;
+  authUser?: string | null;
 }
 
 export const OrderFlowReportContainer: React.FC<OrderFlowReportContainerProps> = ({
   onSymbolSelect,
-  onSwitchToChart
+  onSwitchToChart,
+  authUser
 }) => {
   const { isDark } = useTheme();
-  const currentAuthUser = 'Admin';
-  const isAdmin = true;
+  const currentAuthUser = authUser || (typeof window !== 'undefined' ? getStoredAuthUser() : null) || '';
+  const isAdmin = isUserAdmin(currentAuthUser);
 
   // State
   const [items, setItems] = useState<OrderFlowStockItem[]>([]);
