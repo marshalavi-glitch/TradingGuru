@@ -87,11 +87,12 @@ class TVWebSocketStreamer {
     try {
       const parsed = new URL(httpUrl);
       const wsProto = (parsed.protocol === 'https:' || parsed.protocol === 'wss:') ? 'wss:' : 'ws:';
-      return `${wsProto}//${parsed.host}`;
+      const wsPath = (parsed.pathname && parsed.pathname !== '/') ? parsed.pathname : '/ws';
+      return `${wsProto}//${parsed.host}${wsPath}`;
     } catch (e) {
       let clean = httpUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
       const protocol = (typeof window !== 'undefined' && window.location.protocol === 'https:') ? 'wss:' : 'ws:';
-      return `${protocol}//${clean}`;
+      return `${protocol}//${clean}/ws`;
     }
   }
 

@@ -66,13 +66,20 @@ export async function pingHealth(url: string, timeoutMs = 3500): Promise<boolean
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), timeoutMs);
 
-    const res = await fetch(`${clean}/health?_t=${Date.now()}`, {
+    let res = await fetch(`${clean}/api/health?_t=${Date.now()}`, {
       signal: ctrl.signal,
       headers: { 'bypass-tunnel-reminder': 'true' }
-    });
+    }).catch(() => null);
+
+    if (!res || !res.ok) {
+      res = await fetch(`${clean}/health?_t=${Date.now()}`, {
+        signal: ctrl.signal,
+        headers: { 'bypass-tunnel-reminder': 'true' }
+      }).catch(() => null);
+    }
     clearTimeout(timer);
 
-    if (res.ok) {
+    if (res && res.ok) {
       const data = await res.json().catch(() => null);
       if (data && (data.status === 'OK' || data.project)) {
         return true;
@@ -108,6 +115,19 @@ export async function resolveBackendUrl(forceRefresh = false): Promise<string> {
 
   pendingResolvePromise = (async () => {
     try {
+      // 0. Priority: If frontend is loaded directly on a custom VPS or domain (not on localhost and not on HF space)
+      if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && !window.location.hostname.includes('hf.space')) {
+        const selfOrigin = window.location.origin;
+        const isSelfAlive = await pingHealth(selfOrigin, 1200);
+        if (isSelfAlive) {
+          cachedBackendUrl = selfOrigin;
+          lastFetchTime = now;
+          try { sessionStorage.setItem('TRADING_GURU_RESOLVED_BACKEND', selfOrigin); } catch (e) {}
+          console.log(`✅ [Config] Connected directly to self-hosted VPS backend: ${selfOrigin}`);
+          return cachedBackendUrl;
+        }
+      }
+
       // 1. Check if user explicitly set a custom backend URL in localStorage
       if (typeof window !== 'undefined') {
         const saved = localStorage.getItem('TRADING_GURU_BACKEND_URL');
@@ -264,9 +284,14 @@ if (typeof window !== 'undefined') {
 
 export function getBackendHttpUrlSync(): string {
   if (cachedBackendUrl) return cachedBackendUrl;
-  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-    const localPort = (window.location.port && window.location.port !== '5175' && window.location.port !== '5173') ? window.location.port : '3002';
-    return `${window.location.protocol}//${window.location.hostname}:${localPort}`;
+  if (typeof window !== 'undefined') {
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      const localPort = (window.location.port && window.location.port !== '5175' && window.location.port !== '5173') ? window.location.port : '3002';
+      return `${window.location.protocol}//${window.location.hostname}:${localPort}`;
+    }
+    if (!window.location.hostname.includes('hf.space')) {
+      return window.location.origin;
+    }
   }
   return DEFAULT_FALLBACK_URLS[0];
 }

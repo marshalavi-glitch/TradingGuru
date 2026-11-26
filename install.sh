@@ -59,6 +59,17 @@ cd /var/www/tradingguru/frontend
 npm install --legacy-peer-deps
 npm run build
 
+SERVER_IP=$(curl -s -4 ifconfig.me || hostname -I | awk '{print $1}')
+cat << EOF > /var/www/tradingguru/frontend/dist/live_backend.json
+{
+  "backendUrl": "http://${SERVER_IP}",
+  "backupUrl": "http://${SERVER_IP}",
+  "cloudflareUrl": "http://${SERVER_IP}",
+  "localtunnelUrl": "http://${SERVER_IP}",
+  "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+}
+EOF
+
 # 6. Configure Nginx Web Server & WebSocket Proxy
 echo "🌐 [6/7] Configuring Nginx Web Server & Real-time WebSockets..."
 
@@ -93,6 +104,13 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Direct Health Check
+    location /health {
+        proxy_pass http://127.0.0.1:3002/health;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
     }
 
     # Real-Time WebSocket Proxy
