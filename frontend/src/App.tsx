@@ -33,6 +33,7 @@ import { SrBreakoutContainer } from './components/SrBreakoutContainer';
 import { TestContainer } from './components/TestContainer';
 import { Test2Container } from './components/Test2Container';
 import { Mp3DayPatternContainer } from './components/Mp3DayPatternContainer';
+import { BeturScanContainer } from './components/BeturScanContainer';
 import { LoginScreen, getStoredAuthUser, clearStoredAuthUser, isUserAdmin, AUTH_EPOCH_KEY, CURRENT_AUTH_EPOCH } from './components/LoginScreen';
 import { UserManagementModal } from './components/UserManagementModal';
 import { HomeContainer } from './components/HomeContainer';
@@ -43,7 +44,7 @@ import { WATCHLIST_DATA } from './data/watchlistData';
 export type TabType = 
   | 'home'
   | 'chart' | 'fifteen_min' 
-  | 'scanner' | 'options' | 'signals' | 'doji' | 'doji_novol' 
+  | 'betur_scan' | 'scanner' | 'options' | 'signals' | 'doji' | 'doji_novol' 
   | 'hourly_updates' | 'backtest_results' 
   | 'nr7_breakout' 
   | 'cvd_adv' | 'heatmap' | 'market_profile' | 'pro_market_profile' | 'trial' | 'mp_3day_pattern' | 'footprint_chart' | 'high_beta' | 'manual_trades' | 'algo_trade' | 'sr_breakout' | 'test' | 'test2';
@@ -75,6 +76,7 @@ const TOOL_GROUPS: ToolGroup[] = [
   {
     name: 'Signals',
     items: [
+      { id: 'betur_scan', label: 'Betur Scan' },
       { id: 'scanner', label: 'Scanner' },
       { id: 'mp_3day_pattern', label: 'MP 3-Day Pattern' },
       { id: 'backtest_results', label: 'Live Math' },
@@ -159,6 +161,7 @@ const TABS_LIST: TabItem[] = [
   { id: 'cvd_adv', label: '📊 CVD / ADV', color: '#60a5fa' },
   { id: 'heatmap', label: '🔥 Heat Map', color: '#f87171' },
   { id: 'scanner', label: '🔍 Scanner', color: '#3b82f6' },
+  { id: 'betur_scan', label: '🎯 Betur Scan', color: '#10b981', badge: 'HOT' },
   { id: 'fifteen_min', label: '⏱️ 15 Mins Forensic', color: '#ec4899' },
   { id: 'hourly_updates', label: '🕒 Hourly Updates', color: '#8b5cf6' },
   { id: 'backtest_results', label: '🧪 Live Math Signals', color: '#10b981' },
@@ -1439,6 +1442,16 @@ function App() {
         ) : activeTab === 'backtest_results' ? (
           <TabErrorBoundary tabName="Live Math Signals">
             <BacktestResultsContainer />
+          </TabErrorBoundary>
+        ) : activeTab === 'betur_scan' ? (
+          <TabErrorBoundary tabName="Betur Scan">
+            <BeturScanContainer
+              onSymbolSelect={(newSym) => {
+                setSymbol(newSym);
+                setActiveTab('chart');
+              }}
+              onSwitchToChart={() => setActiveTab('chart')}
+            />
           </TabErrorBoundary>
         ) : activeTab === 'scanner' ? (
           <TabErrorBoundary tabName="Scanner">

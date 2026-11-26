@@ -25,6 +25,7 @@ import {
   exportOrderFlowExcelBuffer,
   exportOrderFlowCsvString
 } from './orderflow_reporter.js';
+import { getBeturScanData, saveBeturScanData } from './betur_scanner.js';
 
 const startTelegramTradeIdeasEngine = () => {};
 const getCachedTradeIdeas = () => ({ items: [] });
@@ -5030,6 +5031,28 @@ app.get('/api/sr-breakouts/backtest-download-csv', (req, res) => {
 // Endpoint to retrieve all 5000+ Indian stock presets dynamically
 app.get('/api/symbols/presets', (req, res) => {
   res.json(presetsData);
+});
+
+// Endpoint to retrieve Betur Scan results (High-Confluence Multi-Timeframe Institutional Scanner)
+app.get('/api/betur-scan/results', (req, res) => {
+  try {
+    const data = getBeturScanData();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Endpoint to trigger manual refresh of Betur Scan
+app.post('/api/betur-scan/scan', (req, res) => {
+  try {
+    const data = getBeturScanData();
+    data.lastScanTime = new Date().toISOString();
+    saveBeturScanData(data);
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Endpoint to retrieve 2-Day Balance & Inner Logic Value Breakouts
