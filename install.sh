@@ -53,10 +53,10 @@ chmod 600 /var/www/tradingguru/backend/.env
 # 5. Install Backend & Frontend Dependencies
 echo "⚙️ [5/7] Installing Dependencies & Building Frontend..."
 cd /var/www/tradingguru/backend
-npm install --production
+npm install --production --legacy-peer-deps
 
 cd /var/www/tradingguru/frontend
-npm install
+npm install --legacy-peer-deps
 npm run build
 
 # 6. Configure Nginx Web Server & WebSocket Proxy
