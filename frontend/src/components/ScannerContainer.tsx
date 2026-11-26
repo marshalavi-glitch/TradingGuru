@@ -34,13 +34,15 @@ const LEVEL_LABELS: Record<string, { label: string; desc: string; isBullish: boo
   level10: { label: 'Target (S6)', desc: 'Support Target Level (S6)', isBullish: false }
 };
 
+let globalScannerCache: Record<string, ScannerData> = {};
+
 export const ScannerContainer: React.FC<ScannerContainerProps> = ({
   onSymbolSelect,
   onSwitchToChart
 }) => {
   const [activeLevel, setActiveLevel] = useState<string>('level3'); // Default to L3 (R4) breakout line
   const [activeTimeframe, setActiveTimeframe] = useState<'5' | 'D'>('5'); // Timeframe state
-  const [scannerData, setScannerData] = useState<ScannerData>({
+  const [scannerData, setScannerData] = useState<ScannerData>(() => globalScannerCache['5'] || {
     lastScanTime: null,
     isScanning: false,
     results: {
@@ -48,15 +50,15 @@ export const ScannerContainer: React.FC<ScannerContainerProps> = ({
       level6: [], level7: [], level8: [], level9: [], level10: []
     }
   });
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !globalScannerCache['5']);
   const [refreshKey, setRefreshKey] = useState(0);
 
   // Poll background scanner results from backend
   useEffect(() => {
     let isMounted = true;
     
-    // Only show loading spinner on initial load to prevent layout bounce
-    if (!scannerData.lastScanTime) {
+    // Only show loading spinner on initial load if no cached data exists
+    if (!scannerData.lastScanTime && !globalScannerCache[activeTimeframe]) {
       setLoading(true);
     }
     
@@ -66,6 +68,7 @@ export const ScannerContainer: React.FC<ScannerContainerProps> = ({
         const res = await fetch(`${backendUrl}/api/scanner/results?timeframe=${activeTimeframe}`);
         if (res.ok) {
           const data = await res.json();
+          globalScannerCache[activeTimeframe] = data;
           if (isMounted) {
             setScannerData(data);
             setLoading(false);
@@ -89,7 +92,11 @@ export const ScannerContainer: React.FC<ScannerContainerProps> = ({
     };
   }, [refreshKey, activeTimeframe]);
 
-  const handleManualRefresh = () => {
+  const handleManualRefresh = async () => {
+    try {
+      const backendUrl = await getBackendHttpUrl();
+      await fetch(`${backendUrl}/api/scanner/trigger?timeframe=${activeTimeframe}`);
+    } catch (e) {}
     setRefreshKey(prev => prev + 1);
   };
 
@@ -301,8 +308,8 @@ export const ScannerContainer: React.FC<ScannerContainerProps> = ({
             </div>
           </div>
 
-          {/* Table list */}
-          <div style={{ flex: 1, overflowX: 'auto', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
+          {/* Table list - Desktop */}
+          <div className="desktop-only" style={{ flex: 1, overflowX: 'auto', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '600px' }}>
               <thead>
                 <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
@@ -391,6 +398,99 @@ export const ScannerContainer: React.FC<ScannerContainerProps> = ({
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="mobile-only" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {activeResults.length > 0 ? (
+              activeResults.map((row) => {
+                const cleanSymbolName = row.symbol.split(':')[1];
+                const isBullish = LEVEL_LABELS[activeLevel].isBullish;
+                const distColor = row.distancePct >= 0 ? '#10b981' : '#ef4444';
+
+                return (
+                  <div
+                    key={row.symbol}
+                    className="responsive-table-card"
+                    onClick={() => handleSymbolClick(row.symbol)}
+                    style={{
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px',
+                      background: 'rgba(15, 23, 42, 0.7)',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      borderRadius: '8px',
+                      padding: '12px'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '15px', fontWeight: '800', color: 'white' }}>{cleanSymbolName}</span>
+                        <span style={{ fontSize: '10px', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.05)', padding: '2px 5px', borderRadius: '4px' }}>
+                          {row.symbol.split(':')[0]}
+                        </span>
+                      </div>
+                      <span style={{
+                        fontSize: '10px',
+                        fontWeight: '800',
+                        color: isBullish ? '#10b981' : '#ef4444',
+                        background: isBullish ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+                        padding: '2px 8px',
+                        borderRadius: '4px'
+                      }}>
+                        {isBullish ? 'BULLISH' : 'BEARISH'}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '12px' }}>
+                      <div>
+                        <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Current Close</div>
+                        <div style={{ fontWeight: '700', color: 'white', fontFamily: 'var(--font-mono)' }}>₹{row.close.toFixed(2)}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Level Target</div>
+                        <div style={{ fontWeight: '700', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>₹{row.levelValue.toFixed(2)}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Distance</div>
+                        <div style={{ fontWeight: '800', color: distColor, fontFamily: 'var(--font-mono)' }}>
+                          {row.distancePts >= 0 ? '+' : ''}{row.distancePts.toFixed(2)} ({row.distancePct >= 0 ? '+' : ''}{row.distancePct.toFixed(2)}%)
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSymbolClick(row.symbol);
+                          }}
+                          style={{
+                            background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-purple))',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            padding: '6px 12px',
+                            fontSize: '11px',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          <Play size={10} fill="white" />
+                          Open Chart
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div style={{ padding: '30px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
+                No stocks currently trading near this level.
+              </div>
+            )}
           </div>
 
         </div>

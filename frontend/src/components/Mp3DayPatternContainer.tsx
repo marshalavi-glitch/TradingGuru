@@ -72,15 +72,17 @@ interface Mp3DayPatternContainerProps {
   onSwitchToMarketProfile?: (symbol: string) => void;
 }
 
+let globalMp3DayCache: any = null;
+
 export const Mp3DayPatternContainer: React.FC<Mp3DayPatternContainerProps> = ({
   onSymbolSelect,
   onSwitchToChart,
   onSwitchToMarketProfile
 }) => {
-  const [items, setItems] = useState<Mp3DayPatternItem[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [items, setItems] = useState<Mp3DayPatternItem[]>(() => globalMp3DayCache?.results || []);
+  const [loading, setLoading] = useState<boolean>(() => !globalMp3DayCache);
   const [isScanning, setIsScanning] = useState<boolean>(false);
-  const [summary, setSummary] = useState({
+  const [summary, setSummary] = useState(() => globalMp3DayCache?.summary || {
     totalScanned: 0,
     matchedCount: 0,
     activeCoilCount: 0,
@@ -88,7 +90,7 @@ export const Mp3DayPatternContainer: React.FC<Mp3DayPatternContainerProps> = ({
     bearishBreakoutCount: 0,
     ultraCoilCount: 0
   });
-  const [lastScanTime, setLastScanTime] = useState<string | null>(null);
+  const [lastScanTime, setLastScanTime] = useState<string | null>(() => globalMp3DayCache?.lastScanTime || null);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -136,6 +138,7 @@ export const Mp3DayPatternContainer: React.FC<Mp3DayPatternContainerProps> = ({
       if (res.ok) {
         const data = await res.json();
         if (data.results) {
+          globalMp3DayCache = data;
           setItems(data.results);
           if (data.summary) setSummary(data.summary);
           if (data.lastScanTime) setLastScanTime(data.lastScanTime);

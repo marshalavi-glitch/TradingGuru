@@ -676,9 +676,9 @@ export const AngelOnePositionsContainer: React.FC<AngelOnePositionsContainerProp
             backgroundColor: '#f8fafc',
             borderBottom: '1px solid #e2e8f0',
             padding: '12px 20px',
-            fontSize: '12.5px',
+            fontSize: '12px',
             fontWeight: '600',
-            color: '#334155',
+            color: '#64748b',
             userSelect: 'none'
           }}>
             <div
@@ -696,26 +696,20 @@ export const AngelOnePositionsContainer: React.FC<AngelOnePositionsContainerProp
               <ArrowUpDown size={13} style={{ color: sortField === 'SCRIP' ? '#002855' : '#94a3b8' }} />
             </div>
 
-            <div style={{ flex: '1.2', minWidth: '130px' }}>
-              Action/Product Type
+            <div style={{ flex: '0.9', minWidth: '85px' }}>
+              Type
             </div>
 
-            <div style={{ flex: '1.3', minWidth: '130px' }}>
+            <div style={{ flex: '1.4', minWidth: '140px' }}>
               Qty.
             </div>
 
-            <div style={{
-              flex: '2.0',
-              minWidth: '180px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              paddingLeft: '14px',
-              paddingRight: '14px',
-              borderLeft: '1px solid #f1f5f9',
-              borderRight: '1px solid #f1f5f9'
-            }}>
-              <span>ATP</span>
-              <span>LTP</span>
+            <div style={{ flex: '1.0', minWidth: '90px' }}>
+              ATP
+            </div>
+
+            <div style={{ flex: '1.4', minWidth: '130px' }}>
+              LTP
             </div>
 
             <div
@@ -732,6 +726,10 @@ export const AngelOnePositionsContainer: React.FC<AngelOnePositionsContainerProp
             >
               <span>Gain &amp; Loss</span>
               <ArrowUpDown size={13} style={{ color: sortField === 'PNL' ? '#002855' : '#94a3b8' }} />
+            </div>
+
+            <div style={{ width: '40px', textAlign: 'center' }}>
+              Exit
             </div>
           </div>
 
@@ -767,6 +765,15 @@ export const AngelOnePositionsContainer: React.FC<AngelOnePositionsContainerProp
               const isClosed = item.status === 'CLOSED';
               const isPnlPositive = item.pnl >= 0;
               const isLtpPositive = item.ltp >= item.close;
+              const isBuy = item.netqty >= 0;
+              const productCode = (item.producttype === 'CARRYFORWARD' || item.producttype === 'NRML')
+                ? 'CF'
+                : (item.producttype === 'INTRADAY' || item.producttype === 'MIS')
+                  ? 'MIS'
+                  : (item.producttype || 'CF');
+
+              const costBasis = (item.buyavgprice > 0 ? item.buyavgprice : item.sellavgprice) * (item.lotsize || 1) * Math.max(1, item.lotCount);
+              const pnlPct = costBasis > 0 ? ((item.pnl / costBasis) * 100) : item.pctChange;
 
               return (
                 <div
@@ -776,14 +783,14 @@ export const AngelOnePositionsContainer: React.FC<AngelOnePositionsContainerProp
                     alignItems: 'center',
                     backgroundColor: '#ffffff',
                     borderBottom: idx === filteredPositions.length - 1 ? 'none' : '1px solid #f1f5f9',
-                    padding: '16px 20px',
+                    padding: '14px 20px',
                     fontSize: '13px',
                     transition: 'background-color 0.15s ease'
                   }}
                   onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f8fafc')}
                   onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#ffffff')}
                 >
-                  {/* Column 1: Scrip Name */}
+                  {/* Column 1: Scrip Name & Details */}
                   <div
                     onClick={() => onSwitchToChart && onSwitchToChart(item.symbolname || item.tradingsymbol)}
                     style={{
@@ -797,16 +804,23 @@ export const AngelOnePositionsContainer: React.FC<AngelOnePositionsContainerProp
                     }}
                     title="Click to view chart"
                   >
-                    <span style={{ fontSize: '14px', fontWeight: '700', color: '#7c8ba1', letterSpacing: '-0.2px' }}>
+                    <span style={{ fontSize: '14px', fontWeight: '700', color: '#0f172a', letterSpacing: '-0.2px' }}>
                       {item.symbolname}
                     </span>
 
-                    <span style={{ fontSize: '11px', fontWeight: '700', color: '#475569' }}>
-                      {item.exchange}
+                    <span style={{
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      padding: '2px 6px',
+                      borderRadius: '3px',
+                      backgroundColor: '#f1f5f9',
+                      color: '#475569'
+                    }}>
+                      {item.exchange ? `${item.exchange} ${item.instrumenttype || 'FO'}` : 'NSE FO'}
                     </span>
 
                     {(item.expirydate || item.strikeprice) && (
-                      <span style={{ fontSize: '13px', fontWeight: '400', color: '#8896aa' }}>
+                      <span style={{ fontSize: '13px', fontWeight: '400', color: '#334155' }}>
                         {item.expirydate} {item.strikeprice}
                       </span>
                     )}
@@ -815,137 +829,172 @@ export const AngelOnePositionsContainer: React.FC<AngelOnePositionsContainerProp
                       <span style={{
                         fontSize: '11px',
                         fontWeight: '700',
-                        padding: '1px 6px',
-                        borderRadius: '4px',
-                        backgroundColor: item.optiontype.toUpperCase() === 'PE' ? '#fbf2ea' : '#eef4fc',
-                        color: item.optiontype.toUpperCase() === 'PE' ? '#9c7a5c' : '#3b82f6'
+                        padding: '2px 6px',
+                        borderRadius: '3px',
+                        backgroundColor: item.optiontype.toUpperCase() === 'PE' ? '#fef3c7' : '#e0f2fe',
+                        color: item.optiontype.toUpperCase() === 'PE' ? '#b45309' : '#0369a1'
                       }}>
                         {item.optiontype.toUpperCase()}
                       </span>
                     )}
                   </div>
 
-                  {/* Column 2: Action/Product Type */}
+                  {/* Column 2: Action / Product Type */}
                   <div style={{
-                    flex: '1.2',
-                    minWidth: '130px',
+                    flex: '0.9',
+                    minWidth: '85px',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px'
+                    gap: '6px'
                   }}>
+                    <span style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '2px 6px',
+                      borderRadius: '3px',
+                      backgroundColor: isBuy ? '#dcfce7' : '#fee2e2',
+                      color: isBuy ? '#16a34a' : '#dc2626',
+                      fontSize: '11px',
+                      fontWeight: '700'
+                    }}>
+                      {isBuy ? 'B' : 'S'}
+                    </span>
+
                     <span style={{
                       fontSize: '11px',
                       fontWeight: '600',
-                      padding: '2px 8px',
-                      borderRadius: '4px',
-                      letterSpacing: '0.4px',
-                      backgroundColor: isClosed ? '#f0f3fa' : (item.status === 'TARGET_1_HIT' ? '#fef3c7' : '#ecfdf5'),
-                      color: isClosed ? '#818cf8' : (item.status === 'TARGET_1_HIT' ? '#b45309' : '#10b981')
+                      padding: '2px 6px',
+                      borderRadius: '3px',
+                      backgroundColor: '#f1f5f9',
+                      color: '#64748b'
                     }}>
-                      {isClosed ? 'CLOSED' : (item.status === 'TARGET_1_HIT' ? 'TGT 1 HIT' : 'OPEN')}
-                    </span>
-
-                    <span style={{ fontSize: '12px', fontWeight: '500', color: '#94a3b8' }}>
-                      {item.producttype}
+                      {productCode}
                     </span>
                   </div>
 
                   {/* Column 3: Qty. */}
                   <div style={{
-                    flex: '1.3',
-                    minWidth: '130px',
+                    flex: '1.4',
+                    minWidth: '140px',
                     fontSize: '13px',
                     fontWeight: '400',
-                    color: '#7c8ba1'
+                    color: '#64748b'
                   }}>
-                    {isClosed ? `0 Lot (1 Lot = ${item.lotsize})` : `${item.lotCount} ${item.lotCount === 1 ? 'Lot' : 'Lots'} (1 Lot = ${item.lotsize})`}
+                    {isClosed
+                      ? `0 Lot (1 Lot = ${item.lotsize} Qty)`
+                      : `${item.lotCount} Lot${item.lotCount > 1 ? 's' : ''} (1 Lot = ${item.lotsize} Qty)`
+                    }
                   </div>
 
-                  {/* Column 4: ATP & LTP */}
+                  {/* Column 4: Buy / Entry ATP */}
                   <div style={{
-                    flex: '2.0',
-                    minWidth: '180px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    paddingLeft: '14px',
-                    paddingRight: '14px',
-                    borderLeft: '1px solid #f1f5f9',
-                    borderRight: '1px solid #f1f5f9'
+                    flex: '1.0',
+                    minWidth: '90px',
+                    fontSize: '13.5px',
+                    fontWeight: '400',
+                    color: '#1e293b'
                   }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                      {/* Buy ATP */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          width: '16px',
-                          height: '16px',
-                          borderRadius: '3px',
-                          backgroundColor: '#e6f9f0',
-                          color: '#10b981',
-                          fontSize: '10.5px',
-                          fontWeight: '800'
-                        }}>
-                          B
-                        </span>
-                        <span style={{ fontSize: '13px', fontWeight: '400', color: '#7c8ba1' }}>
-                          {item.buyavgprice > 0 ? item.buyavgprice.toFixed(2) : '-'}
-                        </span>
-                      </div>
-
-                      {/* Sell ATP */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          width: '16px',
-                          height: '16px',
-                          borderRadius: '3px',
-                          backgroundColor: '#fef2f2',
-                          color: '#ef4444',
-                          fontSize: '10.5px',
-                          fontWeight: '800'
-                        }}>
-                          S
-                        </span>
-                        <span style={{ fontSize: '13px', fontWeight: '400', color: '#7c8ba1' }}>
-                          {item.sellavgprice > 0 ? item.sellavgprice.toFixed(2) : '-'}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Right: Live LTP & Percentage Change */}
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                      <span style={{
-                        fontSize: '13.5px',
-                        fontWeight: '400',
-                        color: isLtpPositive ? '#16a34a' : '#c53030',
-                        transition: 'color 0.2s ease'
-                      }}>
-                        {item.ltp > 0 ? item.ltp.toFixed(2) : '-'}
-                      </span>
-                      {item.close > 0 && item.ltp > 0 && (
-                        <span style={{ fontSize: '11px', color: '#5a687d', fontWeight: '400' }}>
-                          ({item.pctChange >= 0 ? '+' : ''}{item.pctChange.toFixed(2)}%)
-                        </span>
-                      )}
-                    </div>
+                    {item.buyavgprice > 0 ? item.buyavgprice.toFixed(2) : (item.sellavgprice > 0 ? item.sellavgprice.toFixed(2) : '-')}
                   </div>
 
-                  {/* Column 5: Gain & Loss */}
+                  {/* Column 5: Live LTP & Percentage Change */}
+                  <div style={{
+                    flex: '1.4',
+                    minWidth: '130px',
+                    display: 'flex',
+                    alignItems: 'baseline',
+                    gap: '4px'
+                  }}>
+                    <span style={{
+                      fontSize: '13.5px',
+                      fontWeight: '400',
+                      color: isLtpPositive ? '#16a34a' : '#dc2626',
+                      transition: 'color 0.2s ease'
+                    }}>
+                      {item.ltp > 0 ? item.ltp.toFixed(2) : '-'}
+                    </span>
+                    {item.close > 0 && item.ltp > 0 && (
+                      <span style={{
+                        fontSize: '12px',
+                        color: isLtpPositive ? '#16a34a' : '#dc2626',
+                        fontWeight: '400'
+                      }}>
+                        ({item.pctChange >= 0 ? '+' : ''}{item.pctChange.toFixed(2)}%)
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Column 6: Gain & Loss */}
                   <div style={{
                     flex: '1.4',
                     minWidth: '120px',
                     textAlign: 'right',
-                    fontSize: '14px',
+                    fontSize: '13.5px',
                     fontWeight: '600',
-                    color: isPnlPositive ? '#16a34a' : '#c53030',
+                    color: isPnlPositive ? '#16a34a' : '#dc2626',
                     paddingRight: '6px'
                   }}>
-                    {isPnlPositive && item.pnl > 0 ? '+' : ''}{item.pnl.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    <span>
+                      {isPnlPositive && item.pnl > 0 ? '+' : ''}{item.pnl.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                    {costBasis > 0 && (
+                      <span style={{ fontSize: '12px', fontWeight: '500', marginLeft: '4px' }}>
+                        ({isPnlPositive && pnlPct > 0 ? '+' : ''}{pnlPct.toFixed(2)}%)
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Column 7: Exit Button [X] */}
+                  <div style={{ width: '40px', display: 'flex', justifyContent: 'center' }}>
+                    {!isClosed && (
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          if (window.confirm(`Are you sure you want to close position for ${item.tradingsymbol || item.symbolname}?`)) {
+                            try {
+                              const baseUrl = await getBackendHttpUrl();
+                              await fetch(`${baseUrl}/api/algo-trade/trades/close`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ tradeId: item.id, exitReason: 'MANUAL_USER_EXIT' })
+                              });
+                              fetchAllTodayTrades(true);
+                            } catch (err) {
+                              console.error('Exit failed:', err);
+                            }
+                          }
+                        }}
+                        title="Square off position"
+                        style={{
+                          border: '1px solid #fecaca',
+                          backgroundColor: '#ffffff',
+                          color: '#ef4444',
+                          borderRadius: '4px',
+                          width: '24px',
+                          height: '24px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          fontWeight: '700',
+                          padding: 0,
+                          lineHeight: 1,
+                          transition: 'all 0.15s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#fef2f2';
+                          e.currentTarget.style.borderColor = '#ef4444';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = '#ffffff';
+                          e.currentTarget.style.borderColor = '#fecaca';
+                        }}
+                      >
+                        ✕
+                      </button>
+                    )}
                   </div>
                 </div>
               );

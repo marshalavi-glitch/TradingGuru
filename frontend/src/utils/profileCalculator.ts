@@ -90,6 +90,11 @@ export interface DayProfile {
   openingTypeInfo?: OpeningTypeAnalysis;
   dayTypeInfo?: DayTypeAnalysis;
   valuePlacementInfo?: ValuePlacementAnalysis;
+  isMerged?: boolean;
+  mergedKeys?: string[];
+  isSplitPeriod?: boolean;
+  parentSessionKey?: string;
+  periodLetter?: string;
 }
 
 export interface PeriodHalfBackInfo {
@@ -251,22 +256,32 @@ export function calculateDayProfile(
   let tickSize = parentTickSize !== undefined ? parentTickSize : 0;
   
   if (parentTickSize === undefined) {
-    const cleanSym = symbol ? symbol.replace("NSE:", "").replace("BSE:", "").replace("_S", "").toUpperCase() : "";
+    const cleanSym = symbol ? symbol.replace(/^(NSE:|BSE:|MCX:|NFO:)/, "").replace(/1!|FUT/g, "").replace("_S", "").trim().toUpperCase() : "";
     if (cleanSym === 'NIFTY') {
-      tickSize = sessionPeriod === 'yearly' ? 50 : (sessionPeriod === 'monthly' ? 10 : (sessionPeriod === 'weekly' ? 5 : 2));
+      tickSize = sessionPeriod === 'yearly' ? 50 : (sessionPeriod === 'monthly' ? 20 : (sessionPeriod === 'weekly' ? 10 : 2));
     } else if (cleanSym === 'BANKNIFTY') {
-      tickSize = sessionPeriod === 'yearly' ? 100 : (sessionPeriod === 'monthly' ? 20 : (sessionPeriod === 'weekly' ? 10 : 5));
+      tickSize = sessionPeriod === 'yearly' ? 100 : (sessionPeriod === 'monthly' ? 50 : (sessionPeriod === 'weekly' ? 20 : 5));
     } else if (cleanSym === 'FINNIFTY' || cleanSym === 'MIDCPNIFTY') {
-      tickSize = sessionPeriod === 'yearly' ? 50 : (sessionPeriod === 'monthly' ? 10 : (sessionPeriod === 'weekly' ? 5 : 2));
+      tickSize = sessionPeriod === 'yearly' ? 50 : (sessionPeriod === 'monthly' ? 20 : (sessionPeriod === 'weekly' ? 10 : 2));
     } else if (cleanSym === 'SENSEX') {
-      tickSize = sessionPeriod === 'yearly' ? 100 : (sessionPeriod === 'monthly' ? 20 : (sessionPeriod === 'weekly' ? 10 : 5));
+      tickSize = sessionPeriod === 'yearly' ? 100 : (sessionPeriod === 'monthly' ? 50 : (sessionPeriod === 'weekly' ? 20 : 5));
     } else {
       const range = dayHigh - dayLow;
       const rawTick = range / binCount;
       const avgPrice = (dayHigh + dayLow) / 2;
       tickSize = getRoundedTickSize(rawTick, avgPrice);
     }
+  } else {
+    // If a custom tick step was passed, scale it dynamically for higher timeframe ranges
+    if (sessionPeriod === 'yearly') {
+      tickSize = Math.max(tickSize * 25, Math.round((dayHigh - dayLow) / 50));
+    } else if (sessionPeriod === 'monthly') {
+      tickSize = Math.max(tickSize * 5, Math.round((dayHigh - dayLow) / 45));
+    } else if (sessionPeriod === 'weekly') {
+      tickSize = Math.max(tickSize * 2, Math.round((dayHigh - dayLow) / 40));
+    }
   }
+  tickSize = Math.max(0.5, tickSize);
 
   const binsMap: Record<number, TPOBin> = {};
   const prices: number[] = [];
@@ -310,16 +325,17 @@ export function calculateDayProfile(
     
     let periodIndex = 0;
     if (sessionPeriod === 'yearly') {
-      periodIndex = d.getMonth(); // 0 for Jan ('A') through 11 for Dec ('L')
+      // In yearly profile, each month (Jan-Dec: 0-11) is a TPO period (Letters A-L)
+      periodIndex = d.getMonth();
     } else if (sessionPeriod === 'monthly') {
       const cdStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       periodIndex = uniqueDays.indexOf(cdStr);
     } else if (sessionPeriod === 'weekly') {
-      const cdStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-      const dayIdx = uniqueDays.indexOf(cdStr);
-      if (dayIdx >= 0 && sorted.length <= 15) {
-        // Daily candles for multi-week history: each day in the week gets its own bracket (A, B, C, D, E)
-        periodIndex = dayIdx;
+      const dayOfWeek = d.getDay();
+      const isDailyCandle = sorted.length <= 10;
+      if (isDailyCandle) {
+        // Daily candles for weekly session: Mon=0 (A), Tue=1 (B), Wed=2 (C), Thu=3 (D), Fri=4 (E)
+        periodIndex = dayOfWeek === 0 ? 6 : (dayOfWeek >= 1 && dayOfWeek <= 5 ? dayOfWeek - 1 : dayOfWeek);
       } else {
         const istSeconds = c.time + 19800; // 5 hours 30 mins
         const istDate = new Date(istSeconds * 1000);
@@ -712,138 +728,6 @@ export function getSinglePrintsForProfile(profile: DayProfile): { start: number;
     singlePrints.push({ start: currentStart, end: currentEnd });
   }
   return singlePrints;
-}
-
-export interface SinglePrintZone {
-  id: string;
-  sessionDate: string;
-  sessionIdx: number;
-  lowPrice: number;
-  highPrice: number;
-  letters: string[];
-  isCleared: boolean;
-  isPartiallyTested: boolean;
-}
-
-/**
- * Calculates Single Print Zones and tracks price interaction / clearance across subsequent market action.
- * A Single Print Zone remains visible until price fully traverses its entire price range.
- * Once completely crossed (full range traversed from boundary to boundary), the zone is marked cleared and removed.
- * Partially crossed zones remain visible until completely cleared.
- */
-export function calculateSinglePrintZones(
-  dayProfiles: DayProfile[],
-  liveLtp?: number
-): SinglePrintZone[] {
-  if (!dayProfiles || dayProfiles.length === 0) return [];
-
-  const zones: SinglePrintZone[] = [];
-
-  dayProfiles.forEach((profile, sIdx) => {
-    if (!profile.bins || profile.bins.length === 0) return;
-
-    // Check if session has progressed beyond single opening period
-    const allLetters = new Set<string>();
-    profile.bins.forEach(b => b.tpos.forEach(l => allLetters.add(l)));
-    if (allLetters.size <= 1 && sIdx === dayProfiles.length - 1) {
-      return; // Do not mark initial 30m bracket as single prints
-    }
-
-    const step = profile.tickSize || 5;
-    const sortedBins = [...profile.bins].sort((a, b) => a.price - b.price);
-
-    let currentRun: typeof sortedBins = [];
-
-    const processRun = (run: typeof sortedBins) => {
-      if (run.length === 0) return;
-
-      const minPrice = run[0].price;
-      const maxPrice = run[run.length - 1].price;
-
-      // Exclude isolated 1-tick day extreme (which is a standard high/low boundary)
-      const isExtreme1Tick = run.length === 1 && (minPrice === profile.dayLow || maxPrice === profile.dayHigh);
-      if (isExtreme1Tick) return;
-
-      const lowPrice = minPrice - step / 2;
-      const highPrice = maxPrice + step / 2;
-      const letters = Array.from(new Set(run.flatMap(b => b.tpos)));
-
-      // Clearance tracking:
-      // Starting orientation: did price close above or below the zone in this session?
-      const sessionClose = profile.closePrice;
-      let hasBeenAbove = sessionClose >= highPrice;
-      let hasBeenBelow = sessionClose <= lowPrice;
-      let isCleared = false;
-      let isPartiallyTested = false;
-
-      // Check subsequent sessions
-      for (let j = sIdx + 1; j < dayProfiles.length; j++) {
-        const nextDay = dayProfiles[j];
-
-        // Check if price entered / partially tested the zone
-        if (nextDay.dayLow < highPrice && nextDay.dayHigh > lowPrice) {
-          isPartiallyTested = true;
-        }
-
-        if (nextDay.dayHigh >= highPrice) {
-          hasBeenAbove = true;
-        }
-        if (nextDay.dayLow <= lowPrice) {
-          hasBeenBelow = true;
-        }
-
-        // Full traversal check: price has traversed the full range from one boundary to the other
-        if (hasBeenAbove && hasBeenBelow) {
-          isCleared = true;
-          break;
-        }
-      }
-
-      // Also check liveLtp for active real-time updates
-      if (!isCleared && liveLtp != null && sIdx < dayProfiles.length) {
-        if (liveLtp < highPrice && liveLtp > lowPrice) {
-          isPartiallyTested = true;
-        }
-        if (liveLtp >= highPrice) {
-          hasBeenAbove = true;
-        }
-        if (liveLtp <= lowPrice) {
-          hasBeenBelow = true;
-        }
-        if (hasBeenAbove && hasBeenBelow) {
-          isCleared = true;
-        }
-      }
-
-      zones.push({
-        id: `${profile.dateStr}_sp_${lowPrice.toFixed(2)}_${highPrice.toFixed(2)}`,
-        sessionDate: profile.dateStr,
-        sessionIdx: sIdx,
-        lowPrice,
-        highPrice,
-        letters,
-        isCleared,
-        isPartiallyTested
-      });
-    };
-
-    for (let i = 0; i < sortedBins.length; i++) {
-      const bin = sortedBins[i];
-      if (bin.tpos.length === 1) {
-        currentRun.push(bin);
-      } else {
-        if (currentRun.length > 0) {
-          processRun(currentRun);
-          currentRun = [];
-        }
-      }
-    }
-    if (currentRun.length > 0) {
-      processRun(currentRun);
-    }
-  });
-
-  return zones;
 }
 
 // Helper to check profile shape of any profile
@@ -2605,3 +2489,60 @@ export function detectValuePlacement(today: DayProfile, prior?: DayProfile): Val
 }
 
 
+
+
+export interface SinglePrintZone {
+  sessionIdx: number;
+  high: number;
+  low: number;
+  highPrice?: number;
+  lowPrice?: number;
+  isPartiallyTested: boolean;
+  isCleared: boolean;
+}
+
+export function calculateSinglePrintZones(dayProfiles: DayProfile[], liveLtp?: number): SinglePrintZone[] {
+  const zones: SinglePrintZone[] = [];
+  if (!dayProfiles || !Array.isArray(dayProfiles) || dayProfiles.length === 0) return zones;
+
+  for (let i = 0; i < dayProfiles.length; i++) {
+    const p = dayProfiles[i];
+    const sps = getSinglePrintsForProfile(p);
+    for (const sp of sps) {
+      const high = Math.max(sp.start, sp.end);
+      const low = Math.min(sp.start, sp.end);
+      let isCleared = false;
+      let isPartiallyTested = false;
+
+      // Check subsequent sessions
+      for (let j = i + 1; j < dayProfiles.length; j++) {
+        const nextP = dayProfiles[j];
+        if (nextP.dayLow <= low && nextP.dayHigh >= high) {
+          isCleared = true;
+          break;
+        }
+        if ((nextP.dayLow <= high && nextP.dayLow >= low) || (nextP.dayHigh >= low && nextP.dayHigh <= high)) {
+          isPartiallyTested = true;
+        }
+      }
+
+      if (!isCleared && liveLtp !== undefined && liveLtp > 0) {
+        if (liveLtp >= low && liveLtp <= high) {
+          isPartiallyTested = true;
+        }
+      }
+
+      zones.push({
+        sessionIdx: i,
+        high,
+        low,
+        highPrice: high,
+        lowPrice: low,
+        isPartiallyTested,
+        isCleared
+      });
+    }
+  }
+
+  return zones;
+}

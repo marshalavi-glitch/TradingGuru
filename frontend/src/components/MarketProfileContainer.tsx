@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { getBackendHttpUrl, tvStreamer } from '../utils/tvStreamer';
-import { groupCandlesByDay, calculateDayProfile, Candle, DayProfile, TPOBin, detectOpeningType, OpeningTypeAnalysis, detectDayType, DayTypeAnalysis, detectValuePlacement, ValuePlacementAnalysis, StandardValuePlacement } from '../utils/profileCalculator';
+import { getBackendHttpUrl, tvStreamer, reportBackendFetchError } from '../utils/tvStreamer';
+import { resolveBackendUrl, clearBackendUrlCache } from '../utils/config';
+import { groupCandlesByDay, calculateDayProfile, Candle, DayProfile, TPOBin, detectOpeningType, OpeningTypeAnalysis, detectDayType, DayTypeAnalysis, detectValuePlacement, ValuePlacementAnalysis, StandardValuePlacement, calculateSinglePrintZones, SinglePrintZone } from '../utils/profileCalculator';
 import { resolveSymbol } from '../utils/symbolResolver';
 import { filterMarketHoursCandles, isWithinMarketHours } from '../utils/marketHours';
 import { RefreshCw, ZoomIn, ZoomOut, Move, BarChart2, TrendingUp, TrendingDown, ShieldAlert, Zap, Sliders, ChevronLeft, ChevronRight, ArrowLeft, ArrowRight, RotateCcw, Pin, PinOff, Camera, Check, Copy, X, Maximize2, Minimize2, ExternalLink } from 'lucide-react';
@@ -85,6 +86,11 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
   const [zoomLevel, setZoomLevel] = useState<number>(1.0);
   const [yScale, setYScale] = useState<number>(1.0); // Vertical price scale multiplier
   const [xScale, setXScale] = useState<number>(1.0); // Horizontal time/session scale multiplier
+  const [isMobile, setIsMobile] = useState<boolean>(() => typeof window !== 'undefined' && window.innerWidth <= 768);
+  const [showMobileProfileTools, setShowMobileProfileTools] = useState<boolean>(false);
+  const [showMobileProfileInfo, setShowMobileProfileInfo] = useState<boolean>(false);
+  const pinchDistRef = useRef<number | null>(null);
+  const pinchZoomRef = useRef<number>(1.0);
 
   // Saved scales to restore on exit
   const prevScaleRef = useRef<{ yScale: number; xScale: number; zoomLevel: number }>({ yScale: 1.0, xScale: 1.0, zoomLevel: 1.0 });
@@ -165,6 +171,12 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
 
   // Customization Options
   const [gridStep, setGridStep] = useState<number>(20); // 20 points price step as requested
+  const [tpoSize, setTpoSize] = useState<number>(() => {
+    if (selectedSymbol?.includes('BANKNIFTY')) return 10;
+    if (selectedSymbol?.includes('NIFTY')) return 5;
+    if (selectedSymbol?.includes('SENSEX')) return 20;
+    return 5;
+  });
   const [highlightSinglePrints, setHighlightSinglePrints] = useState<boolean>(true);
   const [showIbLine, setShowIbLine] = useState<boolean>(true);
   const [showPoorHighLow, setShowPoorHighLow] = useState<boolean>(true);
@@ -225,12 +237,29 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
       const isOpt = selectedSymbol.startsWith('NFO:') || selectedSymbol.includes('CE') || selectedSymbol.includes('PE');
       if (isOpt) {
         setGridStep(1); // Auto-adapt 1 point grid step for options contracts
+        setTpoSize(1);
       } else if (selectedSymbol.includes('1!') || selectedSymbol.includes('FUT')) {
-        if (selectedSymbol.includes('NIFTY') && !selectedSymbol.includes('BANK')) setGridStep(20);
+        if (selectedSymbol.includes('NIFTY') && !selectedSymbol.includes('BANK')) {
+          setGridStep(20);
+          setTpoSize(5);
+        } else if (selectedSymbol.includes('BANK')) {
+          setGridStep(50);
+          setTpoSize(10);
+        }
       } else if (selectedSymbol.includes('NIFTY') || selectedSymbol.includes('SENSEX')) {
-        if (selectedSymbol.includes('NIFTY') && !selectedSymbol.includes('BANK')) setGridStep(20);
+        if (selectedSymbol.includes('NIFTY') && !selectedSymbol.includes('BANK')) {
+          setGridStep(20);
+          setTpoSize(5);
+        } else if (selectedSymbol.includes('BANK')) {
+          setGridStep(50);
+          setTpoSize(10);
+        } else if (selectedSymbol.includes('SENSEX')) {
+          setGridStep(50);
+          setTpoSize(20);
+        }
       } else {
         setGridStep(5);
+        setTpoSize(2);
       }
     }
   }, [selectedSymbol]);
@@ -244,7 +273,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
     if (!silent) setLoading(true);
     if (!silent) setError(null);
     let attempts = 0;
-    const maxAttempts = 3;
+    const maxAttempts = 6;
     const multiplier = tf === '5' ? 85 : tf === '15' ? 40 : 35;
     const reqLimit = Math.min(1500, Math.max(450, (daysCount + 1) * multiplier));
     
@@ -294,6 +323,10 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
         }
       } catch (err: any) {
         console.warn(`[MarketProfileContainer] Fetch attempt ${attempts} failed:`, err);
+        reportBackendFetchError();
+        if (attempts >= 2) {
+          try { await resolveBackendUrl(true); } catch (e) {}
+        }
       }
       if (attempts < maxAttempts) {
         await new Promise(r => setTimeout(r, attempts * 800));
@@ -462,7 +495,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
     for (const dateStr of targetDates) {
       const dayCandles = grouped[dateStr];
       if (dayCandles && dayCandles.length > 0) {
-        const prof = calculateDayProfile(dateStr, dayCandles, 50, 'daily', undefined, undefined, symbol);
+        const prof = calculateDayProfile(dateStr, dayCandles, 50, 'daily', undefined, tpoSize, symbol);
         if (prof.bins && prof.bins.length > 0) {
           profiles.push(prof);
         }
@@ -475,7 +508,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
     }
 
     return profiles;
-  }, [candles, lookbackDays, symbol]);
+  }, [candles, lookbackDays, symbol, tpoSize]);
 
   // Keyboard shortcut listener for Pin/Unpin (P) and Unpin (Esc)
   useEffect(() => {
@@ -596,6 +629,11 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
     return list;
   }, [dayProfiles]);
 
+  // Calculate Single Print Zones and track traversal / clearance across subsequent market action
+  const singlePrintZones = useMemo(() => {
+    return calculateSinglePrintZones(dayProfiles, liveLtp);
+  }, [dayProfiles, liveLtp]);
+
   // Calculate Poor / Weak High & Low Status across sessions (Dalton Unfinished Business)
   const poorHighLowStatusMap = useMemo(() => {
     return dayProfiles.map((p, i) => {
@@ -688,6 +726,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
   // Resize canvas container listener
   useEffect(() => {
     const handleResize = () => {
+      setIsMobile(typeof window !== 'undefined' && window.innerWidth <= 768);
       if (canvasContainerRef.current) {
         const clientH = canvasContainerRef.current.clientHeight;
         const targetH = isExpanded || isStandalone
@@ -1032,15 +1071,25 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
       return padding.top + ((maxPrice - price) / priceRange) * baseChartHeight;
     };
 
-    // 1. Draw Price Axis Grid Lines Spaced by 20 Points
-    const step = gridStep > 0 ? gridStep : 20;
-    const startTick = Math.floor(minPrice / step) * step;
-    const endTick = Math.ceil(maxPrice / step) * step;
+    // 1. Draw Price Axis Grid Lines Spaced Cleanly Without Overlapping
+    const niceSteps = [0.5, 1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 2500, 5000];
+    const minLabelSpacingPx = 24;
+    const minStepForLabels = (priceRange / Math.max(1, baseChartHeight)) * minLabelSpacingPx;
+    const labelStep = niceSteps.find(s => s >= minStepForLabels) || (Math.ceil(minStepForLabels / 50) * 50);
+
+    const minGridSpacingPx = 8;
+    const minStepForGrid = (priceRange / Math.max(1, baseChartHeight)) * minGridSpacingPx;
+    const effectiveGridStep = (gridStep > 0 && gridStep >= minStepForGrid)
+      ? gridStep
+      : (niceSteps.find(s => s >= minStepForGrid) || labelStep);
+
+    const startTick = Math.floor(minPrice / effectiveGridStep) * effectiveGridStep;
+    const endTick = Math.ceil(maxPrice / effectiveGridStep) * effectiveGridStep;
 
     ctx.font = '10px "JetBrains Mono", monospace';
     ctx.textAlign = 'left';
 
-    for (let priceTick = startTick; priceTick <= endTick; priceTick += step) {
+    for (let priceTick = startTick; priceTick <= endTick; priceTick += effectiveGridStep) {
       const y = getPriceY(priceTick);
 
       if (y >= padding.top && y <= height - padding.bottom) {
@@ -1053,8 +1102,13 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
         ctx.stroke();
         ctx.setLineDash([]);
 
-        ctx.fillStyle = textColor;
-        ctx.fillText(priceTick.toFixed(1), width - padding.right + 8, y + 3.5);
+        const isLabelTick = Math.abs(priceTick % labelStep) < 0.001 || 
+                            Math.abs((priceTick % labelStep) - labelStep) < 0.001 || 
+                            Math.abs((priceTick % labelStep) + labelStep) < 0.001;
+        if (isLabelTick) {
+          ctx.fillStyle = textColor;
+          ctx.fillText(priceTick.toFixed(1), width - padding.right + 8, y + 3.5);
+        }
       }
     }
 
@@ -1251,13 +1305,19 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
 
         if (profileMode === 'volume') {
           const barWidth = (bin.volume / maxVolInBin) * (colWidth * 0.85);
-          const barColor = (isInsideVa || isPoc) ? 'rgba(226, 54, 54, 0.85)' : 'rgba(8, 153, 129, 0.85)';
+          const isVpPoc = bin.price === maxVolPrice;
+          // Volume Profile distinct colors: Sky Blue inside Value Area, Slate Blue outside Value Area, Amber Gold for VP POC
+          const barColor = isVpPoc
+            ? 'rgba(245, 158, 11, 0.95)'
+            : (isInsideVa || isPoc)
+            ? 'rgba(56, 189, 248, 0.85)'
+            : 'rgba(100, 116, 139, 0.55)';
 
           ctx.fillStyle = barColor;
           ctx.fillRect(colStartX, binY, barWidth, Math.max(1, rowHeight - 0.5));
 
-          if (isPoc) {
-            ctx.strokeStyle = '#00f0ff';
+          if (isVpPoc || isPoc) {
+            ctx.strokeStyle = isVpPoc ? '#fbbf24' : '#00f0ff';
             ctx.lineWidth = 1;
             ctx.strokeRect(colStartX, binY, barWidth, Math.max(1, rowHeight - 0.5));
           }
@@ -1332,18 +1392,22 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
             });
           }
 
-          // 2. Draw Volume Profile on Right (VP)
+          // 2. Draw Volume Profile on Right (VP) - distinct colors from Market Profile
           if (bin.volume > 0 && maxVolInBin > 0) {
             const vpBarWidth = (bin.volume / maxVolInBin) * (vpWidth - 2);
             const isVpPoc = bin.price === maxVolPrice;
-            const vpColor = (isInsideVa || isPoc || isVpPoc) ? 'rgba(226, 54, 54, 0.85)' : 'rgba(8, 153, 129, 0.85)';
+            const vpColor = isVpPoc
+              ? 'rgba(245, 158, 11, 0.95)' // Amber Gold for VP POC
+              : (isInsideVa || isPoc)
+              ? 'rgba(56, 189, 248, 0.85)' // Vibrant Sky Blue inside Value Area
+              : 'rgba(100, 116, 139, 0.55)'; // Steel Slate outside Value Area
 
             ctx.fillStyle = vpColor;
             ctx.fillRect(vpStartX, binY + 0.5, vpBarWidth, Math.max(1, rowHeight - 1));
 
-            // Cyan POC line across VP at Volume POC
+            // Amber/Gold POC line across VP at Volume POC
             if (isVpPoc) {
-              ctx.strokeStyle = '#00f0ff';
+              ctx.strokeStyle = '#f59e0b';
               ctx.lineWidth = 2;
               ctx.beginPath();
               ctx.moveTo(vpStartX, binY + rowHeight / 2);
@@ -1742,6 +1806,56 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
       });
     }
 
+    // 5D. UNCLEARED SINGLE PRINT ZONES (Market Profile Imbalance Zones)
+    if (highlightSinglePrints && singlePrintZones.length > 0) {
+      singlePrintZones.forEach(zone => {
+        // Automatically remove cleared zones: only display uncleared or partially tested zones
+        if (zone.isCleared) return;
+
+        const colStartX = padding.left + panOffset.x + zone.sessionIdx * (colWidth + colGap);
+        const lineStartX = colStartX;
+        const lineEndX = width - padding.right;
+
+        // Skip if offscreen horizontally
+        if (lineEndX < padding.left || lineStartX > width - padding.right) return;
+
+        const yTop = getPriceY(zone.highPrice);
+        const yBottom = getPriceY(zone.lowPrice);
+        const zoneY = Math.min(yTop, yBottom);
+        const zoneH = Math.max(3, Math.abs(yBottom - yTop));
+
+        // Skip if offscreen vertically
+        if (zoneY + zoneH < padding.top || zoneY > height - padding.bottom) return;
+
+        // 1. Semi-transparent Amber Zone Fill
+        ctx.fillStyle = zone.isPartiallyTested ? 'rgba(245, 158, 11, 0.12)' : 'rgba(245, 158, 11, 0.20)';
+        ctx.fillRect(lineStartX, zoneY, lineEndX - lineStartX, zoneH);
+
+        // 2. Label Badge on Origin Column
+        if (lineStartX >= padding.left - 40 && lineStartX <= width - padding.right) {
+          const badgeText = zone.isPartiallyTested
+            ? `⚡ SP Zone (Tested) [${zone.lowPrice.toFixed(1)} - ${zone.highPrice.toFixed(1)}]`
+            : `⚡ SP Zone [${zone.lowPrice.toFixed(1)} - ${zone.highPrice.toFixed(1)}]`;
+          ctx.font = 'bold 9px "JetBrains Mono", monospace';
+          const textWidth = ctx.measureText(badgeText).width;
+          const badgeX = lineStartX + 4;
+          const badgeY = zoneH >= 16 
+            ? zoneY + zoneH / 2 + 3 
+            : Math.max(padding.top + 10, zoneY - 4);
+
+          ctx.fillStyle = isDark ? 'rgba(15, 23, 42, 0.88)' : 'rgba(255, 255, 255, 0.92)';
+          ctx.fillRect(badgeX, badgeY - 9, textWidth + 8, 12);
+          ctx.strokeStyle = 'rgba(245, 158, 11, 0.6)';
+          ctx.lineWidth = 0.8;
+          ctx.strokeRect(badgeX, badgeY - 9, textWidth + 8, 12);
+
+          ctx.fillStyle = '#fbbf24';
+          ctx.textAlign = 'left';
+          ctx.fillText(badgeText, badgeX + 4, badgeY);
+        }
+      });
+    }
+
     ctx.restore(); // Restore clipping region
 
     // 6. DRAW X-AXIS DATE/TIME RULER & Y-AXIS PRICE SCALE RULER LINES
@@ -1818,19 +1932,6 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
     ctx.moveTo(rulerX, padding.top);
     ctx.lineTo(rulerX, rulerY);
     ctx.stroke();
-
-    // Price Scale Ticks on Right Y-Axis Ruler
-    for (let priceTick = startTick; priceTick <= endTick; priceTick += step) {
-      const y = getPriceY(priceTick);
-      if (y >= padding.top && y <= rulerY) {
-        ctx.strokeStyle = isDarkSlate ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.2)';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(rulerX, y);
-        ctx.lineTo(rulerX + 5, y);
-        ctx.stroke();
-      }
-    }
 
     // 6.5 DRAW REAL-TIME CURRENT PRICE (LTP) MARKER & RIGHT PRICE AXIS BADGE
     const activeLtp = liveLtp ?? (candles.length > 0 ? candles[candles.length - 1].close : (dayProfiles.length > 0 ? dayProfiles[dayProfiles.length - 1].closePrice : null));
@@ -1997,7 +2098,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
       ctx.restore();
     }
 
-  }, [dayProfiles, dimensions, profileMode, theme, isDark, zoomLevel, yScale, xScale, panOffset, gridStep, highlightSinglePrints, showIbLine, showPoorHighLow, extendPocMode, pocTestStatusMap, poorHighLowStatusMap, showTwoDayBalance, twoDayBalances, crosshairPos, hoveredAxis, dragMode, hoveredSessionIdx, liveLtp, streamStatus]);
+  }, [dayProfiles, dimensions, profileMode, theme, isDark, zoomLevel, yScale, xScale, panOffset, gridStep, tpoSize, highlightSinglePrints, singlePrintZones, showIbLine, showPoorHighLow, extendPocMode, pocTestStatusMap, poorHighLowStatusMap, showTwoDayBalance, twoDayBalances, crosshairPos, hoveredAxis, dragMode, hoveredSessionIdx, liveLtp, streamStatus]);
 
   // Canvas Mouse Move Handler for Hover Tooltip, Axis Drag Scaling & Chart Panning
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -2172,10 +2273,172 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
     >
       
       {/* Controls Toolbar */}
-      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '12px', background: 'rgba(15, 23, 42, 0.6)', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', background: 'rgba(15, 23, 42, 0.6)', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
         
-        {/* Customization & View Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+        {/* Mobile Quick Bar */}
+        <div className="mobile-only" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontSize: '12px', fontWeight: '800', color: '#00f0ff' }}>📊 Market Profile</span>
+            <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>({symbol})</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <button
+              onClick={() => {
+                setShowMobileProfileInfo(!showMobileProfileInfo);
+                if (!showMobileProfileInfo) setShowMobileProfileTools(false);
+              }}
+              style={{
+                background: showMobileProfileInfo ? 'rgba(0, 240, 255, 0.25)' : 'rgba(255, 255, 255, 0.08)',
+                border: '1px solid rgba(0, 240, 255, 0.4)',
+                color: showMobileProfileInfo ? '#00f0ff' : '#e2e8f0',
+                padding: '4px 9px',
+                borderRadius: '4px',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              ℹ️ Info {showMobileProfileInfo ? '▲' : '▼'}
+            </button>
+            <button
+              onClick={() => {
+                setShowMobileProfileTools(!showMobileProfileTools);
+                if (!showMobileProfileTools) setShowMobileProfileInfo(false);
+              }}
+              style={{
+                background: showMobileProfileTools ? 'rgba(56, 189, 248, 0.25)' : 'rgba(255, 255, 255, 0.08)',
+                border: '1px solid rgba(56, 189, 248, 0.4)',
+                color: showMobileProfileTools ? '#38bdf8' : '#e2e8f0',
+                padding: '4px 9px',
+                borderRadius: '4px',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              🛠️ Tools {showMobileProfileTools ? '▲' : '▼'}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Info Collapsible Drawer: Cleanly expands ABOVE the chart, never overlapping it */}
+        {showMobileProfileInfo && (
+          <div
+            className="mobile-only"
+            style={{
+              width: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '6px',
+              paddingTop: '8px',
+              borderTop: '1px dashed rgba(255, 255, 255, 0.12)'
+            }}
+          >
+            {isFuturesContract && (
+              <span style={{ fontSize: '11px', fontWeight: '800', color: '#00f0ff', backgroundColor: 'rgba(0, 240, 255, 0.15)', border: '1px solid rgba(0, 240, 255, 0.4)', padding: '4px 8px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px', alignSelf: 'flex-start' }}>
+                <Zap size={12} /> {activeSymbolInfo.displayName || symbol} (Futures)
+              </span>
+            )}
+            {twoDayBalances.length > 0 && showTwoDayBalance && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(245, 158, 11, 0.2)', padding: '5px 10px', borderRadius: '4px', border: '1px solid rgba(245, 158, 11, 0.5)' }}>
+                <span style={{ fontSize: '10.5px', color: '#f59e0b', fontWeight: '800' }}>
+                  ⚡ 2D BALANCE: {twoDayBalances[twoDayBalances.length - 1].prevDate} inner to {twoDayBalances[twoDayBalances.length - 1].priorDate} (₹{twoDayBalances[twoDayBalances.length - 1].balanceLow} - ₹{twoDayBalances[twoDayBalances.length - 1].balanceHigh})
+                </span>
+              </div>
+            )}
+            {showPoorHighLow && poorHighLowStatusMap.some(p => p.isHighUnfinished || p.isLowUnfinished) && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(239, 68, 68, 0.2)', padding: '5px 10px', borderRadius: '4px', border: '1px solid rgba(239, 68, 68, 0.5)' }}>
+                <span style={{ fontSize: '10.5px', color: '#f87171', fontWeight: '800' }}>
+                  ⚠️ UNFINISHED BUSINESS: {poorHighLowStatusMap.filter(p => p.isHighUnfinished).length} Poor High(s), {poorHighLowStatusMap.filter(p => p.isLowUnfinished).length} Poor Low(s) Active
+                </span>
+              </div>
+            )}
+            {(() => {
+              const activeProfile = (hoverInfo && hoverInfo.profile) || (dayProfiles.length > 0 ? dayProfiles[dayProfiles.length - 1] : null);
+              if (!activeProfile) return null;
+              const op = activeProfile.openingTypeInfo || detectOpeningType(activeProfile);
+              return (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '6px',
+                  background: isDark ? 'rgba(15, 23, 42, 0.85)' : '#ffffff',
+                  padding: '5px 10px',
+                  borderRadius: '4px',
+                  border: `1px solid ${op.badgeColor}77`
+                }}>
+                  <span style={{ fontSize: '10.5px', color: isDark ? '#94a3b8' : '#64748b', fontWeight: '700' }}>
+                    Opening Type ({formatDateShort(activeProfile.dateStr)}):
+                  </span>
+                  <span style={{ fontSize: '11px', color: op.badgeColor, fontWeight: '900' }}>
+                    {op.type} {op.direction !== 'Neutral' ? `(${op.direction})` : ''}
+                  </span>
+                </div>
+              );
+            })()}
+            {(() => {
+              const activeProfile = (hoverInfo && hoverInfo.profile) || (dayProfiles.length > 0 ? dayProfiles[dayProfiles.length - 1] : null);
+              if (!activeProfile) return null;
+              const dt = activeProfile.dayTypeInfo || detectDayType(activeProfile);
+              return (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '6px',
+                  background: isDark ? 'rgba(15, 23, 42, 0.85)' : '#ffffff',
+                  padding: '5px 10px',
+                  borderRadius: '4px',
+                  border: `1px solid ${dt.badgeColor}77`
+                }}>
+                  <span style={{ fontSize: '10.5px', color: isDark ? '#94a3b8' : '#64748b', fontWeight: '700' }}>
+                    Day Type ({formatDateShort(activeProfile.dateStr)}):
+                  </span>
+                  <span style={{ fontSize: '11px', color: dt.badgeColor, fontWeight: '900' }}>
+                    {dt.type} • {dt.ibType}
+                  </span>
+                </div>
+              );
+            })()}
+            {(() => {
+              const activeProfile = (hoverInfo && hoverInfo.profile) || (dayProfiles.length > 0 ? dayProfiles[dayProfiles.length - 1] : null);
+              if (!activeProfile) return null;
+              const activeIdx = dayProfiles.findIndex(dp => dp.dateStr === activeProfile.dateStr);
+              const priorProfile = activeIdx > 0 ? dayProfiles[activeIdx - 1] : undefined;
+              const vp = activeProfile.valuePlacementInfo || detectValuePlacement(activeProfile, priorProfile);
+              if (!vp) return null;
+              return (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '6px',
+                  background: isDark ? 'rgba(15, 23, 42, 0.85)' : '#ffffff',
+                  padding: '5px 10px',
+                  borderRadius: '4px',
+                  border: `1px solid ${vp.badgeColor}77`
+                }}>
+                  <span style={{ fontSize: '10.5px', color: isDark ? '#94a3b8' : '#64748b', fontWeight: '700' }}>
+                    Value Placement:
+                  </span>
+                  <span style={{ fontSize: '11px', color: vp.badgeColor, fontWeight: '900' }}>
+                    {vp.type} • {vp.bias}
+                  </span>
+                </div>
+              );
+            })()}
+          </div>
+        )}
+
+        {/* Customization & View Controls: always visible on desktop, toggled on mobile */}
+        <div className={showMobileProfileTools ? '' : 'desktop-only'} style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', width: showMobileProfileTools ? '100%' : 'auto', paddingTop: showMobileProfileTools ? '6px' : '0', borderTop: showMobileProfileTools ? '1px dashed rgba(255, 255, 255, 0.1)' : 'none' }}>
           
           {/* Axis Grid Step with direct [-] [+] manual controls */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '3px', background: 'rgba(0,0,0,0.4)', padding: '3px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
@@ -2223,6 +2486,55 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
               }}
               style={{ background: 'rgba(255,255,255,0.08)', border: 'none', color: '#60a5fa', width: '18px', height: '18px', borderRadius: '3px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               title="Increase Grid Step Spacing"
+            >
+              +
+            </button>
+          </div>
+
+          {/* TPO Size (Tick Step) selection with direct [-] [+] manual controls */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '3px', background: 'rgba(0,0,0,0.4)', padding: '3px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <span style={{ fontSize: '11px', color: '#60a5fa', fontWeight: '800' }}>TPO:</span>
+            <button
+              onClick={() => {
+                const steps = [0.5, 1, 2, 3, 4, 5, 6, 8, 10, 15, 20, 25, 30, 40, 50, 100];
+                const curIdx = steps.indexOf(tpoSize);
+                if (curIdx > 0) setTpoSize(steps[curIdx - 1]);
+                else setTpoSize(steps[0]);
+              }}
+              style={{ background: 'rgba(255,255,255,0.08)', border: 'none', color: '#60a5fa', width: '18px', height: '18px', borderRadius: '3px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              title="Decrease TPO Size"
+            >
+              -
+            </button>
+            <select
+              value={tpoSize}
+              onChange={(e) => setTpoSize(Number(e.target.value))}
+              style={{
+                background: 'transparent',
+                color: '#60a5fa',
+                border: 'none',
+                fontSize: '11px',
+                fontWeight: '800',
+                cursor: 'pointer',
+                outline: 'none',
+                padding: '0 2px'
+              }}
+            >
+              {[0.5, 1, 2, 3, 4, 5, 6, 8, 10, 15, 20, 25, 30, 40, 50, 100].map(s => (
+                <option key={s} value={s} style={{ background: '#1e293b', color: '#ffffff' }}>
+                  {s} pts
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={() => {
+                const steps = [0.5, 1, 2, 3, 4, 5, 6, 8, 10, 15, 20, 25, 30, 40, 50, 100];
+                const curIdx = steps.indexOf(tpoSize);
+                if (curIdx !== -1 && curIdx < steps.length - 1) setTpoSize(steps[curIdx + 1]);
+                else setTpoSize(steps[steps.length - 1]);
+              }}
+              style={{ background: 'rgba(255,255,255,0.08)', border: 'none', color: '#60a5fa', width: '18px', height: '18px', borderRadius: '3px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              title="Increase TPO Size"
             >
               +
             </button>
@@ -2616,28 +2928,34 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
           position: 'relative', 
           width: '100%', 
           flex: isExpanded || isStandalone ? 1 : 'none',
-          minHeight: isExpanded || isStandalone ? '550px' : '640px',
-          height: isExpanded || isStandalone ? 'calc(100vh - 65px)' : '640px',
+          minHeight: isExpanded || isStandalone ? '500px' : (typeof window !== 'undefined' && window.innerWidth <= 768 ? '420px' : '640px'),
+          height: isExpanded || isStandalone ? 'calc(100vh - 65px)' : (typeof window !== 'undefined' && window.innerWidth <= 768 ? '460px' : '640px'),
           backgroundColor: !isDark ? '#ffffff' : (theme === 'dark-slate' ? '#181c27' : '#0d1017'), 
           borderRadius: isExpanded ? '0' : '8px', 
           border: `1px solid ${!isDark ? '#cbd5e1' : 'var(--border-color)'}`,
           overflow: 'hidden'
         }}
       >
-        {/* Navigation & Active Contract Header */}
-        <div style={{
-          position: 'absolute',
-          top: isExpanded ? '6px' : '10px',
-          left: isExpanded ? '10px' : '15px',
-          right: isExpanded ? '10px' : 'auto',
-          zIndex: 5,
-          display: 'flex',
-          alignItems: 'center',
-          gap: isExpanded ? '6px' : '10px',
-          pointerEvents: 'none',
-          flexWrap: isExpanded ? 'nowrap' : 'wrap',
-          overflowX: isExpanded ? 'auto' : 'visible'
-        }}>
+        {/* Navigation & Active Contract Header: Desktop only (on mobile, cleanly accessible via the Info button) */}
+        {!isMobile && (
+          <div
+            className="desktop-only"
+            style={{
+              position: 'absolute',
+              top: isExpanded ? '6px' : '10px',
+              left: isExpanded ? '10px' : '15px',
+              right: 'auto',
+              maxWidth: 'calc(100% - 150px)',
+              zIndex: 5,
+              display: 'flex',
+              alignItems: 'center',
+              gap: isExpanded ? '6px' : '10px',
+              pointerEvents: 'none',
+              flexWrap: 'nowrap',
+              overflowX: 'auto',
+              scrollbarWidth: 'none'
+            }}
+          >
           {isFuturesContract && (
             <span style={{ fontSize: '11px', fontWeight: '800', color: '#00f0ff', backgroundColor: 'rgba(0, 240, 255, 0.15)', border: '1px solid rgba(0, 240, 255, 0.4)', padding: '3px 8px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <Zap size={12} /> {activeSymbolInfo.displayName || symbol} (Futures)
@@ -2750,6 +3068,7 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
             );
           })()}
         </div>
+        )}
 
         {loading && (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(15, 23, 42, 0.8)', zIndex: 10 }}>
@@ -2763,7 +3082,11 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
             <ShieldAlert size={32} style={{ color: '#ef4444', marginBottom: '12px' }} />
             <span style={{ fontSize: '14px', color: '#ef4444', fontWeight: '600', marginBottom: '12px' }}>{error}</span>
             <button
-              onClick={() => fetchCandles(symbol, timeframe)}
+              onClick={async () => {
+                clearBackendUrlCache();
+                try { await resolveBackendUrl(true); } catch (e) {}
+                fetchCandles(symbol, timeframe, lookbackDays);
+              }}
               style={{
                 background: 'rgba(0, 240, 255, 0.15)',
                 border: '1px solid rgba(0, 240, 255, 0.4)',
@@ -2795,6 +3118,14 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
               setDragMode('pan');
               setDragStartPos({ x: e.touches[0].clientX, y: e.touches[0].clientY });
               setInitialPanOffset(panOffset);
+            } else if (e.touches.length === 2) {
+              setDragMode('none');
+              const dist = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+              );
+              pinchDistRef.current = dist;
+              pinchZoomRef.current = zoomLevel;
             }
           }}
           onTouchMove={(e) => {
@@ -2803,9 +3134,20 @@ export const MarketProfileContainer: React.FC<MarketProfileContainerProps> = ({
                 x: initialPanOffset.x + (e.touches[0].clientX - dragStartPos.x),
                 y: initialPanOffset.y + (e.touches[0].clientY - dragStartPos.y)
               });
+            } else if (e.touches.length === 2 && pinchDistRef.current) {
+              const dist = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+              );
+              const ratio = dist / pinchDistRef.current;
+              const nextZoom = Math.min(3.5, Math.max(0.4, pinchZoomRef.current * ratio));
+              setZoomLevel(nextZoom);
             }
           }}
-          onTouchEnd={() => setDragMode('none')}
+          onTouchEnd={() => {
+            setDragMode('none');
+            pinchDistRef.current = null;
+          }}
           onDoubleClick={handleDoubleClick}
           style={{ cursor: cursorStyle, display: 'block', touchAction: 'none' }}
         />

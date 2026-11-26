@@ -210,7 +210,7 @@ export async function scanVolumeBreakouts() {
         // Ignore errors
       }
     }));
-    await new Promise(r => setTimeout(r, 350));
+    await new Promise(r => setTimeout(r, 650));
   }
 
   // 2. Scan Options
@@ -257,7 +257,7 @@ export async function scanVolumeBreakouts() {
         // Ignore errors
       }
     }));
-    await new Promise(r => setTimeout(r, 350));
+    await new Promise(r => setTimeout(r, 650));
   }
 
   // 3. Scan Key Liquid Index & Stock Futures
@@ -308,7 +308,7 @@ export async function scanVolumeBreakouts() {
         // Ignore errors
       }
     }));
-    await new Promise(r => setTimeout(r, 350));
+    await new Promise(r => setTimeout(r, 650));
   }
 
   // Append new breakouts, avoiding duplicates (same symbol and time)

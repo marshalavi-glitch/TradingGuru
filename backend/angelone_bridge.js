@@ -284,11 +284,14 @@ export class AngelOneBridge {
     this.profileData = null;
     this.lastScheduledRunDate = null;
     this.candleCache = {};
-    this.requestQueue = Promise.resolve();
-    this.lastRequestTimestamp = 0;
-    this.lastPriorityRequestTimestamp = 0;
+    this.pendingQueue = [];
+    this.isProcessingQueue = false;
+    this.lastRequestCompletedTimestamp = 0;
+    this.lastQuoteCompletedTimestamp = 0;
     this.rateLimitBackoffUntil = 0;
-    this.minRequestSpacingMs = 350;
+    this.minRequestSpacingMs = 120; // 120ms between priority/order requests for ultra-fast response
+    this.minCandleSpacingMs = 800; // 800ms between historical candle requests (strictly safe under SmartAPI rate limit)
+    this.minQuoteSpacingMs = 1500; // 1500ms between quote calls
     this.config = this.loadConfig();
     this.tokenCache = this.loadTokenCache();
     this.presetsList = this.loadPresets();
@@ -384,40 +387,85 @@ export class AngelOneBridge {
     try {
       return JSON.parse(text);
     } catch (err) {
+      console.warn(`[SmartAPI parseResponse ERROR] Status=${res.status}, URL=${res.url}, Body=${text.slice(0, 150)}`);
       if (text.includes('Access denied') || res.status === 403 || res.status === 429) {
-        return { status: false, errorcode: 'RATE_LIMIT', message: 'Rate limit / Access Denied from SmartAPI' };
+        return { status: false, errorcode: 'RATE_LIMIT', message: `Rate limit / Access Denied from SmartAPI (${res.status}): ${text.slice(0, 80)}` };
       }
       return { status: false, message: `Invalid JSON response (${res.status}): ${text.slice(0, 100)}` };
     }
   }
 
-  async throttleRequest(fn, isPriority = false) {
-    const execute = async () => {
-      const now = Date.now();
-      if (this.rateLimitBackoffUntil > now) {
-        const remaining = Math.min(2000, this.rateLimitBackoffUntil - now);
-        await new Promise(r => setTimeout(r, remaining));
+  async throttleRequest(fn, isPriority = false, requestType = 'general') {
+    return new Promise((resolve, reject) => {
+      const item = { fn, isPriority, requestType, resolve, reject, queuedAt: Date.now() };
+      if (isPriority) {
+        // High priority: insert ahead of background items, preserving FIFO among priority items
+        const firstNonPriorityIdx = this.pendingQueue.findIndex(q => !q.isPriority);
+        if (firstNonPriorityIdx === -1) {
+          this.pendingQueue.push(item);
+        } else {
+          this.pendingQueue.splice(firstNonPriorityIdx, 0, item);
+        }
+      } else {
+        // Low priority background request
+        this.pendingQueue.push(item);
       }
-      const elapsed = Date.now() - this.lastRequestTimestamp;
-      const minSpacing = isPriority ? 250 : this.minRequestSpacingMs;
-      if (elapsed < minSpacing) {
-        await new Promise(r => setTimeout(r, minSpacing - elapsed));
-      }
-      this.lastRequestTimestamp = Date.now();
-      return await fn();
-    };
+      this.processQueue();
+    });
+  }
 
-    if (isPriority) {
-      // Execute priority request ahead of background backlog with safe spacing
-      return await execute();
+  async processQueue() {
+    if (this.isProcessingQueue) return;
+    this.isProcessingQueue = true;
+
+    while (this.pendingQueue.length > 0) {
+      const item = this.pendingQueue.shift();
+
+      try {
+        // 1. Strictly honor rate limit backoff window
+        const now = Date.now();
+        if (this.rateLimitBackoffUntil > now) {
+          const waitTime = this.rateLimitBackoffUntil - now;
+          if (waitTime > 0) {
+            await new Promise(r => setTimeout(r, waitTime));
+          }
+        }
+
+        // 2. Minimum request spacing based on request type
+        const reqSpacing = item.requestType === 'candle'
+          ? this.minCandleSpacingMs
+          : (item.isPriority ? this.minRequestSpacingMs : 300);
+
+        const elapsedSinceLastReq = Date.now() - this.lastRequestCompletedTimestamp;
+        if (elapsedSinceLastReq < reqSpacing) {
+          await new Promise(r => setTimeout(r, reqSpacing - elapsedSinceLastReq));
+        }
+
+        // 3. For quote calls, enforce quote spacing
+        if (item.requestType === 'quote') {
+          const elapsedSinceQuote = Date.now() - this.lastQuoteCompletedTimestamp;
+          if (elapsedSinceQuote < this.minQuoteSpacingMs) {
+            await new Promise(r => setTimeout(r, this.minQuoteSpacingMs - elapsedSinceQuote));
+          }
+        }
+
+        try {
+          const res = await item.fn();
+          item.resolve(res);
+        } catch (err) {
+          item.reject(err);
+        } finally {
+          this.lastRequestCompletedTimestamp = Date.now();
+          if (item.requestType === 'quote') {
+            this.lastQuoteCompletedTimestamp = Date.now();
+          }
+        }
+      } catch (outerErr) {
+        item.reject(outerErr);
+      }
     }
 
-    const next = this.requestQueue.then(execute).catch(err => {
-      console.warn('[throttleRequest error]', err.message);
-      return { status: false, message: err.message };
-    });
-    this.requestQueue = next.then(() => {}, () => {});
-    return next;
+    this.isProcessingQueue = false;
   }
 
   async login(newCredentials = null) {
@@ -487,38 +535,41 @@ export class AngelOneBridge {
     }
   }
 
-  async autoRecover(fn, isPriority = false) {
-    for (let attempt = 0; attempt < 3; attempt++) {
+  async autoRecover(fn, isPriority = false, requestType = 'general') {
+    for (let attempt = 0; attempt < 2; attempt++) {
       try {
-        let result = await this.throttleRequest(fn, isPriority);
+        let result = await this.throttleRequest(fn, isPriority, requestType);
 
-        // Check token expiration first before rate limits
-        const isTokenExpired = result && (
+        // Check session token expiration first before rate limits (avoid false triggers on symboltoken)
+        const msg = String(result?.message || '');
+        const isSymbolTokenError = msg.toLowerCase().includes('symboltoken') || msg.toLowerCase().includes('symbol token') || result?.errorcode === 'AB4046';
+        const isTokenExpired = result && !isSymbolTokenError && (
           result.errorcode === 'AG8001' || 
           result.errorcode === 'AG8002' || 
-          result.message === 'Invalid Token' || 
-          (result.status === false && (result.message?.includes('Token') || result.message?.includes('token') || result.message?.includes('Session Expired') || result.message?.includes('Unauthorized')))
+          result.errorcode === 'AB1010' ||
+          msg === 'Invalid Token' || 
+          (result.status === false && (msg.includes('Session Expired') || msg.includes('Unauthorized') || msg.includes('jwt') || msg.includes('Invalid Token')))
         );
 
         if (isTokenExpired) {
-          console.warn(`[Angel One Token Recovery] Expired/Invalid token detected (${result.errorcode || result.message}). Re-authenticating...`);
+          console.warn(`[Angel One Token Recovery] Expired/Invalid session token detected (${result.errorcode || msg}). Re-authenticating...`);
           const loginRes = await this.login();
           if (loginRes.success) {
             continue;
           }
         }
 
-        if (result && (result.errorcode === 'RATE_LIMIT' || result.message?.includes('Rate limit') || result.message?.includes('Access denied'))) {
-          const waitTime = 1000 * (attempt + 1);
-          console.warn(`[Angel One Rate Limit] SmartAPI busy (${result.errorcode || result.message}). Backing off ${waitTime}ms (attempt ${attempt + 1})...`);
+        if (result && (result.errorcode === 'RATE_LIMIT' || result.message?.includes('Rate limit') || result.message?.includes('Access denied') || result.message?.includes('exceeding access rate'))) {
+          const isAccessRate = result.message?.includes('exceeding access rate') || (typeof result.message === 'string' && result.message.includes('403'));
+          const waitTime = isAccessRate ? 3000 : 1500;
+          console.warn(`[Angel One Rate Limit] SmartAPI rate limit (${result.message || result.errorcode}). Pausing queue for ${waitTime}ms...`);
           this.rateLimitBackoffUntil = Date.now() + waitTime;
-          await new Promise(r => setTimeout(r, waitTime));
-          continue;
+          return result;
         }
         return result;
       } catch (err) {
         console.warn('[Angel One AutoRecover Exception]', err.message);
-        if (attempt === 2) return { status: false, message: err.message };
+        if (attempt === 1) return { status: false, message: err.message };
         await new Promise(r => setTimeout(r, 250));
       }
     }
@@ -572,6 +623,10 @@ export class AngelOneBridge {
       return { status: false, message: `No symbol token found for ${tradingsymbol}` };
     }
 
+    if (this.rateLimitBackoffUntil > Date.now()) {
+      return { status: false, message: 'SmartAPI rate limit backoff active', data: null };
+    }
+
     if (!this.config.jwtToken) {
       await this.login();
     }
@@ -598,7 +653,11 @@ export class AngelOneBridge {
   }
 
   // High-performance batch market quote API (fetches multiple tokens across exchanges in 1 call)
-  async getMarketQuotes(exchangeTokensMap, mode = 'LTP') {
+  async getMarketQuotes(exchangeTokensMap, mode = 'LTP', isPriority = true) {
+    if (this.rateLimitBackoffUntil > Date.now()) {
+      return { status: false, message: 'SmartAPI rate limit backoff active', data: null };
+    }
+
     if (!this.config.jwtToken) {
       await this.login();
     }
@@ -620,12 +679,16 @@ export class AngelOneBridge {
       } finally {
         clearTimeout(timeout);
       }
-    }, true);
+    }, isPriority, 'quote');
   }
 
   async getCandles({ exchange = 'NSE', symboltoken = '', interval = 'FIVE_MINUTE', fromdate = '', todate = '' }, isPriority = true) {
     if (!symboltoken) {
       return { status: false, message: 'symboltoken required for candles' };
+    }
+
+    if (this.rateLimitBackoffUntil > Date.now()) {
+      return { status: false, message: 'SmartAPI rate limit backoff active', data: [] };
     }
 
     if (!fromdate || !todate) {
@@ -667,7 +730,7 @@ export class AngelOneBridge {
       } finally {
         clearTimeout(timeout);
       }
-    }, isPriority);
+    }, isPriority, 'candle');
   }
 
   async resolveSymbolToken(rawSymbol) {
@@ -736,6 +799,22 @@ export class AngelOneBridge {
     if (this.tokenCache[stripped]) return this.tokenCache[stripped];
     if (this.tokenCache[`${exchange}:${stripped}`]) return this.tokenCache[`${exchange}:${stripped}`];
 
+    // Check presets list (5000+ cached tokens)
+    if (Array.isArray(this.presetsList)) {
+      const pMatch = this.presetsList.find(p => p.value === clean || p.value === `${exchange}:${stripped}` || p.value === stripped || p.symboltoken === clean);
+      if (pMatch && (pMatch.token || pMatch.symboltoken)) {
+        const tok = String(pMatch.token || pMatch.symboltoken);
+        const resolved = {
+          exchange: pMatch.exchange || exchange,
+          symboltoken: tok,
+          tradingsymbol: pMatch.label || pMatch.tradingsymbol || clean
+        };
+        this.tokenCache[clean] = resolved;
+        this.tokenCache[`${exchange}:${clean}`] = resolved;
+        return resolved;
+      }
+    }
+
     // 3. Search via Angel One searchScrip API
     try {
       const searchTarget = underlyingSymbol || stripped || clean;
@@ -753,7 +832,7 @@ export class AngelOneBridge {
         } finally {
           clearTimeout(timeout);
         }
-      }, true);
+      }, false, 'search');
 
       if (res && res.status && Array.isArray(res.data) && res.data.length > 0) {
         // Priority to exact match, or FUT if future, or option contract if NFO, or -EQ if equity
@@ -833,8 +912,8 @@ export class AngelOneBridge {
       }
     }
 
-    // 3. Query Angel One searchScrip API for NSE and NFO (and MCX if commodity)
-    if (this.isLoggedIn) {
+    // 3. Query Angel One searchScrip API only if local presets and symbol map have no results
+    if (results.length === 0 && this.isLoggedIn) {
       try {
         const isCommodity = ['CRUDE', 'GOLD', 'SILVER', 'NATURAL', 'COPPER', 'ZINC', 'MCX'].some(c => q.includes(c));
         const tasks = [
@@ -852,7 +931,7 @@ export class AngelOneBridge {
             } finally {
               clearTimeout(timeout);
             }
-          }, true).catch(() => null),
+          }, false, 'search').catch(() => null),
 
           this.autoRecover(async () => {
             const controller = new AbortController();
@@ -868,7 +947,7 @@ export class AngelOneBridge {
             } finally {
               clearTimeout(timeout);
             }
-          }, true).catch(() => null)
+          }, false, 'search').catch(() => null)
         ];
 
         if (isCommodity) {
@@ -1026,15 +1105,17 @@ export class AngelOneBridge {
       const cacheKey = `${symbol}_${timeframe}`;
       const nowMs = Date.now();
       const cached = this.candleCache[cacheKey];
-      if (cached && (nowMs - cached.timestamp < 20000) && Array.isArray(cached.candles) && cached.candles.length > 0) {
-        return {
-          status: true,
-          symbol,
-          timeframe,
-          exchange: cached.exchange,
-          symboltoken: cached.symboltoken,
-          candles: limit ? cached.candles.slice(-limit) : cached.candles
-        };
+      if (cached && Array.isArray(cached.candles) && cached.candles.length > 0) {
+        if ((nowMs - cached.timestamp < 30000) || (this.rateLimitBackoffUntil > nowMs)) {
+          return {
+            status: true,
+            symbol,
+            timeframe,
+            exchange: cached.exchange,
+            symboltoken: cached.symboltoken,
+            candles: limit ? cached.candles.slice(-limit) : cached.candles
+          };
+        }
       }
 
       const resolved = await this.resolveSymbolToken(symbol);
@@ -1110,8 +1191,9 @@ export class AngelOneBridge {
         todate
       }, isPriority);
 
-      // Fallback 1: If returned empty and daysBack > 150, retry with a 150-day window (~100 trading sessions)
-      if ((!res || !res.status || !Array.isArray(res.data) || res.data.length === 0) && daysBack > 150 && interval === 'ONE_DAY') {
+      const isRateLimited = !res || res.errorcode === 'RATE_LIMIT' || res.message?.includes('Rate limit') || res.message?.includes('Access denied');
+      // Fallback 1: Only retry date range if API call succeeded (not rate limited) but data was empty
+      if (!isRateLimited && (!res || !res.status || !Array.isArray(res.data) || res.data.length === 0) && daysBack > 150 && interval === 'ONE_DAY') {
         const midFrom = new Date(now.getTime() - 150 * 24 * 60 * 60 * 1000);
         res = await this.getCandles({
           exchange: resolved.exchange,
@@ -1122,8 +1204,8 @@ export class AngelOneBridge {
         }, isPriority);
       }
 
-      // Fallback 2: If returned empty and daysBack > 7, retry with a tight 7-day window
-      if ((!res || !res.status || !Array.isArray(res.data) || res.data.length === 0) && daysBack > 7) {
+      // Fallback 2: Only retry date range if not rate limited
+      if (!isRateLimited && (!res || !res.status || !Array.isArray(res.data) || res.data.length === 0) && daysBack > 7) {
         const tightFrom = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
         res = await this.getCandles({
           exchange: resolved.exchange,
@@ -1134,8 +1216,8 @@ export class AngelOneBridge {
         }, isPriority);
       }
 
-      // Fallback 3: If still empty and symbol is Crude Oil, fetch active November 2026 contract (573422)
-      if ((!res || !res.status || !Array.isArray(res.data) || res.data.length === 0) && symbol.toUpperCase().includes('CRUDE')) {
+      // Fallback 3: If still empty and not rate limited
+      if (!isRateLimited && (!res || !res.status || !Array.isArray(res.data) || res.data.length === 0) && symbol.toUpperCase().includes('CRUDE')) {
         const tightFrom = new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000);
         res = await this.getCandles({
           exchange: 'MCX',

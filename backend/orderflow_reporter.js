@@ -461,7 +461,7 @@ export async function scanUniverse1000({ isFullScan = false } = {}) {
       orderFlowReportCache.scanProgress = Math.round(((cIdx + 1) / chunks.length) * 100);
 
       // Throttling to respect Angel One SmartAPI limits
-      await new Promise(r => setTimeout(r, 280));
+      await new Promise(r => setTimeout(r, 1200));
     }
 
     orderFlowReportCache.items = Array.from(itemMap.values());
@@ -504,11 +504,12 @@ function isNSEMarketHours() {
 }
 
 // Auto-scan runner every 2 minutes during market hours
+// Auto-scan runner every 30 minutes during market hours (pacing preserves SmartAPI quota for 0-delay chart updates)
 setInterval(() => {
   if (isNSEMarketHours() && !isScanningUniverse && angelOneBridge.isLoggedIn) {
     scanUniverse1000({ isFullScan: false }).catch(() => {});
   }
-}, 120000);
+}, 30 * 60 * 1000);
 
 // Export Excel workbook for 1,000 stocks report
 export async function exportOrderFlowExcelBuffer() {

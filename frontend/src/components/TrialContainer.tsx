@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { getBackendHttpUrl, tvStreamer } from '../utils/tvStreamer';
+import { getBackendHttpUrl, tvStreamer, reportBackendFetchError } from '../utils/tvStreamer';
+import { resolveBackendUrl, clearBackendUrlCache } from '../utils/config';
 import { groupCandlesByDay, calculateDayProfile, Candle, DayProfile, TPOBin } from '../utils/profileCalculator';
 import { resolveSymbol } from '../utils/symbolResolver';
 import { filterMarketHoursCandles, isWithinMarketHours } from '../utils/marketHours';
@@ -313,6 +314,7 @@ export const TrialContainer: React.FC<TrialContainerProps> = ({
         setError(`No candle data received for ${sym}`);
       }
     } catch (err: any) {
+      reportBackendFetchError();
       setError(err.message || 'Failed to fetch candle data');
     } finally {
       setLoading(false);
@@ -1404,7 +1406,11 @@ export const TrialContainer: React.FC<TrialContainerProps> = ({
             <ShieldAlert size={32} style={{ color: '#ef4444', marginBottom: '12px' }} />
             <span style={{ fontSize: '14px', color: '#ef4444', fontWeight: '600', marginBottom: '12px' }}>{error}</span>
             <button
-              onClick={() => fetchCandles(symbol, timeframe, lookbackDays)}
+              onClick={async () => {
+                clearBackendUrlCache();
+                try { await resolveBackendUrl(true); } catch (e) {}
+                fetchCandles(symbol, timeframe, lookbackDays);
+              }}
               style={{
                 background: 'rgba(0, 240, 255, 0.15)',
                 border: '1px solid rgba(0, 240, 255, 0.4)',

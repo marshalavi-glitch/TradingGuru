@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import tvStreamer, { getBackendHttpUrl } from '../utils/tvStreamer';
-import { groupCandlesByDay, calculateDayProfile, Candle, DayProfile, TPOBin, calculateSinglePrintZones, SinglePrintZone } from '../utils/profileCalculator';
+import { groupCandlesByDay, calculateDayProfile, Candle, DayProfile, TPOBin, calculateSinglePrintZones, SinglePrintZone, getPeriodLetter, getPeriodColor } from '../utils/profileCalculator';
 import { resolveSymbol } from '../utils/symbolResolver';
 import { filterMarketHoursCandles, isWithinMarketHours } from '../utils/marketHours';
 import { 
   RefreshCw, ZoomIn, ZoomOut, Move, BarChart2, TrendingUp, TrendingDown, 
   ShieldAlert, Zap, Sliders, ChevronLeft, ChevronRight, Maximize2, Minimize2, ExternalLink, Layers,
-  Pin, PinOff, Camera, X
+  Pin, PinOff, Camera, X, Scissors, GitMerge, Combine, Split, Columns, CheckSquare, Square, RotateCcw
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
@@ -191,6 +191,20 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
     }
   }, []);
 
+  // Split & Merge Profiles State
+  const [mergedClusters, setMergedClusters] = useState<string[][]>([]);
+  const [splitSessionKeys, setSplitSessionKeys] = useState<Set<string>>(new Set());
+  const [splitModeMap, setSplitModeMap] = useState<Record<string, 'periods' | 'ib'>>({});
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    sessionIndex: number;
+    profile: DayProfile;
+  } | null>(null);
+  const [mergeModalOpen, setMergeModalOpen] = useState<boolean>(false);
+  const [selectedKeysForMerge, setSelectedKeysForMerge] = useState<string[]>([]);
+  const contextMenuRef = useRef<HTMLDivElement | null>(null);
+
   // Interactive Scaling State
   const [zoomLevel, setZoomLevel] = useState<number>(1.0);
   const [yScale, setYScale] = useState<number>(1.0);
@@ -324,7 +338,23 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
   const [hoveredAxis, setHoveredAxis] = useState<'none' | 'y-axis' | 'x-axis'>('none');
   const [cursorStyle, setCursorStyle] = useState<string>('crosshair');
 
-  // Multi-touch pinch & pan state ref for smooth mobile gestures
+    // Multi-touch pinch & pan state ref for smooth mobile gestures
+  const dragRef = useRef<{
+    mode: 'none' | 'pan' | 'y-axis' | 'x-axis';
+    startX: number;
+    startY: number;
+    initialYScale: number;
+    initialXScale: number;
+    initialPan: { x: number; y: number };
+  }>({
+    mode: 'none',
+    startX: 0,
+    startY: 0,
+    initialYScale: 1.0,
+    initialXScale: 1.0,
+    initialPan: { x: 0, y: 0 }
+  });
+
   const touchStateRef = useRef<{
     mode: 'none' | 'pan' | 'pinch';
     startX: number;
@@ -538,7 +568,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
     };
   }, [symbol, timeframe]);
 
-  // Group candles and build profiles
+  // Group candles and build profiles with Split & Merge support
   const dayProfiles: DayProfile[] = useMemo(() => {
     if (!candles || candles.length === 0) return [];
     const { keys, grouped, sessionPeriodType } = groupCandlesBySessionPeriod(candles, sessionPeriod);
@@ -554,32 +584,210 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
     }
     
     const activeKeys = keys.slice(Math.max(0, keys.length - lookbackLimit));
-    
-    return activeKeys.map(kStr => {
-      return calculateDayProfile(kStr, grouped[kStr], 40, sessionPeriodType, undefined, tpoStep, symbol);
-    });
-  }, [candles, lookbackDays, sessionPeriod, tpoStep, symbol]);
 
-  // Auto-scroll to show the latest sessions on load or symbol switch
-  const lastAutoScrollKey = useRef<string>('');
-  useEffect(() => {
-    if (dayProfiles.length > 0 && dimensions.width > 0) {
-      const key = `${symbol}_${timeframe}_${sessionPeriod}_${dayProfiles.length}`;
-      if (lastAutoScrollKey.current !== key) {
-        lastAutoScrollKey.current = key;
-        const chartW = dimensions.width - 25 - 80;
-        const baseColWidth = Math.max(180, Math.min(260, chartW / 5.2));
-        const colWidth = baseColWidth * zoomLevel * xScale;
-        const colGap = Math.max(8, 14 * zoomLevel * xScale);
-        const totalW = dayProfiles.length * (colWidth + colGap);
-        if (totalW > chartW) {
-          setPanOffset({ x: chartW - totalW + 20, y: 0 });
+    // Construct session clusters taking mergedClusters into account
+    const clusters: string[][] = [];
+    const processedKeys = new Set<string>();
+
+    for (const key of activeKeys) {
+      if (processedKeys.has(key)) continue;
+
+      // Check if this key belongs to an active merged cluster
+      const customCluster = mergedClusters.find(c => c.includes(key));
+      if (customCluster && customCluster.length > 1) {
+        const validClusterKeys = customCluster.filter(k => grouped[k] && grouped[k].length > 0);
+        if (validClusterKeys.length > 0) {
+          clusters.push(validClusterKeys);
+          validClusterKeys.forEach(k => processedKeys.add(k));
+          continue;
+        }
+      }
+
+      clusters.push([key]);
+      processedKeys.add(key);
+    }
+
+    const profiles: DayProfile[] = [];
+
+    for (const cluster of clusters) {
+      if (cluster.length > 1) {
+        // Merged composite profile combining 2 or more sessions
+        const mergedCandles = cluster
+          .flatMap(k => grouped[k] || [])
+          .sort((a, b) => a.time - b.time);
+
+        if (mergedCandles.length === 0) continue;
+
+        const label = `${cluster[0]} -> ${cluster[cluster.length - 1]}`;
+        const compProf = calculateDayProfile(
+          label,
+          mergedCandles,
+          40,
+          sessionPeriodType,
+          undefined,
+          tpoStep,
+          symbol
+        );
+        compProf.isMerged = true;
+        compProf.mergedKeys = cluster;
+        profiles.push(compProf);
+      } else {
+        const singleKey = cluster[0];
+        const sessionCandles = grouped[singleKey] || [];
+        if (sessionCandles.length === 0) continue;
+
+        // Check if this session is SPLIT
+        if (splitSessionKeys.has(singleKey)) {
+          const splitMode = splitModeMap[singleKey] || 'periods';
+
+          if (sessionPeriod === 'W' || sessionPeriod === 'W_S' || sessionPeriod === 'M_S') {
+            // For Weekly / Monthly, split into daily sub-profiles
+            const dailyGroups = groupCandlesByDay(sessionCandles);
+            const sortedDays = Object.keys(dailyGroups).sort();
+            sortedDays.forEach(dayStr => {
+              const dayCandles = dailyGroups[dayStr];
+              if (dayCandles && dayCandles.length > 0) {
+                const dayProf = calculateDayProfile(
+                  dayStr,
+                  dayCandles,
+                  40,
+                  'daily',
+                  undefined,
+                  tpoStep,
+                  symbol
+                );
+                dayProf.isSplitPeriod = true;
+                dayProf.parentSessionKey = singleKey;
+                profiles.push(dayProf);
+              }
+            });
+          } else if (splitMode === 'ib') {
+            // Split into Morning / IB (09:15 - 11:30) and Afternoon (11:30 - 15:30)
+            const morningCandles = sessionCandles.filter(c => {
+              const istSec = c.time + 19800;
+              const d = new Date(istSec * 1000);
+              const mins = (d.getUTCHours() * 60 + d.getUTCMinutes()) - (9 * 60 + 15);
+              return mins < 135; // Before 11:30 AM
+            });
+            const afternoonCandles = sessionCandles.filter(c => {
+              const istSec = c.time + 19800;
+              const d = new Date(istSec * 1000);
+              const mins = (d.getUTCHours() * 60 + d.getUTCMinutes()) - (9 * 60 + 15);
+              return mins >= 135; // 11:30 AM onwards
+            });
+
+            if (morningCandles.length > 0) {
+              const mProf = calculateDayProfile(
+                `${singleKey} (IB / AM)`,
+                morningCandles,
+                40,
+                sessionPeriodType,
+                undefined,
+                tpoStep,
+                symbol
+              );
+              mProf.isSplitPeriod = true;
+              mProf.parentSessionKey = singleKey;
+              profiles.push(mProf);
+            }
+            if (afternoonCandles.length > 0) {
+              const aProf = calculateDayProfile(
+                `${singleKey} (PM)`,
+                afternoonCandles,
+                40,
+                sessionPeriodType,
+                undefined,
+                tpoStep,
+                symbol
+              );
+              aProf.isSplitPeriod = true;
+              aProf.parentSessionKey = singleKey;
+              profiles.push(aProf);
+            }
+          } else {
+            // Split into 30m period columns (Letter by Letter: A, B, C...)
+            const periodCandles: Record<number, Candle[]> = {};
+            sessionCandles.forEach(c => {
+              const istSec = c.time + 19800;
+              const d = new Date(istSec * 1000);
+              const minsFromOpen = (d.getUTCHours() * 60 + d.getUTCMinutes()) - (9 * 60 + 15);
+              if (minsFromOpen >= 0 && minsFromOpen < 375) {
+                const pIdx = Math.floor(minsFromOpen / 30);
+                if (!periodCandles[pIdx]) periodCandles[pIdx] = [];
+                periodCandles[pIdx].push(c);
+              }
+            });
+
+            const sortedPeriodIndices = Object.keys(periodCandles).map(Number).sort((a, b) => a - b);
+            if (sortedPeriodIndices.length > 0) {
+              sortedPeriodIndices.forEach(pIdx => {
+                const letter = getPeriodLetter(pIdx);
+                const cArr = periodCandles[pIdx];
+                if (cArr && cArr.length > 0) {
+                  const pProf = calculateDayProfile(
+                    `${singleKey} [${letter}]`,
+                    cArr,
+                    40,
+                    sessionPeriodType,
+                    undefined,
+                    tpoStep,
+                    symbol
+                  );
+                  pProf.isSplitPeriod = true;
+                  pProf.periodLetter = letter;
+                  pProf.parentSessionKey = singleKey;
+                  profiles.push(pProf);
+                }
+              });
+            } else {
+              const singleProf = calculateDayProfile(singleKey, sessionCandles, 40, sessionPeriodType, undefined, tpoStep, symbol);
+              profiles.push(singleProf);
+            }
+          }
         } else {
-          setPanOffset({ x: 0, y: 0 });
+          // Standard un-split profile
+          const singleProf = calculateDayProfile(singleKey, sessionCandles, 40, sessionPeriodType, undefined, tpoStep, symbol);
+          profiles.push(singleProf);
         }
       }
     }
-  }, [dayProfiles, dimensions.width, symbol, timeframe, sessionPeriod]);
+
+    return profiles;
+  }, [candles, lookbackDays, sessionPeriod, tpoStep, symbol, mergedClusters, splitSessionKeys, splitModeMap]);
+
+    // Scrolls to dock the latest profile (most recent session) at the right edge
+  const scrollToLatest = useCallback(() => {
+    if (dayProfiles.length === 0) return;
+    const width = dimensions.width > 0 ? dimensions.width : (canvasContainerRef.current?.clientWidth || 1000);
+    const padding = { left: viewMode === 'GV' ? 100 : 20, right: 75 };
+    const chartW = width - padding.left - padding.right;
+    const baseColWidth = Math.max(180, Math.min(260, chartW / 5.2));
+    const colWidth = baseColWidth * zoomLevel * xScale;
+    const colGap = Math.max(8, 14 * zoomLevel * xScale);
+    const totalW = dayProfiles.length * colWidth + (dayProfiles.length - 1) * colGap;
+    
+    // Position so the latest profile is prominently displayed and docked on the right
+    // When only 1 or 2 profiles exist (e.g. Yearly/Monthly), center them nicely on the canvas
+    let targetX: number;
+    if (totalW < chartW) {
+      targetX = Math.round((chartW - totalW) / 2);
+    } else {
+      targetX = Math.round(chartW - totalW - 25);
+    }
+    setPanOffset({ x: targetX, y: 0 });
+  }, [dayProfiles.length, dimensions.width, viewMode, zoomLevel, xScale]);
+
+  // Auto-scroll to show the latest sessions on load, resize, or symbol switch
+  const lastAutoScrollKey = useRef<string>('');
+  useEffect(() => {
+    if (dayProfiles.length > 0 && dimensions.width > 0) {
+      const key = `${symbol}_${timeframe}_${sessionPeriod}_${dayProfiles.length}_${dimensions.width}`;
+      if (lastAutoScrollKey.current !== key) {
+        lastAutoScrollKey.current = key;
+        scrollToLatest();
+      }
+    }
+  }, [dayProfiles.length, dimensions.width, symbol, timeframe, sessionPeriod, scrollToLatest]);
 
   // Keyboard shortcut listener for Pin/Unpin (P) and Unpin (Esc)
   useEffect(() => {
@@ -602,10 +810,22 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
         }
       } else if (e.key === 'Escape') {
         setPinnedInfo(null);
+        setContextMenu(null);
+        setMergeModalOpen(false);
       }
     };
+    const handleWindowMouseDown = (e: MouseEvent) => {
+      if (contextMenuRef.current && !contextMenuRef.current.contains(e.target as Node)) {
+        setContextMenu(null);
+      }
+    };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('mousedown', handleWindowMouseDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('mousedown', handleWindowMouseDown);
+    };
   }, [pinnedInfo, hoverInfo, dayProfiles]);
 
   // Compute composite global volume histogram across all loaded sessions for the left side
@@ -932,19 +1152,28 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
       return padding.top + ((maxPrice - price) / priceRange) * baseChartHeight;
     };
 
-    // 4. Draw Subtle Horizontal Dotted Grid Lines & Clean Right Price Scale
-    const targetTicks = Math.max(8, Math.min(18, Math.floor(baseChartHeight / 36)));
-    const rawStep = priceRange / targetTicks;
-    const niceSteps = [0.5, 1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000];
-    const step = gridStep > 0 ? gridStep : (niceSteps.find(s => s >= rawStep) || (Math.ceil(rawStep / 50) * 50));
+    // 4. Draw Subtle Horizontal Dotted Grid Lines & Clean Right Price Scale (Anti-Clutter / Anti-Overlap)
+    const niceSteps = [0.5, 1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 2500, 5000];
 
-    const startTick = Math.floor(minPrice / step) * step;
-    const endTick = Math.ceil(maxPrice / step) * step;
+    // Label step: Must ensure at least 24px vertical distance between adjacent price labels
+    const minLabelSpacingPx = 24;
+    const minStepForLabels = (priceRange / Math.max(1, baseChartHeight)) * minLabelSpacingPx;
+    const labelStep = niceSteps.find(s => s >= minStepForLabels) || (Math.ceil(minStepForLabels / 50) * 50);
+
+    // Grid line step: Draw at gridStep if space permits (at least 8px), otherwise step up
+    const minGridSpacingPx = 8;
+    const minStepForGrid = (priceRange / Math.max(1, baseChartHeight)) * minGridSpacingPx;
+    const effectiveGridStep = (gridStep > 0 && gridStep >= minStepForGrid)
+      ? gridStep
+      : (niceSteps.find(s => s >= minStepForGrid) || labelStep);
+
+    const startTick = Math.floor(minPrice / effectiveGridStep) * effectiveGridStep;
+    const endTick = Math.ceil(maxPrice / effectiveGridStep) * effectiveGridStep;
 
     ctx.font = '10px "JetBrains Mono", monospace';
     ctx.textAlign = 'left';
 
-    for (let priceTick = startTick; priceTick <= endTick; priceTick += step) {
+    for (let priceTick = startTick; priceTick <= endTick; priceTick += effectiveGridStep) {
       const y = getPriceY(priceTick);
       if (y >= padding.top && y <= height - padding.bottom) {
         ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.07)' : 'rgba(0, 0, 0, 0.08)';
@@ -963,10 +1192,15 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
         ctx.lineTo(width - padding.right + 4, y);
         ctx.stroke();
 
-        // Right Price Scale Label
-        ctx.fillStyle = isDark ? '#d1d5db' : '#475569';
-        if (typeof priceTick === 'number' && !isNaN(priceTick)) {
-          ctx.fillText(priceTick.toFixed(1), width - padding.right + 7, y + 3.5);
+        // Right Price Scale Label ONLY on labelStep increments to guarantee zero overlap
+        const isLabelTick = Math.abs(priceTick % labelStep) < 0.001 || 
+                            Math.abs((priceTick % labelStep) - labelStep) < 0.001 || 
+                            Math.abs((priceTick % labelStep) + labelStep) < 0.001;
+        if (isLabelTick) {
+          ctx.fillStyle = isDark ? '#d1d5db' : '#475569';
+          if (typeof priceTick === 'number' && !isNaN(priceTick)) {
+            ctx.fillText(priceTick.toFixed(1), width - padding.right + 7, y + 3.5);
+          }
         }
       }
     }
@@ -1004,12 +1238,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
 
       if (colEndX < padding.left || colStartX > width - padding.right) return;
 
-      // Bottom Date Label (e.g. 30 Sep, 1 Oct, 5 Oct, 6 Oct...)
-      const dateShort = formatDateShort(profile.dateStr);
-      ctx.fillStyle = '#9ca3af';
-      ctx.font = '10px "JetBrains Mono", monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText(dateShort, colStartX + colWidth / 2, height - padding.bottom + 16);
+      // (Date label rendered outside clip on dedicated bottom X-axis ruler)
 
       const bins = profile.bins;
       if (bins.length === 0) return;
@@ -1227,7 +1456,9 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
               ctx.fillStyle = '#facc15';
               ctx.font = 'bold 9px "JetBrains Mono", monospace';
               ctx.textAlign = 'right';
-              ctx.fillText(`nPOC: ₹${profile.pocPrice.toFixed(1)}`, width - padding.right - 8, pocY - 3);
+              if (typeof profile?.pocPrice === 'number' && !isNaN(profile.pocPrice)) {
+                ctx.fillText(`nPOC: ₹${profile.pocPrice.toFixed(1)}`, width - padding.right - 8, pocY - 3);
+              }
             }
           }
         }
@@ -1244,7 +1475,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
             ctx.fillStyle = '#ef4444';
             ctx.font = 'bold 9px "JetBrains Mono", monospace';
             ctx.textAlign = 'center';
-            ctx.fillText('⚠️ AB Poor High', colStartX + colWidth / 2, phY - 6);
+            ctx.fillText('ΓÜá∩╕Å AB Poor High', colStartX + colWidth / 2, phY - 6);
           }
         } else if (poorHigh) {
           const phY = getPriceY(poorHigh.price);
@@ -1252,7 +1483,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
             ctx.fillStyle = '#f87171';
             ctx.font = 'bold 9px "JetBrains Mono", monospace';
             ctx.textAlign = 'center';
-            ctx.fillText('⚠️ Poor H', colStartX + colWidth / 2, phY - 6);
+            ctx.fillText('ΓÜá∩╕Å Poor H', colStartX + colWidth / 2, phY - 6);
           }
         }
 
@@ -1265,7 +1496,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
             ctx.fillStyle = '#10b981';
             ctx.font = 'bold 9px "JetBrains Mono", monospace';
             ctx.textAlign = 'center';
-            ctx.fillText('⚠️ AB Poor Low', colStartX + colWidth / 2, plY + 14);
+            ctx.fillText('ΓÜá∩╕Å AB Poor Low', colStartX + colWidth / 2, plY + 14);
           }
         } else if (poorLow) {
           const plY = getPriceY(poorLow.price);
@@ -1273,7 +1504,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
             ctx.fillStyle = '#f87171';
             ctx.font = 'bold 9px "JetBrains Mono", monospace';
             ctx.textAlign = 'center';
-            ctx.fillText('⚠️ Poor L', colStartX + colWidth / 2, plY + 14);
+            ctx.fillText('ΓÜá∩╕Å Poor L', colStartX + colWidth / 2, plY + 14);
           }
         }
       }
@@ -1281,7 +1512,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
 
     // 8. Weekly High & Weekly LOW Lines across lookback
     if (showWeeklyLevels) {
-      if (structuralLevels.weeklyHigh) {
+      if (typeof structuralLevels.weeklyHigh === 'number' && !isNaN(structuralLevels.weeklyHigh)) {
         const whY = getPriceY(structuralLevels.weeklyHigh);
         if (whY >= padding.top && whY <= height - padding.bottom) {
           ctx.strokeStyle = '#10b981';
@@ -1300,7 +1531,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
         }
       }
 
-      if (structuralLevels.weeklyLow) {
+      if (typeof structuralLevels.weeklyLow === 'number' && !isNaN(structuralLevels.weeklyLow)) {
         const wlY = getPriceY(structuralLevels.weeklyLow);
         if (wlY >= padding.top && wlY <= height - padding.bottom) {
           ctx.strokeStyle = '#ef4444';
@@ -1322,7 +1553,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
 
     // 9. G2 & G3 High / Low Balance Lines
     if (showG2G3) {
-      if (structuralLevels.g2High) {
+      if (typeof structuralLevels.g2High === 'number' && !isNaN(structuralLevels.g2High)) {
         const g2Hy = getPriceY(structuralLevels.g2High);
         if (g2Hy >= padding.top && g2Hy <= height - padding.bottom) {
           ctx.strokeStyle = '#06b6d4';
@@ -1337,10 +1568,10 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
           ctx.fillStyle = '#06b6d4';
           ctx.font = 'bold 9px "JetBrains Mono", monospace';
           ctx.textAlign = 'left';
-          ctx.fillText(`G2 High (2D): ₹${structuralLevels.g2High.toFixed(1)}`, padding.left + 140, g2Hy - 4);
+          ctx.fillText(`G2 High (2D): Γé╣${structuralLevels.g2High.toFixed(1)}`, padding.left + 140, g2Hy - 4);
         }
       }
-      if (structuralLevels.g2Low) {
+      if (typeof structuralLevels.g2Low === 'number' && !isNaN(structuralLevels.g2Low)) {
         const g2Ly = getPriceY(structuralLevels.g2Low);
         if (g2Ly >= padding.top && g2Ly <= height - padding.bottom) {
           ctx.strokeStyle = '#06b6d4';
@@ -1355,11 +1586,11 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
           ctx.fillStyle = '#06b6d4';
           ctx.font = 'bold 9px "JetBrains Mono", monospace';
           ctx.textAlign = 'left';
-          ctx.fillText(`G2 Low (2D): ₹${structuralLevels.g2Low.toFixed(1)}`, padding.left + 140, g2Ly + 12);
+          ctx.fillText(`G2 Low (2D): Γé╣${structuralLevels.g2Low.toFixed(1)}`, padding.left + 140, g2Ly + 12);
         }
       }
 
-      if (structuralLevels.g3High) {
+      if (typeof structuralLevels.g3High === 'number' && !isNaN(structuralLevels.g3High)) {
         const g3Hy = getPriceY(structuralLevels.g3High);
         if (g3Hy >= padding.top && g3Hy <= height - padding.bottom) {
           ctx.strokeStyle = '#ec4899';
@@ -1374,10 +1605,10 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
           ctx.fillStyle = '#ec4899';
           ctx.font = 'bold 9px "JetBrains Mono", monospace';
           ctx.textAlign = 'left';
-          ctx.fillText(`G3 High (3D): ₹${structuralLevels.g3High.toFixed(1)}`, padding.left + 270, g3Hy - 4);
+          ctx.fillText(`G3 High (3D): Γé╣${structuralLevels.g3High.toFixed(1)}`, padding.left + 270, g3Hy - 4);
         }
       }
-      if (structuralLevels.g3Low) {
+      if (typeof structuralLevels.g3Low === 'number' && !isNaN(structuralLevels.g3Low)) {
         const g3Ly = getPriceY(structuralLevels.g3Low);
         if (g3Ly >= padding.top && g3Ly <= height - padding.bottom) {
           ctx.strokeStyle = '#ec4899';
@@ -1392,7 +1623,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
           ctx.fillStyle = '#ec4899';
           ctx.font = 'bold 9px "JetBrains Mono", monospace';
           ctx.textAlign = 'left';
-          ctx.fillText(`G3 Low (3D): ₹${structuralLevels.g3Low.toFixed(1)}`, padding.left + 270, g3Ly + 12);
+          ctx.fillText(`G3 Low (3D): Γé╣${structuralLevels.g3Low.toFixed(1)}`, padding.left + 270, g3Ly + 12);
         }
       }
     }
@@ -1437,7 +1668,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
             ctx.fillStyle = '#38bdf8';
             ctx.font = 'bold 9px "JetBrains Mono", monospace';
             ctx.textAlign = 'right';
-            ctx.fillText(`HVN: ₹${hvn.price.toFixed(1)}`, width - padding.right - 8, hvnY - 3);
+            if (typeof hvn?.price === 'number') ctx.fillText(`HVN: ₹${hvn.price.toFixed(1)}`, width - padding.right - 8, hvnY - 3);
           }
         }
       });
@@ -1483,7 +1714,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
             ctx.fillStyle = '#f97316';
             ctx.font = 'bold 9px "JetBrains Mono", monospace';
             ctx.textAlign = 'right';
-            ctx.fillText(`LVN: ₹${lvn.price.toFixed(1)}`, width - padding.right - 8, lvnY - 3);
+            if (typeof lvn?.price === 'number') ctx.fillText(`LVN: ₹${lvn.price.toFixed(1)}`, width - padding.right - 8, lvnY - 3);
           }
         }
       });
@@ -1502,8 +1733,12 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
         // Skip if offscreen horizontally
         if (lineEndX < padding.left || lineStartX > width - padding.right) return;
 
-        const yTop = getPriceY(zone.highPrice);
-        const yBottom = getPriceY(zone.lowPrice);
+        const zHigh = typeof (zone as any).high === 'number' ? (zone as any).high : (typeof (zone as any).highPrice === 'number' ? (zone as any).highPrice : 0);
+        const zLow = typeof (zone as any).low === 'number' ? (zone as any).low : (typeof (zone as any).lowPrice === 'number' ? (zone as any).lowPrice : 0);
+        if (zHigh <= 0 || zLow <= 0) return;
+
+        const yTop = getPriceY(zHigh);
+        const yBottom = getPriceY(zLow);
         const zoneY = Math.min(yTop, yBottom);
         const zoneH = Math.max(3, Math.abs(yBottom - yTop));
 
@@ -1517,8 +1752,8 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
         // 2. Label Badge on Origin Column
         if (lineStartX >= padding.left - 40 && lineStartX <= width - padding.right) {
           const badgeText = zone.isPartiallyTested
-            ? `⚡ SP Zone (Tested) [${zone.lowPrice.toFixed(1)} - ${zone.highPrice.toFixed(1)}]`
-            : `⚡ SP Zone [${zone.lowPrice.toFixed(1)} - ${zone.highPrice.toFixed(1)}]`;
+            ? `⚡ SP Zone (Tested) [${zLow.toFixed(1)} - ${zHigh.toFixed(1)}]`
+            : `⚡ SP Zone [${zLow.toFixed(1)} - ${zHigh.toFixed(1)}]`;
           ctx.font = 'bold 9px "JetBrains Mono", monospace';
           const textWidth = ctx.measureText(badgeText).width;
           const badgeX = lineStartX + 4;
@@ -1574,6 +1809,93 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
     ctx.lineTo(rulerX, rulerY);
     ctx.stroke();
 
+    // 6b. RENDER DEDICATED BOTTOM DATE / TIME AXIS RULER
+    ctx.save();
+    // Background strip for Date Axis
+    ctx.fillStyle = isDark ? '#070b14' : '#f8fafc';
+    ctx.fillRect(padding.left, rulerY + 1, rulerX - padding.left, padding.bottom - 1);
+
+    // Top border line
+    ctx.strokeStyle = isXActive ? '#38bdf8' : (isDark ? '#262626' : '#cbd5e1');
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padding.left, rulerY);
+    ctx.lineTo(rulerX, rulerY);
+    ctx.stroke();
+
+    // Clip strictly to Date Axis strip
+    ctx.beginPath();
+    ctx.rect(padding.left, rulerY, rulerX - padding.left, padding.bottom);
+    ctx.clip();
+
+    dayProfiles.forEach((profile, sIdx) => {
+      const colStartX = padding.left + panOffset.x + sIdx * (colWidth + colGap);
+      const colCenterX = colStartX + colWidth / 2;
+
+      if (colCenterX < padding.left - 50 || colCenterX > rulerX + 50) return;
+
+      const isLatest = sIdx === dayProfiles.length - 1;
+      const isMerged = !!profile.isMerged;
+      const isSplit = !!profile.isSplitPeriod;
+
+      // Vertical tick mark on ruler
+      ctx.strokeStyle = isLatest ? '#00f0ff' : (isDark ? '#475569' : '#94a3b8');
+      ctx.lineWidth = isLatest ? 1.5 : 1;
+      ctx.beginPath();
+      ctx.moveTo(colCenterX, rulerY);
+      ctx.lineTo(colCenterX, rulerY + 5);
+      ctx.stroke();
+
+      // Primary Date Label
+      const dateShort = formatDateShort(profile.dateStr);
+      ctx.textAlign = 'center';
+      ctx.font = isLatest 
+        ? 'bold 11px "JetBrains Mono", monospace' 
+        : '600 11px "JetBrains Mono", monospace';
+
+      if (isLatest) {
+        ctx.fillStyle = '#00f0ff';
+      } else if (isMerged) {
+        ctx.fillStyle = '#f59e0b';
+      } else if (isSplit) {
+        ctx.fillStyle = '#38bdf8';
+      } else {
+        ctx.fillStyle = isDark ? '#e2e8f0' : '#1e293b';
+      }
+
+      ctx.fillText(dateShort, colCenterX, rulerY + 17);
+
+      // Secondary Sub-Label (Day of week, period letter, or balance tag)
+      let subLabel = '';
+      if (profile.dateStr.includes('W:')) {
+        subLabel = 'Weekly';
+      } else if (profile.dateStr.includes('M:')) {
+        subLabel = 'Monthly';
+      } else if (profile.dateStr.includes('Y:')) {
+        subLabel = 'Yearly';
+      } else if (profile.isSplitPeriod && profile.periodLetter) {
+        subLabel = `Period ${profile.periodLetter}`;
+      } else if (profile.isMerged) {
+        subLabel = `${profile.mergedKeys?.length || 2}D Balance`;
+      } else {
+        try {
+          const parts = profile.dateStr.split('-');
+          if (parts.length === 3) {
+            const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            subLabel = dayNames[d.getDay()] || '';
+          }
+        } catch (e) {}
+      }
+
+      if (subLabel) {
+        ctx.font = '9px "Outfit", sans-serif';
+        ctx.fillStyle = isLatest ? '#38bdf8' : (isDark ? '#94a3b8' : '#64748b');
+        ctx.fillText(subLabel, colCenterX, rulerY + 29);
+      }
+    });
+    ctx.restore();
+
     // Bottom-Right Countdown Bar Timer
     ctx.save();
     const minutes = Math.floor(barRemainingSeconds / 60);
@@ -1590,7 +1912,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
       const ltpY = getPriceY(liveLtp);
       if (ltpY >= padding.top && ltpY <= rulerY) {
         ctx.save();
-        const ltpText = liveLtp.toFixed(2);
+        const ltpText = typeof liveLtp === 'number' && !isNaN(liveLtp) ? liveLtp.toFixed(2) : '--';
         ctx.font = 'bold 10px "JetBrains Mono", monospace';
         const metrics = ctx.measureText(ltpText);
         const badgeW = metrics.width + 12;
@@ -1671,37 +1993,9 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
 
   }, [dayProfiles, dimensions, viewMode, zoomLevel, panOffset, tpoStep, gridStep, showIbLine, highlightSinglePrints, singlePrintZones, showPoorHighLow, showTwoDayBalance, showG2G3, showWeeklyLevels, showHvn, showLvn, globalVolumeProfile, structuralLevels, liveLtp, crosshairPos, isDark, yScale, xScale, hoveredAxis, dragMode, barRemainingSeconds]);
 
-  const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-
-    const padding = { top: 35, bottom: 45, left: 130, right: 75 };
-
-    if (mouseX >= rect.width - padding.right) {
-      setDragMode('y-axis');
-      setDragStart({ x: e.clientX, y: e.clientY });
-      setInitialYScale(yScale);
-      setCursorStyle('ns-resize');
-      return;
-    }
-
-    if (mouseY >= rect.height - padding.bottom) {
-      setDragMode('x-axis');
-      setDragStart({ x: e.clientX, y: e.clientY });
-      setInitialXScale(xScale);
-      setCursorStyle('ew-resize');
-      return;
-    }
-
-    setDragMode('pan');
-    setDragStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
-    setCursorStyle('grabbing');
-  };
-
-  const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  // Context Menu & Profile Management Handlers
+  const handleCanvasContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
     const canvas = canvasRef.current;
     if (!canvas || dayProfiles.length === 0) return;
 
@@ -1709,34 +2003,325 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
-    const padding = { top: 35, bottom: 45, left: 130, right: 75 };
+    const padding = { top: 35, bottom: 45, left: viewMode === 'GV' ? 100 : 20, right: 75 };
+    const baseChartWidth = rect.width - padding.left - padding.right;
+    const sessionCount = dayProfiles.length;
+    const baseColWidth = Math.max(180, Math.min(260, baseChartWidth / 5.2));
+    const colWidth = baseColWidth * zoomLevel * xScale;
+    const colGap = Math.max(8, 14 * zoomLevel * xScale);
+
+    let clickedSessionIdx = -1;
+    for (let i = 0; i < sessionCount; i++) {
+      const colStartX = padding.left + panOffset.x + i * (colWidth + colGap);
+      const colEndX = colStartX + colWidth + colGap;
+      if (mouseX >= colStartX && mouseX <= colEndX) {
+        clickedSessionIdx = i;
+        break;
+      }
+    }
+
+    if (clickedSessionIdx === -1 && sessionCount > 0) {
+      let minDiff = Infinity;
+      for (let i = 0; i < sessionCount; i++) {
+        const colCenter = padding.left + panOffset.x + i * (colWidth + colGap) + colWidth / 2;
+        const diff = Math.abs(mouseX - colCenter);
+        if (diff < minDiff) {
+          minDiff = diff;
+          clickedSessionIdx = i;
+        }
+      }
+    }
+
+    if (clickedSessionIdx >= 0 && clickedSessionIdx < sessionCount) {
+      const profile = dayProfiles[clickedSessionIdx];
+      const menuW = 280;
+      const menuH = 340;
+      const posX = Math.max(10, Math.min(mouseX, rect.width - menuW - 15));
+      const posY = Math.max(10, Math.min(mouseY, rect.height - menuH - 15));
+
+      setContextMenu({
+        x: posX,
+        y: posY,
+        sessionIndex: clickedSessionIdx,
+        profile
+      });
+    }
+  };
+
+  const handleSplitProfile = (profile: DayProfile, mode: 'periods' | 'ib' = 'periods') => {
+    if (profile.isMerged && profile.mergedKeys) {
+      // Unmerge composite profile back into separate days
+      const mKeys = profile.mergedKeys;
+      setMergedClusters(prev => prev.filter(c => !c.some(k => mKeys.includes(k))));
+    } else if (profile.isSplitPeriod) {
+      // Re-combine split period back into full session
+      const parentKey = profile.parentSessionKey;
+      if (parentKey) {
+        setSplitSessionKeys(prev => {
+          const next = new Set(prev);
+          next.delete(parentKey);
+          return next;
+        });
+      }
+    } else {
+      // Standard session: split into periods or IB
+      setSplitSessionKeys(prev => {
+        const next = new Set(prev);
+        next.add(profile.dateStr);
+        return next;
+      });
+      setSplitModeMap(prev => ({
+        ...prev,
+        [profile.dateStr]: mode
+      }));
+    }
+    setContextMenu(null);
+  };
+
+  const handleUnsplitProfile = (profile: DayProfile) => {
+    const keyToUnsplit = profile.parentSessionKey || profile.dateStr;
+    setSplitSessionKeys(prev => {
+      const next = new Set(prev);
+      next.delete(keyToUnsplit);
+      return next;
+    });
+    setContextMenu(null);
+  };
+
+  const handleMergeSessions = (sIdx1: number, sIdx2: number) => {
+    if (sIdx1 < 0 || sIdx2 < 0 || sIdx1 >= dayProfiles.length || sIdx2 >= dayProfiles.length) return;
+    const p1 = dayProfiles[Math.min(sIdx1, sIdx2)];
+    const p2 = dayProfiles[Math.max(sIdx1, sIdx2)];
+
+    const getKeys = (p: DayProfile): string[] => {
+      if (p.isMerged && p.mergedKeys) return p.mergedKeys;
+      if (p.parentSessionKey) return [p.parentSessionKey];
+      return [p.dateStr];
+    };
+
+    const combinedKeys = Array.from(new Set([...getKeys(p1), ...getKeys(p2)])).sort();
+
+    // Remove any merged keys from splitSessionKeys
+    setSplitSessionKeys(prev => {
+      const next = new Set(prev);
+      combinedKeys.forEach(k => next.delete(k));
+      return next;
+    });
+
+    setMergedClusters(prev => {
+      const filtered = prev.filter(c => !c.some(k => combinedKeys.includes(k)));
+      return [...filtered, combinedKeys];
+    });
+    setContextMenu(null);
+  };
+
+  const handleCustomRangeMerge = (keysToMerge: string[]) => {
+    if (keysToMerge.length < 2) return;
+    const sorted = [...keysToMerge].sort();
+
+    setSplitSessionKeys(prev => {
+      const next = new Set(prev);
+      sorted.forEach(k => next.delete(k));
+      return next;
+    });
+
+    setMergedClusters(prev => {
+      const filtered = prev.filter(c => !c.some(k => sorted.includes(k)));
+      return [...filtered, sorted];
+    });
+    setMergeModalOpen(false);
+    setContextMenu(null);
+  };
+
+  const handleResetAllProfiles = () => {
+    setMergedClusters([]);
+    setSplitSessionKeys(new Set());
+    setSplitModeMap({});
+    setContextMenu(null);
+    setMergeModalOpen(false);
+  };
+
+  // Native non-passive wheel handler for smooth Price/Date axis and canvas zoom
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const onNativeWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      const padding = { top: 35, bottom: 45, left: viewMode === 'GV' ? 100 : 20, right: 75 };
+      const zoomFactor = e.deltaY < 0 ? 1.15 : 0.87;
+
+      // 1. Wheel over Y-Axis (Right Price Scale): Zoom vertical price axis ONLY
+      if (mouseX >= rect.width - padding.right) {
+        setYScale(prev => Math.min(10.0, Math.max(0.15, prev * zoomFactor)));
+        return;
+      }
+
+      // 2. Wheel over X-Axis (Bottom Date / Time Scale): Zoom horizontal date axis ONLY
+      if (mouseY >= rect.height - padding.bottom) {
+        setXScale(prev => Math.min(10.0, Math.max(0.2, prev * zoomFactor)));
+        return;
+      }
+
+      // 3. Wheel over Chart Area: Zoom overall chart or horizontal pan with Shift
+      if (e.shiftKey) {
+        setPanOffset(prev => ({ ...prev, x: prev.x - e.deltaY }));
+      } else {
+        setZoomLevel(prev => Math.min(5.0, Math.max(0.25, prev * zoomFactor)));
+      }
+    };
+
+    canvas.addEventListener('wheel', onNativeWheel, { passive: false });
+    return () => {
+      canvas.removeEventListener('wheel', onNativeWheel);
+    };
+  }, [viewMode]);
+
+  const handleCanvasWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
+    // Native listener handles axis and canvas zoom with non-passive precision; prevent default scroll
+    e.preventDefault();
+  };
+
+  const handleCanvasDoubleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    const padding = { top: 35, bottom: 45, left: viewMode === 'GV' ? 100 : 20, right: 75 };
+
+    if (mouseX >= rect.width - padding.right) {
+      // Double click on right Price Axis: Reset Y-Scale
+      setYScale(1.0);
+    } else if (mouseY >= rect.height - padding.bottom) {
+      // Double click on bottom Date Axis: Reset X-Scale
+      setXScale(1.0);
+    } else {
+      // Double click on chart area: Reset zoom & return directly to latest data
+      setZoomLevel(1.0);
+      setYScale(1.0);
+      setXScale(1.0);
+      scrollToLatest();
+    }
+  };
+
+  const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (e.button !== 0) return; // Only left mouse button triggers drag/pan
+    if (contextMenu) setContextMenu(null);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    const padding = { top: 35, bottom: 45, left: viewMode === 'GV' ? 100 : 20, right: 75 };
+
+    e.preventDefault();
+
+    let mode: 'pan' | 'y-axis' | 'x-axis' = 'pan';
+    if (mouseX >= rect.width - padding.right) {
+      mode = 'y-axis';
+      setCursorStyle('ns-resize');
+    } else if (mouseY >= rect.height - padding.bottom) {
+      mode = 'x-axis';
+      setCursorStyle('ew-resize');
+    } else {
+      mode = 'pan';
+      setCursorStyle('grabbing');
+    }
+
+    setDragMode(mode);
+    setDragStart({ x: e.clientX, y: e.clientY });
+    setInitialYScale(yScale);
+    setInitialXScale(xScale);
+
+    dragRef.current = {
+      mode,
+      startX: e.clientX,
+      startY: e.clientY,
+      initialYScale: yScale,
+      initialXScale: xScale,
+      initialPan: { ...panOffset }
+    };
+
+    // Global window drag handlers so moving outside the canvas never drops or cancels the drag
+    const onGlobalMouseMove = (we: MouseEvent) => {
+      if (dragRef.current.mode === 'none') return;
+
+      if (dragRef.current.mode === 'y-axis') {
+        const deltaY = we.clientY - dragRef.current.startY;
+        // Dragging UP (-deltaY) zooms in / stretches price axis
+        // Dragging DOWN (+deltaY) zooms out / compresses price axis
+        const factor = Math.exp(-deltaY * 0.007);
+        const newY = Math.min(10.0, Math.max(0.15, dragRef.current.initialYScale * factor));
+        setYScale(newY);
+        return;
+      }
+
+      if (dragRef.current.mode === 'x-axis') {
+        const deltaX = we.clientX - dragRef.current.startX;
+        // Dragging RIGHT (+deltaX) zooms in / widens session columns
+        // Dragging LEFT (-deltaX) zooms out / narrows session columns
+        const factor = Math.exp(deltaX * 0.007);
+        const newX = Math.min(10.0, Math.max(0.2, dragRef.current.initialXScale * factor));
+        setXScale(newX);
+        return;
+      }
+
+      if (dragRef.current.mode === 'pan') {
+        const dx = we.clientX - dragRef.current.startX;
+        const dy = we.clientY - dragRef.current.startY;
+        setPanOffset({
+          x: dragRef.current.initialPan.x + dx,
+          y: dragRef.current.initialPan.y + dy
+        });
+        return;
+      }
+    };
+
+    const onGlobalMouseUp = (we: MouseEvent) => {
+      window.removeEventListener('mousemove', onGlobalMouseMove);
+      window.removeEventListener('mouseup', onGlobalMouseUp);
+
+      if (dragRef.current.mode === 'pan') {
+        const dist = Math.hypot(we.clientX - dragRef.current.startX, we.clientY - dragRef.current.startY);
+        if (dist < 6 && hoverInfo) {
+          if (pinnedInfo && pinnedInfo.profile.dateStr === hoverInfo.profile.dateStr && Math.abs(pinnedInfo.bin.price - hoverInfo.bin.price) < 0.01) {
+            setPinnedInfo(null);
+          } else {
+            setPinnedInfo(hoverInfo);
+          }
+        }
+      }
+
+      dragRef.current.mode = 'none';
+      setDragMode('none');
+      setCursorStyle('crosshair');
+    };
+
+    window.addEventListener('mousemove', onGlobalMouseMove);
+    window.addEventListener('mouseup', onGlobalMouseUp);
+  };
+
+  const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas || dayProfiles.length === 0) return;
+
+    // If active drag is taking place via global window listener, skip hover calculation
+    if (dragRef.current.mode !== 'none') return;
+
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    const padding = { top: 35, bottom: 45, left: viewMode === 'GV' ? 100 : 20, right: 75 };
     const baseChartWidth = rect.width - padding.left - padding.right;
     const baseChartHeight = rect.height - padding.top - padding.bottom;
-
-    if (dragMode === 'y-axis') {
-      const deltaY = e.clientY - dragStart.y;
-      const factor = Math.exp(-deltaY * 0.006);
-      const newYScale = Math.min(10.0, Math.max(0.15, initialYScale * factor));
-      setYScale(newYScale);
-      setCursorStyle('ns-resize');
-      return;
-    }
-
-    if (dragMode === 'x-axis') {
-      const deltaX = e.clientX - dragStart.x;
-      const factor = Math.exp(deltaX * 0.005);
-      const newXScale = Math.min(10.0, Math.max(0.2, initialXScale * factor));
-      setXScale(newXScale);
-      setCursorStyle('ew-resize');
-      return;
-    }
-
-    if (dragMode === 'pan') {
-      setPanOffset({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
-      setCursorStyle('grabbing');
-      setCrosshairPos(null);
-      return;
-    }
 
     // Check if mouse is hovering over Price Axis (Y) or Time Axis (X)
     if (mouseX >= rect.width - padding.right) {
@@ -1783,7 +2368,9 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
       if (p.dayHigh > globalMax) globalMax = p.dayHigh;
     });
 
-    const pMargin = (globalMax - globalMin) * 0.03;
+    if (globalMin === Infinity || globalMax === -Infinity || globalMin >= globalMax) return;
+
+    const pMargin = Math.max(15, (globalMax - globalMin) * 0.08);
     const rawMin = globalMin - pMargin;
     const rawMax = globalMax + pMargin;
     const rawRange = rawMax - rawMin;
@@ -1795,19 +2382,18 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
     const maxPrice = centerPrice + visibleRange / 2;
     const priceRange = maxPrice - minPrice;
 
-    const clickPct = (mouseY - padding.top) / baseChartHeight;
-    const hoveredPrice = maxPrice - clickPct * priceRange;
+    const hoveredPrice = maxPrice - ((mouseY - padding.top) / baseChartHeight) * priceRange;
 
-    const profile = hoveredSessionIdx !== -1 ? dayProfiles[hoveredSessionIdx] : null;
-
+    // Crosshair State
     setCrosshairPos({
       x: mouseX,
       y: mouseY,
-      price: hoveredPrice,
-      dateStr: profile ? profile.dateStr : (dayProfiles[0] ? dayProfiles[0].dateStr : undefined)
+      price: Math.round(hoveredPrice * 10) / 10,
+      dateStr: hoveredSessionIdx !== -1 ? dayProfiles[hoveredSessionIdx]?.dateStr : undefined
     });
 
-    if (profile) {
+    if (hoveredSessionIdx !== -1) {
+      const profile = dayProfiles[hoveredSessionIdx];
       let closestBin: TPOBin | null = null;
       let minDiff = Infinity;
       profile.bins.forEach(b => {
@@ -1832,21 +2418,11 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
     }
   };
 
-  const handleCanvasMouseUp = (e?: React.MouseEvent<HTMLCanvasElement>) => {
-    if (e && dragStart) {
-      const dist = Math.hypot(e.clientX - (dragStart.x + panOffset.x), e.clientY - (dragStart.y + panOffset.y));
-      if (dist < 6 && hoverInfo) {
-        if (pinnedInfo && pinnedInfo.profile.dateStr === hoverInfo.profile.dateStr && Math.abs(pinnedInfo.bin.price - hoverInfo.bin.price) < 0.01) {
-          setPinnedInfo(null);
-        } else {
-          setPinnedInfo(hoverInfo);
-        }
-      }
-    }
-    setDragMode('none');
+  const handleCanvasMouseUp = () => {
+    // Handled by global window listener
   };
 
-  // Touch Handlers for Mobile: Single finger pan & Two-finger pinch-to-zoom
+    // Touch Handlers for Mobile: Single finger pan & Two-finger pinch-to-zoom
   const handleCanvasTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
     if (e.touches.length === 1) {
       const t = e.touches[0];
@@ -1930,7 +2506,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
 
       ctx.fillStyle = '#00f0ff';
       ctx.font = 'bold 13px "Outfit", sans-serif';
-      ctx.fillText(`📊 Trading Guru • Pro TPO Profile • ${symbol} (${sessionPeriod} - ${viewMode})`, 16, 23);
+      ctx.fillText(`≡ƒôè Trading Guru ΓÇó Pro TPO Profile ΓÇó ${symbol} (${sessionPeriod} - ${viewMode})`, 16, 23);
 
       const dStr = new Date().toLocaleString();
       ctx.fillStyle = '#94a3b8';
@@ -1961,27 +2537,27 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
         // Card Title
         ctx.fillStyle = '#00f0ff';
         ctx.font = 'bold 11px "Outfit", sans-serif';
-        ctx.fillText(`📅 Session: ${formatDateHeader(infoToRender.profile.dateStr)} (${infoToRender.profile.dateStr})`, cardX + 12, cardY + 22);
+        ctx.fillText(`≡ƒôà Session: ${formatDateHeader(infoToRender.profile.dateStr)} (${infoToRender.profile.dateStr})`, cardX + 12, cardY + 22);
 
         // Value Area & POC
         ctx.fillStyle = '#ffffff';
         ctx.font = '10.5px "JetBrains Mono", monospace';
         if (typeof infoToRender.profile?.vahPrice === 'number' && !isNaN(infoToRender.profile.vahPrice)) {
-          ctx.fillText(`VAH: ₹${infoToRender.profile.vahPrice.toFixed(2)}`, cardX + 12, cardY + 46);
+          ctx.fillText(`VAH: Γé╣${infoToRender.profile.vahPrice.toFixed(2)}`, cardX + 12, cardY + 46);
         }
         ctx.fillStyle = '#00f0ff';
         if (typeof infoToRender.profile?.pocPrice === 'number' && !isNaN(infoToRender.profile.pocPrice)) {
-          ctx.fillText(`POC: ₹${infoToRender.profile.pocPrice.toFixed(2)} (Point of Control)`, cardX + 12, cardY + 66);
+          ctx.fillText(`POC: Γé╣${infoToRender.profile.pocPrice.toFixed(2)} (Point of Control)`, cardX + 12, cardY + 66);
         }
         ctx.fillStyle = '#ffffff';
         if (typeof infoToRender.profile?.valPrice === 'number' && !isNaN(infoToRender.profile.valPrice)) {
-          ctx.fillText(`VAL: ₹${infoToRender.profile.valPrice.toFixed(2)}`, cardX + 12, cardY + 86);
+          ctx.fillText(`VAL: Γé╣${infoToRender.profile.valPrice.toFixed(2)}`, cardX + 12, cardY + 86);
         }
 
         // IB High / Low
         if (typeof infoToRender.profile?.ibHigh === 'number' && typeof infoToRender.profile?.ibLow === 'number' && !isNaN(infoToRender.profile.ibHigh) && !isNaN(infoToRender.profile.ibLow)) {
           ctx.fillStyle = '#fbbf24';
-          ctx.fillText(`IB High: ₹${infoToRender.profile.ibHigh.toFixed(2)} | IB Low: ₹${infoToRender.profile.ibLow.toFixed(2)}`, cardX + 12, cardY + 110);
+          ctx.fillText(`IB High: Γé╣${infoToRender.profile.ibHigh.toFixed(2)} | IB Low: Γé╣${infoToRender.profile.ibLow.toFixed(2)}`, cardX + 12, cardY + 110);
         }
 
         // Volume & TPO Count
@@ -1993,7 +2569,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
         // Selected Level
         ctx.fillStyle = '#38bdf8';
         if (typeof infoToRender.bin?.price === 'number' && !isNaN(infoToRender.bin.price)) {
-          ctx.fillText(`Price Level: ₹${infoToRender.bin.price.toFixed(2)} (${infoToRender.bin?.tpos?.length || 0} TPOs)`, cardX + 12, cardY + 178);
+          ctx.fillText(`Price Level: Γé╣${infoToRender.bin.price.toFixed(2)} (${infoToRender.bin?.tpos?.length || 0} TPOs)`, cardX + 12, cardY + 178);
         }
 
         // Badge Footer
@@ -2002,7 +2578,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
         ctx.fillStyle = '#00f0ff';
         ctx.font = 'bold 10px "Outfit", sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(`📌 PINNED TRADING GURU TPO PROFILE`, cardX + cardW / 2, cardY + 214);
+        ctx.fillText(`≡ƒôî PINNED TRADING GURU TPO PROFILE`, cardX + cardW / 2, cardY + 214);
 
         ctx.restore();
       }
@@ -2220,7 +2796,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
               }}
               title="Toggle Poor High/Low & AB Poor High/Low Unfinished Business Markers"
             >
-              <span>⚠️</span> Poor & AB
+              <span>ΓÜá∩╕Å</span> Poor & AB
             </button>
             <button
               onClick={() => setShowWeeklyLevels(!showWeeklyLevels)}
@@ -2308,7 +2884,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
               <ZoomOut size={15} />
             </button>
             <button
-              onClick={() => { setZoomLevel(1.0); setPanOffset({ x: 0, y: 0 }); }}
+              onClick={() => { setZoomLevel(1.0); setYScale(1.0); setXScale(1.0); scrollToLatest(); }}
               style={{ background: 'rgba(255,255,255,0.08)', border: 'none', color: 'white', cursor: 'pointer', padding: '3px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: '700', marginLeft: '4px' }}
               title="Reset Zoom & Pan"
             >
@@ -2337,6 +2913,8 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
                     setSessionPeriod(btn.period as any);
                     setTimeframe(btn.period === 'D' ? btn.id : 'D');
                     setLookbackDays(btn.lookback);
+                    setPanOffset({ x: 0, y: 0 });
+                    setZoomLevel(1.0);
                   }}
                   style={{
                     background: isActive ? '#3b82f6' : 'transparent',
@@ -2437,7 +3015,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
             }}
             title="Two-Day Balance Structure (High-Confidence Breakout Edge)"
           >
-            <span>📦</span> 2D Balance {showTwoDayBalance ? 'ON' : 'OFF'}
+            <span>≡ƒôª</span> 2D Balance {showTwoDayBalance ? 'ON' : 'OFF'}
           </button>
         </div>
 
@@ -2633,14 +3211,18 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
           onMouseDown={handleCanvasMouseDown}
           onMouseMove={handleCanvasMouseMove}
           onMouseUp={handleCanvasMouseUp}
+          onWheel={handleCanvasWheel}
+          onDoubleClick={handleCanvasDoubleClick}
           onTouchStart={handleCanvasTouchStart}
           onTouchMove={handleCanvasTouchMove}
           onTouchEnd={handleCanvasTouchEnd}
           onTouchCancel={handleCanvasTouchEnd}
+          onContextMenu={handleCanvasContextMenu}
           onMouseLeave={() => {
-            setDragMode('none');
-            setCrosshairPos(null);
-            if (!pinnedInfo) setHoverInfo(null);
+            if (dragRef.current.mode === 'none') {
+              setCrosshairPos(null);
+              if (!pinnedInfo) setHoverInfo(null);
+            }
           }}
           style={{ cursor: cursorStyle, display: 'block', touchAction: 'none' }}
         />
@@ -2679,7 +3261,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
                   </span>
                   {isItemPinned && (
                     <span style={{ fontSize: '9px', background: '#10b981', color: '#000', padding: '1px 5px', borderRadius: '3px', fontWeight: 'bold' }}>
-                      📌 PINNED
+                      ≡ƒôî PINNED
                     </span>
                   )}
                 </div>
@@ -2749,7 +3331,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
                 <span style={{ color: isDark ? '#94a3b8' : '#64748b' }}>Price Level:</span>
                 <span style={{ fontWeight: 'bold', color: isDark ? '#ffffff' : '#0f172a' }}>
-                  ₹{typeof activeDisplay?.bin?.price === 'number' && !isNaN(activeDisplay.bin.price) ? activeDisplay.bin.price.toFixed(2) : '--'}
+                  Γé╣{typeof activeDisplay?.bin?.price === 'number' && !isNaN(activeDisplay.bin.price) ? activeDisplay.bin.price.toFixed(2) : '--'}
                 </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
@@ -2768,17 +3350,17 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
               {/* Special Level Badges */}
               {activeDisplay.bin?.price === activeDisplay.profile?.pocPrice && (
                 <div style={{ color: '#000', backgroundColor: '#00f0ff', fontWeight: 'bold', fontSize: '9px', textAlign: 'center', padding: '2px 4px', borderRadius: '3px', marginTop: '5px', textTransform: 'uppercase' }}>
-                  ⭐ Point of Control (POC)
+                  Γ¡É Point of Control (POC)
                 </div>
               )}
               {activeDisplay.bin?.price === activeDisplay.profile?.vahPrice && (
                 <div style={{ color: '#a855f7', fontWeight: 'bold', fontSize: '9px', marginTop: '3px' }}>
-                  🟣 Value Area High (VAH)
+                  ≡ƒƒú Value Area High (VAH)
                 </div>
               )}
               {activeDisplay.bin?.price === activeDisplay.profile?.valPrice && (
                 <div style={{ color: '#a855f7', fontWeight: 'bold', fontSize: '9px', marginTop: '3px' }}>
-                  🟣 Value Area Low (VAL)
+                  ≡ƒƒú Value Area Low (VAL)
                 </div>
               )}
 
@@ -2786,16 +3368,16 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
               <div style={{ marginTop: '8px', paddingTop: '6px', borderTop: `1px dashed ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '9.5px', color: isDark ? '#cbd5e1' : '#475569' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Session Range:</span>
-                  <span>₹{typeof activeDisplay.profile?.low === 'number' && !isNaN(activeDisplay.profile.low) ? activeDisplay.profile.low.toFixed(2) : '--'} - ₹{typeof activeDisplay.profile?.high === 'number' && !isNaN(activeDisplay.profile.high) ? activeDisplay.profile.high.toFixed(2) : '--'}</span>
+                  <span>Γé╣{typeof activeDisplay.profile?.low === 'number' && !isNaN(activeDisplay.profile.low) ? activeDisplay.profile.low.toFixed(2) : '--'} - Γé╣{typeof activeDisplay.profile?.high === 'number' && !isNaN(activeDisplay.profile.high) ? activeDisplay.profile.high.toFixed(2) : '--'}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>VA Range (70%):</span>
-                  <span style={{ color: '#c084fc', fontWeight: 'bold' }}>₹{typeof activeDisplay.profile?.valPrice === 'number' && !isNaN(activeDisplay.profile.valPrice) ? activeDisplay.profile.valPrice.toFixed(2) : '--'} - ₹{typeof activeDisplay.profile?.vahPrice === 'number' && !isNaN(activeDisplay.profile.vahPrice) ? activeDisplay.profile.vahPrice.toFixed(2) : '--'}</span>
+                  <span style={{ color: '#c084fc', fontWeight: 'bold' }}>Γé╣{typeof activeDisplay.profile?.valPrice === 'number' && !isNaN(activeDisplay.profile.valPrice) ? activeDisplay.profile.valPrice.toFixed(2) : '--'} - Γé╣{typeof activeDisplay.profile?.vahPrice === 'number' && !isNaN(activeDisplay.profile.vahPrice) ? activeDisplay.profile.vahPrice.toFixed(2) : '--'}</span>
                 </div>
                 {typeof activeDisplay.profile?.ibHigh === 'number' && typeof activeDisplay.profile?.ibLow === 'number' && !isNaN(activeDisplay.profile.ibHigh) && !isNaN(activeDisplay.profile.ibLow) && (
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <span>Initial Balance:</span>
-                    <span style={{ color: '#fbbf24' }}>₹{activeDisplay.profile.ibLow.toFixed(2)} - ₹{activeDisplay.profile.ibHigh.toFixed(2)}</span>
+                    <span style={{ color: '#fbbf24' }}>₹{typeof activeDisplay.profile?.ibLow === 'number' ? activeDisplay.profile.ibLow.toFixed(2) : '--'} - ₹{typeof activeDisplay.profile?.ibHigh === 'number' ? activeDisplay.profile.ibHigh.toFixed(2) : '--'}</span>
                   </div>
                 )}
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -2806,8 +3388,534 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
 
               {/* Shortcut info footer */}
               <div style={{ marginTop: '8px', paddingTop: '6px', borderTop: `1px dashed ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '9px', color: isDark ? '#94a3b8' : '#64748b' }}>
-                <span>💡 {isItemPinned ? 'Ready for screenshot! Press Win+Shift+S or Capture' : 'Click profile or press [P] to Pin'}</span>
+                <span>≡ƒÆí {isItemPinned ? 'Ready for screenshot! Press Win+Shift+S or Capture' : 'Click profile or press [P] to Pin'}</span>
                 <span>{isItemPinned ? 'Press [Esc] to Unpin' : '[P] Pin'}</span>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Right-Click Context Menu for Profiles */}
+        {contextMenu && (() => {
+          const p = contextMenu.profile;
+          const sIdx = contextMenu.sessionIndex;
+          const canMergeLeft = sIdx > 0;
+          const canMergeRight = sIdx < dayProfiles.length - 1;
+          const prevProf = canMergeLeft ? dayProfiles[sIdx - 1] : null;
+          const nextProf = canMergeRight ? dayProfiles[sIdx + 1] : null;
+
+          return (
+            <div
+              ref={contextMenuRef}
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                position: 'absolute',
+                top: `${contextMenu.y}px`,
+                left: `${contextMenu.x}px`,
+                background: isDark ? 'rgba(10, 15, 29, 0.98)' : 'rgba(255, 255, 255, 0.98)',
+                color: isDark ? '#f1f5f9' : '#0f172a',
+                border: `1px solid ${isDark ? '#334155' : '#cbd5e1'}`,
+                borderRadius: '8px',
+                padding: '6px',
+                fontSize: '11.5px',
+                boxShadow: '0 12px 35px rgba(0, 0, 0, 0.65), 0 0 15px rgba(56, 189, 248, 0.15)',
+                zIndex: 150,
+                width: '280px',
+                backdropFilter: 'blur(12px)',
+                fontFamily: '"Outfit", sans-serif'
+              }}
+            >
+              {/* Menu Header */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '6px 8px',
+                borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+                marginBottom: '4px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                  <Layers size={14} color="#38bdf8" />
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: '700', fontSize: '11px', color: '#38bdf8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {p.isMerged ? `Merged Profile (${p.mergedKeys?.length} Days)` : p.isSplitPeriod ? `Period [${p.periodLetter || '30m'}]` : 'Profile Session'}
+                    </div>
+                    <div style={{ fontSize: '10px', color: isDark ? '#94a3b8' : '#64748b' }}>
+                      {formatDateShort(p.dateStr)}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setContextMenu(null)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: isDark ? '#94a3b8' : '#64748b',
+                    cursor: 'pointer',
+                    padding: '2px'
+                  }}
+                >
+                  <X size={13} />
+                </button>
+              </div>
+
+              {/* 1. Split Profile Options */}
+              <div style={{ padding: '2px 0' }}>
+                <div style={{ fontSize: '9.5px', fontWeight: '800', color: '#94a3b8', padding: '4px 8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Split Profile
+                </div>
+
+                {p.isMerged ? (
+                  <button
+                    onClick={() => handleSplitProfile(p)}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '6px 8px',
+                      background: 'transparent',
+                      border: 'none',
+                      borderRadius: '4px',
+                      color: '#f59e0b',
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      textAlign: 'left'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.08)' : '#f1f5f9'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  >
+                    <Split size={13} color="#f59e0b" />
+                    <span>Split Merged Profile (Restore Days)</span>
+                  </button>
+                ) : p.isSplitPeriod ? (
+                  <button
+                    onClick={() => handleUnsplitProfile(p)}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '6px 8px',
+                      background: 'transparent',
+                      border: 'none',
+                      borderRadius: '4px',
+                      color: '#10b981',
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      textAlign: 'left'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.08)' : '#f1f5f9'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  >
+                    <Combine size={13} color="#10b981" />
+                    <span>Re-combine / Unsplit Session</span>
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => handleSplitProfile(p, 'periods')}
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '6px 8px',
+                        background: 'transparent',
+                        border: 'none',
+                        borderRadius: '4px',
+                        color: isDark ? '#e2e8f0' : '#1e293b',
+                        fontSize: '11px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        textAlign: 'left'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.08)' : '#f1f5f9'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                    >
+                      <Scissors size={13} color="#38bdf8" />
+                      <span>Split into 30m Periods (Unfold Letters)</span>
+                    </button>
+
+                    <button
+                      onClick={() => handleSplitProfile(p, 'ib')}
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '6px 8px',
+                        background: 'transparent',
+                        border: 'none',
+                        borderRadius: '4px',
+                        color: isDark ? '#e2e8f0' : '#1e293b',
+                        fontSize: '11px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        textAlign: 'left'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.08)' : '#f1f5f9'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                    >
+                      <Columns size={13} color="#a855f7" />
+                      <span>Split at IB (Morning vs Afternoon)</span>
+                    </button>
+                  </>
+                )}
+              </div>
+
+              <div style={{ height: '1px', background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)', margin: '4px 0' }} />
+
+              {/* 2. Merge Profiles Options */}
+              <div style={{ padding: '2px 0' }}>
+                <div style={{ fontSize: '9.5px', fontWeight: '800', color: '#94a3b8', padding: '4px 8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Merge Profiles
+                </div>
+
+                {canMergeLeft && (
+                  <button
+                    onClick={() => handleMergeSessions(sIdx - 1, sIdx)}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '6px 8px',
+                      background: 'transparent',
+                      border: 'none',
+                      borderRadius: '4px',
+                      color: isDark ? '#e2e8f0' : '#1e293b',
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      textAlign: 'left'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.08)' : '#f1f5f9'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  >
+                    <GitMerge size={13} color="#10b981" />
+                    <span>Merge with Previous ({formatDateShort(prevProf?.dateStr || '')})</span>
+                  </button>
+                )}
+
+                {canMergeRight && (
+                  <button
+                    onClick={() => handleMergeSessions(sIdx, sIdx + 1)}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '6px 8px',
+                      background: 'transparent',
+                      border: 'none',
+                      borderRadius: '4px',
+                      color: isDark ? '#e2e8f0' : '#1e293b',
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      textAlign: 'left'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.08)' : '#f1f5f9'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  >
+                    <GitMerge size={13} color="#10b981" />
+                    <span>Merge with Next ({formatDateShort(nextProf?.dateStr || '')})</span>
+                  </button>
+                )}
+
+                <button
+                  onClick={() => {
+                    setSelectedKeysForMerge(p.isMerged && p.mergedKeys ? [...p.mergedKeys] : [p.parentSessionKey || p.dateStr]);
+                    setMergeModalOpen(true);
+                    setContextMenu(null);
+                  }}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '6px 8px',
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: '4px',
+                    color: isDark ? '#e2e8f0' : '#1e293b',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    textAlign: 'left'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.08)' : '#f1f5f9'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                >
+                  <Combine size={13} color="#00f0ff" />
+                  <span>Select Multiple Profiles to Merge...</span>
+                </button>
+              </div>
+
+              <div style={{ height: '1px', background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)', margin: '4px 0' }} />
+
+              {/* 3. General Profile Actions */}
+              <div style={{ padding: '2px 0' }}>
+                <button
+                  onClick={() => {
+                    const pocBin = p.bins.find(b => b.price === p.pocPrice) || p.bins[0];
+                    setPinnedInfo({
+                      x: Math.min(contextMenu.x, 300),
+                      y: Math.min(contextMenu.y, 250),
+                      price: p.pocPrice,
+                      profile: p,
+                      bin: pocBin
+                    });
+                    setContextMenu(null);
+                  }}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '6px 8px',
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: '4px',
+                    color: isDark ? '#94a3b8' : '#64748b',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    textAlign: 'left'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.08)' : '#f1f5f9'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                >
+                  <Pin size={13} color="#10b981" />
+                  <span>Pin Profile Stats (P)</span>
+                </button>
+
+                {(mergedClusters.length > 0 || splitSessionKeys.size > 0) && (
+                  <button
+                    onClick={handleResetAllProfiles}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '6px 8px',
+                      background: 'transparent',
+                      border: 'none',
+                      borderRadius: '4px',
+                      color: '#ef4444',
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      textAlign: 'left'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.08)' : '#f1f5f9'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  >
+                    <RotateCcw size={13} color="#ef4444" />
+                    <span>Reset All Profiles to Default</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Custom Multi-Session Merge Modal */}
+        {mergeModalOpen && (() => {
+          const { keys } = groupCandlesBySessionPeriod(candles, sessionPeriod);
+          const activeKeys = keys.slice(Math.max(0, keys.length - lookbackDays));
+
+          const toggleKey = (k: string) => {
+            setSelectedKeysForMerge(prev => 
+              prev.includes(k) ? prev.filter(x => x !== k) : [...prev, k].sort()
+            );
+          };
+
+          return (
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'rgba(0, 0, 0, 0.7)',
+                backdropFilter: 'blur(4px)',
+                zIndex: 200,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              onClick={() => setMergeModalOpen(false)}
+            >
+              <div
+                style={{
+                  width: '420px',
+                  maxHeight: '520px',
+                  background: isDark ? '#0b1329' : '#ffffff',
+                  color: isDark ? '#ffffff' : '#0f172a',
+                  border: `1px solid ${isDark ? '#1e293b' : '#cbd5e1'}`,
+                  borderRadius: '10px',
+                  boxShadow: '0 20px 45px rgba(0, 0, 0, 0.7)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  overflow: 'hidden'
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Modal Header */}
+                <div style={{
+                  padding: '14px 16px',
+                  borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Combine size={18} color="#00f0ff" />
+                    <div>
+                      <div style={{ fontWeight: '800', fontSize: '13px' }}>Merge Market Profiles</div>
+                      <div style={{ fontSize: '11px', color: '#94a3b8' }}>Select 2 or more sessions to combine into a composite profile</div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setMergeModalOpen(false)}
+                    style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+
+                {/* Presets */}
+                <div style={{
+                  padding: '10px 16px',
+                  background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
+                  display: 'flex',
+                  gap: '6px',
+                  flexWrap: 'wrap',
+                  borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`
+                }}>
+                  <button
+                    onClick={() => setSelectedKeysForMerge(activeKeys.slice(-2))}
+                    style={{ background: '#1e293b', border: 'none', color: '#38bdf8', fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '4px', cursor: 'pointer' }}
+                  >
+                    Last 2 Days
+                  </button>
+                  <button
+                    onClick={() => setSelectedKeysForMerge(activeKeys.slice(-3))}
+                    style={{ background: '#1e293b', border: 'none', color: '#f59e0b', fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '4px', cursor: 'pointer' }}
+                  >
+                    3-Day Balance
+                  </button>
+                  <button
+                    onClick={() => setSelectedKeysForMerge(activeKeys.slice(-5))}
+                    style={{ background: '#1e293b', border: 'none', color: '#a855f7', fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '4px', cursor: 'pointer' }}
+                  >
+                    Last 5 Days (Week)
+                  </button>
+                  <button
+                    onClick={() => setSelectedKeysForMerge([...activeKeys])}
+                    style={{ background: '#1e293b', border: 'none', color: '#10b981', fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '4px', cursor: 'pointer' }}
+                  >
+                    Select All
+                  </button>
+                  <button
+                    onClick={() => setSelectedKeysForMerge([])}
+                    style={{ background: '#1e293b', border: 'none', color: '#ef4444', fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '4px', cursor: 'pointer' }}
+                  >
+                    Clear
+                  </button>
+                </div>
+
+                {/* Session Checkbox List */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: '10px 16px', display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '280px' }}>
+                  {activeKeys.map((k) => {
+                    const isSelected = selectedKeysForMerge.includes(k);
+                    return (
+                      <div
+                        key={k}
+                        onClick={() => toggleKey(k)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '7px 10px',
+                          borderRadius: '6px',
+                          background: isSelected ? 'rgba(0, 240, 255, 0.12)' : (isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'),
+                          border: `1px solid ${isSelected ? '#00f0ff' : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')}`,
+                          cursor: 'pointer',
+                          transition: 'all 0.12s ease'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          {isSelected ? (
+                            <CheckSquare size={15} color="#00f0ff" />
+                          ) : (
+                            <Square size={15} color="#64748b" />
+                          )}
+                          <span style={{ fontWeight: isSelected ? '700' : '500', fontSize: '11.5px', color: isSelected ? '#00f0ff' : (isDark ? '#ffffff' : '#0f172a') }}>
+                            {formatDateHeader(k)}
+                          </span>
+                        </div>
+                        <span style={{ fontSize: '10px', color: '#94a3b8' }}>
+                          {k}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Modal Footer */}
+                <div style={{
+                  padding: '12px 16px',
+                  borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'flex-end',
+                  gap: '8px',
+                  background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'
+                }}>
+                  <button
+                    onClick={() => setMergeModalOpen(false)}
+                    style={{
+                      background: 'transparent',
+                      border: `1px solid ${isDark ? '#334155' : '#cbd5e1'}`,
+                      color: isDark ? '#94a3b8' : '#64748b',
+                      padding: '6px 14px',
+                      borderRadius: '6px',
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    disabled={selectedKeysForMerge.length < 2}
+                    onClick={() => handleCustomRangeMerge(selectedKeysForMerge)}
+                    style={{
+                      background: selectedKeysForMerge.length >= 2 ? '#00f0ff' : '#334155',
+                      border: 'none',
+                      color: selectedKeysForMerge.length >= 2 ? '#000000' : '#94a3b8',
+                      padding: '6px 16px',
+                      borderRadius: '6px',
+                      fontSize: '11px',
+                      fontWeight: '800',
+                      cursor: selectedKeysForMerge.length >= 2 ? 'pointer' : 'not-allowed',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <Combine size={14} />
+                    Combine & Merge ({selectedKeysForMerge.length})
+                  </button>
+                </div>
               </div>
             </div>
           );
@@ -2827,14 +3935,30 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
           overflowX: 'auto'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-            <span style={{ color: '#6b7280', fontSize: '11px', padding: '0 4px', cursor: 'pointer' }}>◀</span>
+            <span style={{ color: '#6b7280', fontSize: '11px', padding: '0 4px', cursor: 'pointer' }}>ΓùÇ</span>
             {QUICK_SYMBOLS.map((qs) => {
-              const isActive = symbol === qs.symbol || (qs.label === 'BNF' && symbol.includes('BANKNIFTY')) || (qs.label === 'NIFTY_I' && symbol.includes('NIFTY') && !symbol.includes('BANK') && !symbol.includes('FIN') && !symbol.includes('MIDCP'));
+              const isNfW = qs.label === 'NF - W';
+              const isActive = isNfW
+                ? (sessionPeriod === 'W' && symbol.includes('NIFTY') && !symbol.includes('BANK'))
+                : (sessionPeriod !== 'W' && (symbol === qs.symbol || (qs.label === 'BNF' && symbol.includes('BANKNIFTY')) || (qs.label === 'NIFTY_I' && symbol.includes('NIFTY') && !symbol.includes('BANK') && !symbol.includes('FIN') && !symbol.includes('MIDCP'))));
               return (
                 <button
                   key={qs.label}
                   onClick={() => {
                     setSymbol(qs.symbol);
+                    if (isNfW) {
+                      setSessionPeriod('W');
+                      setTimeframe('D');
+                      setLookbackDays(50);
+                      setPanOffset({ x: 0, y: 0 });
+                      setZoomLevel(1.0);
+                    } else if (qs.label === 'NIFTY_I') {
+                      setSessionPeriod('D');
+                      setTimeframe('5');
+                      setLookbackDays(12);
+                      setPanOffset({ x: 0, y: 0 });
+                      setZoomLevel(1.0);
+                    }
                     if (onSymbolSelect) onSymbolSelect(qs.symbol);
                   }}
                   style={{
@@ -2901,11 +4025,11 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
           }}
           title="Scroll chart to the left to view older sessions"
         >
-          <ChevronLeft size={16} /> ◀ SCROLL LEFT (OLDER)
+          <ChevronLeft size={16} /> ΓùÇ SCROLL LEFT (OLDER)
         </button>
 
         <button
-          onClick={() => { setPanOffset({ x: 0, y: 0 }); setZoomLevel(1.0); }}
+          onClick={() => { setZoomLevel(1.0); setYScale(1.0); setXScale(1.0); scrollToLatest(); }}
           style={{
             background: 'rgba(0, 240, 255, 0.15)',
             border: '1px solid #00f0ff',
@@ -2921,7 +4045,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
           }}
           title="Reset zoom & return to the latest session"
         >
-          🎯 RESET TO LATEST
+          ≡ƒÄ» RESET TO LATEST
         </button>
 
         <button
@@ -2941,7 +4065,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
           }}
           title="Scroll chart to the right to view recent sessions"
         >
-          SCROLL RIGHT (RECENT) ▶ <ChevronRight size={16} />
+          SCROLL RIGHT (RECENT) Γû╢ <ChevronRight size={16} />
         </button>
 
         {/* Touch Zoom Buttons */}
@@ -3052,7 +4176,7 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
           {/* Right Side: Quick Action Controls */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <button
-              onClick={() => setPanOffset({ x: 0, y: 0 })}
+              onClick={() => scrollToLatest()}
               style={{ background: '#262626', border: '1px solid #444444', color: '#60a5fa', padding: '3px 8px', borderRadius: '3px', fontSize: '10px', fontWeight: '800', cursor: 'pointer' }}
             >
               RESET PAN
@@ -3065,3 +4189,5 @@ export const ProMarketProfileContainer: React.FC<ProMarketProfileContainerProps>
     </div>
   );
 };
+
+export { StandaloneProTPO } from './StandaloneProTPO';

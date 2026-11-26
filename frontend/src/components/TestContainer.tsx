@@ -406,10 +406,10 @@ export const TestContainer: React.FC<FootprintChartContainerProps> = ({
     }
   }, [backendUrl, symbol, timeframe, customTick]);
 
-  // Main polling interval (2s smooth polling)
+  // Main polling interval (3s smooth polling)
   useEffect(() => {
     fetchOrderflowState();
-    const interval = setInterval(fetchOrderflowState, 2000);
+    const interval = setInterval(fetchOrderflowState, 3000);
     return () => clearInterval(interval);
   }, [fetchOrderflowState]);
 

@@ -4,15 +4,38 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import localtunnel from 'localtunnel';
+import dns from 'dns';
+
+try {
+  dns.setServers(['1.1.1.1', '8.8.8.8', '1.0.0.1']);
+  dns.setDefaultResultOrder('ipv4first');
+} catch (e) {}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, '.env') });
 
 const hfToken = process.env.HF_TOKEN;
-const hfSpaceRepo = `https://marshalavi:${hfToken}@huggingface.co/spaces/marshalavi/TradingGuru-Terminal`;
 const cloudflaredPath = path.join(__dirname, 'cloudflared.exe');
 const rootDir = path.join(__dirname, '..');
+
+const TUNNEL_LOCK = path.join(rootDir, 'logs/tunnel.pid');
+if (fs.existsSync(TUNNEL_LOCK)) {
+  try {
+    const existingPid = parseInt(fs.readFileSync(TUNNEL_LOCK, 'utf8'), 10);
+    if (existingPid && existingPid !== process.pid) {
+      try {
+        process.kill(existingPid, 0);
+        console.log(`[Tunnel Daemon] Another instance is already running (PID: ${existingPid}). Exiting duplicate.`);
+        process.exit(0);
+      } catch (e) {}
+    }
+  } catch (e) {}
+}
+try { fs.writeFileSync(TUNNEL_LOCK, String(process.pid), 'utf8'); } catch (e) {}
+process.on('exit', () => {
+  try { if (fs.existsSync(TUNNEL_LOCK)) fs.unlinkSync(TUNNEL_LOCK); } catch (e) {}
+});
 
 console.log('🚀 Starting Dual-Engine (Cloudflare + Localtunnel) HTTPS Daemon for http://localhost:3002...');
 
@@ -32,15 +55,42 @@ function killExistingTunnelProcesses() {
   } catch (e) {}
 }
 
+async function verifyTunnelHealth(url) {
+  if (!url) return false;
+  try {
+    const res = await fetch(`${url}/health`, {
+      headers: { 'bypass-tunnel-reminder': 'true' },
+      signal: AbortSignal.timeout(3500)
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 async function publishToHuggingFace() {
   if (isPublishing) {
     hasPendingPublish = true;
     return;
   }
 
-  const primary = cloudflareUrl || localtunnelUrl;
-  const backup = localtunnelUrl || cloudflareUrl;
-  if (!primary) return;
+  // Determine working primary URL
+  let primary = null;
+  let backup = null;
+
+  const isCfHealthy = await verifyTunnelHealth(cloudflareUrl);
+  const isLtHealthy = await verifyTunnelHealth(localtunnelUrl);
+
+  if (isCfHealthy || cloudflareUrl) {
+    primary = cloudflareUrl;
+    backup = (isLtHealthy && localtunnelUrl) ? localtunnelUrl : cloudflareUrl;
+  } else if (isLtHealthy && localtunnelUrl) {
+    primary = localtunnelUrl;
+    backup = localtunnelUrl;
+  } else {
+    console.warn('⚠️ [HF Auto-Publisher] Neither Cloudflare nor Localtunnel is available. Skipping publish.');
+    return;
+  }
 
   isPublishing = true;
   hasPendingPublish = false;
@@ -48,7 +98,7 @@ async function publishToHuggingFace() {
   try {
     const jsonContent = JSON.stringify({
       backendUrl: primary,
-      backupUrl: backup,
+      backupUrl: backup || primary,
       cloudflareUrl: cloudflareUrl,
       localtunnelUrl: localtunnelUrl,
       timestamp: new Date().toISOString()
@@ -63,17 +113,16 @@ async function publishToHuggingFace() {
 
     for (const p of targetPaths) {
       try {
-        const dir = path.dirname(p);
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
         fs.writeFileSync(p, jsonContent, 'utf8');
       } catch (e) {}
     }
 
     console.log(`\n==================================================`);
     console.log(`🎉 [Live Dual-Tunnel] Primary: ${primary}`);
-    console.log(`🎉 [Live Dual-Tunnel] Backup:  ${backup}`);
+    console.log(`🎉 [Live Dual-Tunnel] Backup:  ${backup || 'None'}`);
     console.log(`==================================================\n`);
 
+    // Commit to Hugging Face
     if (hfToken) {
       console.log('[HF Auto-Publisher] Uploading live_backend.json to HF Space...');
       const commitUrl = 'https://huggingface.co/api/spaces/marshalavi/TradingGuru-Terminal/commit/main';
@@ -157,12 +206,22 @@ async function startCloudflareTunnel() {
   const binary = fs.existsSync(cloudflaredPath) ? cloudflaredPath : 'cloudflared';
   console.log(`[Cloudflare Engine] Spawning binary: ${binary}`);
 
-  const child = spawn(binary, ['tunnel', '--url', 'http://127.0.0.1:3002', '--metrics', '127.0.0.1:20245', '--no-autoupdate']);
+  const child = spawn(binary, [
+    'tunnel',
+    '--url', 'http://127.0.0.1:3002',
+    '--protocol', 'http2',
+    '--no-autoupdate'
+  ], {
+    stdio: ['ignore', 'pipe', 'pipe'],
+    windowsHide: true
+  });
+
   let buffer = '';
 
   const handleData = (data) => {
     const text = data.toString();
     buffer += text;
+    process.stdout.write(text);
 
     if (!cloudflareUrl) {
       const match = buffer.match(/(https:\/\/[a-zA-Z0-9-]+\.trycloudflare\.com)/);
@@ -183,43 +242,23 @@ async function startCloudflareTunnel() {
     cloudflareUrl = null;
     setTimeout(startCloudflareTunnel, 15000);
   });
-
-  // Fast poll cloudflared's internal quicktunnel API
-  const pollTimer = setInterval(async () => {
-    if (cloudflareUrl) {
-      clearInterval(pollTimer);
-      return;
-    }
-    try {
-      const res = await fetch('http://127.0.0.1:20245/quicktunnel', { signal: AbortSignal.timeout(1000) });
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.hostname) {
-          cloudflareUrl = `https://${data.hostname}`;
-          console.log(`[Cloudflare Engine API] Active HTTPS URL detected: ${cloudflareUrl}`);
-          publishToHuggingFace();
-          clearInterval(pollTimer);
-        }
-      }
-    } catch (e) {}
-  }, 1000);
 }
 
-// Local health monitor: verify localhost:3002 is alive
+// Local health monitor: verify localhost:3002 is alive and re-check tunnel health
 setInterval(async () => {
   try {
-    const res = await fetch('http://localhost:3002/health', { signal: AbortSignal.timeout(3000) });
+    const res = await fetch('http://127.0.0.1:3002/health', { signal: AbortSignal.timeout(3000) });
     if (!res.ok) {
       console.warn('⚠️ Backend on localhost:3002 returned non-200.');
+    } else {
+      // Re-verify published URLs periodically
+      publishToHuggingFace();
     }
   } catch (e) {
     console.warn('⚠️ Backend on localhost:3002 unreachable:', e.message);
   }
 }, 30000);
 
-// Launch both engines concurrently for 100% redundancy
-startCloudflareTunnel();
-setTimeout(startLocaltunnel, 2000);
-
-
-
+// Launch both engines
+startLocaltunnel();
+setTimeout(startCloudflareTunnel, 1500);

@@ -20,11 +20,11 @@ interface TopMarketTickerBarProps {
 }
 
 const DEFAULT_ITEMS: TickerItem[] = [
-  { key: 'nifty', name: 'NIFTY 50', shortName: 'NIFTY', symbol: 'NSE:NIFTY', ltp: 23361.00, close: 23329.00, change: 32.00, changePct: 0.14 },
-  { key: 'niftyFut', name: 'NIFTY FUTURES', shortName: 'NIFTY FUT', symbol: 'NSE:NIFTY1!', ltp: 23380.50, close: 23348.50, change: 32.00, changePct: 0.14 },
-  { key: 'banknifty', name: 'BANK NIFTY', shortName: 'BANKNIFTY', symbol: 'NSE:BANKNIFTY', ltp: 56384.00, close: 56215.55, change: 168.45, changePct: 0.30 },
-  { key: 'bankniftyFut', name: 'BANKNIFTY FUTURES', shortName: 'BANKNIFTY FUT', symbol: 'NSE:BANKNIFTY1!', ltp: 56472.50, close: 56304.05, change: 168.45, changePct: 0.30 },
-  { key: 'sensex', name: 'SENSEX', shortName: 'SENSEX', symbol: 'BSE:SENSEX', ltp: 74644.00, close: 74529.08, change: 114.92, changePct: 0.15 }
+  { key: 'nifty', name: 'NIFTY 50', shortName: 'NIFTY', symbol: 'NSE:NIFTY', ltp: 25244.30, close: 25387.40, change: -143.10, changePct: -0.56 },
+  { key: 'niftyFut', name: 'NIFTY FUTURES', shortName: 'NIFTY FUT', symbol: 'NSE:NIFTY1!', ltp: 25263.80, close: 25406.90, change: -143.10, changePct: -0.56 },
+  { key: 'banknifty', name: 'BANK NIFTY', shortName: 'BANKNIFTY', symbol: 'NSE:BANKNIFTY', ltp: 62048.55, close: 62273.25, change: -224.70, changePct: -0.36 },
+  { key: 'bankniftyFut', name: 'BANKNIFTY FUTURES', shortName: 'BANKNIFTY FUT', symbol: 'NSE:BANKNIFTY1!', ltp: 62137.05, close: 62361.75, change: -224.70, changePct: -0.36 },
+  { key: 'sensex', name: 'SENSEX', shortName: 'SENSEX', symbol: 'BSE:SENSEX', ltp: 82032.80, close: 82532.20, change: -499.40, changePct: -0.61 }
 ];
 
 export const TopMarketTickerBar: React.FC<TopMarketTickerBarProps> = ({
@@ -114,7 +114,7 @@ export const TopMarketTickerBar: React.FC<TopMarketTickerBarProps> = ({
     };
 
     fetchIndices();
-    const interval = setInterval(fetchIndices, 2500);
+    const interval = setInterval(fetchIndices, 15000);
 
     return () => {
       isMounted = false;

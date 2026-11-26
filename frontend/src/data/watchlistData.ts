@@ -7,6 +7,11 @@ export interface WatchlistItem {
 export const WATCHLIST_DATA: Record<string, WatchlistItem[]> = {
   Futures: [
   {
+    "symbol": "NSEIX:GIFTNIFTY1!",
+    "name": "GIFT NIFTY FUT",
+    "price": 22485
+  },
+  {
     "symbol": "NSE:NIFTY1!",
     "name": "NIFTY FUT",
     "price": 22441
@@ -1002,6 +1007,228 @@ export const WATCHLIST_DATA: Record<string, WatchlistItem[]> = {
     "price": 275
   }
 ],
+    Options: [
+  {
+    "symbol": "NSE:NIFTY22750CE",
+    "name": "NIFTY 22750 CE (ITM)",
+    "price": 507
+  },
+  {
+    "symbol": "NSE:NIFTY22800CE",
+    "name": "NIFTY 22800 CE (ITM)",
+    "price": 463
+  },
+  {
+    "symbol": "NSE:NIFTY22850CE",
+    "name": "NIFTY 22850 CE (ITM)",
+    "price": 418
+  },
+  {
+    "symbol": "NSE:NIFTY22900CE",
+    "name": "NIFTY 22900 CE (ITM)",
+    "price": 374
+  },
+  {
+    "symbol": "NSE:NIFTY22950CE",
+    "name": "NIFTY 22950 CE (ITM)",
+    "price": 330
+  },
+  {
+    "symbol": "NSE:NIFTY23000CE",
+    "name": "NIFTY 23000 CE (ATM Open)",
+    "price": 286
+  },
+  {
+    "symbol": "NSE:NIFTY23050CE",
+    "name": "NIFTY 23050 CE (OTM)",
+    "price": 271
+  },
+  {
+    "symbol": "NSE:NIFTY23100CE",
+    "name": "NIFTY 23100 CE (OTM)",
+    "price": 266
+  },
+  {
+    "symbol": "NSE:NIFTY23150CE",
+    "name": "NIFTY 23150 CE (OTM)",
+    "price": 260
+  },
+  {
+    "symbol": "NSE:NIFTY23200CE",
+    "name": "NIFTY 23200 CE (OTM)",
+    "price": 254
+  },
+  {
+    "symbol": "NSE:NIFTY23250CE",
+    "name": "NIFTY 23250 CE (OTM)",
+    "price": 249
+  },
+  {
+    "symbol": "NSE:NIFTY22750PE",
+    "name": "NIFTY 22750 PE (OTM)",
+    "price": 247
+  },
+  {
+    "symbol": "NSE:NIFTY22800PE",
+    "name": "NIFTY 22800 PE (OTM)",
+    "price": 252
+  },
+  {
+    "symbol": "NSE:NIFTY22850PE",
+    "name": "NIFTY 22850 PE (OTM)",
+    "price": 258
+  },
+  {
+    "symbol": "NSE:NIFTY22900PE",
+    "name": "NIFTY 22900 PE (OTM)",
+    "price": 263
+  },
+  {
+    "symbol": "NSE:NIFTY22950PE",
+    "name": "NIFTY 22950 PE (OTM)",
+    "price": 269
+  },
+  {
+    "symbol": "NSE:NIFTY23000PE",
+    "name": "NIFTY 23000 PE (ATM Open)",
+    "price": 275
+  },
+  {
+    "symbol": "NSE:NIFTY23050PE",
+    "name": "NIFTY 23050 PE (ITM)",
+    "price": 311
+  },
+  {
+    "symbol": "NSE:NIFTY23100PE",
+    "name": "NIFTY 23100 PE (ITM)",
+    "price": 355
+  },
+  {
+    "symbol": "NSE:NIFTY23150PE",
+    "name": "NIFTY 23150 PE (ITM)",
+    "price": 399
+  },
+  {
+    "symbol": "NSE:NIFTY23200PE",
+    "name": "NIFTY 23200 PE (ITM)",
+    "price": 444
+  },
+  {
+    "symbol": "NSE:NIFTY23250PE",
+    "name": "NIFTY 23250 PE (ITM)",
+    "price": 488
+  },
+  {
+    "symbol": "NSE:BANKNIFTY54400CE",
+    "name": "BANKNIFTY 54400 CE (ITM)",
+    "price": 869
+  },
+  {
+    "symbol": "NSE:BANKNIFTY54500CE",
+    "name": "BANKNIFTY 54500 CE (ITM)",
+    "price": 781
+  },
+  {
+    "symbol": "NSE:BANKNIFTY54600CE",
+    "name": "BANKNIFTY 54600 CE (ITM)",
+    "price": 692
+  },
+  {
+    "symbol": "NSE:BANKNIFTY54700CE",
+    "name": "BANKNIFTY 54700 CE (ITM)",
+    "price": 649
+  },
+  {
+    "symbol": "NSE:BANKNIFTY54800CE",
+    "name": "BANKNIFTY 54800 CE (ITM)",
+    "price": 637
+  },
+  {
+    "symbol": "NSE:BANKNIFTY54900CE",
+    "name": "BANKNIFTY 54900 CE (ATM Open)",
+    "price": 625
+  },
+  {
+    "symbol": "NSE:BANKNIFTY55000CE",
+    "name": "BANKNIFTY 55000 CE (OTM)",
+    "price": 614
+  },
+  {
+    "symbol": "NSE:BANKNIFTY55100CE",
+    "name": "BANKNIFTY 55100 CE (OTM)",
+    "price": 603
+  },
+  {
+    "symbol": "NSE:BANKNIFTY55200CE",
+    "name": "BANKNIFTY 55200 CE (OTM)",
+    "price": 592
+  },
+  {
+    "symbol": "NSE:BANKNIFTY55300CE",
+    "name": "BANKNIFTY 55300 CE (OTM)",
+    "price": 581
+  },
+  {
+    "symbol": "NSE:BANKNIFTY55400CE",
+    "name": "BANKNIFTY 55400 CE (OTM)",
+    "price": 571
+  },
+  {
+    "symbol": "NSE:BANKNIFTY54400PE",
+    "name": "BANKNIFTY 54400 PE (OTM)",
+    "price": 627
+  },
+  {
+    "symbol": "NSE:BANKNIFTY54500PE",
+    "name": "BANKNIFTY 54500 PE (OTM)",
+    "price": 639
+  },
+  {
+    "symbol": "NSE:BANKNIFTY54600PE",
+    "name": "BANKNIFTY 54600 PE (OTM)",
+    "price": 651
+  },
+  {
+    "symbol": "NSE:BANKNIFTY54700PE",
+    "name": "BANKNIFTY 54700 PE (OTM)",
+    "price": 707
+  },
+  {
+    "symbol": "NSE:BANKNIFTY54800PE",
+    "name": "BANKNIFTY 54800 PE (OTM)",
+    "price": 795
+  },
+  {
+    "symbol": "NSE:BANKNIFTY54900PE",
+    "name": "BANKNIFTY 54900 PE (ATM Open)",
+    "price": 884
+  },
+  {
+    "symbol": "NSE:BANKNIFTY55000PE",
+    "name": "BANKNIFTY 55000 PE (ITM)",
+    "price": 972
+  },
+  {
+    "symbol": "NSE:BANKNIFTY55100PE",
+    "name": "BANKNIFTY 55100 PE (ITM)",
+    "price": 1061
+  },
+  {
+    "symbol": "NSE:BANKNIFTY55200PE",
+    "name": "BANKNIFTY 55200 PE (ITM)",
+    "price": 1150
+  },
+  {
+    "symbol": "NSE:BANKNIFTY55300PE",
+    "name": "BANKNIFTY 55300 PE (ITM)",
+    "price": 1240
+  },
+  {
+    "symbol": "NSE:BANKNIFTY55400PE",
+    "name": "BANKNIFTY 55400 PE (ITM)",
+    "price": 1329
+  }
+],
   Stocks: [
     { symbol: 'NSE:RELIANCE', name: 'RELIANCE', price: 1284 },
     { symbol: 'NSE:TATAMOTORS', name: 'TATA MOTORS', price: 890 },
@@ -1022,6 +1249,7 @@ export const WATCHLIST_DATA: Record<string, WatchlistItem[]> = {
     { symbol: 'MCX:NATURALGAS1!', name: 'NATURAL GAS', price: 245 }
   ],
   Indices: [
+    { symbol: 'NSEIX:GIFTNIFTY', name: 'GIFT NIFTY', price: 22485 },
     { symbol: 'NSE:NIFTY', name: 'NIFTY 50', price: 22421 },
     { symbol: 'NSE:BANKNIFTY', name: 'BANK NIFTY', price: 54450 },
     { symbol: 'NSE:FINNIFTY', name: 'FIN NIFTY', price: 24556 },

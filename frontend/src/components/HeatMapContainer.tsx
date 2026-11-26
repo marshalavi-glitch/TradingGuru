@@ -197,18 +197,26 @@ SECTOR_MAP.ALL.symbols = Object.keys(SECTOR_MAP)
   .filter(k => k !== 'ALL')
   .flatMap(k => SECTOR_MAP[k].symbols);
 
+const cachedHeatMap: Record<string, { data: StockHeatData[]; timestamp: number }> = {};
+
 export const HeatMapContainer: React.FC<HeatMapContainerProps> = ({ onSymbolSelect, onSwitchToChart }) => {
   const [selectedSector, setSelectedSector] = useState<string>('ALL');
   const [sortBy, setSortBy] = useState<'changeDesc' | 'changeAsc' | 'volumeDesc' | 'alpha'>('changeDesc');
   const [searchFilter, setSearchFilter] = useState<string>('');
   const [viewMode, setViewMode] = useState<'tiles' | 'summary'>('tiles');
-  const [stockData, setStockData] = useState<StockHeatData[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [stockData, setStockData] = useState<StockHeatData[]>(() => cachedHeatMap['ALL']?.data || []);
+  const [loading, setLoading] = useState<boolean>(() => !cachedHeatMap['ALL']);
   const [selectedStock, setSelectedStock] = useState<StockHeatData | null>(null);
 
   // Fetch real-time market candles for symbols in selected sector
-  const fetchHeatMapData = async () => {
-    setLoading(true);
+  const fetchHeatMapData = async (force = false) => {
+    const existing = cachedHeatMap[selectedSector];
+    if (existing && !force && Date.now() - existing.timestamp < 60000) {
+      setStockData(existing.data);
+      setLoading(false);
+      return;
+    }
+    if (!existing) setLoading(true);
     const backendHttp = await getBackendHttpUrl();
     const activeSymbols = SECTOR_MAP[selectedSector]?.symbols || [];
     const results: StockHeatData[] = [];
@@ -262,6 +270,9 @@ export const HeatMapContainer: React.FC<HeatMapContainerProps> = ({ onSymbolSele
       );
     }
 
+    if (results.length > 0) {
+      cachedHeatMap[selectedSector] = { data: results, timestamp: Date.now() };
+    }
     setStockData(results);
     setLoading(false);
   };

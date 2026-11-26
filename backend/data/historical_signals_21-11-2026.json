@@ -1,0 +1,27 @@
+[
+  {
+    "id": "NIFTY-LIVE-CE-25800",
+    "date": "21 Nov 2026",
+    "timestamp": "21 Nov 2026, 12:00:19 am",
+    "lastUpdated": "21 Nov 2026, 06:43:49 pm",
+    "lastUpdatedMs": 1795266825603,
+    "symbol": "NIFTY 50",
+    "action": "BUY CE",
+    "strike": "25800 CE",
+    "entryPrice": 160.31,
+    "currentOptionPrice": 160.31,
+    "entryRange": "₹153.9 - ₹163.5",
+    "spotPrice": 25800.6,
+    "spotSL": 25775.6,
+    "optionSL": 147.81,
+    "target1": 208.4,
+    "target2": 272.53,
+    "target1Hit": false,
+    "target2Hit": false,
+    "pnlPct": 0,
+    "confidence": 70,
+    "mathTrigger": "Nifty Skew (+14.5%) with ⚖️ CONSOLIDATION EQUILIBRIUM.",
+    "conceptUsed": "Premium Elasticity + Put-Call Asymmetry",
+    "isUrgent": true
+  }
+]

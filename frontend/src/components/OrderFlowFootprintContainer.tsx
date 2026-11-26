@@ -150,13 +150,13 @@ export const OrderFlowFootprintContainer: React.FC<OrderFlowFootprintContainerPr
       <div
         className="glass-panel"
         style={{
-          padding: '16px 20px',
+          padding: '12px 14px',
           borderRadius: '12px',
           display: 'flex',
           flexWrap: 'wrap',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '16px',
+          gap: '12px',
           border: '1px solid var(--border-color)',
           background: 'rgba(15, 23, 42, 0.65)',
         }}
@@ -333,7 +333,7 @@ export const OrderFlowFootprintContainer: React.FC<OrderFlowFootprintContainerPr
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))',
           gap: '14px',
         }}
       >
@@ -576,8 +576,8 @@ export const OrderFlowFootprintContainer: React.FC<OrderFlowFootprintContainerPr
           </div>
         </div>
 
-        {/* Scrollable High-Tech Table */}
-        <div style={{ overflowX: 'auto', maxHeight: '450px' }}>
+        {/* Scrollable High-Tech Table (Desktop) */}
+        <div className="desktop-only" style={{ overflowX: 'auto', maxHeight: '450px' }}>
           <table
             style={{
               width: '100%',
@@ -711,6 +711,75 @@ export const OrderFlowFootprintContainer: React.FC<OrderFlowFootprintContainerPr
               })}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Cards View */}
+        <div className="mobile-only" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {filteredSignals.map((item, idx) => {
+            const isSelected = selectedSymbol === item.symbol;
+            return (
+              <div
+                key={idx}
+                className="responsive-table-card"
+                onClick={() => handleInspectSymbol(item.symbol)}
+                style={{
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px',
+                  background: isSelected ? 'rgba(56, 189, 248, 0.12)' : 'rgba(15, 23, 42, 0.7)',
+                  border: isSelected ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '8px',
+                  padding: '12px',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ fontSize: '15px', fontWeight: '800', color: '#f8fafc' }}>{item.displayName}</div>
+                    <div style={{ fontSize: '10px', color: '#64748b' }}>{item.subtitle}</div>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: '10px',
+                      fontWeight: '800',
+                      padding: '3px 8px',
+                      borderRadius: '4px',
+                      background: `${item.signalBadgeColor}25`,
+                      color: '#ffffff',
+                      border: `1px solid ${item.signalBadgeColor}`,
+                    }}
+                  >
+                    {item.signalBadgeText}
+                  </span>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', fontSize: '12px' }}>
+                  <div>
+                    <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>LTP: </span>
+                    <strong style={{ color: '#f8fafc' }}>₹{item.ltp.toLocaleString('en-IN', { minimumFractionDigits: 1 })}</strong>
+                    <span style={{ fontSize: '10px', marginLeft: '4px', color: item.changePct >= 0 ? '#10b981' : '#ef4444' }}>
+                      ({item.changePct >= 0 ? '+' : ''}{item.changePct}%)
+                    </span>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Net Delta: </span>
+                    <strong style={{ color: item.netDelta < 0 ? '#ef4444' : '#10b981' }}>
+                      {item.netDelta > 0 ? '+' : ''}{item.netDelta.toLocaleString('en-IN')}
+                    </strong>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Strike: </span>
+                    <strong style={{ color: item.optionType === 'CE' ? '#10b981' : '#ef4444' }}>
+                      {item.actionableOptionStrike}
+                    </strong>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: '700' }}>Inspect ➔</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 

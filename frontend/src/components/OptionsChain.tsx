@@ -64,11 +64,13 @@ interface SearchResult {
   exchange: string;
 }
 
+const globalOptionsChainCache: Record<string, OptionChainResponse> = {};
+
 export function OptionsChain({ currentSymbol, onSymbolChange, onSwitchToChart, onSwitchToMarketProfile }: OptionsChainProps) {
   const { isDark } = useTheme();
   const [expiry, setExpiry] = useState<string>('');
-  const [data, setData] = useState<OptionChainResponse | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [data, setData] = useState<OptionChainResponse | null>(() => globalOptionsChainCache[currentSymbol] || null);
+  const [loading, setLoading] = useState<boolean>(() => !globalOptionsChainCache[currentSymbol]);
   const [error, setError] = useState<string | null>(null);
   const [perLot, setPerLot] = useState<boolean>(false);
   const [showInfoModal, setShowInfoModal] = useState<boolean>(false);
@@ -101,7 +103,9 @@ export function OptionsChain({ currentSymbol, onSymbolChange, onSwitchToChart, o
   // Load Option Chain data
   useEffect(() => {
     let active = true;
-    setLoading(true);
+    if (!globalOptionsChainCache[underlyingSymbol]) {
+      setLoading(true);
+    }
     setError(null);
 
     const loadChain = async () => {
@@ -112,6 +116,7 @@ export function OptionsChain({ currentSymbol, onSymbolChange, onSwitchToChart, o
         if (!res.ok) throw new Error('Failed to load options chain data');
         const payload: OptionChainResponse = await res.json();
         if (active) {
+          globalOptionsChainCache[underlyingSymbol] = payload;
           setData(payload);
           if (!expiry || !payload.expiries.some(e => e.code === expiry)) {
             setExpiry(payload.selectedExpiry);

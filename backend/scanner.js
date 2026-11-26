@@ -139,6 +139,8 @@ export function loadSignalsFromDisk() {
       if (cached['5'] && cached['D']) {
         scannerCache.levelsCache = cached;
         console.log(`[Scanner] Restored ${Object.keys(cached['5']).length} Daily and ${Object.keys(cached['D']).length} Monthly level calculations from disk.`);
+        recalculateResultsFromCache('5');
+        recalculateResultsFromCache('D');
       }
     }
   } catch (err) {
@@ -355,7 +357,7 @@ export async function runScan(timeframe) {
   // Process in batches
   for (let i = 0; i < SCAN_SYMBOLS.length; i += BATCH_SIZE) {
     const batch = SCAN_SYMBOLS.slice(i, i + BATCH_SIZE);
-    await new Promise(r => setTimeout(r, 380));
+    await new Promise(r => setTimeout(r, 1200));
     
     // Scan batch in parallel
     const scanPromises = batch.map(async (symbol) => {
@@ -517,7 +519,60 @@ async function processQueue() {
   isProcessingQueue = false;
 }
 
+export function recalculateResultsFromCache(timeframe) {
+  const cache = (scannerCache.levelsCache && scannerCache.levelsCache[timeframe]) || {};
+  const tempResults = {
+    level1: [], level2: [], level3: [], level4: [], level5: [],
+    level6: [], level7: [], level8: [], level9: [], level10: []
+  };
+
+  const threshold = timeframe === '5' ? 0.5 : 1.5;
+
+  for (const [symbol, data] of Object.entries(cache)) {
+    const { currentPrice, levels } = data || {};
+    if (!currentPrice || !levels) continue;
+
+    for (const [lvlKey, lvlVal] of Object.entries(levels)) {
+      if (!lvlVal || lvlVal <= 0) continue;
+      const distancePts = currentPrice - lvlVal;
+      const distancePct = (distancePts / lvlVal) * 100;
+
+      if (Math.abs(distancePct) <= threshold) {
+        if (!tempResults[lvlKey]) tempResults[lvlKey] = [];
+        tempResults[lvlKey].push({
+          symbol,
+          close: currentPrice,
+          levelValue: lvlVal,
+          distancePct,
+          distancePts,
+          isSweep: false,
+          sweepType: null
+        });
+      }
+    }
+  }
+
+  for (const key of Object.keys(tempResults)) {
+    tempResults[key].sort((a, b) => Math.abs(a.distancePct) - Math.abs(b.distancePct));
+  }
+
+  scannerCache.results[timeframe] = tempResults;
+  scannerCache.lastScanTime[timeframe] = new Date();
+  console.log(`[Scanner] Recalculated results for ${timeframe} TF: ${Object.values(tempResults).reduce((s, arr) => s + arr.length, 0)} total proximity matches.`);
+  return tempResults;
+}
+
 export function queueScan(timeframe) {
+  if (!isMarketHours()) {
+    const hasCachedLevels = Object.keys(scannerCache.levelsCache[timeframe] || {}).length > 50;
+    if (hasCachedLevels) {
+      const currentMatches = Object.values(scannerCache.results[timeframe] || {}).reduce((sum, arr) => sum + (arr?.length || 0), 0);
+      if (currentMatches === 0) {
+        recalculateResultsFromCache(timeframe);
+      }
+      return;
+    }
+  }
   if (!scanQueue.some(q => q.timeframe === timeframe)) {
     scanQueue.push({ timeframe });
   }

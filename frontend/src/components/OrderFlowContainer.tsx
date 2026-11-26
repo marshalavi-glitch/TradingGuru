@@ -266,7 +266,7 @@ export const OrderFlowContainer: React.FC<OrderFlowContainerProps> = ({
         display: 'flex',
         flexDirection: 'column',
         gap: '16px',
-        padding: '16px',
+        padding: '12px',
         color: 'var(--text-primary)',
         minHeight: '100%',
         boxSizing: 'border-box',
@@ -276,13 +276,13 @@ export const OrderFlowContainer: React.FC<OrderFlowContainerProps> = ({
       <div
         className="glass-panel"
         style={{
-          padding: '16px 20px',
+          padding: '12px 14px',
           borderRadius: '12px',
           display: 'flex',
           flexWrap: 'wrap',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '16px',
+          gap: '12px',
           border: '1px solid var(--border-color)',
           background: 'rgba(15, 23, 42, 0.65)',
         }}
@@ -512,7 +512,7 @@ export const OrderFlowContainer: React.FC<OrderFlowContainerProps> = ({
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
               gap: '16px',
             }}
           >
@@ -819,7 +819,7 @@ export const OrderFlowContainer: React.FC<OrderFlowContainerProps> = ({
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
                 gap: '14px',
               }}
             >

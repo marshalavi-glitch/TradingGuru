@@ -1,4 +1,4 @@
-import { resolveBackendUrl, getBackendHttpUrlSync as getBackendHttpUrlSyncConfig, clearBackendUrlCache } from './config';
+import { resolveBackendUrl, getBackendHttpUrlSync as getBackendHttpUrlSyncConfig, clearBackendUrlCache, reportBackendFetchError } from './config';
 
 export interface TVDataMessage {
   symbol: string;
@@ -45,6 +45,7 @@ class TVWebSocketStreamer {
   private onSrBreakoutsQuotesCallbacks: ((quotes: Record<string, any>) => void)[] = [];
   private onMarketIndicesCallbacks: ((data: any) => void)[] = [];
   private onTelegramTradeIdeasCallbacks: OnTelegramTradeIdeasUpdateCallback[] = [];
+  private onAlgoTradeCallbacks: ((data: any) => void)[] = [];
   private onStatusCallbacks: OnStatusCallback[] = [];
   private onTickCallbacks: Array<(tick: { symbol: string; ltp: number; timestamp: number }) => void> = [];
   private dataListeners: Map<string, { symbol: string; timeframe?: string; callback: OnDataCallback }> = new Map();
@@ -52,6 +53,7 @@ class TVWebSocketStreamer {
   private lastPolledVoiceId: string | null = null;
   private reconnectTimeout: number | null = null;
   private fallbackPollInterval: number | null = null;
+  private initialSnapshotLoaded: Set<string> = new Set();
   private statusTimer: number | null = null;
   private status: 'connecting' | 'connected' | 'disconnected' = 'disconnected';
   private isConnecting: boolean = false;
@@ -215,6 +217,15 @@ class TVWebSocketStreamer {
 
   public removeMarketIndicesListener(callback: (data: any) => void) {
     this.onMarketIndicesCallbacks = this.onMarketIndicesCallbacks.filter(cb => cb !== callback);
+  }
+
+  public addAlgoTradeListener(callback: (data: any) => void): () => void {
+    if (!this.onAlgoTradeCallbacks.includes(callback)) {
+      this.onAlgoTradeCallbacks.push(callback);
+    }
+    return () => {
+      this.onAlgoTradeCallbacks = this.onAlgoTradeCallbacks.filter(cb => cb !== callback);
+    };
   }
 
   public getStatus(): 'connecting' | 'connected' | 'disconnected' {
@@ -517,6 +528,10 @@ class TVWebSocketStreamer {
                 try { cb(payload.data); } catch (e) { console.error('Telegram trade ideas callback error:', e); }
               });
             }
+          } else if (payload.type === 'ALGO_TRADE_EXECUTED' || payload.type === 'ALGO_TRADE_UPDATED' || payload.type === 'ALGO_TRADE_CLEARED') {
+            this.onAlgoTradeCallbacks.forEach(cb => {
+              try { cb(payload); } catch (e) { console.error('Algo trade callback error:', e); }
+            });
           } else if (payload.type === 'error') {
             console.error('WebSocket error from server:', payload.message);
             if (this.onErrorCallback) {
@@ -557,11 +572,11 @@ class TVWebSocketStreamer {
     this.setStatus('connected'); // Mark dashboard online immediately 24/7
     if (this.fallbackPollInterval) return;
 
-    console.log('[tvStreamer] Starting background HTTP polling stream...');
+    console.log('[tvStreamer] Starting background HTTP polling stream (2.5s interval)...');
     this.pollHttpCandles();
     this.fallbackPollInterval = window.setInterval(() => {
       this.pollHttpCandles();
-    }, 750);
+    }, 2500);
   }
 
   private stopHttpPollingFallback() {
@@ -600,11 +615,16 @@ class TVWebSocketStreamer {
                 this.updateLtpCache(sym, last.close);
               }
               this.setStatus('connected');
+              const key = `${sym}_${timeframe}`;
+              const isFirstLoad = !this.initialSnapshotLoaded.has(key);
+              if (isFirstLoad) {
+                this.initialSnapshotLoaded.add(key);
+              }
               const payload: TVDataMessage = {
                 symbol: sym,
                 timeframe: data.timeframe || timeframe,
-                isSnapshot: true,
-                candles: data.candles
+                isSnapshot: isFirstLoad,
+                candles: isFirstLoad ? data.candles : [last]
               };
               const notified = new Set<OnDataCallback>();
               this.dataListeners.forEach((listener) => {
@@ -626,7 +646,12 @@ class TVWebSocketStreamer {
       }
 
       // Check for MCX live quotes fallback
-      if (symbol.includes('MCX') || symbol.includes('CRUDE') || symbol.includes('NATURALGAS') || symbol.includes('GOLD') || symbol.includes('SILVER') || symbol.includes('ZINC')) {
+      const hasMcx = Array.from(pairs.values()).some(p => 
+        p.symbol.includes('MCX') || p.symbol.includes('CRUDE') || 
+        p.symbol.includes('NATURALGAS') || p.symbol.includes('GOLD') || 
+        p.symbol.includes('SILVER') || p.symbol.includes('ZINC')
+      );
+      if (hasMcx) {
         try {
           const mcxRes = await fetch(`${httpUrl}/api/mcx/live-quotes`, {
             headers: { 'bypass-tunnel-reminder': 'true' }
@@ -664,6 +689,7 @@ class TVWebSocketStreamer {
         }
       } catch (e) {}
     } catch (e) {
+      reportBackendFetchError();
       // Retain connected status during transient network hiccups
       this.setStatus('connected');
     }
@@ -675,8 +701,8 @@ class TVWebSocketStreamer {
     this.reconnectTimeout = window.setTimeout(() => {
       this.reconnectTimeout = null;
       console.log('Background check for fresh backend stream...');
-      this.connect(false);
-    }, 10000);
+      this.connect(true);
+    }, 4000);
   }
 
   private sendSubscription(symbol: string, timeframe: string) {
@@ -775,4 +801,5 @@ export function getBackendHttpUrlSync(): string {
   return getBackendHttpUrlSyncConfig();
 }
 
+export { reportBackendFetchError } from './config';
 export default tvStreamer;

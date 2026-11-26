@@ -1096,7 +1096,9 @@ export const Test2Container: React.FC<FootprintChartContainerProps> = ({
         bottom: isExpanded ? 0 : 'auto',
         zIndex: isExpanded ? 999999 : 'auto',
         width: isExpanded ? '100vw' : '100%',
-        height: isExpanded || isStandalone ? '100vh' : 'calc(100vh - 165px)',
+        height: isExpanded || isStandalone ? '100vh' : '100%',
+        flex: 1,
+        minHeight: 0,
         backgroundColor: '#000000',
         color: '#ffffff',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -1691,7 +1693,7 @@ export const Test2Container: React.FC<FootprintChartContainerProps> = ({
                 fontWeight: 900
               }}
             >
-              {ufbExtensions.filter(e => !e.isTested).length} Active
+              {(ufbExtensions || []).filter(e => !e.isTested).length} Active
             </span>
           </div>
         </div>

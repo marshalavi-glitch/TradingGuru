@@ -9,9 +9,10 @@
       "test",
       "market_profile",
       "mp_3day_pattern",
-      "sr_breakout"
+      "sr_breakout",
+      "options"
     ],
-    "lastLogin": "2026-10-10T16:03:22.135Z"
+    "lastLogin": "2026-11-24T21:04:20.237Z"
   },
   {
     "username": "sharath",
@@ -22,70 +23,67 @@
       "chart",
       "test"
     ],
-    "lastLogin": "2026-10-07T03:22:04.337Z"
-  },
-  {
-    "username": "sharathsg",
-    "name": "Sharath SG",
-    "password": "sharath@2026",
-    "role": "trader",
-    "favorites": [
-      "chart",
-      "test"
-    ],
-    "lastLogin": "2026-10-04T16:34:10.395Z"
+    "lastLogin": "2026-11-06T04:26:34.010Z",
+    "passwordUpdatedAt": "2026-10-24T12:25:01.798Z",
+    "updatedAt": "2026-10-24T12:25:01.798Z"
   },
   {
     "username": "peterm",
     "name": "Peter",
     "password": "pete@123",
     "role": "trader",
-    "updatedAt": "2026-10-04T16:42:08.212Z",
-    "lastLogin": "2026-10-05T06:41:02.936Z",
+    "updatedAt": "2026-11-16T12:21:06.995Z",
+    "lastLogin": "2026-11-16T17:25:31.380Z",
     "favorites": [
       "chart",
       "test",
       "footprint_chart"
-    ]
+    ],
+    "passwordUpdatedAt": "2026-11-16T12:21:06.995Z"
   },
   {
     "username": "swamy",
     "name": "Swamy",
     "password": "swamy@3233",
     "role": "trader",
-    "updatedAt": "2026-10-04T16:49:04.946Z",
-    "lastLogin": "2026-10-09T08:15:35.121Z"
+    "updatedAt": "2026-11-16T12:18:23.001Z",
+    "lastLogin": "2026-11-17T05:52:47.438Z",
+    "passwordUpdatedAt": "2026-11-16T12:18:23.001Z"
   },
   {
     "username": "dinesh",
     "name": "Dinesh",
     "password": "dk@8456",
     "role": "trader",
-    "updatedAt": "2026-10-04T16:49:52.928Z",
-    "lastLogin": "2026-10-07T03:48:45.086Z",
+    "updatedAt": "2026-11-16T12:18:27.299Z",
+    "lastLogin": "2026-11-16T12:18:27.299Z",
     "favorites": [
       "chart",
       "test",
       "scanner",
       "backtest_results",
-      "options"
-    ]
+      "options",
+      "market_profile",
+      "algo_trade"
+    ],
+    "passwordUpdatedAt": "2026-11-16T12:18:27.299Z"
   },
   {
     "username": "anson",
     "name": "Anson",
     "password": "an@4996",
     "role": "trader",
-    "updatedAt": "2026-10-04T16:50:24.662Z",
-    "lastLogin": "2026-10-05T08:54:52.525Z"
+    "updatedAt": "2026-11-09T08:07:55.191Z",
+    "lastLogin": "2026-11-09T08:09:02.712Z",
+    "passwordUpdatedAt": "2026-11-09T08:07:55.191Z"
   },
   {
     "username": "manjuk",
     "name": "Manjunath K",
     "password": "mk@5588",
     "role": "trader",
-    "updatedAt": "2026-10-04T16:50:56.825Z",
-    "lastLogin": "2026-10-10T08:18:00.414Z",
+    "updatedAt": "2026-11-16T12:21:34.217Z",
+    "lastLogin": "2026-11-16T12:21:34.217Z",
     "favorites": [
       "chart",
       "test",
@@ -96,178 +94,268 @@
       "footprint_chart",
       "manual_trades",
       "logic_test"
-    ]
+    ],
+    "passwordUpdatedAt": "2026-11-16T12:21:34.217Z"
   },
   {
     "username": "anish",
     "name": "Anish",
     "password": "ab@0270",
     "role": "trader",
-    "updatedAt": "2026-10-04T16:51:25.994Z",
-    "lastLogin": "2026-10-05T06:11:12.443Z",
+    "updatedAt": "2026-11-16T12:12:00.132Z",
+    "lastLogin": "2026-11-20T06:09:56.601Z",
     "favorites": [
       "chart",
       "test",
       "pro_market_profile",
       "market_profile"
-    ]
+    ],
+    "passwordUpdatedAt": "2026-11-16T12:12:00.132Z"
   },
   {
     "username": "kuber",
     "name": "Kuber",
     "password": "kb@2959",
     "role": "trader",
-    "updatedAt": "2026-10-04T16:51:52.190Z",
-    "lastLogin": "2026-10-08T09:39:11.817Z"
+    "updatedAt": "2026-11-16T12:21:43.212Z",
+    "lastLogin": "2026-11-16T12:21:43.212Z",
+    "passwordUpdatedAt": "2026-11-16T12:21:43.212Z"
   },
   {
     "username": "ivssuresh",
     "name": "IVS Suresh",
     "password": "ivs@2026",
     "role": "trader",
-    "updatedAt": "2026-10-04T16:52:22.490Z",
-    "lastLogin": "2026-10-11T02:03:32.367Z"
+    "updatedAt": "2026-11-16T12:21:46.838Z",
+    "lastLogin": "2026-11-16T12:21:46.838Z",
+    "passwordUpdatedAt": "2026-11-16T12:21:46.838Z",
+    "favorites": [
+      "chart",
+      "test",
+      "options",
+      "trial"
+    ]
   },
   {
     "username": "akhil",
     "name": "Akhil",
-    "password": "akhil7895",
+    "password": "akhil@123",
     "role": "trader",
-    "updatedAt": "2026-10-04T16:52:50.978Z"
+    "updatedAt": "2026-11-16T12:21:49.439Z",
+    "passwordUpdatedAt": "2026-11-16T12:21:49.439Z",
+    "lastLogin": "2026-11-16T12:21:49.439Z"
   },
   {
     "username": "nanujp",
     "name": "Jayaprakash",
     "password": "jp@2026",
     "role": "trader",
-    "updatedAt": "2026-10-04T16:53:19.103Z",
-    "lastLogin": "2026-10-07T07:03:31.551Z"
+    "updatedAt": "2026-11-16T12:21:51.608Z",
+    "lastLogin": "2026-11-18T04:35:09.014Z",
+    "passwordUpdatedAt": "2026-11-16T12:21:51.608Z"
   },
   {
     "username": "kiran",
     "name": "Kiran Kumar",
     "password": "kb@0306",
     "role": "trader",
-    "updatedAt": "2026-10-04T16:54:12.685Z",
-    "lastLogin": "2026-10-05T16:42:34.587Z"
+    "updatedAt": "2026-11-16T12:21:54.207Z",
+    "lastLogin": "2026-11-16T12:21:54.207Z",
+    "passwordUpdatedAt": "2026-11-16T12:21:54.207Z"
   },
   {
     "username": "manjurao",
     "name": "Manju Rao",
     "password": "manju@2026",
     "role": "trader",
-    "updatedAt": "2026-10-04T16:55:13.463Z"
+    "updatedAt": "2026-11-16T12:21:57.584Z",
+    "lastLogin": "2026-11-26T03:45:01.407Z",
+    "passwordUpdatedAt": "2026-11-16T12:21:57.584Z"
   },
   {
     "username": "roshan",
     "name": "Roshan",
     "password": "roshan@4512",
     "role": "trader",
-    "updatedAt": "2026-10-05T04:41:05.529Z",
-    "lastLogin": "2026-10-05T07:19:11.911Z"
+    "updatedAt": "2026-11-16T12:22:01.079Z",
+    "lastLogin": "2026-11-16T12:22:01.079Z",
+    "passwordUpdatedAt": "2026-11-16T12:22:01.079Z"
   },
   {
     "username": "prabha",
     "name": "Prabhakar",
     "password": "prabha@1837",
     "role": "trader",
-    "updatedAt": "2026-10-05T11:07:25.987Z",
-    "lastLogin": "2026-10-07T05:22:42.035Z"
+    "updatedAt": "2026-11-16T12:11:41.155Z",
+    "lastLogin": "2026-11-16T12:11:41.155Z",
+    "passwordUpdatedAt": "2026-11-16T12:11:41.155Z"
   },
   {
     "username": "natesh",
     "name": "Natesh",
     "password": "nhebbar@3186",
     "role": "trader",
-    "updatedAt": "2026-10-05T16:43:04.012Z",
-    "lastLogin": "2026-10-05T17:03:50.425Z"
+    "updatedAt": "2026-11-16T12:11:42.000Z",
+    "lastLogin": "2026-11-17T04:38:28.616Z",
+    "passwordUpdatedAt": "2026-11-16T12:11:42.000Z"
   },
   {
     "username": "nagraj",
     "name": "Nagraj",
     "password": "nag@0167",
     "role": "trader",
-    "updatedAt": "2026-10-06T03:50:19.856Z",
-    "lastLogin": "2026-10-06T16:47:42.161Z"
+    "updatedAt": "2026-11-16T12:11:48.690Z",
+    "lastLogin": "2026-11-16T12:11:48.690Z",
+    "passwordUpdatedAt": "2026-11-16T12:11:48.690Z"
   },
   {
     "username": "gopal",
     "name": "Gopal",
     "password": "gujjugopal",
     "role": "trader",
-    "updatedAt": "2026-10-07T06:40:39.885Z",
-    "lastLogin": "2026-10-09T15:20:55.407Z"
+    "updatedAt": "2026-11-16T12:11:44.273Z",
+    "lastLogin": "2026-11-16T12:11:44.273Z",
+    "passwordUpdatedAt": "2026-11-16T12:11:44.273Z"
   },
   {
     "username": "agarwal",
     "name": "Agarwal",
     "password": "maihuag",
     "role": "trader",
-    "updatedAt": "2026-10-07T06:41:26.833Z",
-    "lastLogin": "2026-10-07T06:47:28.697Z"
+    "updatedAt": "2026-11-16T12:11:45.078Z",
+    "lastLogin": "2026-11-16T12:11:45.078Z",
+    "passwordUpdatedAt": "2026-11-16T12:11:45.078Z"
   },
   {
     "username": "souvik",
     "name": "Souvik",
     "password": "dadahumai",
     "role": "trader",
-    "updatedAt": "2026-10-07T06:43:25.327Z"
+    "updatedAt": "2026-11-16T12:11:45.875Z",
+    "passwordUpdatedAt": "2026-11-16T12:11:45.875Z",
+    "lastLogin": "2026-11-16T12:11:45.875Z"
   },
   {
     "username": "jp",
     "name": "Jyothi",
     "password": "jp@123",
     "role": "trader",
-    "updatedAt": "2026-10-07T06:58:58.608Z",
-    "lastLogin": "2026-10-09T16:33:59.615Z"
+    "updatedAt": "2026-11-16T12:21:03.014Z",
+    "lastLogin": "2026-11-16T12:21:03.014Z",
+    "passwordUpdatedAt": "2026-11-16T12:21:03.014Z"
   },
   {
     "username": "giriraj",
     "name": "Giriraj",
     "password": "giri@6961",
     "role": "trader",
-    "updatedAt": "2026-10-07T07:28:27.963Z",
-    "lastLogin": "2026-10-07T07:31:26.764Z"
+    "updatedAt": "2026-11-16T12:22:07.097Z",
+    "lastLogin": "2026-11-16T12:22:07.097Z",
+    "passwordUpdatedAt": "2026-11-16T12:22:07.097Z"
   },
   {
     "username": "luckey",
     "name": "Lakshmeesh",
     "password": "luckey@8909",
     "role": "trader",
-    "updatedAt": "2026-10-08T16:04:02.652Z"
+    "updatedAt": "2026-11-16T12:11:50.408Z",
+    "passwordUpdatedAt": "2026-11-16T12:11:50.408Z",
+    "lastLogin": "2026-11-16T12:11:50.408Z"
   },
   {
     "username": "mihir",
     "name": "Mihir",
     "password": "mihir@123",
     "role": "trader",
-    "updatedAt": "2026-10-09T13:01:04.993Z",
-    "lastLogin": "2026-10-09T15:23:07.502Z",
+    "updatedAt": "2026-11-16T12:11:51.264Z",
+    "lastLogin": "2026-11-17T14:19:37.825Z",
     "favorites": [
       "chart",
       "test",
       "market_profile"
-    ]
+    ],
+    "passwordUpdatedAt": "2026-11-16T12:11:51.264Z"
   },
   {
     "username": "dhillon",
     "name": "Dhillon",
     "password": "dhillonpaji",
     "role": "trader",
-    "updatedAt": "2026-10-09T13:02:27.953Z",
-    "lastLogin": "2026-10-09T13:46:48.642Z"
+    "updatedAt": "2026-11-16T12:21:00.359Z",
+    "lastLogin": "2026-11-20T18:23:08.956Z",
+    "passwordUpdatedAt": "2026-11-16T12:21:00.359Z"
   },
   {
     "username": "abhijit",
     "name": "Abhijit",
     "password": "abhi@123",
     "role": "trader",
-    "updatedAt": "2026-10-09T14:22:31.256Z",
-    "lastLogin": "2026-10-10T14:45:33.093Z",
+    "updatedAt": "2026-11-16T12:22:11.754Z",
+    "lastLogin": "2026-11-16T12:22:11.754Z",
     "favorites": [
       "chart",
       "test",
-      "manual_trades"
+      "manual_trades",
+      "options"
+    ],
+    "passwordUpdatedAt": "2026-11-16T12:22:11.754Z"
+  },
+  {
+    "username": "betur",
+    "name": "Betur",
+    "password": "betur@123",
+    "role": "trader",
+    "lastLogin": "2026-11-21T05:12:21.191Z",
+    "updatedAt": "2026-11-16T12:20:57.410Z",
+    "favorites": [
+      "chart",
+      "test",
+      "manual_trades",
+      "cvd_adv",
+      "mp_3day_pattern",
+      "market_profile"
+    ],
+    "passwordUpdatedAt": "2026-11-16T12:20:57.410Z"
+  },
+  {
+    "username": "anil",
+    "name": "Anil",
+    "password": "anil@123",
+    "role": "trader",
+    "passwordUpdatedAt": "2026-11-16T12:11:54.424Z",
+    "lastLogin": "2026-11-16T12:11:54.424Z",
+    "updatedAt": "2026-11-16T12:11:54.424Z"
+  },
+  {
+    "username": "gurudas",
+    "name": "Gurudas",
+    "password": "guru@123",
+    "role": "trader",
+    "passwordUpdatedAt": "2026-11-16T12:11:55.042Z",
+    "lastLogin": "2026-11-16T12:11:55.042Z",
+    "updatedAt": "2026-11-16T12:11:55.042Z"
+  },
+  {
+    "username": "kishan",
+    "name": "Kishan",
+    "password": "kishan@123",
+    "role": "trader",
+    "passwordUpdatedAt": "2026-11-16T12:11:56.201Z",
+    "lastLogin": "2026-11-16T12:11:56.201Z",
+    "updatedAt": "2026-11-16T12:11:56.201Z"
+  },
+  {
+    "username": "hemanth",
+    "name": "Hemanth",
+    "password": "hemanth@123",
+    "role": "trader",
+    "updatedAt": "2026-11-16T12:22:15.360Z",
+    "lastLogin": "2026-11-16T16:13:34.804Z",
+    "passwordUpdatedAt": "2026-11-16T12:22:15.360Z",
+    "favorites": [
+      "chart",
+      "test",
+      "scanner"
     ]
   }
 ]

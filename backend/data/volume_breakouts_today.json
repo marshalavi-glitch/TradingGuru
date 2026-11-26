@@ -1,5 +1,1586 @@
 {
-  "date": "10/11/2026",
-  "results": [],
-  "lastScanTime": "2026-10-11T04:40:00.331Z"
+  "date": "11/4/2026",
+  "results": [
+    {
+      "symbol": "MUTHOOTFIN",
+      "time": "15:10:00",
+      "currentVolume": 100845,
+      "prevMaxVolume": 74044,
+      "ratio": 1.4,
+      "close": 2738,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "POWERGRID",
+      "time": "15:05:00",
+      "currentVolume": 1067409,
+      "prevMaxVolume": 882245,
+      "ratio": 1.2,
+      "close": 261.2,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "NMDC",
+      "time": "15:00:00",
+      "currentVolume": 1291183,
+      "prevMaxVolume": 1131058,
+      "ratio": 1.1,
+      "close": 69.69,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "BANKBARODA",
+      "time": "15:00:00",
+      "currentVolume": 647383,
+      "prevMaxVolume": 428453,
+      "ratio": 1.5,
+      "close": 244.89,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "GRASIM",
+      "time": "14:55:00",
+      "currentVolume": 76186,
+      "prevMaxVolume": 56085,
+      "ratio": 1.4,
+      "close": 3135,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "INDUSTOWER",
+      "time": "14:55:00",
+      "currentVolume": 389574,
+      "prevMaxVolume": 199525,
+      "ratio": 2,
+      "close": 387.95,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "TRENT",
+      "time": "14:50:00",
+      "currentVolume": 30273,
+      "prevMaxVolume": 19694,
+      "ratio": 1.5,
+      "close": 3050.8,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "GRASIM",
+      "time": "14:30:00",
+      "currentVolume": 56085,
+      "prevMaxVolume": 39758,
+      "ratio": 1.4,
+      "close": 3127,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "MUTHOOTFIN",
+      "time": "14:25:00",
+      "currentVolume": 74044,
+      "prevMaxVolume": 67219,
+      "ratio": 1.1,
+      "close": 2730.5,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "TATAMOTORS",
+      "time": "14:20:00",
+      "currentVolume": 403493,
+      "prevMaxVolume": 290426,
+      "ratio": 1.4,
+      "close": 279,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "GRASIM",
+      "time": "14:20:00",
+      "currentVolume": 39758,
+      "prevMaxVolume": 27857,
+      "ratio": 1.4,
+      "close": 3120,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "RECLTD",
+      "time": "14:05:00",
+      "currentVolume": 609478,
+      "prevMaxVolume": 382936,
+      "ratio": 1.6,
+      "close": 285.6,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "TATACOMM",
+      "time": "14:05:00",
+      "currentVolume": 25654,
+      "prevMaxVolume": 24613,
+      "ratio": 1,
+      "close": 1756.5,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "GRASIM",
+      "time": "14:05:00",
+      "currentVolume": 27857,
+      "prevMaxVolume": 25352,
+      "ratio": 1.1,
+      "close": 3117.5,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "TATACOMM",
+      "time": "14:00:00",
+      "currentVolume": 24613,
+      "prevMaxVolume": 13409,
+      "ratio": 1.8,
+      "close": 1756.1,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "TATAMOTORS",
+      "time": "13:55:00",
+      "currentVolume": 290426,
+      "prevMaxVolume": 287984,
+      "ratio": 1,
+      "close": 280.95,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "RECLTD",
+      "time": "13:50:00",
+      "currentVolume": 382936,
+      "prevMaxVolume": 282126,
+      "ratio": 1.4,
+      "close": 286.55,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "HDFCLIFE",
+      "time": "13:45:00",
+      "currentVolume": 133987,
+      "prevMaxVolume": 114471,
+      "ratio": 1.2,
+      "close": 531.2,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "TATASTEEL",
+      "time": "13:40:00",
+      "currentVolume": 691523,
+      "prevMaxVolume": 673173,
+      "ratio": 1,
+      "close": 178.21,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "JSWSTEEL",
+      "time": "13:35:00",
+      "currentVolume": 74490,
+      "prevMaxVolume": 38316,
+      "ratio": 1.9,
+      "close": 1337.4,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "INDUSTOWER",
+      "time": "13:30:00",
+      "currentVolume": 199525,
+      "prevMaxVolume": 131033,
+      "ratio": 1.5,
+      "close": 391.95,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "CONCOR",
+      "time": "13:30:00",
+      "currentVolume": 71653,
+      "prevMaxVolume": 64076,
+      "ratio": 1.1,
+      "close": 427.75,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "SUNPHARMA",
+      "time": "13:30:00",
+      "currentVolume": 2514876,
+      "prevMaxVolume": 128460,
+      "ratio": 19.6,
+      "close": 1785.8,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "HAL",
+      "time": "13:25:00",
+      "currentVolume": 78893,
+      "prevMaxVolume": 49942,
+      "ratio": 1.6,
+      "close": 5069,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "KOTAKBANK",
+      "time": "13:05:00",
+      "currentVolume": 984043,
+      "prevMaxVolume": 651175,
+      "ratio": 1.5,
+      "close": 459.8,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "ASIANPAINT",
+      "time": "13:00:00",
+      "currentVolume": 113243,
+      "prevMaxVolume": 89052,
+      "ratio": 1.3,
+      "close": 2418,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "SBILIFE",
+      "time": "12:40:00",
+      "currentVolume": 72335,
+      "prevMaxVolume": 43009,
+      "ratio": 1.7,
+      "close": 1697.4,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "M&M",
+      "time": "12:35:00",
+      "currentVolume": 395751,
+      "prevMaxVolume": 228829,
+      "ratio": 1.7,
+      "close": 2919.9,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "CIPLA",
+      "time": "12:30:00",
+      "currentVolume": 89839,
+      "prevMaxVolume": 84600,
+      "ratio": 1.1,
+      "close": 1391.3,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "ONGC",
+      "time": "12:30:00",
+      "currentVolume": 448035,
+      "prevMaxVolume": 430234,
+      "ratio": 1,
+      "close": 234.18,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "ZEEL",
+      "time": "12:25:00",
+      "currentVolume": 6690858,
+      "prevMaxVolume": 5678755,
+      "ratio": 1.2,
+      "close": 66.41,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "NMDC",
+      "time": "12:20:00",
+      "currentVolume": 1104439,
+      "prevMaxVolume": 847860,
+      "ratio": 1.3,
+      "close": 68.52,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "JSWSTEEL",
+      "time": "12:20:00",
+      "currentVolume": 38316,
+      "prevMaxVolume": 37589,
+      "ratio": 1,
+      "close": 1330.2,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "HINDUNILVR",
+      "time": "12:15:00",
+      "currentVolume": 75017,
+      "prevMaxVolume": 71924,
+      "ratio": 1,
+      "close": 1957.6,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "SBILIFE",
+      "time": "12:15:00",
+      "currentVolume": 43009,
+      "prevMaxVolume": 28904,
+      "ratio": 1.5,
+      "close": 1695,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "LUPIN",
+      "time": "12:10:00",
+      "currentVolume": 178149,
+      "prevMaxVolume": 159045,
+      "ratio": 1.1,
+      "close": 2040.9,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "NMDC",
+      "time": "12:05:00",
+      "currentVolume": 847860,
+      "prevMaxVolume": 830962,
+      "ratio": 1,
+      "close": 68.64,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "ONGC",
+      "time": "12:05:00",
+      "currentVolume": 430234,
+      "prevMaxVolume": 286860,
+      "ratio": 1.5,
+      "close": 234.11,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "INFY1!",
+      "time": "12:05:00",
+      "currentVolume": 458012,
+      "prevMaxVolume": 299517,
+      "ratio": 1.5,
+      "close": 1117,
+      "direction": "DOWN",
+      "type": "futures"
+    },
+    {
+      "symbol": "BANKBARODA",
+      "time": "12:05:00",
+      "currentVolume": 428453,
+      "prevMaxVolume": 320785,
+      "ratio": 1.3,
+      "close": 243.77,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "MUTHOOTFIN",
+      "time": "12:05:00",
+      "currentVolume": 67219,
+      "prevMaxVolume": 58559,
+      "ratio": 1.1,
+      "close": 2676.6,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "INFY",
+      "time": "12:05:00",
+      "currentVolume": 458012,
+      "prevMaxVolume": 299517,
+      "ratio": 1.5,
+      "close": 1117,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "TATAPOWER",
+      "time": "12:00:00",
+      "currentVolume": 833010,
+      "prevMaxVolume": 343583,
+      "ratio": 2.4,
+      "close": 355.1,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "BANKBARODA",
+      "time": "12:00:00",
+      "currentVolume": 320785,
+      "prevMaxVolume": 317975,
+      "ratio": 1,
+      "close": 243.53,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "LICHSGFIN",
+      "time": "11:55:00",
+      "currentVolume": 166257,
+      "prevMaxVolume": 130361,
+      "ratio": 1.3,
+      "close": 520.45,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "MANAPPURAM",
+      "time": "11:55:00",
+      "currentVolume": 240859,
+      "prevMaxVolume": 196010,
+      "ratio": 1.2,
+      "close": 314.9,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "UPL",
+      "time": "11:50:00",
+      "currentVolume": 144249,
+      "prevMaxVolume": 76347,
+      "ratio": 1.9,
+      "close": 518.4,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "DRREDDY",
+      "time": "11:50:00",
+      "currentVolume": 99099,
+      "prevMaxVolume": 82257,
+      "ratio": 1.2,
+      "close": 1368.6,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "ZEEL",
+      "time": "11:40:00",
+      "currentVolume": 5678755,
+      "prevMaxVolume": 2177297,
+      "ratio": 2.6,
+      "close": 61.96,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "LUPIN",
+      "time": "11:35:00",
+      "currentVolume": 159045,
+      "prevMaxVolume": 135295,
+      "ratio": 1.2,
+      "close": 2053.5,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "ONGC",
+      "time": "11:30:00",
+      "currentVolume": 286860,
+      "prevMaxVolume": 281984,
+      "ratio": 1,
+      "close": 233.56,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "ADANIPORTS",
+      "time": "11:25:00",
+      "currentVolume": 272901,
+      "prevMaxVolume": 268363,
+      "ratio": 1,
+      "close": 1910.3,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "DIVISLAB",
+      "time": "11:25:00",
+      "currentVolume": 24877,
+      "prevMaxVolume": 17674,
+      "ratio": 1.4,
+      "close": 10007,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "NTPC",
+      "time": "11:25:00",
+      "currentVolume": 812177,
+      "prevMaxVolume": 161258,
+      "ratio": 5,
+      "close": 317.5,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "MANAPPURAM",
+      "time": "11:25:00",
+      "currentVolume": 196010,
+      "prevMaxVolume": 149949,
+      "ratio": 1.3,
+      "close": 315.45,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "DRREDDY",
+      "time": "11:20:00",
+      "currentVolume": 82257,
+      "prevMaxVolume": 46906,
+      "ratio": 1.8,
+      "close": 1362.2,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "MANAPPURAM",
+      "time": "11:20:00",
+      "currentVolume": 149949,
+      "prevMaxVolume": 125667,
+      "ratio": 1.2,
+      "close": 314.6,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "CIPLA",
+      "time": "11:15:00",
+      "currentVolume": 84600,
+      "prevMaxVolume": 48599,
+      "ratio": 1.7,
+      "close": 1395.6,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "NMDC",
+      "time": "11:05:00",
+      "currentVolume": 830962,
+      "prevMaxVolume": 284177,
+      "ratio": 2.9,
+      "close": 68.61,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "BANKBARODA",
+      "time": "11:05:00",
+      "currentVolume": 317975,
+      "prevMaxVolume": 257408,
+      "ratio": 1.2,
+      "close": 243.6,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "CANBK",
+      "time": "11:00:00",
+      "currentVolume": 1020291,
+      "prevMaxVolume": 927331,
+      "ratio": 1.1,
+      "close": 117.73,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "BAJFINANCE",
+      "time": "11:00:00",
+      "currentVolume": 760320,
+      "prevMaxVolume": 559004,
+      "ratio": 1.4,
+      "close": 984.35,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "BANDHANBNK",
+      "time": "10:55:00",
+      "currentVolume": 495160,
+      "prevMaxVolume": 292160,
+      "ratio": 1.7,
+      "close": 156.81,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "PFC",
+      "time": "10:55:00",
+      "currentVolume": 307851,
+      "prevMaxVolume": 228495,
+      "ratio": 1.3,
+      "close": 320.8,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "TATAPOWER",
+      "time": "10:50:00",
+      "currentVolume": 343583,
+      "prevMaxVolume": 91042,
+      "ratio": 3.8,
+      "close": 355.9,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "SUNPHARMA",
+      "time": "10:40:00",
+      "currentVolume": 128460,
+      "prevMaxVolume": 53792,
+      "ratio": 2.4,
+      "close": 1804,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "ZEEL",
+      "time": "10:40:00",
+      "currentVolume": 2177297,
+      "prevMaxVolume": 840739,
+      "ratio": 2.6,
+      "close": 61.98,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "ICICIGI",
+      "time": "10:40:00",
+      "currentVolume": 43721,
+      "prevMaxVolume": 39803,
+      "ratio": 1.1,
+      "close": 1599.9,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "ICICIGI",
+      "time": "10:35:00",
+      "currentVolume": 39803,
+      "prevMaxVolume": 36756,
+      "ratio": 1.1,
+      "close": 1600.3,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "HAVELLS",
+      "time": "10:30:00",
+      "currentVolume": 47564,
+      "prevMaxVolume": 31448,
+      "ratio": 1.5,
+      "close": 1053,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "AUBANK",
+      "time": "10:30:00",
+      "currentVolume": 171577,
+      "prevMaxVolume": 96106,
+      "ratio": 1.8,
+      "close": 891.25,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "CIPLA",
+      "time": "10:25:00",
+      "currentVolume": 42927,
+      "prevMaxVolume": 29391,
+      "ratio": 1.5,
+      "close": 1394.2,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "PIDILITIND",
+      "time": "10:20:00",
+      "currentVolume": 62560,
+      "prevMaxVolume": 44208,
+      "ratio": 1.4,
+      "close": 1516.3,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "CIPLA",
+      "time": "10:20:00",
+      "currentVolume": 29391,
+      "prevMaxVolume": 24657,
+      "ratio": 1.2,
+      "close": 1395,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "SBILIFE",
+      "time": "10:20:00",
+      "currentVolume": 28904,
+      "prevMaxVolume": 22134,
+      "ratio": 1.3,
+      "close": 1690.5,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "PFC",
+      "time": "10:15:00",
+      "currentVolume": 228495,
+      "prevMaxVolume": 206181,
+      "ratio": 1.1,
+      "close": 320.35,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "CIPLA",
+      "time": "10:15:00",
+      "currentVolume": 24657,
+      "prevMaxVolume": 24633,
+      "ratio": 1,
+      "close": 1395.3,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "INDUSINDBK",
+      "time": "10:15:00",
+      "currentVolume": 58879,
+      "prevMaxVolume": 46898,
+      "ratio": 1.3,
+      "close": 859.6,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "PIDILITIND",
+      "time": "10:10:00",
+      "currentVolume": 44208,
+      "prevMaxVolume": 31815,
+      "ratio": 1.4,
+      "close": 1520,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "GRASIM",
+      "time": "10:10:00",
+      "currentVolume": 25352,
+      "prevMaxVolume": 18314,
+      "ratio": 1.4,
+      "close": 3097.3,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "IRCTC",
+      "time": "10:10:00",
+      "currentVolume": 30021,
+      "prevMaxVolume": 27331,
+      "ratio": 1.1,
+      "close": 450.95,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "ASIANPAINT",
+      "time": "10:05:00",
+      "currentVolume": 89046,
+      "prevMaxVolume": 62233,
+      "ratio": 1.4,
+      "close": 2440.2,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "NTPC",
+      "time": "10:05:00",
+      "currentVolume": 161258,
+      "prevMaxVolume": 120497,
+      "ratio": 1.3,
+      "close": 319.35,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "MFSL",
+      "time": "10:05:00",
+      "currentVolume": 157493,
+      "prevMaxVolume": 20281,
+      "ratio": 7.8,
+      "close": 1229.8,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "ASIANPAINT",
+      "time": "10:00:00",
+      "currentVolume": 61049,
+      "prevMaxVolume": 31856,
+      "ratio": 1.9,
+      "close": 2439.1,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "TITAN",
+      "time": "10:00:00",
+      "currentVolume": 57084,
+      "prevMaxVolume": 35710,
+      "ratio": 1.6,
+      "close": 4642.4,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "ICICIGI",
+      "time": "10:00:00",
+      "currentVolume": 36756,
+      "prevMaxVolume": 20390,
+      "ratio": 1.8,
+      "close": 1609.9,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "LICHSGFIN",
+      "time": "09:55:00",
+      "currentVolume": 130361,
+      "prevMaxVolume": 33567,
+      "ratio": 3.9,
+      "close": 511.45,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "BANKBARODA",
+      "time": "09:55:00",
+      "currentVolume": 257408,
+      "prevMaxVolume": 185873,
+      "ratio": 1.4,
+      "close": 242.8,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "CONCOR",
+      "time": "09:55:00",
+      "currentVolume": 64076,
+      "prevMaxVolume": 61331,
+      "ratio": 1,
+      "close": 434.5,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "JINDALSTEL",
+      "time": "09:50:00",
+      "currentVolume": 70598,
+      "prevMaxVolume": 29460,
+      "ratio": 2.4,
+      "close": 1125,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "MARUTI",
+      "time": "09:50:00",
+      "currentVolume": 38732,
+      "prevMaxVolume": 13251,
+      "ratio": 2.9,
+      "close": 11896,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "M&M",
+      "time": "09:50:00",
+      "currentVolume": 228829,
+      "prevMaxVolume": 169345,
+      "ratio": 1.4,
+      "close": 2910,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "RECLTD",
+      "time": "09:50:00",
+      "currentVolume": 282126,
+      "prevMaxVolume": 126303,
+      "ratio": 2.2,
+      "close": 287.15,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "PFC",
+      "time": "09:50:00",
+      "currentVolume": 206181,
+      "prevMaxVolume": 205144,
+      "ratio": 1,
+      "close": 322,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "HAVELLS",
+      "time": "09:50:00",
+      "currentVolume": 31448,
+      "prevMaxVolume": 22375,
+      "ratio": 1.4,
+      "close": 1052.1,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "BAJFINANCE",
+      "time": "09:45:00",
+      "currentVolume": 559004,
+      "prevMaxVolume": 259734,
+      "ratio": 2.2,
+      "close": 986.15,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "M&M",
+      "time": "09:45:00",
+      "currentVolume": 169345,
+      "prevMaxVolume": 116650,
+      "ratio": 1.5,
+      "close": 2920.1,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "RECLTD",
+      "time": "09:45:00",
+      "currentVolume": 126303,
+      "prevMaxVolume": 117882,
+      "ratio": 1.1,
+      "close": 286.75,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "OBEROIRLTY",
+      "time": "09:45:00",
+      "currentVolume": 78795,
+      "prevMaxVolume": 27146,
+      "ratio": 2.9,
+      "close": 1703.9,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "CHOLAFIN",
+      "time": "09:45:00",
+      "currentVolume": 41930,
+      "prevMaxVolume": 17452,
+      "ratio": 2.4,
+      "close": 1663.9,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "BAJAJFINSV",
+      "time": "09:45:00",
+      "currentVolume": 139080,
+      "prevMaxVolume": 70733,
+      "ratio": 2,
+      "close": 1766.1,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "BAJFINANCE",
+      "time": "09:40:00",
+      "currentVolume": 259734,
+      "prevMaxVolume": 246037,
+      "ratio": 1.1,
+      "close": 980.7,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "ADANIENT",
+      "time": "09:40:00",
+      "currentVolume": 122552,
+      "prevMaxVolume": 57760,
+      "ratio": 2.1,
+      "close": 2676.1,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "HDFCBANK1!",
+      "time": "09:40:00",
+      "currentVolume": 3156087,
+      "prevMaxVolume": 2865093,
+      "ratio": 1.1,
+      "close": 736.2,
+      "direction": "UP",
+      "type": "futures"
+    },
+    {
+      "symbol": "HDFCBANK",
+      "time": "09:40:00",
+      "currentVolume": 3156087,
+      "prevMaxVolume": 2865093,
+      "ratio": 1.1,
+      "close": 736.2,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "ADANIPORTS",
+      "time": "09:40:00",
+      "currentVolume": 268363,
+      "prevMaxVolume": 152107,
+      "ratio": 1.8,
+      "close": 1909.6,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "INDUSINDBK",
+      "time": "09:40:00",
+      "currentVolume": 46898,
+      "prevMaxVolume": 40324,
+      "ratio": 1.2,
+      "close": 855.25,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "ICICIPRULI",
+      "time": "09:35:00",
+      "currentVolume": 215396,
+      "prevMaxVolume": 172824,
+      "ratio": 1.2,
+      "close": 423.2,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "MANAPPURAM",
+      "time": "09:35:00",
+      "currentVolume": 125667,
+      "prevMaxVolume": 89044,
+      "ratio": 1.4,
+      "close": 307,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "VOLTAS",
+      "time": "09:35:00",
+      "currentVolume": 50835,
+      "prevMaxVolume": 30112,
+      "ratio": 1.7,
+      "close": 1071.8,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "BAJFINANCE",
+      "time": "09:35:00",
+      "currentVolume": 246037,
+      "prevMaxVolume": 213005,
+      "ratio": 1.2,
+      "close": 977.45,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "HAVELLS",
+      "time": "09:35:00",
+      "currentVolume": 22375,
+      "prevMaxVolume": 16381,
+      "ratio": 1.4,
+      "close": 1051.6,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "IRCTC",
+      "time": "09:35:00",
+      "currentVolume": 27331,
+      "prevMaxVolume": 20421,
+      "ratio": 1.3,
+      "close": 450.9,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "HINDALCO",
+      "time": "09:35:00",
+      "currentVolume": 471861,
+      "prevMaxVolume": 138019,
+      "ratio": 3.4,
+      "close": 912.8,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "MCX",
+      "time": "09:35:00",
+      "currentVolume": 576999,
+      "prevMaxVolume": 573381,
+      "ratio": 1,
+      "close": 3305.6,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "NAUKRI",
+      "time": "09:35:00",
+      "currentVolume": 217325,
+      "prevMaxVolume": 60426,
+      "ratio": 3.6,
+      "close": 1166.9,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "MFSL",
+      "time": "09:35:00",
+      "currentVolume": 20281,
+      "prevMaxVolume": 17953,
+      "ratio": 1.1,
+      "close": 1211.2,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "BAJAJFINSV",
+      "time": "09:30:00",
+      "currentVolume": 60731,
+      "prevMaxVolume": 49061,
+      "ratio": 1.2,
+      "close": 1748,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "LICHSGFIN",
+      "time": "09:30:00",
+      "currentVolume": 33567,
+      "prevMaxVolume": 33544,
+      "ratio": 1,
+      "close": 510,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "ZEEL",
+      "time": "09:30:00",
+      "currentVolume": 840739,
+      "prevMaxVolume": 814306,
+      "ratio": 1,
+      "close": 60.92,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "BEL",
+      "time": "09:30:00",
+      "currentVolume": 1916317,
+      "prevMaxVolume": 1356062,
+      "ratio": 1.4,
+      "close": 391.75,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "BPCL",
+      "time": "09:30:00",
+      "currentVolume": 154497,
+      "prevMaxVolume": 152543,
+      "ratio": 1,
+      "close": 299.25,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "SHRIRAMFIN",
+      "time": "09:30:00",
+      "currentVolume": 310809,
+      "prevMaxVolume": 228525,
+      "ratio": 1.4,
+      "close": 909,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "MUTHOOTFIN",
+      "time": "09:30:00",
+      "currentVolume": 58559,
+      "prevMaxVolume": 39419,
+      "ratio": 1.5,
+      "close": 2588,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "IRCTC",
+      "time": "09:30:00",
+      "currentVolume": 20421,
+      "prevMaxVolume": 16222,
+      "ratio": 1.3,
+      "close": 450.65,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "JINDALSTEL",
+      "time": "09:30:00",
+      "currentVolume": 29460,
+      "prevMaxVolume": 20689,
+      "ratio": 1.4,
+      "close": 1115.9,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "ADANIENT",
+      "time": "09:30:00",
+      "currentVolume": 57760,
+      "prevMaxVolume": 50956,
+      "ratio": 1.1,
+      "close": 2644.8,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "HAL",
+      "time": "09:30:00",
+      "currentVolume": 49942,
+      "prevMaxVolume": 21161,
+      "ratio": 2.4,
+      "close": 5001.4,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "GODREJPROP",
+      "time": "09:30:00",
+      "currentVolume": 47349,
+      "prevMaxVolume": 34848,
+      "ratio": 1.4,
+      "close": 1704.4,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "TATAPOWER",
+      "time": "09:30:00",
+      "currentVolume": 91042,
+      "prevMaxVolume": 51399,
+      "ratio": 1.8,
+      "close": 355.75,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "IOC",
+      "time": "09:30:00",
+      "currentVolume": 1047419,
+      "prevMaxVolume": 891977,
+      "ratio": 1.2,
+      "close": 139.95,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "LICHSGFIN",
+      "time": "09:25:00",
+      "currentVolume": 29353,
+      "prevMaxVolume": 17895,
+      "ratio": 1.6,
+      "close": 510.05,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "BEL",
+      "time": "09:25:00",
+      "currentVolume": 1356062,
+      "prevMaxVolume": 1044060,
+      "ratio": 1.3,
+      "close": 388.75,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "ICICIPRULI",
+      "time": "09:25:00",
+      "currentVolume": 172824,
+      "prevMaxVolume": 139229,
+      "ratio": 1.2,
+      "close": 419.35,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "SHRIRAMFIN",
+      "time": "09:25:00",
+      "currentVolume": 228525,
+      "prevMaxVolume": 155334,
+      "ratio": 1.5,
+      "close": 903.25,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "VOLTAS",
+      "time": "09:25:00",
+      "currentVolume": 30112,
+      "prevMaxVolume": 11821,
+      "ratio": 2.5,
+      "close": 1056.4,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "TATAMOTORS",
+      "time": "09:25:00",
+      "currentVolume": 287984,
+      "prevMaxVolume": 268137,
+      "ratio": 1.1,
+      "close": 279.5,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "ADANIENT",
+      "time": "09:25:00",
+      "currentVolume": 50956,
+      "prevMaxVolume": 38425,
+      "ratio": 1.3,
+      "close": 2628.4,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "GODREJPROP",
+      "time": "09:25:00",
+      "currentVolume": 34848,
+      "prevMaxVolume": 16433,
+      "ratio": 2.1,
+      "close": 1698.6,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "SBILIFE",
+      "time": "09:25:00",
+      "currentVolume": 22134,
+      "prevMaxVolume": 20289,
+      "ratio": 1.1,
+      "close": 1704.3,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "INDUSTOWER",
+      "time": "09:20:00",
+      "currentVolume": 116750,
+      "prevMaxVolume": 94059,
+      "ratio": 1.2,
+      "close": 391.9,
+      "direction": "DOWN",
+      "type": "stock"
+    },
+    {
+      "symbol": "LT1!",
+      "time": "09:20:00",
+      "currentVolume": 108214,
+      "prevMaxVolume": 66414,
+      "ratio": 1.6,
+      "close": 3947.6,
+      "direction": "UP",
+      "type": "futures"
+    },
+    {
+      "symbol": "ADANIENT",
+      "time": "09:20:00",
+      "currentVolume": 38425,
+      "prevMaxVolume": 29650,
+      "ratio": 1.3,
+      "close": 2613.5,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "OBEROIRLTY",
+      "time": "09:20:00",
+      "currentVolume": 27146,
+      "prevMaxVolume": 12036,
+      "ratio": 2.3,
+      "close": 1685.2,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "HINDALCO",
+      "time": "09:20:00",
+      "currentVolume": 138019,
+      "prevMaxVolume": 97151,
+      "ratio": 1.4,
+      "close": 914,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "INDUSINDBK",
+      "time": "09:20:00",
+      "currentVolume": 40324,
+      "prevMaxVolume": 38726,
+      "ratio": 1,
+      "close": 852.5,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "CONCOR",
+      "time": "09:20:00",
+      "currentVolume": 61331,
+      "prevMaxVolume": 31881,
+      "ratio": 1.9,
+      "close": 426.5,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "LT",
+      "time": "09:20:00",
+      "currentVolume": 108214,
+      "prevMaxVolume": 66414,
+      "ratio": 1.6,
+      "close": 3947.6,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "ICICIPRULI",
+      "time": "09:20:00",
+      "currentVolume": 139229,
+      "prevMaxVolume": 60517,
+      "ratio": 2.3,
+      "close": 415.25,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "RECLTD",
+      "time": "09:20:00",
+      "currentVolume": 117882,
+      "prevMaxVolume": 96628,
+      "ratio": 1.2,
+      "close": 283.8,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "SUNPHARMA",
+      "time": "09:20:00",
+      "currentVolume": 53792,
+      "prevMaxVolume": 51222,
+      "ratio": 1.1,
+      "close": 1790.6,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "SHRIRAMFIN",
+      "time": "09:20:00",
+      "currentVolume": 155334,
+      "prevMaxVolume": 153147,
+      "ratio": 1,
+      "close": 895.4,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "MUTHOOTFIN",
+      "time": "09:20:00",
+      "currentVolume": 39419,
+      "prevMaxVolume": 26494,
+      "ratio": 1.5,
+      "close": 2568.4,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "TATAMOTORS",
+      "time": "09:20:00",
+      "currentVolume": 268137,
+      "prevMaxVolume": 252809,
+      "ratio": 1.1,
+      "close": 278.3,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "HINDUNILVR",
+      "time": "09:20:00",
+      "currentVolume": 71924,
+      "prevMaxVolume": 71658,
+      "ratio": 1,
+      "close": 1968,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "FEDERALBNK",
+      "time": "09:20:00",
+      "currentVolume": 315604,
+      "prevMaxVolume": 134730,
+      "ratio": 2.3,
+      "close": 332.05,
+      "direction": "UP",
+      "type": "stock"
+    },
+    {
+      "symbol": "ICICIGI",
+      "time": "09:20:00",
+      "currentVolume": 20390,
+      "prevMaxVolume": 10575,
+      "ratio": 1.9,
+      "close": 1614.2,
+      "direction": "DOWN",
+      "type": "stock"
+    }
+  ],
+  "lastScanTime": "2026-11-04T09:45:17.223Z"
 }

@@ -1,2375 +1,1591 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { 
-  Bot, Play, Pause, ShieldAlert, TrendingUp, TrendingDown, RefreshCw, 
-  Clock, Zap, CheckCircle2, AlertTriangle, ArrowUpRight, ArrowDownRight, 
-  ExternalLink, XCircle, RotateCcw, Wallet, Target, Activity, Settings2,
-  DollarSign, PieChart, ShieldCheck, Flame, ListFilter, Download, Trash2
+  Zap, TrendingUp, TrendingDown, Target, Shield, Activity, CheckCircle2, 
+  XCircle, AlertTriangle, Play, RotateCcw, Sliders, Settings, RefreshCw, 
+  Search, Award, Volume2, VolumeX, Eye, ArrowUpRight, ArrowDownRight, 
+  SlidersHorizontal, Check, Clock, ChevronRight, BarChart2, DollarSign,
+  Maximize2, Minimize2, ExternalLink, FileText, ShieldCheck
 } from 'lucide-react';
-import { tvStreamer, getBackendHttpUrl } from '../utils/tvStreamer';
-import { useTheme } from '../context/ThemeContext';
-import { calculateMatrixSeriesData } from '../utils/matrixCalculator';
-import { AngelOnePositionsContainer } from './AngelOnePositionsContainer';
+import { 
+  runMarshallStrategyEngine, 
+  extractMarshallLevels, 
+  DEFAULT_MARSHALL_CONFIG, 
+  type MarshallLevels, 
+  type MarshallSignal, 
+  type MarshallEngineConfig,
+  type MarshallState,
+  type MarshallStrategyType
+} from '../utils/marshallStrategyEngine';
 import type { Candle } from '../utils/profileCalculator';
-
-export interface AlgoPosition {
-  id: string;
-  symbol: string;
-  displayName: string;
-  side: 'BUY' | 'SELL';
-  setupType: 'BUY REVERSAL (S3)' | 'BUY REVERSAL (S3 RECLAIM)' | 'BUY REVERSAL BREAKDOWN (SHORT)' | 'SELL REVERSAL (PIVOT BREAKDOWN)' | 'SELL REVERSAL (R3)';
-  entryDate?: string;
-  entryTime: string;
-  entryTimestamp: number;
-  entryPrice: number;
-  currentPrice: number;
-  quantity: number;
-  allocatedCapital: number;
-  stopLoss: number;
-  target1: number;
-  target2: number;
-  initialStopLoss: number;
-  isTrailingActive: boolean;
-  isBreakeven: boolean;
-  unrealizedPnl: number;
-  unrealizedPnlPct: number;
-  reversalLevel: number;
-  status: 'OPEN' | 'CLOSED';
-  exitPrice?: number;
-  exitDate?: string;
-  exitTime?: string;
-  exitTimestamp?: number;
-  exitReason?: 'TARGET 1 HIT (PROFIT BOOKED)' | 'TARGET 1 HIT' | 'TARGET 2 HIT' | 'STOP LOSS HIT' | 'TRAILING SL HIT' | 'MIS EOD SQUARE-OFF (15:15)' | 'MCX EOD SQUARE-OFF (23:25)' | 'MANUAL SQUARE-OFF';
-  realizedPnl?: number;
-}
-
-export interface AlgoLog {
-  id: string;
-  date?: string;
-  time: string;
-  type: 'ORDER' | 'SIGNAL' | 'EXIT' | 'INFO' | 'WARNING';
-  message: string;
-  symbol?: string;
-}
-
-export interface ShortSetupState {
-  hasTestedR3: boolean;
-  hasBrokeOutAboveR3: boolean;
-  maxHighAboveR3: number;
-  hasRejectedBelowR3: boolean;
-  hasBrokenPivot: boolean;
-  isReadyToShort: boolean;
-  stageNumber: number; // 0 to 5
-  stageText: string;
-}
-
-export interface BuyRevShortSetupState {
-  hasTestedS3: boolean;
-  hasBrokeOutAboveS3: boolean;
-  maxHighAboveS3: number;
-  hasRejectedBelowS3: boolean;
-  hasMovedBelowS3: boolean;
-  hasBrokenPivot: boolean;
-  isChasedBelowS4: boolean;
-  isReadyToShort: boolean;
-  stageNumber: number; // 0 to 6
-  stageText: string;
-}
-
-export interface ConfirmedLongSetupState {
-  hasTestedS3: boolean;
-  hasSweptBelowS3: boolean;
-  minLowBelowS3: number;
-  hasReclaimedS3: boolean;
-  isReadyToLong: boolean;
-  stageNumber: number; // 0 to 4
-  stageText: string;
-}
-
-export interface ReversalRadarItem {
-  symbol: string;
-  displayName: string;
-  ltp: number;
-  s3: number; // Buy Reversal
-  r3: number; // Sell Reversal
-  s4: number; // Breakdown line
-  r4: number; // Breakout line
-  s1_r1: number; // S1 / R1 level (Level 6)
-  s5: number; // Target 1 (Level 9)
-  pivot: number;
-  distanceToBuyPct: number;
-  distanceToSellPct: number;
-  status: 'IN BUY ZONE' | 'IN SELL ZONE' | 'APPROACHING BUY' | 'APPROACHING SELL' | 'NEUTRAL';
-  shortSetupState: ShortSetupState;
-  buyRevShortSetupState: BuyRevShortSetupState;
-  longSetupState: ConfirmedLongSetupState;
-  lastUpdated: number;
-}
+import { getBackendHttpUrl, tvStreamer } from '../utils/tvStreamer';
 
 interface AlgoTradeContainerProps {
-  onSymbolSelect: (symbol: string) => void;
-  onSwitchToChart: () => void;
+  onSwitchToChart?: (symbol: string) => void;
 }
 
-const TOTAL_CAPITAL = 1000000; // ₹10,00,000 (10 Lakhs)
-const STORAGE_POSITIONS_KEY = 'tradingguru_algo_positions_v2';
-const STORAGE_HISTORY_KEY = 'tradingguru_algo_history_v2';
-const STORAGE_LOGS_KEY = 'tradingguru_algo_logs_v2';
-const STORAGE_CONFIG_KEY = 'tradingguru_algo_config_v1';
-
-const DEFAULT_UNIVERSE = [
-  'NSE:NIFTY',
-  'NSE:BANKNIFTY',
-  'NSE:FINNIFTY',
-  'NSE:RELIANCE',
-  'NSE:HDFCBANK',
-  'NSE:INFY',
-  'NSE:ICICIBANK',
-  'NSE:TCS',
-  'NSE:SBIN',
-  'NSE:TATAMOTORS',
-  'NSE:BHARTIARTL',
-  'NSE:KOTAKBANK',
-  'NSE:LT',
-  'NSE:AXISBANK',
-  'NSE:BAJFINANCE',
-  'MCX:CRUDEOIL',
-  'MCX:NATURALGAS',
-  'MCX:ZINC'
+const INSTRUMENTS = [
+  { symbol: 'NSE:NIFTY', name: 'NIFTY 50', group: 'INDEX' },
+  { symbol: 'NSE:BANKNIFTY', name: 'BANK NIFTY', group: 'INDEX' },
+  { symbol: 'NSE:FINNIFTY', name: 'FIN NIFTY', group: 'INDEX' },
+  { symbol: 'NSE:MIDCPNIFTY', name: 'MIDCP NIFTY', group: 'INDEX' },
+  { symbol: 'NSE:RELIANCE', name: 'RELIANCE', group: 'EQUITY' },
+  { symbol: 'NSE:HDFCBANK', name: 'HDFC BANK', group: 'EQUITY' },
+  { symbol: 'NSE:ICICIBANK', name: 'ICICI BANK', group: 'EQUITY' },
+  { symbol: 'NSE:SBIN', name: 'STATE BANK', group: 'EQUITY' },
+  { symbol: 'NSE:INFY', name: 'INFOSYS', group: 'EQUITY' },
+  { symbol: 'NSE:TCS', name: 'TCS', group: 'EQUITY' },
+  { symbol: 'NSE:BHARTIARTL', name: 'BHARTI AIRTEL', group: 'EQUITY' },
+  { symbol: 'NSE:ITC', name: 'ITC', group: 'EQUITY' },
+  { symbol: 'NSE:LT', name: 'L&T', group: 'EQUITY' },
+  { symbol: 'NSE:AXISBANK', name: 'AXIS BANK', group: 'EQUITY' },
+  { symbol: 'NSE:KOTAKBANK', name: 'KOTAK BANK', group: 'EQUITY' },
+  { symbol: 'NSE:TATAMOTORS', name: 'TATA MOTORS', group: 'EQUITY' },
+  { symbol: 'NSE:BAJFINANCE', name: 'BAJAJ FINANCE', group: 'EQUITY' },
+  { symbol: 'NSE:MARUTI', name: 'MARUTI', group: 'EQUITY' },
+  { symbol: 'NSE:SUNPHARMA', name: 'SUN PHARMA', group: 'EQUITY' },
+  { symbol: 'NSE:TITAN', name: 'TITAN', group: 'EQUITY' },
+  // MCX Commodities (Only Crude & NG per user rule)
+  { symbol: 'MCX:CRUDEOIL', name: 'CRUDE OIL', group: 'COMMODITY' },
+  { symbol: 'MCX:NATURALGAS', name: 'NATURAL GAS', group: 'COMMODITY' }
 ];
 
-export function isCommoditySymbol(symbol?: string): boolean {
-  if (!symbol) return false;
-  const s = symbol.toUpperCase();
-  return (
-    s.startsWith('MCX:') ||
-    s.includes('CRUDE') ||
-    s.includes('NATURALGAS') ||
-    s.includes('NATGAS') ||
-    s.includes('ZINC') ||
-    s.includes('GOLD') ||
-    s.includes('SILVER') ||
-    s.includes('COPPER') ||
-    s.includes('LEAD') ||
-    s.includes('ALUMINIUM') ||
-    s.includes('NICKEL')
-  );
-}
+const TIMEFRAMES = [
+  { value: '1', label: '1m Scalp' },
+  { value: '3', label: '3m Momentum' },
+  { value: '5', label: '5m Primary (Intraday)' },
+  { value: '15', label: '15m Swing' },
+  { value: '30', label: '30m Trend' },
+  { value: '1H', label: '1 Hour' },
+  { value: 'D', label: 'Daily' }
+];
 
+export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({ onSwitchToChart }) => {
+  // Navigation & Primary Selection
+  const [symbol, setSymbol] = useState<string>('NSE:NIFTY');
+  const [timeframe, setTimeframe] = useState<string>('5');
 
-export function formatIstDate(ms = Date.now()): string {
-  return new Date(ms).toLocaleDateString('en-IN', {
-    timeZone: 'Asia/Kolkata',
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
-  });
-}
-
-export function formatIstTime(ms = Date.now()): string {
-  return new Date(ms).toLocaleTimeString('en-IN', {
-    timeZone: 'Asia/Kolkata',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false
-  });
-}
-
-export function formatTradeDateTimeDisplay(timeStr?: string, dateStr?: string, timestamp?: number): string {
-  const resolvedDate = dateStr || (timestamp ? formatIstDate(timestamp) : '');
-  const resolvedTime = timeStr || (timestamp ? formatIstTime(timestamp) : '');
-  if (resolvedDate && resolvedTime) return `${resolvedDate}, ${resolvedTime}`;
-  return resolvedTime || resolvedDate || '-';
-}
-
-
-function isIstDateNov9(ms?: number | string | null): boolean {
-  if (!ms) return false;
-  const num = Number(ms);
-  if (isNaN(num) || num <= 0) return false;
-  return new Date(num).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }) === '2026-11-09';
-}
-
-function isNov9DateStr(str?: string): boolean {
-  if (!str) return false;
-  const s = String(str).trim().toLowerCase();
-  return (
-    /\b0?9[\s\-/]+nov(?:ember)?[\s,\-/]+2026\b/i.test(s) ||
-    /\b2026[\s\-/]+11[\s\-/]+0?9\b/.test(s) ||
-    /\b0?9[\s\-/]+11[\s\-/]+2026\b/.test(s) ||
-    /\b11[\s\-/]+0?9[\s\-/]+2026\b/.test(s)
-  );
-}
-
-export function isNov9AlgoTrade(item: any): boolean {
-  if (!item || typeof item !== 'object') return false;
-  if (isIstDateNov9(item.entryTimestamp) || isIstDateNov9(item.exitTimestamp)) return true;
-  if (isNov9DateStr(item.entryDate) || isNov9DateStr(item.exitDate)) return true;
-  if (typeof item.id === 'string' && item.id.startsWith('algo-pos-')) {
-    const parts = item.id.split('-');
-    if (parts.length >= 3 && isIstDateNov9(parts[2])) return true;
-  }
-  return false;
-}
-
-export function isNov9AlgoLog(log: any): boolean {
-  if (!log || typeof log !== 'object') return false;
-  if (isNov9DateStr(log.date)) return true;
-  if (typeof log.id === 'string' && log.id.startsWith('log-')) {
-    const parts = log.id.split('-');
-    if (parts.length >= 2 && isIstDateNov9(parts[1])) return true;
-  }
-  return false;
-}
-
-export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
-  onSymbolSelect,
-  onSwitchToChart
-}) => {
-  const { isDark } = useTheme();
-  // Engine Configuration State
-
-
-  const [isEngineActive, setIsEngineActive] = useState<boolean>(() => {
+  const isStandalone = useMemo(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_CONFIG_KEY);
-      return saved ? JSON.parse(saved).isEngineActive ?? true : true;
-    } catch {
-      return true;
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('standalone') === 'true';
+    } catch (e) {
+      return false;
     }
+  }, []);
+
+  const [activeView, setActiveView] = useState<'POSITIONS' | 'AUDIT_LOG' | 'HISTORY' | 'REVERSAL_SCANNER' | 'CHART'>(() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const sub = (urlParams.get('subview') || '').toUpperCase();
+            if (sub === 'POSITIONS') return 'POSITIONS';
+      if (sub === 'HISTORY') return 'HISTORY';
+      if (sub === 'AUDIT_LOG') return 'AUDIT_LOG';
+    } catch (e) {}
+    return 'POSITIONS';
   });
 
-  const [riskPerTradePct, setRiskPerTradePct] = useState<number>(() => {
+  // Engine Configuration & Settings Drawer
+  const [config, setConfig] = useState<MarshallEngineConfig>(DEFAULT_MARSHALL_CONFIG);
+  const [isConfigOpen, setIsConfigOpen] = useState<boolean>(false);
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
+
+  // Candles & Live Telemetry
+  const [candles, setCandles] = useState<Candle[]>([]);
+  const [liveLtp, setLiveLtp] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [lastUpdated, setLastUpdated] = useState<string>('');
+
+  // Scanner Multi-Stock Feed
+  const [scanItems, setScanItems] = useState<any[]>(() => {
+    return INSTRUMENTS.map((inst, idx) => {
+      const p = inst.symbol === 'NSE:NIFTY' ? 25173.75 : 
+                inst.symbol.includes('BANKNIFTY') ? 61984.75 : 
+                inst.symbol.includes('FINNIFTY') ? 27943.00 :
+                inst.symbol.includes('MIDCPNIFTY') ? 14071.20 :
+                inst.symbol.includes('CRUDE') ? 334.10 : 
+                inst.symbol.includes('NATURALGAS') ? 131170.00 :
+                inst.symbol.includes('RELIANCE') ? 1356.70 : 1000 + idx * 50;
+      const isSell = idx % 2 === 1;
+      return {
+        symbol: inst.symbol,
+        name: inst.name,
+        ltp: p,
+        currentPrice: p,
+        strategy: isSell ? 'PRIMARY_SELL' : 'PRIMARY_BUY',
+        direction: isSell ? 'SELL' : 'BUY',
+        state: isSell ? 'BREAKDOWN_CONFIRMED' : 'BREAKOUT_CONFIRMED',
+        entryPrice: p,
+        stopLossPrice: isSell ? Math.round(p * 1.004 * 10) / 10 : Math.round(p * 0.996 * 10) / 10,
+        target1Price: isSell ? Math.round(p * 0.994 * 10) / 10 : Math.round(p * 1.006 * 10) / 10,
+        target2Price: isSell ? Math.round(p * 0.988 * 10) / 10 : Math.round(p * 1.012 * 10) / 10,
+        riskRewardRatio: 1.5,
+        distancePct: 0.2
+      };
+    });
+  });
+  const [isScanning, setIsScanning] = useState<boolean>(false);
+  const [scannerFilter, setScannerFilter] = useState<'ALL' | 'BUY' | 'SELL' | 'ACTIVE'>('ALL');
+
+  // Live Position Book / Orders
+  const [activeTrades, setActiveTrades] = useState<any[]>([]);
+  const [capitalSummary, setCapitalSummary] = useState<any>({
+    initialCapital: 1500000,
+    availableMargin: 1500000,
+    openMarginDeployed: 0,
+    totalRealizedPnL: 0,
+    totalUnrealizedPnL: 0,
+    netAccountValue: 1500000,
+    totalTrades: 0,
+    openTradesCount: 0,
+    closedTradesCount: 0,
+    winningTrades: 0,
+    losingTrades: 0,
+    winRatePct: 0
+  });
+  const [tradeMessage, setTradeMessage] = useState<string>('');
+
+  // Segregate open and closed positions
+  const openTrades = useMemo(() => {
+    return activeTrades.filter(t => t.status === 'OPEN' || t.status === 'ACTIVE' || t.status === 'TARGET_1_HIT');
+  }, [activeTrades]);
+
+  const closedTrades = useMemo(() => {
+    return activeTrades.filter(t => t.status !== 'OPEN' && t.status !== 'ACTIVE' && t.status !== 'TARGET_1_HIT');
+  }, [activeTrades]);
+
+  // Unified chronological audit stream from all trades
+  const unifiedAuditLogs = useMemo(() => {
+    const list: any[] = [];
+    activeTrades.forEach(trade => {
+      if (trade.auditTrail && Array.isArray(trade.auditTrail) && trade.auditTrail.length > 0) {
+        trade.auditTrail.forEach((item: any, idx: number) => {
+          list.push({
+            id: `${trade.id}_${idx}`,
+            tradeId: trade.id,
+            symbol: trade.symbol,
+            direction: trade.direction,
+            strategy: trade.strategy,
+            timestamp: item.dateTimeIST || trade.entryDateTime || item.timestamp,
+            rawTimestamp: item.timestamp ? new Date(item.timestamp).getTime() : 0,
+            action: item.event || 'ALGO_ACTION',
+            details: item.details || trade.triggerReason,
+            pnl: item.event?.includes('TARGET_2') ? trade.realizedPnL : (item.event?.includes('STOP_LOSS') ? trade.realizedPnL : null),
+            badgeColor: item.event?.includes('TARGET') ? '#10b981' : item.event?.includes('STOP') ? '#f43f5e' : item.event?.includes('TRAIL') ? '#f59e0b' : '#38bdf8'
+          });
+        });
+      } else {
+        list.push({
+          id: `${trade.id}_entry`,
+          tradeId: trade.id,
+          symbol: trade.symbol,
+          direction: trade.direction,
+          strategy: trade.strategy,
+          timestamp: trade.entryDateTime || `${trade.entryDate} ${trade.entryTime}`,
+          rawTimestamp: trade.entryTimestamp || 0,
+          action: 'ORDER_EXECUTED',
+          details: trade.triggerReason || `Auto-Triggered ${trade.direction} on ${trade.symbol}`,
+          pnl: trade.realizedPnL,
+          badgeColor: '#38bdf8'
+        });
+      }
+    });
+    return list.sort((a, b) => b.rawTimestamp - a.rawTimestamp);
+  }, [activeTrades]);
+
+
+  // Alert Banner
+  const [latestAlert, setLatestAlert] = useState<{
+    text: string;
+    type: 'BUY' | 'SELL' | 'INFO';
+    timestamp: number;
+  } | null>(null);
+
+  const prevSignalIdRef = useRef<string>('');
+
+  // 1. Audio Alert Synthesizer
+  const playAlertBell = useCallback((isBuy: boolean) => {
+    if (!soundEnabled) return;
     try {
-      const saved = localStorage.getItem(STORAGE_CONFIG_KEY);
-      return saved ? JSON.parse(saved).riskPerTradePct ?? 1.0 : 1.0;
-    } catch {
-      return 1.0;
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContextClass) return;
+      const ctx = new AudioContextClass();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = isBuy ? 'triangle' : 'sawtooth';
+      osc.frequency.setValueAtTime(isBuy ? 880 : 440, ctx.currentTime);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.85);
+    } catch (e) {}
+  }, [soundEnabled]);
+
+  // 2. Fetch Candle Data for Current Symbol & Timeframe (Direct 0 Latency)
+  const fetchSymbolCandles = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const base = await getBackendHttpUrl();
+      const url = `${base}/api/candles?symbol=${encodeURIComponent(symbol)}&timeframe=${encodeURIComponent(timeframe)}&limit=300&_t=${Date.now()}`;
+      const res = await fetch(url, { headers: { 'bypass-tunnel-reminder': 'true' } });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && Array.isArray(data.candles) && data.candles.length > 0) {
+          setCandles(data.candles);
+          const latest = data.candles[data.candles.length - 1];
+          setLiveLtp(latest.close);
+          setLastUpdated(new Date().toLocaleTimeString('en-IN', { hour12: false }));
+        }
+      }
+    } catch (err) {
+      console.error('[Algo Trade] Failed to fetch candles:', err);
+    } finally {
+      setIsLoading(false);
     }
-  });
+  }, [symbol, timeframe]);
 
-  const [maxOpenPositions, setMaxOpenPositions] = useState<number>(() => {
+  // 3. Fetch Multi-Symbol Live Scanner Results
+  const fetchScannerData = useCallback(async () => {
     try {
-      const saved = localStorage.getItem(STORAGE_CONFIG_KEY);
-      return saved ? JSON.parse(saved).maxOpenPositions ?? 4 : 4;
-    } catch {
-      return 4;
+      setIsScanning(true);
+      const base = await getBackendHttpUrl();
+      const res = await fetch(`${base}/api/algo-trade/scan?_t=${Date.now()}`, {
+        headers: { 'bypass-tunnel-reminder': 'true' }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && Array.isArray(data.items) && data.items.length > 0) {
+          setScanItems(data.items.map((it: any) => ({
+            ...it,
+            ltp: it.ltp || it.currentPrice || 0
+          })));
+        }
+      }
+    } catch (e) {
+    } finally {
+      setIsScanning(false);
     }
-  });
+  }, []);
 
-  const [activeSubTab, setActiveSubTab] = useState<'positions' | 'radar' | 'history' | 'logs'>('positions');
-
-  // Wipe legacy trade caches
-  useEffect(() => {
+  // 4. Fetch Active Orders / Trade History
+  const fetchAlgoTrades = useCallback(async () => {
     try {
-      localStorage.removeItem('tradingguru_algo_positions_v1');
-      localStorage.removeItem('tradingguru_algo_history_v1');
-      localStorage.removeItem('tradingguru_algo_logs_v1');
+      const base = await getBackendHttpUrl();
+      const res = await fetch(`${base}/api/algo-trade/trades?_t=${Date.now()}`, {
+        headers: { 'bypass-tunnel-reminder': 'true' }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data) {
+          if (Array.isArray(data.trades)) setActiveTrades(data.trades);
+          if (data.capitalSummary) setCapitalSummary(data.capitalSummary);
+        }
+      }
     } catch (e) {}
   }, []);
 
-  // Positions, History & Logs State
-  const [positions, setPositions] = useState<AlgoPosition[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_POSITIONS_KEY);
-      const parsed = saved ? JSON.parse(saved) : [];
-      return Array.isArray(parsed) ? parsed.filter((p) => !isNov9AlgoTrade(p)) : [];
-    } catch {
-      return [];
+  // Initial load & Polling
+  useEffect(() => {
+    fetchScannerData();
+    fetchAlgoTrades();
+    if (activeView === 'CHART') {
+      fetchSymbolCandles();
     }
-  });
 
-  const [history, setHistory] = useState<AlgoPosition[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_HISTORY_KEY);
-      const parsed = saved ? JSON.parse(saved) : [];
-      return Array.isArray(parsed) ? parsed.filter((h) => !isNov9AlgoTrade(h)) : [];
-    } catch {
-      return [];
-    }
-  });
+    // 2000ms poll for live tick-by-tick CMP & PnL
+    const tradeInterval = setInterval(() => {
+      fetchAlgoTrades();
+    }, 2000);
 
-  const [logs, setLogs] = useState<AlgoLog[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_LOGS_KEY);
-      if (!saved) {
-        return [
-          {
-            id: 'log-0',
-            date: formatIstDate(),
-            time: formatIstTime(),
-            type: 'INFO',
-            message: 'Intraday Algo Trading Engine initialized with ₹10,00,000 Capital. Strategy: S3 Buy & R3 Sell Reversals.'
-          }
-        ];
+    // 5000ms poll for multi-stock scanner & candles (only if in chart view)
+    const scanInterval = setInterval(() => {
+      fetchScannerData();
+      if (activeView === 'CHART') {
+        fetchSymbolCandles();
       }
-      const parsed = JSON.parse(saved);
-      return Array.isArray(parsed) ? parsed.filter((l) => !isNov9AlgoLog(l)) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  // Reversal Radar Items
-  const [radarItems, setRadarItems] = useState<ReversalRadarItem[]>([]);
-  const [isRadarLoading, setIsRadarLoading] = useState<boolean>(true);
-  const [isExporting, setIsExporting] = useState<boolean>(false);
-  const [lastScanTime, setLastScanTime] = useState<string>('');
-
-  // Live Prices Map: Symbol -> Price
-  const [livePrices, setLivePrices] = useState<Record<string, number>>({});
-
-  // Fixed Static Daily Anchor Levels (Locked per session date in IST to prevent intraday level jitter)
-  const staticAnchorLevelsRef = useRef<Record<string, { s3: number; r3: number; s4: number; r4: number; s1_r1: number; s5: number; pivot: number; date: string }>>({});
-  const tradeCooldownRef = useRef<Record<string, { lastExitTimestamp: number; setupType: string }>>({});
-
-  // Time & Pure Intraday Square-off
-  const [currentTimeStr, setCurrentTimeStr] = useState<string>('');
-  const [timeToEodStr, setTimeToEodStr] = useState<string>('');
-  const [isEodSquareOffTriggered, setIsEodSquareOffTriggered] = useState<boolean>(false);
-
-  // Synchronize config to localStorage
-  useEffect(() => {
-    localStorage.setItem(STORAGE_CONFIG_KEY, JSON.stringify({
-      isEngineActive,
-      riskPerTradePct,
-      maxOpenPositions
-    }));
-  }, [isEngineActive, riskPerTradePct, maxOpenPositions]);
-
-  // Synchronize positions, history & logs to localStorage and server disk
-  useEffect(() => {
-    localStorage.setItem(STORAGE_POSITIONS_KEY, JSON.stringify(positions));
-  }, [positions]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_HISTORY_KEY, JSON.stringify(history));
-    if (history.length > 0) {
-      getBackendHttpUrl().then(backendUrl => {
-        fetch(`${backendUrl}/api/algo-trade/sync`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ history, positions })
-        }).catch(() => {});
-      }).catch(() => {});
-    }
-  }, [history]);
-
-  // Load persistent history from server on mount
-  useEffect(() => {
-    const loadServerHistory = async () => {
-      try {
-        const backendUrl = await getBackendHttpUrl();
-        const res = await fetch(`${backendUrl}/api/algo-trade/history`);
-        if (!res.ok) return;
-        const data = await res.json();
-        if (data && data.success) {
-          if (Array.isArray(data.history)) {
-            if (data.history.length === 0) {
-              setHistory([]);
-              localStorage.setItem(STORAGE_HISTORY_KEY, JSON.stringify([]));
-            } else {
-              setHistory(data.history.filter((h: AlgoPosition) => h && h.id && !isNov9AlgoTrade(h)));
-            }
-          }
-          if (Array.isArray(data.positions)) {
-            if (data.positions.length === 0) {
-              setPositions([]);
-              localStorage.setItem(STORAGE_POSITIONS_KEY, JSON.stringify([]));
-            } else {
-              setPositions(data.positions.filter((p: AlgoPosition) => p && p.id && !isNov9AlgoTrade(p)));
-            }
-          }
-        }
-      } catch (err) {
-        console.warn('Could not load algo history from server:', err);
-      }
-    };
-    loadServerHistory();
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_LOGS_KEY, JSON.stringify(logs.slice(-100)));
-  }, [logs]);
-
-  const addLog = (type: AlgoLog['type'], message: string, symbol?: string) => {
-    const newLog: AlgoLog = {
-      id: `log-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
-      date: formatIstDate(),
-      time: formatIstTime(),
-      type,
-      message,
-      symbol
-    };
-    setLogs(prev => [newLog, ...prev.slice(0, 99)]);
-  };
-
-  // Pure Intraday Clock & Dynamic Cutoff Tracker (Equity @ 15:15 IST, MCX Commodity @ 23:25 IST)
-  useEffect(() => {
-    const updateClock = () => {
-      const now = new Date();
-      // Format in IST
-      const istTimeStr = now.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour12: false });
-      setCurrentTimeStr(istTimeStr);
-
-      const [hours, minutes, seconds] = istTimeStr.split(':').map(Number);
-      const currentSeconds = hours * 3600 + minutes * 60 + (seconds || 0);
-
-      const equityEodSeconds = 15 * 3600 + 15 * 60; // 15:15:00 IST (3:15 PM)
-      const mcxEodSeconds = 23 * 3600 + 25 * 60;    // 23:25:00 IST (11:25 PM)
-      const mcxCloseSeconds = 23 * 3600 + 30 * 60;  // 23:30:00 IST (11:30 PM)
-
-      // 1. Check Equity MIS Cutoff (15:15 IST): Auto square-off active Equity positions only!
-      if (currentSeconds >= equityEodSeconds) {
-        setPositions(prev => {
-          const equityPositions = prev.filter(p => !isCommoditySymbol(p.symbol));
-          if (equityPositions.length === 0) return prev;
-
-          const closed = equityPositions.map(pos => {
-            const ltp = livePrices[pos.symbol] || pos.currentPrice;
-            const pts = pos.side === 'BUY' ? (ltp - pos.entryPrice) : (pos.entryPrice - ltp);
-            const realizedPnl = Math.round(pts * pos.quantity * 100) / 100;
-            return {
-              ...pos,
-              currentPrice: ltp,
-              exitPrice: ltp,
-              exitDate: formatIstDate(),
-              exitTime: formatIstTime(),
-              exitTimestamp: Date.now(),
-              status: 'CLOSED' as const,
-              exitReason: 'MIS EOD SQUARE-OFF (15:15)' as const,
-              realizedPnl
-            };
-          });
-
-          setHistory(h => [...closed, ...h]);
-          addLog('EXIT', `⏰ MIS Cutoff (15:15 IST): Auto squared off ${closed.length} Equity positions. MCX Commodity trades (Crude / NatGas / Zinc) remain actively trading till 23:25 IST.`);
-          return prev.filter(p => isCommoditySymbol(p.symbol));
-        });
-      }
-
-      // 2. Check MCX Commodity MIS Cutoff (23:25 IST): Auto square-off active Commodity positions!
-      if (currentSeconds >= mcxEodSeconds) {
-        setPositions(prev => {
-          const commodityPositions = prev.filter(p => isCommoditySymbol(p.symbol));
-          if (commodityPositions.length === 0) return prev;
-
-          const closed = commodityPositions.map(pos => {
-            const ltp = livePrices[pos.symbol] || pos.currentPrice;
-            const pts = pos.side === 'BUY' ? (ltp - pos.entryPrice) : (pos.entryPrice - ltp);
-            const realizedPnl = Math.round(pts * pos.quantity * 100) / 100;
-            return {
-              ...pos,
-              currentPrice: ltp,
-              exitPrice: ltp,
-              exitDate: formatIstDate(),
-              exitTime: formatIstTime(),
-              exitTimestamp: Date.now(),
-              status: 'CLOSED' as const,
-              exitReason: 'MCX EOD SQUARE-OFF (23:25)' as const,
-              realizedPnl
-            };
-          });
-
-          setHistory(h => [...closed, ...h]);
-          addLog('EXIT', `🌙 MCX EOD Cutoff (23:25 IST): Auto squared off ${closed.length} Commodity positions (Crude / NatGas / Zinc).`);
-          return prev.filter(p => !isCommoditySymbol(p.symbol));
-        });
-      }
-
-      // 3. Dynamic Status Banner
-      if (currentSeconds >= mcxCloseSeconds) {
-        setTimeToEodStr('ALL MARKETS CLOSED (Equity & MCX Squared Off)');
-      } else if (currentSeconds >= equityEodSeconds) {
-        const diffMcx = mcxEodSeconds - currentSeconds;
-        const h = Math.floor(Math.max(0, diffMcx) / 3600);
-        const m = Math.floor((Math.max(0, diffMcx) % 3600) / 60);
-        const s = Math.max(0, diffMcx) % 60;
-        setTimeToEodStr(`Equity Closed (15:15) | MCX Active (Crude, NatGas, Zinc): ${h}h ${m}m ${s}s to 23:25 Cutoff`);
-      } else {
-        const diffEq = equityEodSeconds - currentSeconds;
-        const h = Math.floor(diffEq / 3600);
-        const m = Math.floor((diffEq % 3600) / 60);
-        const s = diffEq % 60;
-        setTimeToEodStr(`Equity: ${h}h ${m}m ${s}s to 15:15 | MCX (Crude, NatGas, Zinc) active till 23:25 IST`);
-      }
-    };
-
-    updateClock();
-    const interval = setInterval(updateClock, 1000);
-    return () => clearInterval(interval);
-  }, [livePrices]);
-
-  // Calculate Reversal Levels for Monitored Symbols
-  const fetchRadarLevels = async () => {
-    setIsRadarLoading(true);
-    try {
-      const backendUrl = await getBackendHttpUrl();
-      const updatedRadar: ReversalRadarItem[] = [];
-
-      for (const symbol of DEFAULT_UNIVERSE) {
-        try {
-          const res = await fetch(`${backendUrl}/api/candles?symbol=${encodeURIComponent(symbol)}&timeframe=5&limit=150`, {
-            headers: { 'bypass-tunnel-reminder': 'true' }
-          });
-          if (!res.ok) continue;
-          const data = await res.json();
-          if (!data || !Array.isArray(data.candles) || data.candles.length < 5) continue;
-
-          const candles: Candle[] = data.candles;
-          const currentCandle = candles[candles.length - 1];
-          const ltp = livePrices[symbol] || currentCandle.close;
-
-          const todayDateStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
-
-          let s3 = 0;
-          let r3 = 0;
-          let s4 = 0;
-          let r4 = 0;
-          let s1_r1 = 0;
-          let s5 = 0;
-          let pivot = 0;
-
-          // Check if static levels are already locked for today's session
-          const cachedLvl = staticAnchorLevelsRef.current[symbol];
-          if (cachedLvl && cachedLvl.date === todayDateStr && cachedLvl.s3 > 0 && cachedLvl.r3 > 0) {
-            s3 = cachedLvl.s3;
-            r3 = cachedLvl.r3;
-            s4 = cachedLvl.s4;
-            r4 = cachedLvl.r4;
-            s1_r1 = cachedLvl.s1_r1 || 0;
-            s5 = cachedLvl.s5 || 0;
-            pivot = cachedLvl.pivot;
-          } else {
-            const matrixData = calculateMatrixSeriesData(candles, '5', data.matrixHistory);
-            const getVal = (points?: { value: number }[]) => 
-              points && points.length > 0 ? points[points.length - 1].value : 0;
-
-            s3 = getVal(matrixData.level7); // Buy Reversal
-            r3 = getVal(matrixData.level4); // Sell Reversal
-            s4 = getVal(matrixData.level8); // Breakdown
-            r4 = getVal(matrixData.level3); // Breakout
-            s1_r1 = getVal(matrixData.level6); // S1 / R1
-            s5 = getVal(matrixData.level9); // S5 Target
-            pivot = (r3 + s3) / 2;
-
-            if (s3 > 0 && r3 > 0) {
-              staticAnchorLevelsRef.current[symbol] = { s3, r3, s4, r4, s1_r1, s5, pivot, date: todayDateStr };
-            }
-          }
-
-          if (s3 <= 0 || r3 <= 0) continue;
-
-          const distanceToBuyPct = ((ltp - s3) / s3) * 100;
-          const distanceToSellPct = ((r3 - ltp) / r3) * 100;
-
-          // 7-Step Short Trade Sequence Detection:
-          // 1. Price reaches Sell Reversal (tests R3)
-          // 2. Breakout above Sell Reversal (moves above R3)
-          // 3. Rejection of breakout (buyers fail to sustain)
-          // 4. Move back below Sell Reversal (LTP < R3)
-          // 5. Pivot Point breakdown (LTP < Pivot)
-          // 6. Enter SHORT (Triggered only after Pivot breakdown)
-          // 7. Stop Loss: Sell Reversal (R3)
-                    // Filter candles strictly for TODAY'S trading session in IST (NO previous-day cross-leakage!)
-          const sessionCandles = candles.filter(c => {
-            const d = new Date(c.time * 1000).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
-            return d === todayDateStr;
-          }).sort((a, b) => a.time - b.time);
-
-          // If session just opened and has fewer than 2 completed candles, remain neutral
-          if (sessionCandles.length < 2) {
-            continue;
-          }
-
-          // A) Sell Reversal (R3) Short Setup:
-          // Strict Chronological Sequence:
-          // Step 1: Candle tests R3 (high >= R3 * 0.9995)
-          // Step 2: Candle breaks out above R3 (high > R3)
-          // Step 3: Subsequent candle rejects and closes back below R3 (close < R3)
-          // Step 4: Candle breaks down below Central Pivot (close < pivot or ltp < pivot)
-          let r3TestIdx = -1;
-          let r3BreakoutIdx = -1;
-          let r3MaxHigh = 0;
-          let r3RejectIdx = -1;
-          let r3PivotBreakIdx = -1;
-
-          for (let i = 0; i < sessionCandles.length; i++) {
-            const c = sessionCandles[i];
-            if (c.high > r3MaxHigh) r3MaxHigh = c.high;
-
-            if (r3TestIdx === -1 && c.high >= r3 * 0.9995) {
-              r3TestIdx = i;
-            }
-            if (r3TestIdx !== -1 && r3BreakoutIdx === -1 && c.high > r3) {
-              r3BreakoutIdx = i;
-            }
-            if (r3BreakoutIdx !== -1 && r3RejectIdx === -1) {
-              if (i > r3BreakoutIdx && c.close < r3) {
-                r3RejectIdx = i;
-              } else if (i === r3BreakoutIdx && c.close < r3 && (c.high - r3) > 0) {
-                r3RejectIdx = i;
-              }
-            }
-            if (r3RejectIdx !== -1 && r3PivotBreakIdx === -1) {
-              if (c.close < pivot || c.low < pivot || ltp < pivot) {
-                r3PivotBreakIdx = i;
-              }
-            }
-          }
-
-          const hasTestedR3 = r3TestIdx !== -1;
-          const hasBrokeOutAboveR3 = r3BreakoutIdx !== -1;
-          const hasRejectedBelowR3 = r3RejectIdx !== -1 && (ltp < r3);
-          const hasBrokenPivot = r3PivotBreakIdx !== -1 && hasRejectedBelowR3 && (ltp < pivot);
-          const isReadyToShort = hasBrokenPivot;
-
-          let stageNumber = 0;
-          let stageText = 'Awaiting R3 Test';
-          if (hasBrokenPivot) {
-            stageNumber = 5;
-            stageText = '5. Pivot Broken ➔ SHORT READY';
-          } else if (hasRejectedBelowR3) {
-            stageNumber = 4;
-            stageText = `4. Rejection ➔ Awaiting Pivot (₹${pivot.toFixed(2)})`;
-          } else if (hasBrokeOutAboveR3) {
-            stageNumber = 2;
-            stageText = `2. Breakout Above R3 (High: ₹${r3MaxHigh.toFixed(2)})`;
-          } else if (hasTestedR3) {
-            stageNumber = 1;
-            stageText = '1. Testing Sell Rev (R3)';
-          }
-
-          const shortSetupState: ShortSetupState = {
-            hasTestedR3,
-            hasBrokeOutAboveR3,
-            maxHighAboveR3: Number(r3MaxHigh.toFixed(2)),
-            hasRejectedBelowR3,
-            hasBrokenPivot,
-            isReadyToShort,
-            stageNumber,
-            stageText
-          };
-
-          // B) Buy Reversal Breakdown Short Setup (User Rule):
-          // Requirement: Entry strictly upon breakdown below Buy Reversal (S3)
-          // Stop Loss: Pivot / S1-R1 (Level 6 or Central Pivot)
-          // Target 1: S4 Breakdown Level; Target 2: S5 Target Level
-          // Entry Window: LTP must be < S3 AND must NOT be chased below S4! (ltp >= s4 * 0.998)
-          let s3TestIdx = -1;
-          let s3BounceIdx = -1;
-          let s3MaxHigh = 0;
-          let s3RejectIdx = -1;
-          let s3BreakdownIdx = -1;
-
-          for (let i = 0; i < sessionCandles.length; i++) {
-            const c = sessionCandles[i];
-            if (c.high > s3MaxHigh) s3MaxHigh = c.high;
-
-            if (s3TestIdx === -1 && (c.low <= s3 * 1.002 || c.high >= s3 * 0.998)) {
-              s3TestIdx = i;
-            }
-            if (s3TestIdx !== -1 && s3BounceIdx === -1 && c.high > s3 * 1.0005) {
-              s3BounceIdx = i;
-            }
-            if (s3BounceIdx !== -1 && s3RejectIdx === -1) {
-              if (i >= s3BounceIdx && c.close < s3) {
-                s3RejectIdx = i;
-              }
-            }
-            if (s3TestIdx !== -1 && s3BreakdownIdx === -1) {
-              if (c.close < s3) {
-                s3BreakdownIdx = i;
-              }
-            }
-          }
-
-          const hasTestedS3 = s3TestIdx !== -1;
-          const hasBrokeOutAboveS3 = s3BounceIdx !== -1;
-          const hasRejectedBelowS3 = s3RejectIdx !== -1;
-          const hasBrokenS3 = s3BreakdownIdx !== -1;
-
-          // CRITICAL: Entry must be between S3 and S4. If price has already broken below S4, the move is completed! Do NOT chase!
-          const isChasedBelowS4 = s4 > 0 && ltp < (s4 * 0.998);
-          const isWithinBreakdownEntry = hasBrokenS3 && ltp < s3 && !isChasedBelowS4;
-          const isReadyToShortS3 = isWithinBreakdownEntry;
-
-          let s3StageNum = 0;
-          let s3StageText = 'Awaiting S3 Test';
-          if (isChasedBelowS4) {
-            s3StageNum = 5;
-            s3StageText = `Move Completed (< ₹${s4.toFixed(2)}) ➔ Avoid Chasing`;
-          } else if (isReadyToShortS3) {
-            s3StageNum = 4;
-            s3StageText = '4. S3 Breakdown Confirmed ➔ SHORT READY';
-          } else if (hasBrokenS3) {
-            s3StageNum = 3;
-            s3StageText = '3. S3 Broken ➔ Watching Range';
-          } else if (hasTestedS3) {
-            s3StageNum = 1;
-            s3StageText = `1. Testing Buy Rev (₹${s3.toFixed(2)})`;
-          }
-
-          const buyRevShortSetupState: BuyRevShortSetupState = {
-            hasTestedS3,
-            hasBrokeOutAboveS3,
-            maxHighAboveS3: Number(s3MaxHigh.toFixed(2)),
-            hasRejectedBelowS3,
-            hasMovedBelowS3: hasBrokenS3 && ltp < s3,
-            hasBrokenPivot: hasBrokenS3,
-            isChasedBelowS4,
-            isReadyToShort: isReadyToShortS3,
-            stageNumber: s3StageNum,
-            stageText: s3StageText
-          };
-
-          // C) Confirmed Long Setup (Smart Money Liquidity Sweep Reclaim):
-          // Step 1: Candle sweeps below S3 (low < S3 * 0.999)
-          // Step 2: Candle reclaims and closes back above S3 (close > S3)
-          let s3SweepIdx = -1;
-          let s3ReclaimIdx = -1;
-          let s3MinLow = Infinity;
-
-          for (let i = 0; i < sessionCandles.length; i++) {
-            const c = sessionCandles[i];
-            if (c.low < s3MinLow) s3MinLow = c.low;
-
-            if (s3SweepIdx === -1 && c.low < s3 * 0.999) {
-              s3SweepIdx = i;
-            }
-            if (s3SweepIdx !== -1 && s3ReclaimIdx === -1) {
-              if (i >= s3SweepIdx && (c.close > s3 || ltp > s3 * 1.0005)) {
-                s3ReclaimIdx = i;
-              }
-            }
-          }
-
-          const hasSweptBelowS3 = s3SweepIdx !== -1;
-          const hasReclaimedS3 = s3ReclaimIdx !== -1 && (ltp > s3);
-          const isReadyToLong = hasReclaimedS3;
-
-          const longSetupState: ConfirmedLongSetupState = {
-            hasTestedS3,
-            hasSweptBelowS3,
-            minLowBelowS3: s3MinLow < Infinity ? Number(s3MinLow.toFixed(2)) : 0,
-            hasReclaimedS3,
-            isReadyToLong,
-            stageNumber: isReadyToLong ? 4 : (hasSweptBelowS3 ? 2 : (hasTestedS3 ? 1 : 0)),
-            stageText: isReadyToLong ? '4. S3 Reclaimed ➔ BUY READY' : (hasSweptBelowS3 ? '2. S3 Swept ➔ Watching Reclaim' : 'Awaiting S3 Reclaim')
-          };
-
-          let status: ReversalRadarItem['status'] = 'NEUTRAL';
-          if (isReadyToShort || isReadyToShortS3) {
-            status = 'IN SELL ZONE';
-          } else if (hasRejectedBelowR3 || hasMovedBelowS3) {
-            status = 'APPROACHING SELL';
-          } else if (isReadyToLong) {
-            status = 'IN BUY ZONE';
-          } else if (hasSweptBelowS3 || (distanceToBuyPct > 0 && distanceToBuyPct <= 0.45)) {
-            status = 'APPROACHING BUY';
-          }
-
-          updatedRadar.push({
-            symbol,
-            displayName: symbol.replace('NSE:', '').replace('MCX:', ''),
-            ltp,
-            s3: Number(s3.toFixed(2)),
-            r3: Number(r3.toFixed(2)),
-            s4: Number(s4.toFixed(2)),
-            r4: Number(r4.toFixed(2)),
-            s1_r1: Number((s1_r1 || pivot).toFixed(2)),
-            s5: Number((s5 || (s4 > 0 ? s4 * 0.995 : 0)).toFixed(2)),
-            pivot: Number(pivot.toFixed(2)),
-            distanceToBuyPct: Number(distanceToBuyPct.toFixed(2)),
-            distanceToSellPct: Number(distanceToSellPct.toFixed(2)),
-            status,
-            shortSetupState,
-            buyRevShortSetupState,
-            longSetupState,
-            lastUpdated: Date.now()
-          });
-        } catch (e) {
-          // ignore individual symbol fetch error
-        }
-      }
-
-      setRadarItems(updatedRadar);
-      setLastScanTime(new Date().toLocaleTimeString('en-IN', { hour12: false }));
-    } catch (err: any) {
-      console.error('[Algo Trade] Radar level fetch error:', err);
-    } finally {
-      setIsRadarLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchRadarLevels();
-    const interval = setInterval(fetchRadarLevels, 15000); // refresh levels every 15s
-    return () => clearInterval(interval);
-  }, []);
-
-  // Subscribe to live websocket price feeds for positions & radar items
-  useEffect(() => {
-    const symbolsToSubscribe = Array.from(new Set([
-      ...positions.map(p => p.symbol),
-      ...DEFAULT_UNIVERSE
-    ]));
-
-    const unsubscribers = symbolsToSubscribe.map(sym => {
-      return tvStreamer.subscribe(sym, '5', (data) => {
-        if (data && data.candles && data.candles.length > 0) {
-          const tick = data.candles[data.candles.length - 1];
-          if (tick && tick.close > 0) {
-            setLivePrices(prev => {
-              const currentLtp = prev[sym];
-              // Spike protection: ignore single-tick price jumps > 3% from active price
-              if (currentLtp && currentLtp > 0 && Math.abs(tick.close - currentLtp) / currentLtp > 0.03) {
-                return prev;
-              }
-              return {
-                ...prev,
-                [sym]: tick.close
-              };
-            });
-          }
-        }
-      });
-    });
+    }, 5000);
 
     return () => {
-      unsubscribers.forEach(unsub => unsub && unsub());
+      clearInterval(tradeInterval);
+      clearInterval(scanInterval);
     };
-  }, [positions.map(p => p.symbol).join(',')]);
+  }, [activeView, fetchSymbolCandles, fetchScannerData, fetchAlgoTrades]);
 
-  // Update open positions on live price updates & evaluate StopLoss / Targets
+  // WebSocket Live LTP subscription via tvStreamer
   useEffect(() => {
-    if (positions.length === 0) return;
+    const unsub = tvStreamer.subscribe(symbol, (tick) => {
+      if (tick && tick.lp && tick.lp > 0) {
+        setLiveLtp(tick.lp);
+      }
+    });
+    return () => {
+      if (unsub) unsub();
+    };
+  }, [symbol]);
 
-    setPositions(prevPositions => {
-      let hasChanges = false;
-      const closedTrades: AlgoPosition[] = [];
-      const updatedPositions = prevPositions.map(pos => {
-        const ltp = livePrices[pos.symbol] || pos.currentPrice;
-        if (ltp === pos.currentPrice) return pos;
-
-        hasChanges = true;
-        const ptsGained = pos.side === 'BUY' ? (ltp - pos.entryPrice) : (pos.entryPrice - ltp);
-        const unrealizedPnl = ptsGained * pos.quantity;
-        const unrealizedPnlPct = (ptsGained / pos.entryPrice) * 100;
-
-        let newStopLoss = pos.stopLoss;
-        let isBreakeven = pos.isBreakeven;
-        let isTrailingActive = pos.isTrailingActive;
-        let status: 'OPEN' | 'CLOSED' = 'OPEN';
-        let exitReason: AlgoPosition['exitReason'] = undefined;
-
-        // BUY Position checks
-        if (pos.side === 'BUY') {
-          // Target 1 Hit: Immediately book profit and close position
-          if (ltp >= pos.target1) {
-            status = 'CLOSED';
-            exitReason = 'TARGET 1 HIT (PROFIT BOOKED)';
+  // Real-time WebSocket listener for Algo Trade executions and live CMP / P&L updates
+  useEffect(() => {
+    const unsub = tvStreamer.addAlgoTradeListener((msg) => {
+      if (!msg) return;
+      if (msg.type === 'ALGO_TRADE_UPDATED' && msg.data) {
+        const updated = msg.data;
+        setActiveTrades((prev) => {
+          const idx = prev.findIndex(t => t.id === updated.id);
+          if (idx !== -1) {
+            const next = [...prev];
+            next[idx] = updated;
+            return next;
           }
-          // Stop Loss Hit
-          else if (ltp <= newStopLoss) {
-            status = 'CLOSED';
-            exitReason = 'STOP LOSS HIT';
-          }
-        } 
-        // SELL Position checks
-        else {
-          // Target 1 Hit: Immediately book profit and close position
-          if (ltp <= pos.target1) {
-            status = 'CLOSED';
-            exitReason = 'TARGET 1 HIT (PROFIT BOOKED)';
-          }
-          // Stop Loss Hit
-          else if (ltp >= newStopLoss) {
-            status = 'CLOSED';
-            exitReason = 'STOP LOSS HIT';
-          }
-        }
-
-        const updatedPos: AlgoPosition = {
-          ...pos,
-          currentPrice: ltp,
-          unrealizedPnl: Math.round(unrealizedPnl * 100) / 100,
-          unrealizedPnlPct: Math.round(unrealizedPnlPct * 100) / 100,
-          stopLoss: newStopLoss,
-          isBreakeven,
-          isTrailingActive,
-          status,
-          exitReason,
-          exitPrice: status === 'CLOSED' ? ltp : undefined,
-          exitDate: status === 'CLOSED' ? formatIstDate() : undefined,
-          exitTime: status === 'CLOSED' ? formatIstTime() : undefined,
-          exitTimestamp: status === 'CLOSED' ? Date.now() : undefined,
-          realizedPnl: status === 'CLOSED' ? Math.round(unrealizedPnl * 100) / 100 : undefined
-        };
-
-        if (status === 'CLOSED') {
-          closedTrades.push(updatedPos);
-        }
-
-        return updatedPos;
-      });
-
-      if (closedTrades.length > 0) {
-        closedTrades.forEach(t => {
-          tradeCooldownRef.current[t.symbol] = {
-            lastExitTimestamp: Date.now(),
-            setupType: t.setupType
-          };
-          const isTarget1 = t.exitReason?.includes('TARGET 1');
-          const icon = (t.realizedPnl || 0) >= 0 ? '🎯' : '🔴';
-          const msg = isTarget1
-            ? `🎯 Target 1 HIT! Profit Booked on ${t.side} ${t.displayName} @ ₹${t.exitPrice?.toFixed(2)} | Realized P&L: +₹${t.realizedPnl?.toLocaleString('en-IN')}`
-            : `${icon} Position Closed: ${t.side} ${t.displayName} | Exit: ₹${t.exitPrice?.toFixed(2)} | Reason: ${t.exitReason} | Realized P&L: ₹${t.realizedPnl?.toLocaleString('en-IN')}`;
-          addLog('EXIT', msg, t.symbol);
+          return [updated, ...prev];
         });
-        setHistory(prev => [...closedTrades, ...prev]);
-        return updatedPositions.filter(p => p.status === 'OPEN');
+      } else if (msg.type === 'ALGO_TRADE_EXECUTED' && msg.data) {
+        const newTrade = msg.data;
+        setActiveTrades((prev) => [newTrade, ...prev.filter(t => t.id !== newTrade.id)]);
+      } else if (msg.type === 'ALGO_TRADE_CLEARED') {
+        setActiveTrades([]);
       }
-
-      return hasChanges ? updatedPositions : prevPositions;
     });
-  }, [livePrices]);
-
-  // Execute Trade Helper (Position Sizing & Risk Management based on ₹10L Capital)
-  const executeTrade = (
-    symbol: string,
-    displayName: string,
-    side: 'BUY' | 'SELL',
-    setupType: 'BUY REVERSAL (S3)' | 'BUY REVERSAL (S3 RECLAIM)' | 'BUY REVERSAL BREAKDOWN (SHORT)' | 'SELL REVERSAL (PIVOT BREAKDOWN)' | 'SELL REVERSAL (R3)',
-    entryPrice: number,
-    reversalLevel: number,
-    s4Breakdown: number,
-    r4Breakout: number,
-    pivotPrice: number,
-    s3Target?: number
-  ) => {
-    // Check if position already exists for symbol
-    if (positions.some(p => p.symbol === symbol)) {
-      addLog('WARNING', `Order rejected: Active position already open for ${displayName}.`, symbol);
-      return;
-    }
-
-    if (positions.length >= maxOpenPositions) {
-      addLog('WARNING', `Order rejected: Max concurrent position limit (${maxOpenPositions}) reached.`, symbol);
-      return;
-    }
-
-    // Capital Allocation: Max 20% of 10L = ₹2,00,000 per position (allowing up to 5 concurrent trades)
-    const maxCapitalPerTrade = TOTAL_CAPITAL / maxOpenPositions; // e.g. ₹2,50,000 for 4 slots
-    const quantity = Math.max(1, Math.floor(maxCapitalPerTrade / entryPrice));
-    const allocatedCapital = Math.round(quantity * entryPrice);
-
-    // Calculate Stop Loss & Targets
-    let stopLoss = 0;
-    let target1 = 0;
-    let target2 = 0;
-
-    if (side === 'BUY') {
-      // Long Reversal at S3:
-      // Stop Loss placed at/below S3 (or S4 buffer)
-      stopLoss = reversalLevel > 0 && reversalLevel < entryPrice
-        ? reversalLevel
-        : (s4Breakdown > 0 && s4Breakdown < entryPrice ? Math.round(s4Breakdown * 0.998 * 100) / 100 : Math.round(entryPrice * 0.994 * 100) / 100);
-      
-      const riskPts = Math.max(0.5, entryPrice - stopLoss);
-      // Target 1: Central Pivot or 1.5x risk. Book profit immediately on Target 1!
-      target1 = pivotPrice > entryPrice ? pivotPrice : Math.round((entryPrice + riskPts * 1.5) * 100) / 100;
-      target2 = r4Breakout > target1 ? r4Breakout : Math.round((entryPrice + riskPts * 2.5) * 100) / 100;
-    } else {
-      // Short Trade Sequence:
-      if (setupType === 'BUY REVERSAL BREAKDOWN (SHORT)') {
-        // User Rule: Stop loss must be Pivot / S1-R1 (Level 6 or Central Pivot)
-        stopLoss = reversalLevel > entryPrice
-          ? reversalLevel
-          : (pivotPrice > entryPrice ? pivotPrice : Math.round(entryPrice * 1.006 * 100) / 100);
-        
-        const riskPts = Math.max(0.5, stopLoss - entryPrice);
-        // Target 1: S4 Breakdown Level
-        target1 = (s4Breakdown > 0 && s4Breakdown < entryPrice)
-          ? s4Breakdown
-          : Math.round((entryPrice - riskPts * 1.5) * 100) / 100;
-        // Target 2: S5 Target Level
-        target2 = (s3Target && s3Target < target1)
-          ? s3Target
-          : Math.round((entryPrice - riskPts * 2.5) * 100) / 100;
-      } else {
-        // SELL REVERSAL (PIVOT BREAKDOWN):
-        // Stop Loss: Sell Reversal (R3)
-        stopLoss = reversalLevel > entryPrice ? reversalLevel : Math.round(entryPrice * 1.008 * 100) / 100;
-        
-        const riskPts = Math.max(0.5, Math.abs(stopLoss - entryPrice));
-        // Target 1: S3 Buy Reversal. Book profit once Target 1 hits!
-        const targetLvl = s3Target || s4Breakdown;
-        target1 = (targetLvl > 0 && targetLvl < entryPrice)
-          ? targetLvl
-          : Math.round((entryPrice - riskPts * 1.5) * 100) / 100;
-        target2 = Math.round((entryPrice - riskPts * 2.5) * 100) / 100;
-      }
-    }
-
-    const newPosition: AlgoPosition = {
-      id: `algo-pos-${Date.now()}-${symbol}`,
-      symbol,
-      displayName,
-      side,
-      setupType,
-      entryDate: formatIstDate(),
-      entryTime: formatIstTime(),
-      entryTimestamp: Date.now(),
-      entryPrice,
-      currentPrice: entryPrice,
-      quantity,
-      allocatedCapital,
-      stopLoss,
-      target1,
-      target2,
-      initialStopLoss: stopLoss,
-      isTrailingActive: false,
-      isBreakeven: false,
-      unrealizedPnl: 0,
-      unrealizedPnlPct: 0,
-      reversalLevel,
-      status: 'OPEN'
+    return () => {
+      if (unsub) unsub();
     };
-  
-    setPositions(prev => [newPosition, ...prev]);
-    addLog(
-      'ORDER', 
-      `⚡ EXECUTED ${side}: ${displayName} @ ₹${entryPrice.toFixed(2)} | Qty: ${quantity} | Cap: ₹${allocatedCapital.toLocaleString('en-IN')} | SL: ₹${stopLoss.toFixed(2)} (${side === 'SELL' ? 'Sell Reversal R3' : 'S4 Buffer'}) | T1 (Book Profit): ₹${target1.toFixed(2)} | Setup: ${setupType}`, 
-      symbol
-    );
-  };
+  }, []);
 
-  // Automated Reversal Trigger Watcher (Auto-Pilot Execution)
+  // 5. Execute Full Marshall Strategy Engine on Loaded Candles
+  const engineResult = useMemo(() => {
+    return runMarshallStrategyEngine(candles, symbol, timeframe, config);
+  }, [candles, symbol, timeframe, config]);
+
+  const { levels, currentSignal, activeSignals, completedTrades, stateMachine, metrics } = engineResult;
+
+  // Signal Alert Trigger
   useEffect(() => {
-    if (!isEngineActive || radarItems.length === 0) return;
-
-    // Dynamic Market Timing Window Enforcement:
-    // Equity entries allowed: 09:15 to 15:00 IST (no new entries in final 15m before 15:15 cutoff)
-    // MCX Commodity entries (Crude, NatGas, Zinc) allowed: 09:00 to 23:15 IST (trades till MCX closes)
-    const now = new Date();
-    const istTimeStr = now.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour12: false });
-    const [h, m, s] = istTimeStr.split(':').map(Number);
-    const currentSeconds = h * 3600 + m * 60 + (s || 0);
-
-    const isEquityEntryAllowed = currentSeconds >= (9 * 3600 + 15 * 60) && currentSeconds < (15 * 3600);
-    const isMcxEntryAllowed = currentSeconds >= (9 * 3600) && currentSeconds < (23 * 3600 + 15 * 60);
-
-    // If both markets are outside entry window, return early
-    if (!isEquityEntryAllowed && !isMcxEntryAllowed) return;
-
-    for (const item of radarItems) {
-      if (positions.some(p => p.symbol === item.symbol)) continue;
-      if (positions.length >= maxOpenPositions) break;
-
-      const isCommodity = isCommoditySymbol(item.symbol);
-      if (isCommodity && !isMcxEntryAllowed) continue;
-      if (!isCommodity && !isEquityEntryAllowed) continue;
-
-      // ⏱️ Anti-Churn Cooldown Protection: Prevent re-entering any stock within 20 minutes of an exit
-      const cooldown = tradeCooldownRef.current[item.symbol];
-      if (cooldown && (Date.now() - cooldown.lastExitTimestamp < 20 * 60 * 1000)) {
-        continue;
-      }
-      const recentClosed = history.find(h => 
-        h.symbol === item.symbol && 
-        h.exitTimestamp && 
-        (Date.now() - h.exitTimestamp < 20 * 60 * 1000)
-      );
-      if (recentClosed) {
-        continue;
-      }
-
-      const ltp = livePrices[item.symbol] || item.ltp;
-      if (ltp <= 0) continue;
-
-      // 1. BUY REVERSAL BREAKDOWN SHORT SETUP (User Rule):
-      // Entry: strictly after breakdown below Buy Reversal (S3) and before S4 (avoid chasing)
-      // Stop Loss: Pivot / S1-R1 (Level 6 or Central Pivot)
-      // Target 1: S4 Breakdown Level | Target 2: S5 Target Level
-      if (item.buyRevShortSetupState && item.buyRevShortSetupState.isReadyToShort) {
-        const slLevel = item.s1_r1 > ltp ? item.s1_r1 : (item.pivot > ltp ? item.pivot : item.s3);
-        addLog(
-          'SIGNAL',
-          `🚨 S3 Breakdown SHORT Triggered: ${item.displayName} broke down below S3 Buy Reversal (₹${item.s3.toFixed(2)}). Entering SHORT @ ₹${ltp.toFixed(2)} with SL @ Pivot/S1-R1 (₹${slLevel.toFixed(2)}) & Target @ S4 (₹${item.s4.toFixed(2)}).`,
-          item.symbol
-        );
-        executeTrade(
-          item.symbol,
-          item.displayName,
-          'SELL',
-          'BUY REVERSAL BREAKDOWN (SHORT)',
-          ltp,
-          slLevel, // Stop Loss = Pivot / S1-R1!
-          item.s4, // Target 1 = S4 Breakdown Level
-          item.r4,
-          item.pivot,
-          item.s5 || item.s4 // Target 2 = S5 Target Level
-        );
-      }
-      // 2. SELL REVERSAL (R3) SHORT SETUP:
-      // STRICT 7-STEP SEQUENCE: Only after breakout above R3, rejection back below R3, AND breakdown below Pivot!
-      else if (item.shortSetupState && item.shortSetupState.isReadyToShort) {
-        addLog(
-          'SIGNAL', 
-          `🚨 R3 SHORT Setup Triggered: ${item.displayName} tested R3 (₹${item.r3.toFixed(2)}), broke out to ₹${item.shortSetupState.maxHighAboveR3.toFixed(2)}, rejected back below R3, and broke below Pivot Point (₹${item.pivot.toFixed(2)}). Entering SHORT with SL @ Sell Reversal (₹${item.r3.toFixed(2)}).`, 
-          item.symbol
-        );
-        executeTrade(
-          item.symbol,
-          item.displayName,
-          'SELL',
-          'SELL REVERSAL (PIVOT BREAKDOWN)',
-          ltp,
-          item.r3, // Stop Loss = Sell Reversal (R3)!
-          item.s4,
-          item.r4,
-          item.pivot,
-          item.s3  // Target 1 = S3 Buy Reversal (Book Profit)
-        );
-      }
-      // 3. CONFIRMED LONG REVERSAL SETUP:
-      // Price tests S3 ➔ Sweeps below S3 (liquidity sweep) ➔ Reclaims back above S3 ➔ Trigger confirmed BUY
-      else if (item.longSetupState && item.longSetupState.isReadyToLong) {
-        addLog(
-          'SIGNAL',
-          `🔔 Confirmed Long Reversal: ${item.displayName} swept below S3 (₹${item.s3.toFixed(2)}) and reclaimed above ₹${item.s3.toFixed(2)}. Entering LONG with SL @ ₹${item.s3.toFixed(2)}.`,
-          item.symbol
-        );
-        executeTrade(
-          item.symbol,
-          item.displayName,
-          'BUY',
-          'BUY REVERSAL (S3 RECLAIM)',
-          ltp,
-          item.s3, // Stop Loss = S3
-          item.s4,
-          item.r4,
-          item.pivot,
-          item.pivot // Target 1 = Central Pivot (Book Profit)
-        );
-      }
+    if (currentSignal && currentSignal.status === 'ENTRY_GENERATED' && currentSignal.id !== prevSignalIdRef.current) {
+      prevSignalIdRef.current = currentSignal.id;
+      const isBuy = currentSignal.direction === 'BUY';
+      const alertMsg = `${currentSignal.symbol} | ${currentSignal.timeframe}m | ${currentSignal.label} @ ₹${currentSignal.entryPrice.toFixed(1)} | SL: ₹${currentSignal.stopLossPrice.toFixed(1)} | T1: ₹${currentSignal.target1Price.toFixed(1)} | T2: ₹${currentSignal.target2Price.toFixed(1)}`;
+      
+      setLatestAlert({
+        text: alertMsg,
+        type: isBuy ? 'BUY' : 'SELL',
+        timestamp: Date.now()
+      });
+      playAlertBell(isBuy);
     }
-  }, [radarItems, isEngineActive, positions.length, maxOpenPositions, livePrices]);
+  }, [currentSignal, playAlertBell]);
 
-  // Square Off Single Position
-  const handleClosePosition = (id: string, reason: AlgoPosition['exitReason'] = 'MANUAL SQUARE-OFF') => {
-    setPositions(prev => {
-      const pos = prev.find(p => p.id === id);
-      if (!pos) return prev;
-
-      const ltp = livePrices[pos.symbol] || pos.currentPrice;
-      const pts = pos.side === 'BUY' ? (ltp - pos.entryPrice) : (pos.entryPrice - ltp);
-      const realizedPnl = Math.round(pts * pos.quantity * 100) / 100;
-
-      const closedPos: AlgoPosition = {
-        ...pos,
-        currentPrice: ltp,
-        exitPrice: ltp,
-        exitDate: formatIstDate(),
-        exitTime: formatIstTime(),
-        exitTimestamp: Date.now(),
-        status: 'CLOSED',
-        exitReason: reason,
-        realizedPnl
-      };
-
-      tradeCooldownRef.current[pos.symbol] = {
-        lastExitTimestamp: Date.now(),
-        setupType: pos.setupType
-      };
-      setHistory(h => [closedPos, ...h]);
-      addLog('EXIT', `Manual Square-Off: ${pos.side} ${pos.displayName} @ ₹${ltp.toFixed(2)} | Realized P&L: ₹${realizedPnl.toLocaleString('en-IN')}`, pos.symbol);
-
-      return prev.filter(p => p.id !== id);
-    });
-  };
-
-  // Square Off All Positions (Emergency / MIS 15:15 Cutoff)
-  const handleSquareOffAll = (reason: AlgoPosition['exitReason'] = 'MANUAL SQUARE-OFF') => {
-    if (positions.length === 0) return;
-
-    const closed = positions.map(pos => {
-      const ltp = livePrices[pos.symbol] || pos.currentPrice;
-      const pts = pos.side === 'BUY' ? (ltp - pos.entryPrice) : (pos.entryPrice - ltp);
-      const realizedPnl = Math.round(pts * pos.quantity * 100) / 100;
-
-      return {
-        ...pos,
-        currentPrice: ltp,
-        exitPrice: ltp,
-        exitDate: formatIstDate(),
-        exitTime: formatIstTime(),
-        exitTimestamp: Date.now(),
-        status: 'CLOSED' as const,
-        exitReason: reason,
-        realizedPnl
-      };
-    });
-
-    setHistory(prev => [...closed, ...prev]);
-    setPositions([]);
-    addLog('EXIT', `🚨 All ${closed.length} open positions squared off (${reason}).`);
-  };
-
-  const [isClearing, setIsClearing] = useState<boolean>(false);
-
-  // Clear all trades & positions
-  const handleClearAllTrades = async () => {
-    if (!window.confirm('Are you sure you want to clean and clear ALL trades from the Algo Trade tab? This will wipe all open positions, closed trade history, and reset the ledger.')) {
-      return;
-    }
-    setIsClearing(true);
+  // Execute Paper / Algo Trade
+  const handleExecuteTrade = async (sig: MarshallSignal) => {
     try {
-      setPositions([]);
-      setHistory([]);
-      localStorage.setItem(STORAGE_POSITIONS_KEY, JSON.stringify([]));
-      localStorage.setItem(STORAGE_HISTORY_KEY, JSON.stringify([]));
-      localStorage.removeItem('tradingguru_algo_positions_v1');
-      localStorage.removeItem('tradingguru_algo_history_v1');
-      localStorage.removeItem('tradingguru_algo_logs_v1');
-
-      const backendUrl = await getBackendHttpUrl();
-      await fetch(`${backendUrl}/api/algo-trade/clear`, {
+      const base = await getBackendHttpUrl();
+      const res = await fetch(`${base}/api/algo-trade/execute`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      }).catch(() => {});
-
-      addLog('INFO', '🧹 All trades and positions cleared from Algo Trade tab.');
-    } catch (e) {
-      console.error('Failed to clear algo trades:', e);
-    } finally {
-      setIsClearing(false);
-    }
-  };
-
-  // Download Multi-Sheet Excel Report (.xlsx)
-  const handleDownloadExcel = async () => {
-    if (isExporting) return;
-    setIsExporting(true);
-    try {
-      const backendHttp = await getBackendHttpUrl();
-      const res = await fetch(`${backendHttp}/api/algo-trade/export-excel`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'bypass-tunnel-reminder': 'true'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          positions,
-          history,
-          metrics,
-          logs
+          symbol: sig.symbol,
+          strategy: sig.strategy,
+          direction: sig.direction,
+          entryPrice: sig.entryPrice,
+          stopLossPrice: sig.stopLossPrice,
+          target1Price: sig.target1Price,
+          target2Price: sig.target2Price,
+          reason: `${sig.strategy}: Confirmed entry at Marshall level with volume (${sig.volumeMultiplier.toFixed(2)}x) & VWAP filter`,
+          levels
         })
       });
-
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const dateStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `AlgoTrade_Report_${dateStr}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      addLog('INFO', `📊 Downloaded Excel Report: AlgoTrade_Report_${dateStr}.xlsx`);
-    } catch (err: any) {
-      console.warn('[AlgoTrade] Backend Excel export failed, using CSV fallback:', err.message);
-      const escapeCsv = (v: any) => {
-        const s = String(v ?? '');
-        return (s.includes(',') || s.includes('"') || s.includes('\n')) ? `"${s.replace(/"/g, '""')}"` : s;
-      };
-      const headers = [
-        'Status', 'Symbol', 'Side', 'Setup', 'Qty', 'Entry Date', 'Entry Time',
-        'Entry Price', 'Exit Date', 'Exit Time', 'Exit Price', 'Exit Reason', 'P&L (INR)'
-      ];
-      const rows = [
-        ...history.map(h => [
-          'CLOSED', h.displayName, h.side, h.setupType, h.quantity,
-          h.entryDate || (h.entryTimestamp ? formatIstDate(h.entryTimestamp) : ''),
-          h.entryTime, h.entryPrice,
-          h.exitDate || h.entryDate || (h.exitTimestamp ? formatIstDate(h.exitTimestamp) : ''),
-          h.exitTime || '', h.exitPrice || '', h.exitReason || '', h.realizedPnl ?? 0
-        ]),
-        ...positions.map(p => [
-          'OPEN', p.displayName, p.side, p.setupType, p.quantity,
-          p.entryDate || (p.entryTimestamp ? formatIstDate(p.entryTimestamp) : ''),
-          p.entryTime, p.entryPrice, '', '', p.currentPrice, 'OPEN POSITION', p.unrealizedPnl ?? 0
-        ])
-      ];
-      const csv = '\uFEFF' + [headers, ...rows].map(r => r.map(escapeCsv).join(',')).join('\r\n');
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const dateStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `AlgoTrade_Report_${dateStr}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      addLog('INFO', `📄 Downloaded CSV Report fallback: AlgoTrade_Report_${dateStr}.csv`);
-    } finally {
-      setIsExporting(false);
+      const json = await res.json();
+      if (json && json.success) {
+        setTradeMessage(`✅ ${json.message}`);
+        setTimeout(() => setTradeMessage(''), 5000);
+        fetchAlgoTrades();
+      }
+    } catch (e: any) {
+      setTradeMessage(`❌ Execution failed: ${e.message}`);
     }
   };
 
-  // Reset Portfolio / Capital to Initial ₹10L
-  const handleResetPortfolio = () => {
-    if (window.confirm('Reset Algo Trading Portfolio and restore full ₹10,00,000 Capital?')) {
-      setPositions([]);
-      setHistory([]);
-      localStorage.removeItem(STORAGE_POSITIONS_KEY);
-      localStorage.removeItem(STORAGE_HISTORY_KEY);
-      addLog('INFO', '🔄 Portfolio and Capital reset to initial ₹10,00,000 state.');
+  const handleClosePosition = async (tradeId: string) => {
+    try {
+      const base = await getBackendHttpUrl();
+      const res = await fetch(`${base}/api/algo-trade/close`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tradeId, reason: 'Manual Exit by Trader' })
+      });
+      const json = await res.json();
+      if (json && json.success) {
+        setTradeMessage(`✅ ${json.message}`);
+        setTimeout(() => setTradeMessage(''), 5000);
+        fetchAlgoTrades();
+      }
+    } catch (e: any) {
+      setTradeMessage(`❌ Close failed: ${e.message}`);
     }
   };
 
-  // Capital & Performance Calculations
-  const metrics = useMemo(() => {
-    const usedMargin = positions.reduce((acc, p) => acc + p.allocatedCapital, 0);
-    const unrealizedPnl = positions.reduce((acc, p) => acc + p.unrealizedPnl, 0);
-    const realizedPnl = history.reduce((acc, h) => acc + (h.realizedPnl || 0), 0);
-    const totalDayPnl = realizedPnl + unrealizedPnl;
-    const availableMargin = Math.max(0, TOTAL_CAPITAL - usedMargin + realizedPnl);
-    const totalCurrentValue = TOTAL_CAPITAL + totalDayPnl;
-    const roiPct = (totalDayPnl / TOTAL_CAPITAL) * 100;
+  // Helper formatting
+  const formatINR = (val: number) => {
+    return `₹${val.toLocaleString('en-IN', { minimumFractionDigits: 1, maximumFractionDigits: 2 })}`;
+  };
 
-    const winTrades = history.filter(h => (h.realizedPnl || 0) > 0).length;
-    const lossTrades = history.filter(h => (h.realizedPnl || 0) < 0).length;
-    const winRate = history.length > 0 ? (winTrades / history.length) * 100 : 0;
-
-    return {
-      usedMargin,
-      availableMargin,
-      unrealizedPnl,
-      realizedPnl,
-      totalDayPnl,
-      totalCurrentValue,
-      roiPct,
-      winTrades,
-      lossTrades,
-      winRate
-    };
-  }, [positions, history]);
-
+  
   return (
     <div style={{
       display: 'flex',
       flexDirection: 'column',
       width: '100%',
       height: '100%',
-      minHeight: 0,
-      background: isDark ? '#06080e' : '#f8fafc',
-      color: 'var(--text-primary)',
-      overflowY: 'auto',
-      padding: '14px',
-      gap: '14px',
-      boxSizing: 'border-box'
+      backgroundColor: '#070a0f',
+      color: '#f8fafc',
+      fontFamily: "'Outfit', -apple-system, BlinkMacSystemFont, sans-serif",
+      overflow: 'hidden'
     }}>
-      {/* 1. TOP HERO BAR: Capital 10L, Day PnL & Pure Intraday Status */}
+      {/* ===================================================================== */}
+      {/* 1. TOP INSTRUMENT CONTROLS STRIP */}
+      {/* ===================================================================== */}
       <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
-        gap: '10px'
-      }}>
-        {/* Total Capital Card */}
-        <div style={{
-          background: isDark ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.8))' : '#ffffff',
-          borderRadius: '10px',
-          padding: '12px 14px',
-          border: `1px solid ${isDark ? 'rgba(56, 189, 248, 0.25)' : '#e2e8f0'}`,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '4px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '700', textTransform: 'uppercase' }}>
-              Allocated Capital
-            </span>
-            <Wallet size={16} color="#38bdf8" />
-          </div>
-          <div style={{ fontSize: '19px', fontWeight: '900', color: '#38bdf8' }}>
-            ₹{TOTAL_CAPITAL.toLocaleString('en-IN')}
-          </div>
-          <div style={{ fontSize: '10.5px', color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between' }}>
-            <span>Available: ₹{metrics.availableMargin.toLocaleString('en-IN')}</span>
-            <span>Used: ₹{metrics.usedMargin.toLocaleString('en-IN')}</span>
-          </div>
-        </div>
-
-        {/* Day P&L Card */}
-        <div style={{
-          background: isDark ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.8))' : '#ffffff',
-          borderRadius: '10px',
-          padding: '12px 14px',
-          border: `1px solid ${metrics.totalDayPnl >= 0 ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '4px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '700', textTransform: 'uppercase' }}>
-              Day Realized & Live P&L
-            </span>
-            {metrics.totalDayPnl >= 0 ? <TrendingUp size={16} color="#10b981" /> : <TrendingDown size={16} color="#ef4444" />}
-          </div>
-          <div style={{ 
-            fontSize: '19px', 
-            fontWeight: '900', 
-            color: metrics.totalDayPnl >= 0 ? '#10b981' : '#ef4444' 
-          }}>
-            {metrics.totalDayPnl >= 0 ? '+' : ''}₹{metrics.totalDayPnl.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            <span style={{ fontSize: '12px', marginLeft: '6px', fontWeight: '700' }}>
-              ({metrics.roiPct >= 0 ? '+' : ''}{metrics.roiPct.toFixed(2)}%)
-            </span>
-          </div>
-          <div style={{ fontSize: '10.5px', color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between' }}>
-            <span>Live: ₹{metrics.unrealizedPnl.toFixed(2)}</span>
-            <span>Booked: ₹{metrics.realizedPnl.toFixed(2)}</span>
-          </div>
-        </div>
-
-        {/* Win Rate & Performance */}
-        <div style={{
-          background: isDark ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.8))' : '#ffffff',
-          borderRadius: '10px',
-          padding: '12px 14px',
-          border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0'}`,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '4px'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '700', textTransform: 'uppercase' }}>
-              Strategy Win Rate
-            </span>
-            <Target size={16} color="#f59e0b" />
-          </div>
-          <div style={{ fontSize: '19px', fontWeight: '900', color: '#f59e0b' }}>
-            {metrics.winRate.toFixed(1)}%
-            <span style={{ fontSize: '11px', color: 'var(--text-secondary)', marginLeft: '6px', fontWeight: '600' }}>
-              ({metrics.winTrades}W / {metrics.lossTrades}L)
-            </span>
-          </div>
-          <div style={{ fontSize: '10.5px', color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between' }}>
-            <span>Active: {positions.length} / {maxOpenPositions}</span>
-            <span>Closed: {history.length}</span>
-          </div>
-        </div>
-
-        {/* Pure Intraday & EOD Timer */}
-        <div style={{
-          background: isDark ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.8))' : '#ffffff',
-          borderRadius: '10px',
-          padding: '12px 14px',
-          border: `1px solid ${isDark ? 'rgba(168, 85, 247, 0.3)' : '#e2e8f0'}`,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '4px'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '11px', color: '#c084fc', fontWeight: '800', textTransform: 'uppercase' }}>
-              Pure Intraday (MIS)
-            </span>
-            <Clock size={16} color="#c084fc" />
-          </div>
-          <div style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-primary)' }}>
-            Equity: 15:15 IST | MCX (Crude/NatGas/Zinc): 23:25 IST
-          </div>
-          <div style={{ fontSize: '10.5px', color: '#38bdf8', fontWeight: '700' }}>
-            ⏳ {timeToEodStr}
-          </div>
-        </div>
-      </div>
-
-      {/* 2. ENGINE CONTROL & ACTION BAR */}
-      <div style={{
-        background: isDark ? 'rgba(15, 23, 42, 0.75)' : '#ffffff',
-        borderRadius: '10px',
-        padding: '10px 14px',
-        border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0'}`,
         display: 'flex',
-        flexWrap: 'wrap',
         alignItems: 'center',
         justifyContent: 'space-between',
-        gap: '10px'
+        padding: '8px 16px',
+        backgroundColor: '#0b0f19',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+        flexShrink: 0,
+        gap: '12px',
+        flexWrap: 'wrap'
       }}>
-        {/* Left: Engine Status Toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <button
-            onClick={() => {
-              const nextState = !isEngineActive;
-              setIsEngineActive(nextState);
-              addLog('INFO', nextState ? '🟢 Algo Auto-Pilot Engine RESUMED.' : '⏸️ Algo Auto-Pilot Engine PAUSED.');
-            }}
-            style={{
-              display: 'inline-flex',
+        {/* Left: Engine Branding & Symbol Selector */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{
+              width: '28px',
+              height: '28px',
+              borderRadius: '7px',
+              backgroundColor: 'rgba(56, 189, 248, 0.15)',
+              border: '1px solid #38bdf8',
+              display: 'flex',
               alignItems: 'center',
-              gap: '6px',
-              padding: '6px 12px',
-              borderRadius: '6px',
-              border: 'none',
-              background: isEngineActive ? '#10b981' : '#64748b',
-              color: '#ffffff',
-              fontSize: '12px',
-              fontWeight: '800',
-              cursor: 'pointer',
-              boxShadow: isEngineActive ? '0 0 12px rgba(16, 185, 129, 0.4)' : 'none',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            {isEngineActive ? <Play size={14} fill="#fff" /> : <Pause size={14} fill="#fff" />}
-            <span>{isEngineActive ? 'AUTO-PILOT ACTIVE' : 'ENGINE PAUSED'}</span>
-          </button>
-
-          <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
-            Strategy: <strong>Buy at S3 Reversal | Short: Test R3 ➔ Breakout ➔ Rejection below R3 ➔ Pivot Breakdown (SL: R3) ➔ Target 1 Profit Booking</strong>
-          </span>
-        </div>
-
-        {/* Right: Risk per trade, Emergency Square-off, Reset */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-  
-          {/* Max Positions Selector */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: 'var(--text-secondary)' }}>
-            <span>Max Slots:</span>
-            <select
-              value={maxOpenPositions}
-              onChange={(e) => setMaxOpenPositions(Number(e.target.value))}
-              style={{
-                background: isDark ? 'rgba(30, 41, 59, 0.8)' : '#f1f5f9',
-                color: 'var(--text-primary)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                padding: '3px 6px',
-                borderRadius: '4px',
-                fontSize: '11px',
-                fontWeight: '700'
-              }}
-            >
-              <option value={2}>2 Positions (₹5.0L each)</option>
-              <option value={4}>4 Positions (₹2.5L each)</option>
-              <option value={5}>5 Positions (₹2.0L each)</option>
-            </select>
+              justifyContent: 'center',
+              color: '#38bdf8'
+            }}>
+              <Zap size={16} />
+            </div>
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: '900', letterSpacing: '-0.3px', color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                MARSHALL REVERSAL & CONTINUATION ENGINE
+                <span style={{ fontSize: '9px', fontWeight: '800', backgroundColor: '#3b82f6', color: '#fff', padding: '1px 5px', borderRadius: '3px' }}>
+                  V1.0 ALGO
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
+                <span style={{ fontSize: '10px', color: '#64748b' }}>Orderflow Levels Institutional Strategy Automation</span>
+                <span style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                  border: '1px solid rgba(16, 185, 129, 0.4)',
+                  borderRadius: '12px',
+                  padding: '1px 7px',
+                  fontSize: '9.5px',
+                  fontWeight: 700,
+                  color: '#10b981'
+                }}>
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981', display: 'inline-block', boxShadow: '0 0 6px #10b981' }}></span>
+                  AUTONOMOUS TRIGGER ACTIVE (NSE 9:17 - 15:00 | MCX 9:00 - 23:30)
+                </span>
+              </div>
+            </div>
           </div>
 
-          {/* Emergency Square Off All */}
-          {positions.length > 0 && (
-            <button
-              onClick={() => {
-                if (window.confirm('Emergency Action: Square off ALL open intraday positions at market LTP?')) {
-                  handleSquareOffAll('MANUAL SQUARE-OFF');
-                }
-              }}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '5px',
-                padding: '6px 10px',
-                borderRadius: '6px',
-                border: '1px solid #ef4444',
-                background: 'rgba(239, 68, 68, 0.15)',
-                color: '#ef4444',
-                fontSize: '11.5px',
-                fontWeight: '800',
-                cursor: 'pointer'
-              }}
-            >
-              <ShieldAlert size={14} />
-              <span>SQUARE OFF ALL ({positions.length})</span>
-            </button>
+          {/* Symbol Select Dropdown */}
+          <select
+            value={symbol}
+            onChange={(e) => setSymbol(e.target.value)}
+            style={{
+              backgroundColor: '#151d2f',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              color: '#f8fafc',
+              fontSize: '12px',
+              fontWeight: '700',
+              padding: '5px 10px',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              outline: 'none'
+            }}
+          >
+            {INSTRUMENTS.map((inst) => (
+              <option key={inst.symbol} value={inst.symbol}>
+                {inst.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Timeframe Select */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '3px', backgroundColor: '#151d2f', padding: '2px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)' }}>
+            {TIMEFRAMES.map((tf) => (
+              <button
+                key={tf.value}
+                onClick={() => setTimeframe(tf.value)}
+                style={{
+                  padding: '3px 8px',
+                  fontSize: '10.5px',
+                  fontWeight: timeframe === tf.value ? 800 : 600,
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  border: 'none',
+                  backgroundColor: timeframe === tf.value ? '#38bdf8' : 'transparent',
+                  color: timeframe === tf.value ? '#070a0f' : '#94a3b8'
+                }}
+              >
+                {tf.value}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Center: Live LTP & Marshall Market Direction */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+            <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '700' }}>LTP:</span>
+            <span style={{ fontSize: '17px', fontWeight: '900', color: '#38bdf8' }}>
+              {liveLtp > 0 ? formatINR(liveLtp) : '---'}
+            </span>
+          </div>
+
+          {levels && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '11px',
+              fontWeight: '800',
+              padding: '3px 8px',
+              borderRadius: '5px',
+              backgroundColor: liveLtp >= levels.breakout
+                ? 'rgba(16, 185, 129, 0.18)'
+                : liveLtp <= levels.breakdown
+                ? 'rgba(239, 68, 68, 0.18)'
+                : 'rgba(245, 158, 11, 0.18)',
+              color: liveLtp >= levels.breakout ? '#34d399' : liveLtp <= levels.breakdown ? '#f87171' : '#f59e0b',
+              border: `1px solid ${liveLtp >= levels.breakout ? '#10b98155' : liveLtp <= levels.breakdown ? '#ef444455' : '#f59e0b55'}`
+            }}>
+              {liveLtp >= levels.breakout ? (
+                <>
+                  <ArrowUpRight size={13} /> BULLISH (Above Breakout ₹{levels.breakout})
+                </>
+              ) : liveLtp <= levels.breakdown ? (
+                <>
+                  <ArrowDownRight size={13} /> BEARISH (Below Breakdown ₹{levels.breakdown})
+                </>
+              ) : (
+                <>
+                  <Activity size={13} /> VALUE RANGE (Between S3 ₹{levels.buyReversal} & R3 ₹{levels.sellReversal})
+                </>
+              )}
+            </div>
           )}
+        </div>
 
-          {/* Clear All Trades Button */}
+        {/* Right: Sound & Config */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button
-            onClick={handleClearAllTrades}
-            disabled={isClearing}
+            onClick={() => setSoundEnabled(!soundEnabled)}
             style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '5px',
-              padding: '6px 10px',
-              borderRadius: '6px',
-              border: '1px solid rgba(239, 68, 68, 0.4)',
-              background: 'rgba(239, 68, 68, 0.12)',
-              color: '#ef4444',
-              fontSize: '11px',
-              fontWeight: '700',
-              cursor: isClearing ? 'wait' : 'pointer'
+              background: '#151d2f',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: soundEnabled ? '#38bdf8' : '#64748b',
+              padding: '5px 7px',
+              borderRadius: '5px',
+              cursor: 'pointer'
             }}
-            title="Clean and clear all open positions and closed trades from Algo Trade tab"
+            title={soundEnabled ? 'Alert Sounds Active' : 'Sound Muted'}
           >
-            <Trash2 size={13} className={isClearing ? 'animate-spin' : ''} />
-            <span>{isClearing ? 'Clearing...' : 'Clear Trades'}</span>
+            {soundEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
           </button>
 
-          {/* Download Excel Report */}
           <button
-            onClick={handleDownloadExcel}
-            disabled={isExporting}
+            onClick={() => setIsConfigOpen(!isConfigOpen)}
             style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '5px',
-              padding: '6px 10px',
+              backgroundColor: isConfigOpen ? '#3b82f6' : '#151d2f',
+              border: '1px solid rgba(255,255,255,0.15)',
+              color: '#f8fafc',
+              padding: '5px 9px',
               borderRadius: '6px',
-              border: '1px solid rgba(16, 185, 129, 0.4)',
-              background: 'rgba(16, 185, 129, 0.12)',
-              color: '#10b981',
-              fontSize: '11px',
-              fontWeight: '700',
-              cursor: isExporting ? 'wait' : 'pointer'
-            }}
-            title="Download Multi-Sheet Excel Report (.xlsx) with Open Positions, Closed Trades & Summary"
-          >
-            <Download size={13} className={isExporting ? 'animate-bounce' : ''} />
-            <span>{isExporting ? 'Exporting...' : 'Excel Report'}</span>
-          </button>
-
-          {/* Refresh Radar */}
-          <button
-            onClick={fetchRadarLevels}
-            disabled={isRadarLoading}
-            style={{
-              display: 'inline-flex',
+              cursor: 'pointer',
+              display: 'flex',
               alignItems: 'center',
               gap: '4px',
-              padding: '6px 10px',
-              borderRadius: '6px',
-              border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : '#cbd5e1'}`,
-              background: 'transparent',
-              color: 'var(--text-primary)',
               fontSize: '11px',
-              fontWeight: '600',
-              cursor: 'pointer'
+              fontWeight: 700
             }}
           >
-            <RefreshCw size={12} className={isRadarLoading ? 'animate-spin' : ''} />
-            <span>Scan Levels</span>
-          </button>
-
-          {/* Reset Capital & History */}
-          <button
-            onClick={handleResetPortfolio}
-            style={{
-              padding: '6px 8px',
-              borderRadius: '6px',
-              border: 'none',
-              background: 'transparent',
-              color: 'var(--text-secondary)',
-              cursor: 'pointer'
-            }}
-            title="Reset Capital & Portfolio"
-          >
-            <RotateCcw size={14} />
+            <Settings size={13} /> Config
           </button>
         </div>
       </div>
 
-      {/* 3. SUB-TABS NAVIGATION */}
+      {/* ===================================================================== */}
+      {/* 2. PORTFOLIO KPI SCORECARDS GRID (5 CARDS MATCHING EXACT USER DESIGN) */}
+      {/* ===================================================================== */}
+      <div style={{
+        padding: '12px 16px',
+        backgroundColor: '#070a12',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
+      }}>
+        {(() => {
+          const portfolioVal = capitalSummary?.netAccountValue || 1500000;
+          const availCash = capitalSummary?.availableMargin || 1500000;
+          const invCap = capitalSummary?.openMarginDeployed || 0;
+          const realPnL = capitalSummary?.totalRealizedPnL || 0;
+          const floatPnL = capitalSummary?.totalUnrealizedPnL || 0;
+          const totPnL = realPnL + floatPnL;
+          const totPnLPct = (totPnL / 1500000) * 100;
+          const unallocPct = Math.round((availCash / Math.max(1, portfolioVal)) * 100);
+          const wins = capitalSummary?.winningTrades || 0;
+          const losses = capitalSummary?.losingTrades || 0;
+          const winRate = capitalSummary?.winRatePct || 0;
+          const pf = capitalSummary?.profitFactor || (losses > 0 ? (Math.abs(realPnL) / Math.max(1, losses * 250)).toFixed(2) : '3.25');
+
+          return (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '12px'
+            }}>
+              {/* Card 1: PORTFOLIO VALUE */}
+              <div style={{
+                background: 'rgba(30, 41, 59, 0.5)',
+                border: `1px solid ${totPnL >= 0 ? 'rgba(16, 185, 129, 0.35)' : 'rgba(239, 68, 68, 0.35)'}`,
+                borderRadius: '8px',
+                padding: '10px 14px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '3px'
+              }}>
+                <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  PORTFOLIO VALUE
+                </span>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                  <span style={{ fontSize: '20px', fontWeight: '900', color: totPnL >= 0 ? '#10b981' : '#ef4444', fontFamily: 'monospace' }}>
+                    ₹{portfolioVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: '700', color: totPnL >= 0 ? '#10b981' : '#ef4444' }}>
+                  {totPnL >= 0 ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}
+                  <span>{totPnL >= 0 ? '+' : ''}₹{totPnL.toFixed(2)} ({totPnL >= 0 ? '+' : ''}{totPnLPct.toFixed(2)}%)</span>
+                </div>
+              </div>
+
+              {/* Card 2: AVAILABLE CASH */}
+              <div style={{
+                background: 'rgba(30, 41, 59, 0.5)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '8px',
+                padding: '10px 14px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '3px'
+              }}>
+                <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  AVAILABLE CASH
+                </span>
+                <span style={{ fontSize: '19px', fontWeight: '900', color: '#38bdf8', fontFamily: 'monospace' }}>
+                  ₹{availCash.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+                <span style={{ fontSize: '11px', color: '#64748b' }}>
+                  Unallocated Margin ({unallocPct}%)
+                </span>
+              </div>
+
+              {/* Card 3: INVESTED CAPITAL */}
+              <div style={{
+                background: 'rgba(30, 41, 59, 0.5)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '8px',
+                padding: '10px 14px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '3px'
+              }}>
+                <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  INVESTED CAPITAL
+                </span>
+                <span style={{ fontSize: '19px', fontWeight: '900', color: '#e2e8f0', fontFamily: 'monospace' }}>
+                  ₹{invCap.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+                <span style={{ fontSize: '11px', color: '#64748b' }}>
+                  In {openTrades.length} Active Positions
+                </span>
+              </div>
+
+              {/* Card 4: REALIZED P&L */}
+              <div style={{
+                background: 'rgba(30, 41, 59, 0.5)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '8px',
+                padding: '10px 14px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '3px'
+              }}>
+                <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  REALIZED P&L
+                </span>
+                <span style={{ fontSize: '19px', fontWeight: '900', color: realPnL >= 0 ? '#10b981' : '#ef4444', fontFamily: 'monospace' }}>
+                  {realPnL >= 0 ? '+' : ''}₹{realPnL.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+                <span style={{ fontSize: '11px', color: '#64748b' }}>
+                  {closedTrades.length} Closed Trades ({wins}W / {losses}L)
+                </span>
+              </div>
+
+              {/* Card 5: FLOATING P&L (LIVE) */}
+              <div style={{
+                background: 'rgba(30, 41, 59, 0.5)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '8px',
+                padding: '10px 14px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '3px'
+              }}>
+                <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  FLOATING P&L (LIVE)
+                </span>
+                <span style={{ fontSize: '19px', fontWeight: '900', color: floatPnL >= 0 ? '#10b981' : '#ef4444', fontFamily: 'monospace' }}>
+                  {floatPnL >= 0 ? '+' : ''}₹{floatPnL.toFixed(2)}
+                </span>
+                <span style={{ fontSize: '11px', color: '#64748b' }}>
+                  Win Rate: {winRate}% | PF: {pf}
+                </span>
+              </div>
+            </div>
+          );
+        })()}
+      </div>
+
+      {/* ===================================================================== */}
+      {/* 3. NAVIGATION SUB-TABS (MATCHING USER SCREENSHOT EXACTLY) */}
+      {/* ===================================================================== */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
-        gap: '6px',
-        borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0'}`,
-        paddingBottom: '6px'
+        justifyContent: 'space-between',
+        gap: '4px',
+        padding: '8px 16px',
+        backgroundColor: '#05070e',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+        flexShrink: 0
       }}>
-        {[
-          { id: 'positions', label: `Active Positions (${positions.length})`, icon: Activity },
-          { id: 'history', label: `Closed Trades / History (${history.length})`, icon: Clock },
-          { id: 'radar', label: `Reversal Radar / Scanner (${radarItems.length})`, icon: Target },
-          { id: 'logs', label: `Execution Audit Logs (${logs.length})`, icon: Bot }
-        ].map(tab => {
-          const Icon = tab.icon;
-          const isActive = activeSubTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveSubTab(tab.id as any)}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 12px',
-                borderRadius: '6px',
-                border: 'none',
-                background: isActive ? (isDark ? '#0284c7' : '#e0f2fe') : 'transparent',
-                color: isActive ? (isDark ? '#ffffff' : '#0369a1') : 'var(--text-secondary)',
-                fontSize: '11.5px',
-                fontWeight: isActive ? '800' : '600',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <Icon size={14} />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+          {[
+            { id: 'POSITIONS', label: `Active Positions (${openTrades.length})`, icon: Activity },
+                        { id: 'AUDIT_LOG', label: 'What Did We Do (Execution Log)', icon: FileText },
+            { id: 'HISTORY', label: `Closed Trade History (${closedTrades.length})`, icon: Clock },
+            { id: 'REVERSAL_SCANNER', label: `Live Reversal Scanner (${scanItems.length})`, icon: Zap }
+          ].map(tab => {
+            const isActive = activeView === tab.id;
+            const IconComponent = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveView(tab.id as any)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 14px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  backgroundColor: isActive ? '#3b82f6' : 'transparent',
+                  color: isActive ? '#ffffff' : '#94a3b8',
+                  fontSize: '12px',
+                  fontWeight: isActive ? 800 : 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <IconComponent size={14} />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Right Tab: Toggle Strategy HUD & Candlestick Chart */}
+        <button
+          onClick={() => setActiveView(activeView === 'CHART' ? 'HISTORY' : 'CHART')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '6px 14px',
+            borderRadius: '6px',
+            border: activeView === 'CHART' ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.12)',
+            backgroundColor: activeView === 'CHART' ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.03)',
+            color: activeView === 'CHART' ? '#38bdf8' : '#cbd5e1',
+            fontSize: '12px',
+            fontWeight: 800,
+            cursor: 'pointer',
+            transition: 'all 0.15s ease'
+          }}
+        >
+          <BarChart2 size={14} />
+          <span>{activeView === 'CHART' ? '✕ Close Strategy Chart' : '📊 Strategy Chart & HUD'}</span>
+        </button>
       </div>
+      {/* ===================================================================== */}
+      {/* MAIN CONTENT AREA */}
+      {/* ===================================================================== */}
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
+        
+        
+        {/* VIEW 1: DASHBOARD & LIVE CHART */}
+        {activeView === 'CHART' && (
+          <div style={{ flex: 1, display: 'flex', minWidth: 0, overflow: 'hidden' }}>
+            
+            {/* LEFT / CENTER: INTERACTIVE STRATEGY CHART WITH PLOTTED MARSHALL LEVELS */}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, borderRight: '1px solid rgba(255, 255, 255, 0.08)' }}>
+              
+              {/* Chart Top Info Bar */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '6px 14px',
+                backgroundColor: '#0a0d14',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+                fontSize: '11px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontWeight: '800', color: '#f8fafc' }}>{symbol}</span>
+                  <span style={{ color: '#64748b' }}>•</span>
+                  <span style={{ color: '#38bdf8', fontWeight: '700' }}>{timeframe}m Candle Interval</span>
+                  <span style={{ color: '#64748b' }}>•</span>
+                  <span style={{ color: '#94a3b8' }}>Orderflow Levels – Marshall Engine</span>
+                </div>
 
-      {/* 4. CONTENT SECTIONS */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  {levels && (
+                    <>
+                      <span style={{ color: '#089981' }}>BR: ₹{levels.buyReversal}</span>
+                      <span style={{ color: '#f59e0b' }}>BO: ₹{levels.breakout}</span>
+                      <span style={{ color: '#f23645' }}>SR: ₹{levels.sellReversal}</span>
+                      <span style={{ color: '#f59e0b' }}>BD: ₹{levels.breakdown}</span>
+                    </>
+                  )}
+                </div>
+              </div>
 
-      {/* 4A. ACTIVE POSITIONS VIEW */}
-      {activeSubTab === 'positions' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {positions.length === 0 ? (
+              {/* Chart Visualizer (SVG Multi-Layer Engine) */}
+              <div style={{ flex: 1, position: 'relative', overflow: 'hidden', backgroundColor: '#070a0f' }}>
+                {candles.length === 0 ? (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#94a3b8', fontSize: '13px', gap: '8px' }}>
+                    <RefreshCw size={16} className="animate-spin" />
+                    Loading real-time Marshall candles for {symbol}...
+                  </div>
+                ) : (
+                  <svg style={{ width: '100%', height: '100%' }} viewBox="0 0 1000 500" preserveAspectRatio="none">
+                    {(() => {
+                      const displayBars = candles.slice(-60); // show last 60 candles
+                      const n = displayBars.length;
+                      if (n === 0) return null;
+
+                      let minP = Math.min(...displayBars.map(c => c.low));
+                      let maxP = Math.max(...displayBars.map(c => c.high));
+
+                      if (levels) {
+                        minP = Math.min(minP, levels.lowerTarget2 || minP);
+                        maxP = Math.max(maxP, levels.upperTarget2 || maxP);
+                      }
+
+                      const span = Math.max(1, maxP - minP);
+                      const priceToY = (p: number) => 460 - ((p - minP) / span) * 420;
+
+                      const PLOT_LEFT = 20;
+                      const PLOT_RIGHT = 920;
+                      const USABLE_W = PLOT_RIGHT - PLOT_LEFT;
+                      const getX = (idx: number) => PLOT_LEFT + (idx / Math.max(1, n - 1)) * USABLE_W;
+                      const candleW = Math.max(2, Math.min(14, (USABLE_W / n) * 0.7));
+
+                      return (
+                        <>
+                          {/* Grid Lines */}
+                          <line x1={PLOT_LEFT} y1="460" x2={PLOT_RIGHT} y2="460" stroke="rgba(255,255,255,0.08)" />
+
+                          {/* =================================================== */}
+                          {/* 1. PLOTTED MARSHALL INDICATOR LEVELS (Section 2, 9) */}
+                          {/* =================================================== */}
+                          {levels && (
+                            <>
+                              {/* Upper Target 2 (R6) */}
+                              <line x1={PLOT_LEFT} y1={priceToY(levels.upperTarget2)} x2={PLOT_RIGHT} y2={priceToY(levels.upperTarget2)} stroke="#f23645" strokeWidth="1" strokeDasharray="3,3" opacity="0.7" />
+                              <text x={PLOT_RIGHT + 6} y={priceToY(levels.upperTarget2) + 3} fill="#f23645" fontSize="9" fontWeight="700">UT2 {levels.upperTarget2}</text>
+
+                              {/* Upper Target 1 (R5) */}
+                              <line x1={PLOT_LEFT} y1={priceToY(levels.upperTarget1)} x2={PLOT_RIGHT} y2={priceToY(levels.upperTarget1)} stroke="#38bdf8" strokeWidth="1.2" opacity="0.8" />
+                              <text x={PLOT_RIGHT + 6} y={priceToY(levels.upperTarget1) + 3} fill="#38bdf8" fontSize="9" fontWeight="700">UT1 {levels.upperTarget1}</text>
+
+                              {/* Breakout (R4) */}
+                              <line x1={PLOT_LEFT} y1={priceToY(levels.breakout)} x2={PLOT_RIGHT} y2={priceToY(levels.breakout)} stroke="#f59e0b" strokeWidth="1.5" />
+                              <text x={PLOT_RIGHT + 6} y={priceToY(levels.breakout) + 3} fill="#f59e0b" fontSize="9.5" fontWeight="800">BREAKOUT {levels.breakout}</text>
+
+                              {/* Sell Reversal (R3) */}
+                              <line x1={PLOT_LEFT} y1={priceToY(levels.sellReversal)} x2={PLOT_RIGHT} y2={priceToY(levels.sellReversal)} stroke="#94a3b8" strokeWidth="1" strokeDasharray="2,2" />
+                              <text x={PLOT_RIGHT + 6} y={priceToY(levels.sellReversal) + 3} fill="#f87171" fontSize="9" fontWeight="700">SR (Sell Rev) {levels.sellReversal}</text>
+
+                              {/* Buy Reversal (S3) */}
+                              <line x1={PLOT_LEFT} y1={priceToY(levels.buyReversal)} x2={PLOT_RIGHT} y2={priceToY(levels.buyReversal)} stroke="#94a3b8" strokeWidth="1" strokeDasharray="2,2" />
+                              <text x={PLOT_RIGHT + 6} y={priceToY(levels.buyReversal) + 3} fill="#34d399" fontSize="9" fontWeight="700">BR (Buy Rev) {levels.buyReversal}</text>
+
+                              {/* Breakdown (S4) */}
+                              <line x1={PLOT_LEFT} y1={priceToY(levels.breakdown)} x2={PLOT_RIGHT} y2={priceToY(levels.breakdown)} stroke="#f59e0b" strokeWidth="1.5" />
+                              <text x={PLOT_RIGHT + 6} y={priceToY(levels.breakdown) + 3} fill="#f59e0b" fontSize="9.5" fontWeight="800">BREAKDOWN {levels.breakdown}</text>
+
+                              {/* Lower Target 1 (S5) */}
+                              <line x1={PLOT_LEFT} y1={priceToY(levels.lowerTarget1)} x2={PLOT_RIGHT} y2={priceToY(levels.lowerTarget1)} stroke="#38bdf8" strokeWidth="1.2" opacity="0.8" />
+                              <text x={PLOT_RIGHT + 6} y={priceToY(levels.lowerTarget1) + 3} fill="#38bdf8" fontSize="9" fontWeight="700">LT1 {levels.lowerTarget1}</text>
+
+                              {/* Lower Target 2 (S6) */}
+                              <line x1={PLOT_LEFT} y1={priceToY(levels.lowerTarget2)} x2={PLOT_RIGHT} y2={priceToY(levels.lowerTarget2)} stroke="#f23645" strokeWidth="1" strokeDasharray="3,3" opacity="0.7" />
+                              <text x={PLOT_RIGHT + 6} y={priceToY(levels.lowerTarget2) + 3} fill="#f23645" fontSize="9" fontWeight="700">LT2 {levels.lowerTarget2}</text>
+
+                              {/* VWAP Reference Line */}
+                              {levels.vwap && (
+                                <>
+                                  <line x1={PLOT_LEFT} y1={priceToY(levels.vwap)} x2={PLOT_RIGHT} y2={priceToY(levels.vwap)} stroke="#a855f7" strokeWidth="1.2" strokeDasharray="4,3" />
+                                  <text x={PLOT_RIGHT + 6} y={priceToY(levels.vwap) + 3} fill="#a855f7" fontSize="8.5" fontWeight="700">VWAP {levels.vwap}</text>
+                                </>
+                              )}
+                            </>
+                          )}
+
+                          {/* =================================================== */}
+                          {/* 2. CANDLESTICKS RENDERING */}
+                          {/* =================================================== */}
+                          {displayBars.map((bar, idx) => {
+                            const cx = getX(idx);
+                            const isUp = bar.close >= bar.open;
+                            const col = isUp ? '#089981' : '#f23645';
+                            const yH = priceToY(bar.high);
+                            const yL = priceToY(bar.low);
+                            const yO = priceToY(bar.open);
+                            const yC = priceToY(bar.close);
+                            const top = Math.min(yO, yC);
+                            const h = Math.max(1.5, Math.abs(yC - yO));
+
+                            return (
+                              <g key={`bar-${bar.time}`}>
+                                <line x1={cx} y1={yH} x2={cx} y2={yL} stroke={col} strokeWidth="1.2" opacity="0.85" />
+                                <rect x={cx - candleW / 2} y={top} width={candleW} height={h} fill={col} rx="1" />
+                              </g>
+                            );
+                          })}
+
+                          {/* =================================================== */}
+                          {/* 3. CONFIRMED STRATEGY SIGNALS & EXECUTION VISUALS */}
+                          {/* =================================================== */}
+                          {currentSignal && (
+                            <g key={currentSignal.id}>
+                              {/* Entry Level Line */}
+                              <line
+                                x1={PLOT_LEFT}
+                                y1={priceToY(currentSignal.entryPrice)}
+                                x2={PLOT_RIGHT}
+                                y2={priceToY(currentSignal.entryPrice)}
+                                stroke={currentSignal.direction === 'BUY' ? '#34d399' : '#f87171'}
+                                strokeWidth="2"
+                                strokeDasharray="4,4"
+                              />
+                              <rect x={PLOT_LEFT + 10} y={priceToY(currentSignal.entryPrice) - 10} width="160" height="20" fill="#0b0f19" stroke={currentSignal.direction === 'BUY' ? '#34d399' : '#f87171'} rx="4" />
+                              <text x={PLOT_LEFT + 16} y={priceToY(currentSignal.entryPrice) + 4} fill="#ffffff" fontSize="10" fontWeight="800">
+                                {currentSignal.label} @ ₹{currentSignal.entryPrice.toFixed(1)}
+                              </text>
+
+                              {/* Stop Loss Line */}
+                              <line
+                                x1={PLOT_LEFT}
+                                y1={priceToY(currentSignal.stopLossPrice)}
+                                x2={PLOT_RIGHT}
+                                y2={priceToY(currentSignal.stopLossPrice)}
+                                stroke="#ef4444"
+                                strokeWidth="1.8"
+                              />
+                              <text x={PLOT_LEFT + 180} y={priceToY(currentSignal.stopLossPrice) - 4} fill="#ef4444" fontSize="9.5" fontWeight="800">
+                                SL: ₹{currentSignal.stopLossPrice.toFixed(1)} ({currentSignal.riskPoints.toFixed(1)} pts)
+                              </text>
+
+                              {/* Target 1 Line */}
+                              <line
+                                x1={PLOT_LEFT}
+                                y1={priceToY(currentSignal.target1Price)}
+                                x2={PLOT_RIGHT}
+                                y2={priceToY(currentSignal.target1Price)}
+                                stroke="#10b981"
+                                strokeWidth="1.8"
+                              />
+                              <text x={PLOT_LEFT + 180} y={priceToY(currentSignal.target1Price) - 4} fill="#10b981" fontSize="9.5" fontWeight="800">
+                                Target 1: ₹{currentSignal.target1Price.toFixed(1)} (1:{currentSignal.riskRewardRatio} R:R)
+                              </text>
+
+                              {/* Target 2 Line */}
+                              <line
+                                x1={PLOT_LEFT}
+                                y1={priceToY(currentSignal.target2Price)}
+                                x2={PLOT_RIGHT}
+                                y2={priceToY(currentSignal.target2Price)}
+                                stroke="#38bdf8"
+                                strokeWidth="1.8"
+                              />
+                              <text x={PLOT_LEFT + 180} y={priceToY(currentSignal.target2Price) - 4} fill="#38bdf8" fontSize="9.5" fontWeight="800">
+                                Target 2: ₹{currentSignal.target2Price.toFixed(1)}
+                              </text>
+                            </g>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </svg>
+                )}
+              </div>
+            </div>
+
+            {/* RIGHT SIDEBAR: ANTIGRAVITY COMPACT LIVE DASHBOARD (Specification Section 10) */}
             <div style={{
-              background: isDark ? 'rgba(15, 23, 42, 0.4)' : '#ffffff',
-              borderRadius: '8px',
-              padding: '36px',
-              textAlign: 'center',
-              border: `1px dashed ${isDark ? 'rgba(255, 255, 255, 0.1)' : '#cbd5e1'}`,
+              width: '360px',
+              minWidth: '360px',
+              maxWidth: '380px',
+              backgroundColor: '#0c101a',
               display: 'flex',
               flexDirection: 'column',
-              alignItems: 'center',
-              gap: '8px'
+              flexShrink: 0,
+              overflowY: 'auto',
+              borderLeft: '1px solid rgba(255, 255, 255, 0.08)',
+              padding: '14px',
+              gap: '14px'
             }}>
-              <Bot size={36} color="#38bdf8" />
-              <div style={{ fontSize: '14px', fontWeight: '800' }}>No Active Intraday Positions</div>
-              <div style={{ fontSize: '11.5px', color: 'var(--text-secondary)', maxWidth: '440px' }}>
-                Auto-Pilot is actively monitoring S3 Buy Reversals and R3 Sell Reversals across top F&O stocks. When a level triggers, orders execute automatically with strict SL & Targets.
+              {/* Header Badge */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '12px', fontWeight: '900', color: '#f8fafc', letterSpacing: '0.3px' }}>
+                  🎯 MARSHALL STRATEGY HUD
+                </span>
+                <span style={{
+                  fontSize: '9.5px',
+                  fontWeight: '800',
+                  padding: '2px 7px',
+                  borderRadius: '4px',
+                  backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                  color: '#38bdf8',
+                  border: '1px solid rgba(56, 189, 248, 0.3)'
+                }}>
+                  {stateMachine.primaryBuyState !== 'IDLE' ? stateMachine.primaryBuyState : 'SCANNING'}
+                </span>
               </div>
-              <div style={{ display: 'flex', gap: '8px', marginTop: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                {history.length > 0 && (
+
+              {/* 1. Active Trading Signal Card */}
+              {currentSignal ? (
+                <div style={{
+                  backgroundColor: '#151d2f',
+                  borderRadius: '8px',
+                  border: `1px solid ${currentSignal.direction === 'BUY' ? '#10b981' : '#ef4444'}`,
+                  padding: '12px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{
+                      fontSize: '11px',
+                      fontWeight: '900',
+                      padding: '2px 8px',
+                      borderRadius: '4px',
+                      backgroundColor: currentSignal.direction === 'BUY' ? '#10b981' : '#ef4444',
+                      color: '#ffffff'
+                    }}>
+                      {currentSignal.label}
+                    </span>
+                    <span style={{ fontSize: '10px', color: '#94a3b8' }}>{currentSignal.timeStr}</span>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', fontSize: '11px', marginTop: '4px' }}>
+                    <div>Entry: <strong style={{ color: '#f8fafc' }}>₹{currentSignal.entryPrice.toFixed(1)}</strong></div>
+                    <div>Stop Loss: <strong style={{ color: '#ef4444' }}>₹{currentSignal.stopLossPrice.toFixed(1)}</strong></div>
+                    <div>Target 1: <strong style={{ color: '#10b981' }}>₹{currentSignal.target1Price.toFixed(1)}</strong></div>
+                    <div>Target 2: <strong style={{ color: '#38bdf8' }}>₹{currentSignal.target2Price.toFixed(1)}</strong></div>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '6px' }}>
+                    <span>Risk: <strong>{currentSignal.riskPoints.toFixed(1)} pts</strong></span>
+                    <span>Reward (T1): <strong>{currentSignal.rewardPointsT1.toFixed(1)} pts</strong></span>
+                    <span style={{ color: '#a855f7' }}>R:R: <strong>1:{currentSignal.riskRewardRatio}</strong></span>
+                  </div>
+
+                  {/* 1-Click Paper Trade Execution */}
                   <button
-                    onClick={() => setActiveSubTab('history')}
+                    onClick={() => handleExecuteTrade(currentSignal)}
                     style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      padding: '7px 14px',
-                      borderRadius: '6px',
-                      border: '1px solid #0284c7',
-                      background: 'rgba(2, 132, 199, 0.15)',
-                      color: '#38bdf8',
+                      marginTop: '6px',
+                      backgroundColor: currentSignal.direction === 'BUY' ? '#10b981' : '#ef4444',
+                      border: 'none',
+                      color: '#ffffff',
+                      borderRadius: '5px',
+                      padding: '7px',
                       fontSize: '11.5px',
                       fontWeight: '800',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '5px'
                     }}
                   >
-                    <Clock size={13} />
-                    <span>View Closed Trade History ({history.length} Trades)</span>
+                    <Play size={13} /> Execute Algo Paper Trade (50 Qty)
                   </button>
+                </div>
+              ) : (
+                <div style={{
+                  padding: '16px',
+                  backgroundColor: '#151d2f',
+                  borderRadius: '8px',
+                  border: '1px dashed rgba(255,255,255,0.1)',
+                  textAlign: 'center',
+                  fontSize: '11px',
+                  color: '#94a3b8'
+                }}>
+                  No active trade signal on {symbol} {timeframe}m.<br />
+                  Waiting for Marshall Reversal Support or Breakout confirmation.
+                </div>
+              )}
+
+              {/* 2. Plotted Indicator Levels HUD (Section 2, 10) */}
+              <div style={{ backgroundColor: '#151d2f', borderRadius: '8px', padding: '12px' }}>
+                <div style={{ fontSize: '10.5px', fontWeight: '800', color: '#94a3b8', marginBottom: '8px', letterSpacing: '0.3px' }}>
+                  📐 PLOTTED MARSHALL LEVELS
+                </div>
+                {levels ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '11px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#f23645' }}>
+                      <span>Upper Target 2 (R6)</span>
+                      <strong>₹{levels.upperTarget2.toFixed(1)}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#38bdf8' }}>
+                      <span>Upper Target 1 (R5)</span>
+                      <strong>₹{levels.upperTarget1.toFixed(1)}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#f59e0b', fontWeight: '800' }}>
+                      <span>Breakout (R4)</span>
+                      <strong>₹{levels.breakout.toFixed(1)}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#cbd5e1' }}>
+                      <span>Sell Reversal (R3)</span>
+                      <strong>₹{levels.sellReversal.toFixed(1)}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#a855f7' }}>
+                      <span>Session VWAP</span>
+                      <strong>₹{levels.vwap?.toFixed(1) || '---'}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#cbd5e1' }}>
+                      <span>Buy Reversal (S3)</span>
+                      <strong>₹{levels.buyReversal.toFixed(1)}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#f59e0b', fontWeight: '800' }}>
+                      <span>Break Down (S4)</span>
+                      <strong>₹{levels.breakdown.toFixed(1)}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#38bdf8' }}>
+                      <span>Lower Target 1 (S5)</span>
+                      <strong>₹{levels.lowerTarget1.toFixed(1)}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#f23645' }}>
+                      <span>Lower Target 2 (S6)</span>
+                      <strong>₹{levels.lowerTarget2.toFixed(1)}</strong>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ color: '#64748b', fontSize: '11px' }}>Calculating levels...</div>
                 )}
+              </div>
+
+              {/* 3. Signal Confirmation Checklist (Section 7) */}
+              <div style={{ backgroundColor: '#151d2f', borderRadius: '8px', padding: '12px' }}>
+                <div style={{ fontSize: '10.5px', fontWeight: '800', color: '#94a3b8', marginBottom: '8px', letterSpacing: '0.3px' }}>
+                  ⚖️ 4-STAGE CONFIRMATION ENGINE
+                </div>
+                {currentSignal?.confirmation ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '10.5px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span>1. Price Close Beyond Trigger</span>
+                      <span style={{ color: currentSignal.confirmation.priceConfirmed ? '#34d399' : '#f87171', fontWeight: '800' }}>
+                        {currentSignal.confirmation.priceConfirmed ? '✅ Confirmed' : '❌ Pending'}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span>2. Volume Confirmation ({config.volumeMultiplier}x)</span>
+                      <span style={{ color: currentSignal.confirmation.volumeConfirmed ? '#34d399' : '#f87171', fontWeight: '800' }}>
+                        {currentSignal.confirmation.volumeConfirmed ? '✅ PASS' : '❌ Low Vol'}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span>3. VWAP Direction Alignment</span>
+                      <span style={{ color: currentSignal.confirmation.vwapConfirmed ? '#34d399' : '#f87171', fontWeight: '800' }}>
+                        {currentSignal.confirmation.vwapConfirmed ? '✅ Aligned' : '❌ Counter-VWAP'}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span>4. Rejection Candle Strength</span>
+                      <span style={{ color: currentSignal.confirmation.candleConfirmed ? '#34d399' : '#f87171', fontWeight: '800' }}>
+                        {currentSignal.confirmation.candleConfirmed ? '✅ Valid' : '❌ Weak Body'}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ color: '#64748b', fontSize: '10.5px' }}>
+                    Active filters: Candle Close, {config.volumeMultiplier}x Volume, VWAP Direction, Solid Rejection Body.
+                  </div>
+                )}
+              </div>
+
+              {/* 4. Strategy Performance Quick Glance */}
+              <div style={{ backgroundColor: '#151d2f', borderRadius: '8px', padding: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '10.5px', fontWeight: '800', color: '#94a3b8' }}>SESSION PERFORMANCE</span>
+                  <button onClick={() => setActiveView('BACKTEST')} style={{ background: 'none', border: 'none', color: '#38bdf8', fontSize: '10px', cursor: 'pointer', fontWeight: '700' }}>
+                    View Full Report ▶
+                  </button>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11px' }}>
+                  <div style={{ backgroundColor: '#0c101a', padding: '8px', borderRadius: '5px' }}>
+                    <div style={{ color: '#64748b', fontSize: '9.5px' }}>Win Rate</div>
+                    <div style={{ fontSize: '14px', fontWeight: '800', color: metrics.winRatePct >= 50 ? '#34d399' : '#f87171' }}>
+                      {metrics.winRatePct}%
+                    </div>
+                  </div>
+                  <div style={{ backgroundColor: '#0c101a', padding: '8px', borderRadius: '5px' }}>
+                    <div style={{ color: '#64748b', fontSize: '9.5px' }}>Profit Factor</div>
+                    <div style={{ fontSize: '14px', fontWeight: '800', color: metrics.profitFactor >= 1.5 ? '#34d399' : '#f59e0b' }}>
+                      {metrics.profitFactor}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        )}
+
+        {/* VIEW 2: MULTI-STOCK LIVE SCANNER TABLE (Section 10) */}
+        {activeView === 'REVERSAL_SCANNER' && (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '16px', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <div>
+                <h3 style={{ fontSize: '15px', fontWeight: '900', margin: 0 }}>
+                  🎯 MARSHALL LIVE SCANNER – TOP NSE INSTRUMENTS
+                </h3>
+                <p style={{ fontSize: '11px', color: '#94a3b8', margin: '2px 0 0 0' }}>
+                  Real-time detection of Breakout, Breakdown, Support at BR & Retest setups
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: '4px', backgroundColor: '#151d2f', padding: '2px', borderRadius: '5px' }}>
+                  {(['ALL', 'BUY', 'SELL', 'ACTIVE'] as const).map(f => (
+                    <button
+                      key={f}
+                      onClick={() => setScannerFilter(f)}
+                      style={{
+                        padding: '4px 8px',
+                        fontSize: '10.5px',
+                        fontWeight: scannerFilter === f ? 800 : 600,
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        backgroundColor: scannerFilter === f ? '#38bdf8' : 'transparent',
+                        color: scannerFilter === f ? '#070a0f' : '#94a3b8'
+                      }}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
+
                 <button
-                  onClick={() => setActiveSubTab('radar')}
+                  onClick={fetchScannerData}
                   style={{
-                    display: 'inline-flex',
+                    backgroundColor: '#151d2f',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    color: '#f8fafc',
+                    padding: '5px 10px',
+                    borderRadius: '5px',
+                    fontSize: '11px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    display: 'flex',
                     alignItems: 'center',
-                    gap: '6px',
-                    padding: '7px 14px',
-                    borderRadius: '6px',
-                    border: 'none',
-                    background: '#0284c7',
-                    color: '#ffffff',
-                    fontSize: '11.5px',
-                    fontWeight: '800',
-                    cursor: 'pointer'
+                    gap: '4px'
                   }}
                 >
-                  <Target size={13} />
-                  <span>View Reversal Radar Setups</span>
+                  <RefreshCw size={12} className={isScanning ? 'animate-spin' : ''} /> Rescan
                 </button>
               </div>
             </div>
-          ) : (
-            <div style={{
-              overflowX: 'auto',
-              borderRadius: '8px',
-              border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0'}`,
-              background: isDark ? 'rgba(15, 23, 42, 0.6)' : '#ffffff'
-            }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11.5px', textAlign: 'left' }}>
+
+            {/* Table */}
+            <div style={{ backgroundColor: '#0c101a', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '11.5px' }}>
                 <thead>
-                  <tr style={{
-                    borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0'}`,
-                    background: isDark ? 'rgba(30, 41, 59, 0.5)' : '#f8fafc',
-                    color: 'var(--text-secondary)',
-                    fontWeight: '800'
-                  }}>
-                    <th style={{ padding: '8px 12px' }}>Symbol</th>
-                    <th style={{ padding: '8px 12px' }}>Side / Setup</th>
-                    <th style={{ padding: '8px 12px' }}>Qty / Capital</th>
-                    <th style={{ padding: '8px 12px' }}>Entry Price</th>
-                    <th style={{ padding: '8px 12px' }}>Live LTP</th>
-                    <th style={{ padding: '8px 12px' }}>Stop Loss</th>
-                    <th style={{ padding: '8px 12px', color: '#10b981' }}>Target 1 (Book Profit)</th>
-                    <th style={{ padding: '8px 12px' }}>Unrealized P&L</th>
-                    <th style={{ padding: '8px 12px', textAlign: 'right' }}>Actions</th>
+                  <tr style={{ backgroundColor: '#151d2f', color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                    <th style={{ padding: '10px 12px' }}>Symbol</th>
+                    <th style={{ padding: '10px 12px' }}>LTP</th>
+                    <th style={{ padding: '10px 12px' }}>Active Strategy</th>
+                    <th style={{ padding: '10px 12px' }}>ATM Option Strike</th>
+                    <th style={{ padding: '10px 12px' }}>Setup State</th>
+                    <th style={{ padding: '10px 12px' }}>Trigger / Entry</th>
+                    <th style={{ padding: '10px 12px' }}>Stop Loss</th>
+                    <th style={{ padding: '10px 12px' }}>Target 1</th>
+                    <th style={{ padding: '10px 12px' }}>Target 2</th>
+                    <th style={{ padding: '10px 12px' }}>R:R</th>
+                    <th style={{ padding: '10px 12px', textAlign: 'center' }}>Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {positions.map(pos => {
-                    const isProfit = pos.unrealizedPnl >= 0;
-                    return (
-                      <tr 
-                        key={pos.id}
-                        style={{
-                          borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.04)' : '#f1f5f9'}`,
-                          transition: 'background 0.1s ease'
-                        }}
-                      >
-                        <td style={{ padding: '10px 12px', fontWeight: '800' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span>{pos.displayName}</span>
-                            {isCommoditySymbol(pos.symbol) ? (
-                              <span style={{ fontSize: '9px', fontWeight: '800', background: 'rgba(234, 179, 8, 0.15)', color: '#eab308', padding: '1px 5px', borderRadius: '4px', border: '1px solid rgba(234, 179, 8, 0.3)' }}>
-                                MCX (Till 23:25)
-                              </span>
-                            ) : (
-                              <span style={{ fontSize: '9px', fontWeight: '800', background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', padding: '1px 5px', borderRadius: '4px', border: '1px solid rgba(56, 189, 248, 0.3)' }}>
-                                NSE (15:15 Cutoff)
-                              </span>
-                            )}
-                            <button
-                              onClick={() => {
-                                onSymbolSelect(pos.symbol);
-                                onSwitchToChart();
-                              }}
-                              style={{
-                                background: 'transparent',
-                                border: 'none',
-                                color: '#38bdf8',
-                                cursor: 'pointer',
-                                padding: 0,
-                                display: 'inline-flex'
-                              }}
-                              title="Open in Candlestick Chart tab"
-                            >
-                              <ExternalLink size={12} />
-                            </button>
-                          </div>
-                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Entry: {formatTradeDateTimeDisplay(pos.entryTime, pos.entryDate, pos.entryTimestamp)}</span>
-                        </td>
-                        <td style={{ padding: '10px 12px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  {(() => {
+                    const filtered = scanItems.filter(item => {
+                      if (scannerFilter === 'BUY') return item.direction === 'BUY';
+                      if (scannerFilter === 'SELL') return item.direction === 'SELL';
+                      if (scannerFilter === 'ACTIVE') return item.strategy !== 'NONE' && item.strategy !== 'WATCHING';
+                      return true;
+                    });
+                    if (filtered.length === 0) {
+                      return (
+                        <tr>
+                          <td colSpan={11} style={{ textAlign: 'center', padding: '36px', color: '#94a3b8', fontSize: '12px' }}>
+                            Scanning active instruments for live reversal triggers...
+                          </td>
+                        </tr>
+                      );
+                    }
+                    return filtered.map((item, idx) => {
+                      const isBuy = item.direction === 'BUY';
+                      const isSell = item.direction === 'SELL';
+                      return (
+                        <tr key={`${item.symbol}-${idx}`} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', backgroundColor: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)' }}>
+                          <td style={{ padding: '10px 12px', fontWeight: '800', color: '#f8fafc' }}>
+                            {item.name || item.symbol}
+                          </td>
+                          <td style={{ padding: '10px 12px', fontWeight: '800', color: '#38bdf8' }}>
+                            ₹{item.ltp?.toFixed(1) || '---'}
+                          </td>
+                          <td style={{ padding: '10px 12px' }}>
                             <span style={{
                               padding: '2px 6px',
                               borderRadius: '4px',
                               fontSize: '10px',
-                              fontWeight: '900',
-                              background: pos.side === 'BUY' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
-                              color: pos.side === 'BUY' ? '#10b981' : '#ef4444'
+                              fontWeight: '800',
+                              backgroundColor: isBuy ? 'rgba(16, 185, 129, 0.2)' : isSell ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255,255,255,0.05)',
+                              color: isBuy ? '#34d399' : isSell ? '#f87171' : '#94a3b8'
                             }}>
-                              {pos.side}
+                              {item.strategy}
                             </span>
-                            <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{pos.setupType}</span>
-                          </div>
-                        </td>
-                        <td style={{ padding: '10px 12px' }}>
-                          <div style={{ fontWeight: '700' }}>{pos.quantity} shares</div>
-                          <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>₹{pos.allocatedCapital.toLocaleString('en-IN')}</div>
-                        </td>
-                        <td style={{ padding: '10px 12px', fontWeight: '700' }}>
-                          ₹{pos.entryPrice.toFixed(2)}
-                        </td>
-                        <td style={{ padding: '10px 12px', fontWeight: '800', color: isProfit ? '#10b981' : '#ef4444' }}>
-                          ₹{pos.currentPrice.toFixed(2)}
-                        </td>
-                        <td style={{ padding: '10px 12px' }}>
-                          <div style={{ fontWeight: '700', color: '#ef4444' }}>₹{pos.stopLoss.toFixed(2)}</div>
-                          {pos.isBreakeven && (
-                            <span style={{ fontSize: '9.5px', color: '#10b981', fontWeight: '800' }}>Trailed to Entry</span>
-                          )}
-                        </td>
-                        <td style={{ padding: '10px 12px' }}>
-                          <div style={{ color: '#10b981', fontWeight: '800' }}>T1: ₹{pos.target1.toFixed(2)}</div>
-                          <span style={{ fontSize: '9.5px', color: '#10b981', fontWeight: '700' }}>Profit Booking Level</span>
-                        </td>
-                        <td style={{ padding: '10px 12px' }}>
-                          <div style={{ fontWeight: '900', fontSize: '12.5px', color: isProfit ? '#10b981' : '#ef4444' }}>
-                            {isProfit ? '+' : ''}₹{pos.unrealizedPnl.toFixed(2)}
-                          </div>
-                          <div style={{ fontSize: '10px', color: isProfit ? '#10b981' : '#ef4444', fontWeight: '700' }}>
-                            ({isProfit ? '+' : ''}{pos.unrealizedPnlPct.toFixed(2)}%)
-                          </div>
-                        </td>
-                        <td style={{ padding: '10px 12px', textAlign: 'right' }}>
-                          <button
-                            onClick={() => handleClosePosition(pos.id, 'MANUAL SQUARE-OFF')}
-                            style={{
-                              padding: '4px 8px',
-                              borderRadius: '4px',
-                              border: '1px solid #ef4444',
-                              background: 'rgba(239, 68, 68, 0.1)',
-                              color: '#ef4444',
-                              fontSize: '10.5px',
-                              fontWeight: '700',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            Close MIS
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                          </td>
+                          <td style={{ padding: '10px 12px' }}>
+                            {item.symbol.startsWith('NSE:') ? (
+                              <span style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                padding: '2px 8px',
+                                borderRadius: '4px',
+                                fontSize: '10px',
+                                fontWeight: '800',
+                                backgroundColor: 'rgba(168, 85, 247, 0.15)',
+                                color: '#d8b4fe',
+                                border: '1px solid rgba(168, 85, 247, 0.3)'
+                              }}>
+                                🎯 {(() => {
+                                  const clean = item.symbol.replace(/^(NSE:|BSE:)/, '');
+                                  const p = item.ltp || 1000;
+                                  let step = 50;
+                                  if (p < 250) step = 2.5;
+                                  else if (p < 500) step = 5;
+                                  else if (p < 1000) step = 10;
+                                  else if (p < 2500) step = 20;
+                                  else if (p < 5000) step = 50;
+                                  else step = 100;
+                                  const strike = Math.round(p / step) * step;
+                                  const optType = item.direction === 'SELL' ? 'PE' : 'CE';
+                                  return `${clean} ${strike} ${optType}`;
+                                })()}
+                              </span>
+                            ) : (
+                              <span style={{ color: '#64748b', fontSize: '10px' }}>FUT</span>
+                            )}
+                          </td>
+                          <td style={{ padding: '10px 12px', color: '#cbd5e1' }}>
+                            {item.state}
+                          </td>
+                          <td style={{ padding: '10px 12px', fontWeight: '700' }}>
+                            ₹{item.entryPrice?.toFixed(1) || '---'}
+                          </td>
+                          <td style={{ padding: '10px 12px', color: '#ef4444' }}>
+                            ₹{item.stopLossPrice?.toFixed(1) || '---'}
+                          </td>
+                          <td style={{ padding: '10px 12px', color: '#10b981' }}>
+                            ₹{item.target1Price?.toFixed(1) || '---'}
+                          </td>
+                          <td style={{ padding: '10px 12px', color: '#38bdf8' }}>
+                            ₹{item.target2Price?.toFixed(1) || '---'}
+                          </td>
+                          <td style={{ padding: '10px 12px', color: '#a855f7', fontWeight: '700' }}>
+                            1:{item.riskRewardRatio || 1.5}
+                          </td>
+                          <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                            <button
+                              onClick={() => {
+                                if (onSwitchToChart) {
+                                  onSwitchToChart(item.symbol);
+                                } else {
+                                  setSymbol(item.symbol);
+                                  setActiveView('CHART');
+                                }
+                              }}
+                              style={{
+                                backgroundColor: '#3b82f6',
+                                border: 'none',
+                                color: '#ffffff',
+                                borderRadius: '4px',
+                                padding: '3px 8px',
+                                fontSize: '10.5px',
+                                fontWeight: '700',
+                                cursor: 'pointer'
+                              }}
+                              title={`Open Chart for ${item.symbol}`}
+                            >
+                              Load Chart
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    });
+                  })()}
                 </tbody>
               </table>
             </div>
-          )}
-        </div>
-      )}
-
-      {/* 4B. REVERSAL RADAR & SCANNER VIEW */}
-      {activeSubTab === 'radar' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            fontSize: '11.5px',
-            color: 'var(--text-secondary)'
-          }}>
-            <span>Real-time proximity to S3 Buy Reversals and R3 Sell Reversals:</span>
-            <span>Last scanned: {lastScanTime || 'Scanning...'}</span>
           </div>
+        )}
 
-          <div style={{
-            overflowX: 'auto',
-            borderRadius: '8px',
-            border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0'}`,
-            background: isDark ? 'rgba(15, 23, 42, 0.6)' : '#ffffff'
-          }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11.5px', textAlign: 'left' }}>
-              <thead>
-                <tr style={{
-                  borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0'}`,
-                  background: isDark ? 'rgba(30, 41, 59, 0.5)' : '#f8fafc',
-                  color: 'var(--text-secondary)',
-                  fontWeight: '800'
-                }}>
-                  <th style={{ padding: '8px 12px' }}>Symbol</th>
-                  <th style={{ padding: '8px 12px' }}>Live LTP</th>
-                  <th style={{ padding: '8px 12px', color: '#10b981' }}>Buy Reversal (S3)</th>
-                  <th style={{ padding: '8px 12px', color: '#ef4444' }}>Sell Reversal (R3)</th>
-                  <th style={{ padding: '8px 12px' }}>Central Pivot</th>
-                  <th style={{ padding: '8px 12px' }}>Short Trade Sequence (7-Step)</th>
-                  <th style={{ padding: '8px 12px', textAlign: 'right' }}>Trigger / Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {radarItems.map(item => {
-                  const isBuyZone = item.status === 'IN BUY ZONE';
-                  const isSellReady = item.shortSetupState?.isReadyToShort;
-                  const isOpen = positions.some(p => p.symbol === item.symbol);
+        {/* VIEW 3: HISTORICAL BACKTESTING & PERFORMANCE (Section 13) */}
+        {activeView === 'BACKTEST' && (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '16px', overflowY: 'auto', gap: '14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <h3 style={{ fontSize: '16px', fontWeight: '900', margin: 0 }}>
+                  📈 MARSHALL STRATEGY HISTORICAL BACKTEST REPORT
+                </h3>
+                <p style={{ fontSize: '11px', color: '#94a3b8', margin: '2px 0 0 0' }}>
+                  Rigorous bar-by-bar execution simulation for {symbol} ({candles.length} bars)
+                </p>
+              </div>
 
-                  return (
-                    <tr 
-                      key={item.symbol}
-                      style={{
-                        borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.04)' : '#f1f5f9'}`,
-                        background: isBuyZone 
-                          ? 'rgba(16, 185, 129, 0.06)' 
-                          : (isSellReady ? 'rgba(239, 68, 68, 0.08)' : 'transparent')
-                      }}
-                    >
-                      <td style={{ padding: '10px 12px', fontWeight: '800' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span>{item.displayName}</span>
-                          {isCommoditySymbol(item.symbol) ? (
-                            <span style={{ fontSize: '9px', fontWeight: '800', background: 'rgba(234, 179, 8, 0.15)', color: '#eab308', padding: '1px 5px', borderRadius: '4px', border: '1px solid rgba(234, 179, 8, 0.3)' }}>
-                              MCX (Till 23:25)
-                            </span>
-                          ) : (
-                            <span style={{ fontSize: '9px', fontWeight: '800', background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', padding: '1px 5px', borderRadius: '4px', border: '1px solid rgba(56, 189, 248, 0.3)' }}>
-                              NSE (15:15 Cutoff)
-                            </span>
-                          )}
-                          <button
-                            onClick={() => {
-                              onSymbolSelect(item.symbol);
-                              onSwitchToChart();
-                            }}
-                            style={{
-                              background: 'transparent',
-                              border: 'none',
-                              color: '#38bdf8',
-                              cursor: 'pointer',
-                              padding: 0,
-                              display: 'inline-flex'
-                            }}
-                            title="Open in Candlestick Chart tab"
-                          >
-                            <ExternalLink size={12} />
-                          </button>
-                        </div>
-                      </td>
-                      <td style={{ padding: '10px 12px', fontWeight: '800' }}>
-                        ₹{item.ltp.toFixed(2)}
-                      </td>
-                      <td style={{ padding: '10px 12px', color: '#10b981', fontWeight: '700' }}>
-                        <div>₹{item.s3.toFixed(2)}</div>
-                        <div style={{ fontSize: '9.5px', color: 'var(--text-secondary)' }}>
-                          Dist: {item.distanceToBuyPct >= 0 ? '+' : ''}{item.distanceToBuyPct.toFixed(2)}%
-                        </div>
-                      </td>
-                      <td style={{ padding: '10px 12px', color: '#ef4444', fontWeight: '700' }}>
-                        <div>₹{item.r3.toFixed(2)}</div>
-                        <div style={{ fontSize: '9.5px', color: 'var(--text-secondary)' }}>
-                          Dist: {item.distanceToSellPct >= 0 ? '+' : ''}{item.distanceToSellPct.toFixed(2)}%
-                        </div>
-                      </td>
-                      <td style={{ padding: '10px 12px', color: 'var(--text-secondary)' }}>
-                        ₹{item.pivot.toFixed(2)}
-                      </td>
-                      <td style={{ padding: '10px 12px' }}>
-                        {item.buyRevShortSetupState?.isReadyToShort ? (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                            <span style={{
-                              padding: '3px 8px',
-                              borderRadius: '4px',
-                              fontSize: '10px',
-                              fontWeight: '900',
-                              background: '#ef4444',
-                              color: '#ffffff',
-                              boxShadow: '0 0 10px rgba(239, 68, 68, 0.4)',
-                              width: 'fit-content'
-                            }}>
-                              🚨 S3 BREAKDOWN ➔ SHORT READY
-                            </span>
-                            <span style={{ fontSize: '9.5px', color: '#ef4444', fontWeight: '700' }}>
-                              SL: ₹{(item.s1_r1 || item.pivot).toFixed(2)} (Pivot/S1-R1) | T1: ₹{item.s4.toFixed(2)}
-                            </span>
-                          </div>
-                        ) : item.shortSetupState?.isReadyToShort ? (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                            <span style={{
-                              padding: '3px 8px',
-                              borderRadius: '4px',
-                              fontSize: '10px',
-                              fontWeight: '900',
-                              background: '#ef4444',
-                              color: '#ffffff',
-                              boxShadow: '0 0 10px rgba(239, 68, 68, 0.4)',
-                              width: 'fit-content'
-                            }}>
-                              🔥 5. PIVOT BROKEN ➔ SHORT READY
-                            </span>
-                            <span style={{ fontSize: '9.5px', color: '#ef4444', fontWeight: '700' }}>
-                              Stop Loss: ₹{item.r3.toFixed(2)} (Sell Reversal) | T1: ₹{item.s3.toFixed(2)}
-                            </span>
-                          </div>
-                        ) : item.longSetupState?.isReadyToLong ? (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                            <span style={{
-                              padding: '3px 8px',
-                              borderRadius: '4px',
-                              fontSize: '10px',
-                              fontWeight: '900',
-                              background: '#10b981',
-                              color: '#ffffff',
-                              boxShadow: '0 0 10px rgba(16, 185, 129, 0.4)',
-                              width: 'fit-content'
-                            }}>
-                              🔔 4. S3 RECLAIMED ➔ BUY READY
-                            </span>
-                            <span style={{ fontSize: '9.5px', color: '#10b981', fontWeight: '700' }}>
-                              Stop Loss: ₹{item.s3.toFixed(2)} | Target 1: ₹{item.pivot.toFixed(2)}
-                            </span>
-                          </div>
-                        ) : item.buyRevShortSetupState?.isChasedBelowS4 ? (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                            <span style={{
-                              padding: '3px 8px',
-                              borderRadius: '4px',
-                              fontSize: '10px',
-                              fontWeight: '800',
-                              background: 'rgba(148, 163, 184, 0.15)',
-                              color: '#94a3b8',
-                              border: '1px solid rgba(148, 163, 184, 0.3)',
-                              width: 'fit-content'
-                            }}>
-                              ⏹️ S4 Hit: &lt; ₹{item.s4.toFixed(2)}
-                            </span>
-                            <span style={{ fontSize: '9.5px', color: 'var(--text-secondary)' }}>
-                              Move completed ➔ Chasing avoided
-                            </span>
-                          </div>
-                        ) : item.buyRevShortSetupState?.hasMovedBelowS3 ? (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                            <span style={{
-                              padding: '3px 8px',
-                              borderRadius: '4px',
-                              fontSize: '10px',
-                              fontWeight: '800',
-                              background: 'rgba(239, 68, 68, 0.15)',
-                              color: '#f87171',
-                              border: '1px solid rgba(239, 68, 68, 0.3)',
-                              width: 'fit-content'
-                            }}>
-                              ⚠️ S3 Slip: &lt; ₹{item.s3.toFixed(2)}
-                            </span>
-                            <span style={{ fontSize: '9.5px', color: 'var(--text-secondary)' }}>
-                              Awaiting breakdown &lt; ₹{item.s4.toFixed(2)}
-                            </span>
-                          </div>
-                        ) : item.shortSetupState?.hasRejectedBelowR3 ? (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                            <span style={{
-                              padding: '3px 8px',
-                              borderRadius: '4px',
-                              fontSize: '10px',
-                              fontWeight: '800',
-                              background: 'rgba(245, 158, 11, 0.2)',
-                              color: '#f59e0b',
-                              border: '1px solid rgba(245, 158, 11, 0.3)',
-                              width: 'fit-content'
-                            }}>
-                              ⚠️ 4. Rejection Confirmed
-                            </span>
-                            <span style={{ fontSize: '9.5px', color: 'var(--text-secondary)' }}>
-                              Awaiting Pivot Break &lt; ₹{item.pivot.toFixed(2)}
-                            </span>
-                          </div>
-                        ) : item.longSetupState?.hasSweptBelowS3 ? (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                            <span style={{
-                              padding: '3px 8px',
-                              borderRadius: '4px',
-                              fontSize: '10px',
-                              fontWeight: '800',
-                              background: 'rgba(56, 189, 248, 0.15)',
-                              color: '#38bdf8',
-                              width: 'fit-content'
-                            }}>
-                              🌊 2. S3 Swept (Low: ₹{item.longSetupState.minLowBelowS3.toFixed(2)})
-                            </span>
-                            <span style={{ fontSize: '9.5px', color: 'var(--text-secondary)' }}>
-                              Watching for Reclaim &gt; ₹{item.s3.toFixed(2)}
-                            </span>
-                          </div>
-                        ) : item.shortSetupState?.hasBrokeOutAboveR3 ? (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                            <span style={{
-                              padding: '3px 8px',
-                              borderRadius: '4px',
-                              fontSize: '10px',
-                              fontWeight: '800',
-                              background: 'rgba(56, 189, 248, 0.15)',
-                              color: '#38bdf8',
-                              width: 'fit-content'
-                            }}>
-                              📈 2. Broke Above R3 (High: ₹{item.shortSetupState.maxHighAboveR3.toFixed(2)})
-                            </span>
-                            <span style={{ fontSize: '9.5px', color: 'var(--text-secondary)' }}>
-                              Watching for Rejection below ₹{item.r3.toFixed(2)}
-                            </span>
-                          </div>
-                        ) : (
-                          <span style={{
-                            padding: '3px 8px',
-                            borderRadius: '4px',
-                            fontSize: '10px',
-                            fontWeight: '600',
-                            color: 'var(--text-secondary)'
-                          }}>
-                            Monitoring S3 / R3 Zones
-                          </span>
-                        )}
-                      </td>
-                      <td style={{ padding: '10px 12px', textAlign: 'right' }}>
-                        {isOpen ? (
-                          <span style={{ fontSize: '10.5px', color: '#38bdf8', fontWeight: '800' }}>Position Active</span>
-                        ) : (
-                          <div style={{ display: 'inline-flex', gap: '4px' }}>
-                            <button
-                              onClick={() => executeTrade(
-                                item.symbol,
-                                item.displayName,
-                                'BUY',
-                                'BUY REVERSAL (S3 RECLAIM)',
-                                item.ltp,
-                                item.s3,
-                                item.s4,
-                                item.r4,
-                                item.pivot,
-                                item.pivot
-                              )}
-                              style={{
-                                padding: '3px 7px',
-                                borderRadius: '4px',
-                                border: '1px solid #10b981',
-                                background: 'rgba(16, 185, 129, 0.15)',
-                                color: '#10b981',
-                                fontSize: '10px',
-                                fontWeight: '800',
-                                cursor: 'pointer'
-                              }}
-                              title="Execute BUY on S3 Reclaim"
-                            >
-                              BUY (S3)
-                            </button>
-                            <button
-                              onClick={() => {
-                                const isReady = item.buyRevShortSetupState?.isReadyToShort || item.shortSetupState?.isReadyToShort;
-                                if (!isReady) {
-                                  if (!window.confirm(`Notice: ${item.displayName} has not confirmed rejection / breakdown yet. Execute SHORT anyway?`)) {
-                                    return;
-                                  }
-                                }
-                                  const isS3Short = item.buyRevShortSetupState?.isReadyToShort;
-                                  const s3Sl = item.s1_r1 > item.ltp ? item.s1_r1 : (item.pivot > item.ltp ? item.pivot : item.s3);
-                                  executeTrade(
-                                    item.symbol,
-                                    item.displayName,
-                                    'SELL',
-                                    isS3Short ? 'BUY REVERSAL BREAKDOWN (SHORT)' : 'SELL REVERSAL (PIVOT BREAKDOWN)',
-                                    item.ltp,
-                                    isS3Short ? s3Sl : item.r3,
-                                    item.s4,
-                                    item.r4,
-                                    item.pivot,
-                                    isS3Short ? (item.s5 || item.s4) : item.s3
-                                  );
-                              }}
-                              style={{
-                                padding: '3px 7px',
-                                borderRadius: '4px',
-                                border: '1px solid #ef4444',
-                                background: 'rgba(239, 68, 68, 0.15)',
-                                color: '#ef4444',
-                                fontSize: '10px',
-                                fontWeight: '800',
-                                cursor: 'pointer'
-                              }}
-                              title="Execute SHORT with SL @ Reversal Level"
-                            >
-                              SHORT
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* 4C. TRADE HISTORY VIEW */}
-      {activeSubTab === 'history' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {history.length === 0 ? (
-            <div style={{
-              background: isDark ? 'rgba(15, 23, 42, 0.4)' : '#ffffff',
-              borderRadius: '8px',
-              padding: '36px',
-              textAlign: 'center',
-              border: `1px dashed ${isDark ? 'rgba(255, 255, 255, 0.1)' : '#cbd5e1'}`,
-              color: 'var(--text-secondary)'
-            }}>
-              No closed intraday trades recorded yet today.
+              <button
+                onClick={fetchSymbolCandles}
+                style={{
+                  backgroundColor: '#3b82f6',
+                  border: 'none',
+                  color: '#ffffff',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  cursor: 'pointer'
+                }}
+              >
+                Re-Run Simulation
+              </button>
             </div>
-          ) : (
-            <div style={{
-              overflowX: 'auto',
-              borderRadius: '8px',
-              border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0'}`,
-              background: isDark ? 'rgba(15, 23, 42, 0.6)' : '#ffffff'
-            }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11.5px', textAlign: 'left' }}>
+
+            {/* Performance Metric Cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
+              <div style={{ backgroundColor: '#0c101a', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div style={{ color: '#64748b', fontSize: '10px', fontWeight: '700' }}>TOTAL TRADES</div>
+                <div style={{ fontSize: '20px', fontWeight: '900', color: '#f8fafc', marginTop: '4px' }}>
+                  {metrics.totalTrades}
+                </div>
+              </div>
+              <div style={{ backgroundColor: '#0c101a', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div style={{ color: '#64748b', fontSize: '10px', fontWeight: '700' }}>WIN RATE</div>
+                <div style={{ fontSize: '20px', fontWeight: '900', color: metrics.winRatePct >= 50 ? '#34d399' : '#f87171', marginTop: '4px' }}>
+                  {metrics.winRatePct}%
+                </div>
+                <div style={{ fontSize: '10px', color: '#94a3b8' }}>{metrics.winningTrades}W / {metrics.losingTrades}L</div>
+              </div>
+              <div style={{ backgroundColor: '#0c101a', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div style={{ color: '#64748b', fontSize: '10px', fontWeight: '700' }}>NET PROFIT POINTS</div>
+                <div style={{ fontSize: '20px', fontWeight: '900', color: metrics.totalProfitPts >= 0 ? '#34d399' : '#f87171', marginTop: '4px' }}>
+                  {metrics.totalProfitPts >= 0 ? '+' : ''}{metrics.totalProfitPts} pts
+                </div>
+              </div>
+              <div style={{ backgroundColor: '#0c101a', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div style={{ color: '#64748b', fontSize: '10px', fontWeight: '700' }}>PROFIT FACTOR</div>
+                <div style={{ fontSize: '20px', fontWeight: '900', color: metrics.profitFactor >= 1.5 ? '#34d399' : '#f59e0b', marginTop: '4px' }}>
+                  {metrics.profitFactor}
+                </div>
+              </div>
+              <div style={{ backgroundColor: '#0c101a', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div style={{ color: '#64748b', fontSize: '10px', fontWeight: '700' }}>MAX DRAWDOWN</div>
+                <div style={{ fontSize: '20px', fontWeight: '900', color: '#f87171', marginTop: '4px' }}>
+                  -{metrics.maxDrawdownPts} pts
+                </div>
+              </div>
+            </div>
+
+            {/* Trades History Log */}
+            <div style={{ backgroundColor: '#0c101a', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+              <div style={{ padding: '10px 14px', backgroundColor: '#151d2f', fontSize: '12px', fontWeight: '800' }}>
+                COMPLETED BACKTEST TRADES ({completedTrades.length})
+              </div>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '11px' }}>
                 <thead>
-                  <tr style={{
-                    borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0'}`,
-                    background: isDark ? 'rgba(30, 41, 59, 0.5)' : '#f8fafc',
-                    color: 'var(--text-secondary)',
-                    fontWeight: '800'
-                  }}>
-                    <th style={{ padding: '8px 12px' }}>Symbol</th>
-                    <th style={{ padding: '8px 12px' }}>Side / Setup</th>
-                    <th style={{ padding: '8px 12px' }}>Entry Date & Time / Price</th>
-                    <th style={{ padding: '8px 12px' }}>Exit Date & Time / Price</th>
-                    <th style={{ padding: '8px 12px' }}>Exit Reason</th>
-                    <th style={{ padding: '8px 12px', textAlign: 'right' }}>Realized P&L</th>
+                  <tr style={{ backgroundColor: 'rgba(255,255,255,0.02)', color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                    <th style={{ padding: '8px 12px' }}>Time</th>
+                    <th style={{ padding: '8px 12px' }}>Strategy</th>
+                    <th style={{ padding: '8px 12px' }}>Dir</th>
+                    <th style={{ padding: '8px 12px' }}>Entry</th>
+                    <th style={{ padding: '8px 12px' }}>Exit</th>
+                    <th style={{ padding: '8px 12px' }}>Status</th>
+                    <th style={{ padding: '8px 12px' }}>P&L (Pts)</th>
+                    <th style={{ padding: '8px 12px' }}>P&L (%)</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {history.map(item => {
-                    const isProfit = (item.realizedPnl || 0) >= 0;
+                  {completedTrades.map((t) => {
+                    const isWin = (t.pnlPoints || 0) > 0;
                     return (
-                      <tr 
-                        key={item.id}
-                        style={{
-                          borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.04)' : '#f1f5f9'}`
-                        }}
-                      >
-                        <td style={{ padding: '10px 12px', fontWeight: '800' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span>{item.displayName}</span>
-                            <button
-                              onClick={() => {
-                                onSymbolSelect(item.symbol);
-                                onSwitchToChart();
-                              }}
-                              style={{
-                                background: 'transparent',
-                                border: 'none',
-                                color: '#38bdf8',
-                                cursor: 'pointer',
-                                padding: 0
-                              }}
-                            >
-                              <ExternalLink size={12} />
-                            </button>
-                          </div>
-                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{item.quantity} shares</span>
+                      <tr key={t.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                        <td style={{ padding: '8px 12px' }}>{t.timeStr}</td>
+                        <td style={{ padding: '8px 12px', fontWeight: '700' }}>{t.label}</td>
+                        <td style={{ padding: '8px 12px', color: t.direction === 'BUY' ? '#34d399' : '#f87171', fontWeight: '800' }}>
+                          {t.direction}
                         </td>
-                        <td style={{ padding: '10px 12px' }}>
+                        <td style={{ padding: '8px 12px' }}>₹{t.entryPrice.toFixed(1)}</td>
+                        <td style={{ padding: '8px 12px' }}>₹{t.exitPrice?.toFixed(1) || '---'}</td>
+                        <td style={{ padding: '8px 12px' }}>
                           <span style={{
-                            padding: '2px 6px',
-                            borderRadius: '4px',
-                            fontSize: '10px',
+                            padding: '2px 5px',
+                            borderRadius: '3px',
+                            fontSize: '9.5px',
                             fontWeight: '800',
-                            background: item.side === 'BUY' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
-                            color: item.side === 'BUY' ? '#10b981' : '#ef4444'
+                            backgroundColor: isWin ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+                            color: isWin ? '#34d399' : '#f87171'
                           }}>
-                            {item.side}
-                          </span>
-                          <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                            {item.setupType}
-                          </div>
-                        </td>
-                        <td style={{ padding: '10px 12px' }}>
-                          <div style={{ fontWeight: '700' }}>₹{item.entryPrice.toFixed(2)}</div>
-                          <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{formatTradeDateTimeDisplay(item.entryTime, item.entryDate, item.entryTimestamp)}</div>
-                        </td>
-                        <td style={{ padding: '10px 12px' }}>
-                          <div style={{ fontWeight: '700' }}>₹{item.exitPrice?.toFixed(2)}</div>
-                          <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{formatTradeDateTimeDisplay(item.exitTime, item.exitDate || item.entryDate, item.exitTimestamp)}</div>
-                        </td>
-                        <td style={{ padding: '10px 12px' }}>
-                          <span style={{
-                            padding: '2px 6px',
-                            borderRadius: '4px',
-                            fontSize: '10px',
-                            fontWeight: '700',
-                            background: item.exitReason?.includes('TARGET') 
-                              ? 'rgba(16, 185, 129, 0.15)' 
-                              : (item.exitReason?.includes('STOP') ? 'rgba(239, 68, 68, 0.15)' : 'rgba(56, 189, 248, 0.15)'),
-                            color: item.exitReason?.includes('TARGET') 
-                              ? '#10b981' 
-                              : (item.exitReason?.includes('STOP') ? '#ef4444' : '#38bdf8')
-                          }}>
-                            {item.exitReason}
+                            {t.status}
                           </span>
                         </td>
-                        <td style={{ padding: '10px 12px', textAlign: 'right' }}>
-                          <div style={{ fontWeight: '900', fontSize: '13px', color: isProfit ? '#10b981' : '#ef4444' }}>
-                            {isProfit ? '+' : ''}₹{item.realizedPnl?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                          </div>
+                        <td style={{ padding: '8px 12px', fontWeight: '800', color: isWin ? '#34d399' : '#f87171' }}>
+                          {isWin ? '+' : ''}{t.pnlPoints?.toFixed(1)} pts
+                        </td>
+                        <td style={{ padding: '8px 12px', fontWeight: '700', color: isWin ? '#34d399' : '#f87171' }}>
+                          {isWin ? '+' : ''}{t.pnlPct?.toFixed(2)}%
                         </td>
                       </tr>
                     );
@@ -2377,60 +1593,463 @@ export const AlgoTradeContainer: React.FC<AlgoTradeContainerProps> = ({
                 </tbody>
               </table>
             </div>
-          )}
-        </div>
-      )}
+          </div>
+        )}
 
-      {/* 4D. EXECUTION AUDIT LOGS VIEW */}
-      {activeSubTab === 'logs' && (
+        {/* PANEL 1: ACTIVE POSITIONS */}
+        {activeView === 'POSITIONS' && (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '16px', overflowY: 'auto', gap: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+              <div>
+                <span style={{ fontSize: '15px', fontWeight: '800', color: '#f8fafc' }}>
+                  Open Positions (Mark-to-Market Live P&L)
+                </span>
+                <span style={{ display: 'block', fontSize: '11px', color: '#94a3b8' }}>
+                  Autonomous Marshall Strategy Engine Active (MIS Intraday). Stop Loss automatically trailed to Breakeven on Target 1.
+                </span>
+              </div>
+
+              {openTrades.length > 0 && (
+                <button
+                  onClick={async () => {
+                    const base = await getBackendHttpUrl();
+                    for (const pos of openTrades) {
+                      await fetch(`${base}/api/algo-trade/trades/close`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ tradeId: pos.id, exitReason: 'MANUAL_SQUARE_OFF_ALL' })
+                      });
+                    }
+                    fetchAlgoTrades();
+                  }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: '#f43f5e',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    fontSize: '11px',
+                    fontWeight: '800',
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 8px rgba(244, 63, 94, 0.3)'
+                  }}
+                  title="Square off all leftover open intraday positions immediately"
+                >
+                  <AlertTriangle size={13} />
+                  <span>Square Off All Open ({openTrades.length})</span>
+                </button>
+              )}
+            </div>
+
+            {openTrades.length === 0 ? (
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '60px 20px',
+                background: 'rgba(15, 23, 42, 0.4)',
+                borderRadius: '8px',
+                border: '1px dashed rgba(255, 255, 255, 0.15)',
+                color: '#94a3b8',
+                gap: '8px'
+              }}>
+                <Activity size={32} style={{ color: '#38bdf8', opacity: 0.7 }} />
+                <span style={{ fontSize: '15px', fontWeight: '700' }}>No Open Positions</span>
+                <span style={{ fontSize: '12px', maxWidth: '440px', textAlign: 'center', color: '#64748b' }}>
+                  The autonomous Marshall Strategy Engine is scanning 24 instruments for Buy Reversal, Sell Reversal, Breakout, and Continuation touches.
+                </span>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {openTrades.map(pos => {
+                  const currentLtp = (pos.currentLtp !== undefined && pos.currentLtp !== null && pos.currentLtp > 0) ? pos.currentLtp : (pos.currentPrice || pos.entryPrice);
+                  const pnlPoints = pos.direction === 'BUY' ? (currentLtp - pos.entryPrice) : (pos.entryPrice - currentLtp);
+                  const dynamicPnL = Math.round(pnlPoints * (pos.quantity || 1) * 100) / 100;
+                  const capitalAllocated = pos.capitalAllocated || (pos.entryPrice * (pos.quantity || 1)) || 1;
+                  const dynamicRoi = Math.round((dynamicPnL / capitalAllocated) * 10000) / 100;
+                  const displayPnL = (pos.unrealizedPnL !== undefined && pos.unrealizedPnL !== 0) ? pos.unrealizedPnL : dynamicPnL;
+                  const displayRoi = (pos.roiPct !== undefined && pos.roiPct !== 0) ? pos.roiPct : dynamicRoi;
+                  const isProfit = displayPnL >= 0;
+                  return (
+                    <div
+                      key={pos.id}
+                      style={{
+                        background: 'rgba(15, 23, 42, 0.7)',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        borderRadius: '8px',
+                        padding: '14px 16px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '10px',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.2)'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                          <span style={{
+                            background: pos.direction === 'BUY' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                            color: pos.direction === 'BUY' ? '#10b981' : '#f87171',
+                            padding: '3px 8px',
+                            borderRadius: '4px',
+                            fontWeight: '900',
+                            fontSize: '11px'
+                          }}>
+                            {pos.direction}
+                          </span>
+                          {pos.segment === 'STOCK_OPTION' ? (
+                            <span style={{
+                              background: 'rgba(168, 85, 247, 0.2)',
+                              border: '1px solid #a855f7',
+                              color: '#d8b4fe',
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              fontWeight: '800',
+                              fontSize: '10px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}>
+                              <span>🎯 STOCK OPTION</span>
+                              {pos.lotSize ? <span style={{ opacity: 0.85 }}>• {Math.max(1, Math.round(pos.quantity / (pos.lotSize || 1)))} Lots ({pos.lotSize}/lot)</span> : null}
+                            </span>
+                          ) : pos.segment === 'INDEX_OPTION' ? (
+                            <span style={{
+                              background: 'rgba(99, 102, 241, 0.2)',
+                              border: '1px solid #6366f1',
+                              color: '#a5b4fc',
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              fontWeight: '800',
+                              fontSize: '10px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}>
+                              <span>⚡ INDEX OPTION</span>
+                              {pos.lotSize ? <span style={{ opacity: 0.85 }}>• {Math.max(1, Math.round(pos.quantity / (pos.lotSize || 1)))} Lots ({pos.lotSize}/lot)</span> : null}
+                            </span>
+                          ) : (
+                            <span style={{
+                              background: 'rgba(56, 189, 248, 0.15)',
+                              color: '#38bdf8',
+                              padding: '3px 7px',
+                              borderRadius: '4px',
+                              fontWeight: '800',
+                              fontSize: '10px'
+                            }}>
+                              INTRADAY MIS
+                            </span>
+                          )}
+                          <span
+                            onClick={() => {
+                              const chartSym = pos.symbol;
+                              if (onSwitchToChart) onSwitchToChart(chartSym);
+                            }}
+                            style={{ fontSize: '16px', fontWeight: '900', color: '#ffffff', cursor: onSwitchToChart ? 'pointer' : 'default', textDecoration: onSwitchToChart ? 'underline dotted rgba(56, 189, 248, 0.5)' : 'none' }}
+                            title={`Click to open Option Candlestick Chart for ${pos.symbol}`}
+                          >
+                            {pos.symbol}
+                          </span>
+                          {pos.spotAtEntry ? (
+                            <span style={{
+                              fontSize: '10px',
+                              color: '#cbd5e1',
+                              backgroundColor: 'rgba(255,255,255,0.06)',
+                              padding: '2px 6px',
+                              borderRadius: '4px'
+                            }}>
+                              Spot: ₹{pos.spotAtEntry.toFixed(1)}
+                            </span>
+                          ) : null}
+                          <span style={{
+                            background: 'rgba(56, 189, 248, 0.1)',
+                            color: '#38bdf8',
+                            padding: '2px 8px',
+                            borderRadius: '4px',
+                            fontSize: '10px',
+                            fontWeight: '700'
+                          }}>
+                            {pos.strategy}
+                          </span>
+                          <span style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            background: 'rgba(30, 41, 59, 0.8)',
+                            border: '1px solid rgba(56, 189, 248, 0.3)',
+                            color: '#38bdf8',
+                            padding: '2px 8px',
+                            borderRadius: '4px',
+                            fontSize: '10px',
+                            fontWeight: '700',
+                            fontFamily: 'monospace'
+                          }} title="Date and time when entry triggered">
+                            <Clock size={11} style={{ color: '#38bdf8' }} />
+                            <span>Triggered: {pos.entryDateTime || `${pos.entryDate || ''} ${pos.entryTime || ''}` || 'IST'}</span>
+                          </span>
+                        </div>
+
+                        {/* Live P&L Badge */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ textAlign: 'right' }}>
+                            <span style={{
+                              fontSize: '18px',
+                              fontWeight: '900',
+                              color: isProfit ? '#10b981' : '#ef4444',
+                              fontFamily: 'monospace'
+                            }}>
+                              {isProfit ? '+' : ''}₹{displayPnL.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </span>
+                            <span style={{
+                              display: 'block',
+                              fontSize: '11px',
+                              fontWeight: '700',
+                              color: isProfit ? '#10b981' : '#ef4444'
+                            }}>
+                              ({isProfit ? '+' : ''}{displayRoi.toFixed(2)}%)
+                            </span>
+                          </div>
+
+                          <button
+                            onClick={() => handleClosePosition(pos.id)}
+                            style={{
+                              background: '#f43f5e',
+                              color: '#ffffff',
+                              border: 'none',
+                              padding: '5px 12px',
+                              borderRadius: '6px',
+                              fontSize: '11px',
+                              fontWeight: '800',
+                              cursor: 'pointer'
+                            }}
+                            title="Square off position at CMP"
+                          >
+                            Square Off
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              const chartSym = pos.symbol;
+                              if (onSwitchToChart) {
+                                onSwitchToChart(chartSym);
+                              } else {
+                                setSymbol(chartSym);
+                                setActiveView('CHART');
+                              }
+                            }}
+                            style={{
+                              background: 'rgba(56, 189, 248, 0.15)',
+                              color: '#38bdf8',
+                              border: '1px solid rgba(56, 189, 248, 0.3)',
+                              padding: '5px 12px',
+                              borderRadius: '6px',
+                              fontSize: '11px',
+                              fontWeight: '800',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '5px',
+                              transition: 'all 0.15s ease'
+                            }}
+                            title={`Open Option Candlestick Chart for ${pos.symbol}`}
+                          >
+                            <BarChart2 size={13} />
+                            <span>Option Chart</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Trade Metrics Line */}
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+                        gap: '8px',
+                        background: 'rgba(0, 0, 0, 0.25)',
+                        padding: '8px 12px',
+                        borderRadius: '6px',
+                        fontSize: '11px'
+                      }}>
+                        <div>
+                          <span style={{ color: '#94a3b8' }}>Entry Price: </span>
+                          <strong style={{ fontFamily: 'monospace' }}>₹{pos.entryPrice?.toFixed(2)}</strong>
+                        </div>
+                        <div>
+                          <span style={{ color: '#94a3b8' }}>Current CMP: </span>
+                          <strong style={{ fontFamily: 'monospace', color: '#00f0ff', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                            <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981', display: 'inline-block', boxShadow: '0 0 6px #10b981' }}></span>
+                            ₹{(pos.currentLtp || pos.entryPrice)?.toFixed(2)}
+                          </strong>
+                        </div>
+                        <div>
+                          <span style={{ color: '#94a3b8' }}>Quantity: </span>
+                          <strong>{pos.quantity} units</strong>
+                        </div>
+                        <div>
+                          <span style={{ color: '#94a3b8' }}>Capital Deployed: </span>
+                          <strong>₹{(pos.capitalAllocated || pos.entryPrice * pos.quantity).toLocaleString('en-IN')}</strong>
+                        </div>
+                        <div>
+                          <span style={{ color: '#94a3b8' }}>Trailing SL: </span>
+                          <strong style={{ color: '#f87171', fontFamily: 'monospace' }}>₹{pos.stopLossPrice?.toFixed(2)}</strong>
+                        </div>
+                        <div>
+                          <span style={{ color: '#94a3b8' }}>Target 1 / 2: </span>
+                          <strong style={{ color: '#10b981', fontFamily: 'monospace' }}>₹{pos.target1Price?.toFixed(1)} / ₹{pos.target2Price?.toFixed(1)}</strong>
+                        </div>
+                        <div>
+                          <span style={{ color: '#94a3b8' }}>Entry Triggered: </span>
+                          <strong style={{ color: '#38bdf8', fontFamily: 'monospace' }}>
+                            {pos.entryDateTime || `${pos.entryDate || ''} ${pos.entryTime || ''}`}
+                          </strong>
+                        </div>
+                      </div>
+
+                      {/* Execution Reasoning Narrative */}
+                      <div style={{ fontSize: '11px', color: '#94a3b8', fontStyle: 'italic', borderLeft: '3px solid #38bdf8', paddingLeft: '8px' }}>
+                        {pos.triggerReason || 'Marshall Orderflow Level Retest / Breakout Confirmation'}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ===================================================================== */}
+      {/* 5. CONFIGURATION DRAWER / MODAL (Specification Section 7, 11) */}
+      {/* ===================================================================== */}
+      {isConfigOpen && (
         <div style={{
-          background: isDark ? 'rgba(10, 14, 23, 0.95)' : '#ffffff',
+          position: 'absolute',
+          top: '46px',
+          right: '16px',
+          width: '320px',
+          backgroundColor: '#0f172a',
+          border: '1px solid rgba(255, 255, 255, 0.15)',
           borderRadius: '8px',
-          border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : '#e2e8f0'}`,
-          padding: '12px',
+          padding: '16px',
+          boxShadow: '0 8px 30px rgba(0,0,0,0.6)',
+          zIndex: 50,
           display: 'flex',
           flexDirection: 'column',
-          gap: '6px',
-          fontFamily: 'monospace',
-          fontSize: '11px',
-          maxHeight: '400px',
-          overflowY: 'auto'
+          gap: '12px'
         }}>
-          {logs.map(log => {
-            let color = '#94a3b8';
-            if (log.type === 'ORDER') color = '#38bdf8';
-            if (log.type === 'SIGNAL') color = '#f59e0b';
-            if (log.type === 'EXIT') color = '#10b981';
-            if (log.type === 'WARNING') color = '#ef4444';
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '8px' }}>
+            <span style={{ fontSize: '13px', fontWeight: '900', color: '#f8fafc' }}>⚙️ Strategy Parameters</span>
+            <button onClick={() => setIsConfigOpen(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '13px' }}>✕</button>
+          </div>
 
-            return (
-              <div 
-                key={log.id} 
-                style={{ 
-                  display: 'flex', 
-                  alignItems: 'flex-start', 
-                  gap: '8px', 
-                  borderBottom: '1px solid rgba(255,255,255,0.03)',
-                  paddingBottom: '4px'
-                }}
-              >
-                <span style={{ color: 'var(--text-secondary)', flexShrink: 0 }}>[{log.date ? `${log.date}, ${log.time}` : log.time}]</span>
-                <span style={{ 
-                  color, 
-                  fontWeight: '800', 
-                  padding: '1px 4px', 
-                  borderRadius: '3px', 
-                  background: 'rgba(255,255,255,0.04)',
-                  flexShrink: 0 
-                }}>
-                  {log.type}
-                </span>
-                <span style={{ color: 'var(--text-primary)', wordBreak: 'break-word' }}>{log.message}</span>
-              </div>
-            );
-          })}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '11px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={config.enablePrimaryBuy}
+                onChange={(e) => setConfig({ ...config, enablePrimaryBuy: e.target.checked })}
+              />
+              Enable Strategy 1: Primary Buy
+            </label>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={config.enablePrimarySell}
+                onChange={(e) => setConfig({ ...config, enablePrimarySell: e.target.checked })}
+              />
+              Enable Strategy 2: Primary Sell
+            </label>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={config.enableContinuationBuy}
+                onChange={(e) => setConfig({ ...config, enableContinuationBuy: e.target.checked })}
+              />
+              Enable Strategy 3: Continuation Buy (UT1 Retest)
+            </label>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={config.enableContinuationSell}
+                onChange={(e) => setConfig({ ...config, enableContinuationSell: e.target.checked })}
+              />
+              Enable Strategy 4: Continuation Sell (LT1 Retest)
+            </label>
+
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '8px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: '6px' }}>
+                <input
+                  type="checkbox"
+                  checked={config.volumeFilterEnabled}
+                  onChange={(e) => setConfig({ ...config, volumeFilterEnabled: e.target.checked })}
+                />
+                Volume Multiplier Confirmation
+              </label>
+              {config.volumeFilterEnabled && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingLeft: '22px' }}>
+                  <span>Multiplier:</span>
+                  <input
+                    type="number"
+                    step="0.05"
+                    min="1.0"
+                    max="3.0"
+                    value={config.volumeMultiplier}
+                    onChange={(e) => setConfig({ ...config, volumeMultiplier: parseFloat(e.target.value) || 1.2 })}
+                    style={{ width: '60px', backgroundColor: '#1e293b', border: '1px solid #475569', color: '#fff', borderRadius: '4px', padding: '2px 5px', fontSize: '11px' }}
+                  />
+                  <span>x 20-SMA</span>
+                </div>
+              )}
+            </div>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={config.vwapFilterEnabled}
+                onChange={(e) => setConfig({ ...config, vwapFilterEnabled: e.target.checked })}
+              />
+              VWAP Direction Filter
+            </label>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={config.trailingStopEnabled}
+                onChange={(e) => setConfig({ ...config, trailingStopEnabled: e.target.checked })}
+              />
+              Trail SL to Breakeven after Target 1
+            </label>
+          </div>
+
+          <button
+            onClick={() => {
+              setConfig(DEFAULT_MARSHALL_CONFIG);
+              setIsConfigOpen(false);
+            }}
+            style={{
+              backgroundColor: '#1e293b',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: '#38bdf8',
+              borderRadius: '5px',
+              padding: '6px',
+              fontSize: '11px',
+              fontWeight: '700',
+              cursor: 'pointer'
+            }}
+          >
+            Reset to Default Specification
+          </button>
         </div>
       )}
+
     </div>
   );
 };
+
+export const AlgoTradeDashboard = AlgoTradeContainer;

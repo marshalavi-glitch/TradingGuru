@@ -12,22 +12,12 @@ const ENDPOINTS_TO_CHECK = [
   '/health',
   '/api/online-users',
   '/api/market-indices',
-  '/api/candles?symbol=NSE:NIFTY&timeframe=5&limit=2',
-  '/api/candles?symbol=MCX:CRUDEOIL1!&timeframe=5&limit=2',
-  '/api/mcx/live-quotes',
   '/api/scanner/results',
-  '/api/scanner/early-picks',
-  '/api/scanner/weekly-200-ema',
-  '/api/scanner/opening-bias',
   '/api/doji-signals',
   '/api/volume-breakouts',
-  '/api/nr7-breakouts',
   '/api/sr-breakouts',
   '/api/mp-3day-patterns',
-  '/api/swing-scanner',
-  '/api/manual-trades',
-  '/api/orderflow/state?symbol=NSE:NIFTY&timeframe=5',
-  '/api/options/chain?symbol=NSE:NIFTY'
+  '/api/manual-trades'
 ];
 
 async function checkEndpoints() {
@@ -37,7 +27,7 @@ async function checkEndpoints() {
 
   for (const ep of ENDPOINTS_TO_CHECK) {
     try {
-      const res = await fetch(`${baseUrl}${ep}`, { signal: AbortSignal.timeout(15000) });
+      const res = await fetch(`${baseUrl}${ep}`, { signal: AbortSignal.timeout(5000) });
       if (res.ok) {
         passed++;
       } else {
@@ -55,24 +45,15 @@ async function checkEndpoints() {
 
 async function checkAngelOneSession() {
   try {
-    const res = await angelOneBridge.getLtp('NSE', 'Nifty 50', '99926000');
-    if (res && res.status && res.data && res.data.ltp) {
-      console.log(`🩺 [Auto-Healer] Angel One SmartAPI session ACTIVE. Nifty 50 LTP: ₹${res.data.ltp}`);
+    const res = await fetch('http://localhost:3002/api/angelone/status', { signal: AbortSignal.timeout(5000) });
+    const data = await res.json();
+    if (data && data.isLoggedIn) {
+      console.log(`🩺 [Auto-Healer] Angel One SmartAPI session ACTIVE on server.`);
     } else {
-      const code = res?.errorcode || res?.message || 'Unknown';
-      console.warn(`⚠️ [Auto-Healer] Angel One session check returned ${code}. Triggering re-authentication...`);
-      const loginRes = await angelOneBridge.login();
-      if (loginRes.success) {
-        console.log(`✅ [Auto-Healer] Angel One session successfully recovered with fresh TOTP!`);
-      } else {
-        console.error(`❌ [Auto-Healer] Angel One re-login failed: ${loginRes.message}`);
-      }
+      console.warn(`⚠️ [Auto-Healer] Angel One session not logged in.`);
     }
   } catch (err) {
-    console.warn(`⚠️ [Auto-Healer] Angel One check exception: ${err.message}. Attempting re-login...`);
-    try {
-      await angelOneBridge.login();
-    } catch (e) {}
+    console.warn(`⚠️ [Auto-Healer] Angel One check exception: ${err.message}`);
   }
 }
 

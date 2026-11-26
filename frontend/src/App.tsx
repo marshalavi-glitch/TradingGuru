@@ -519,6 +519,7 @@ function App() {
     setLoadedSymbol('');
 
     let isMounted = true;
+    let retryTimer: any = null;
 
     tvStreamer.setStatusListener((status) => {
       if (isMounted) {
@@ -541,6 +542,7 @@ function App() {
             setCandles(filterMarketHoursCandles(data.candles, symbol, timeframe));
             setLoadedSymbol(symbol);
             setLoading(false);
+            setError(null);
             setConnectionStatus('connected');
           }
         }
@@ -562,6 +564,17 @@ function App() {
     };
 
     fetchInitialCandles();
+
+    // Periodic auto-retry until candles are loaded
+    retryTimer = setInterval(() => {
+      if (!isMounted) return;
+      setCandles(current => {
+        if (current.length === 0) {
+          fetchInitialCandles();
+        }
+        return current;
+      });
+    }, 2500);
 
     const unsubscribe = tvStreamer.subscribe(
       symbol,
@@ -624,6 +637,7 @@ function App() {
     return () => {
       isMounted = false;
       clearTimeout(safetyTimer);
+      if (retryTimer) clearInterval(retryTimer);
       unsubscribe();
       tvStreamer.sendUnsubscribe(symbol);
     };
@@ -786,7 +800,7 @@ function App() {
 
   const { lastPrice, priceChange, priceChangePct } = useMemo(() => {
     if (!candles || candles.length === 0) {
-      return { lastPrice: 22421.95, priceChange: -198.58, priceChangePct: -0.88 };
+      return { lastPrice: 25244.30, priceChange: -143.10, priceChangePct: -0.56 };
     }
     const last = candles[candles.length - 1];
     const prev = candles.length > 1 ? candles[candles.length - 2].close : last.open;

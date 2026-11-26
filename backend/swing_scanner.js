@@ -458,7 +458,7 @@ export async function scanSwingTrades(timeframe = 'D') {
       } catch (e) {
         // Continue to next stock
       }
-      await new Promise(r => setTimeout(r, 150));
+      await new Promise(r => setTimeout(r, 1200));
     }
 
     // Sort results by score descending

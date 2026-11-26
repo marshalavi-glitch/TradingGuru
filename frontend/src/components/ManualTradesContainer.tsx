@@ -444,8 +444,8 @@ export const ManualTradesContainer: React.FC<ManualTradesContainerProps> = ({ on
     // Initial instant fetch
     pollBackendQuotes();
 
-    // High frequency interval (every 1000ms) ensures continuous live pricing
-    const interval = setInterval(pollBackendQuotes, 1000);
+    // Fallback interval (every 6000ms) as secondary stream behind WebSocket
+    const interval = setInterval(pollBackendQuotes, 6000);
 
     return () => {
       isMounted = false;

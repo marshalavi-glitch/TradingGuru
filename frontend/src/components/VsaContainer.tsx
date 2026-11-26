@@ -219,7 +219,7 @@ export const VsaContainer: React.FC<VsaContainerProps> = ({
       </div>
 
       {/* VSA Radar Overview Stat Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: '12px' }}>
         
         {/* Card 1: Market Bias */}
         <div style={{ background: '#131c2e', border: '1px solid rgba(255,255,255,0.08)', padding: '14px', borderRadius: '8px' }}>
@@ -373,8 +373,8 @@ export const VsaContainer: React.FC<VsaContainerProps> = ({
           </div>
         </div>
 
-        {/* Signals Table */}
-        <div style={{ overflowX: 'auto', background: '#0f172a', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+        {/* Signals Table (Desktop) */}
+        <div className="desktop-only" style={{ overflowX: 'auto', background: '#0f172a', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', textAlign: 'left' }}>
             <thead>
               <tr style={{ background: '#1e293b', color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
@@ -446,6 +446,72 @@ export const VsaContainer: React.FC<VsaContainerProps> = ({
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile VSA Cards View */}
+        <div className="mobile-only" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '30px', color: '#94a3b8' }}>
+              <RefreshCw size={20} className="spin" style={{ margin: '0 auto 8px auto' }} />
+              Scanning VSA signals...
+            </div>
+          ) : filteredSignals.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '24px', color: '#64748b' }}>
+              No VSA signals matched the current filter criteria for {symbol}.
+            </div>
+          ) : (
+            filteredSignals.map((sig) => {
+              const badge = getSignalBadgeColor(sig.type);
+              const timeStr = new Date(sig.time * 1000).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+              return (
+                <div
+                  key={sig.id}
+                  className="responsive-table-card"
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                    background: '#131c2e',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    borderRadius: '8px',
+                    padding: '12px'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <span style={{ fontWeight: '800', color: '#f8fafc', fontSize: '14px' }}>{sig.name}</span>
+                      <div style={{ fontSize: '10px', color: '#94a3b8' }}>
+                        {timeStr} • Bar #{sig.candleIndex} • <span style={{ color: '#60a5fa' }}>{sig.wyckoffPhase}</span>
+                      </div>
+                    </div>
+                    <span style={{
+                      padding: '3px 8px',
+                      borderRadius: '4px',
+                      fontSize: '10px',
+                      fontWeight: '800',
+                      background: badge.bg,
+                      border: `1px solid ${badge.border}`,
+                      color: badge.text
+                    }}>
+                      {sig.type}
+                    </span>
+                  </div>
+
+                  <div style={{ fontSize: '11px', color: '#cbd5e1', lineHeight: '1.4' }}>
+                    {sig.description}
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255, 255, 255, 0.06)', paddingTop: '6px', fontSize: '11px' }}>
+                    <div style={{ color: '#38bdf8', fontWeight: '700' }}>{sig.tradeAction}</div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <span style={{ color: '#34d399' }}>Tgt: {sig.targetPrice}</span>
+                      <span style={{ color: '#f87171' }}>SL: {sig.stopLoss}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
 

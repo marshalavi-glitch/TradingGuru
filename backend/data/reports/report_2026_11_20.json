@@ -1,0 +1,1931 @@
+{
+  "date": "20/11/2026",
+  "niftyClose": null,
+  "bankniftyClose": null,
+  "topGainers": [
+    {
+      "symbol": "NSE:INDUSINDBK",
+      "changePct": 8.590916472689875,
+      "close": 1003
+    },
+    {
+      "symbol": "NSE:APOLLOHOSP",
+      "changePct": 5.28725108720531,
+      "close": 9200
+    },
+    {
+      "symbol": "NSE:AXISBANK",
+      "changePct": 4.721900347624569,
+      "close": 1446
+    },
+    {
+      "symbol": "NSE:PERSISTENT",
+      "changePct": 4.149659863945578,
+      "close": 6124
+    },
+    {
+      "symbol": "NSE:MARUTI",
+      "changePct": 3.1054529398778423,
+      "close": 14011
+    },
+    {
+      "symbol": "NSE:ULTRACEMCO",
+      "changePct": 3.017515923566879,
+      "close": 12939
+    },
+    {
+      "symbol": "NSE:HDFCBANK",
+      "changePct": 2.944755414942814,
+      "close": 846
+    },
+    {
+      "symbol": "NSE:ICICIGI",
+      "changePct": 2.843601895734597,
+      "close": 1736
+    },
+    {
+      "symbol": "NSE:BAJFINANCE",
+      "changePct": 2.6673376950176233,
+      "close": 1122
+    },
+    {
+      "symbol": "NSE:GODREJPROP",
+      "changePct": 2.615629984051039,
+      "close": 1930.2
+    }
+  ],
+  "topLosers": [
+    {
+      "symbol": "NSE:MCX",
+      "changePct": -3.017832647462277,
+      "close": 3535
+    },
+    {
+      "symbol": "NSE:MUTHOOTFIN",
+      "changePct": -2.578304048892284,
+      "close": 2550.5
+    },
+    {
+      "symbol": "NSE:VEDL",
+      "changePct": -2.32252769798933,
+      "close": 238.04
+    },
+    {
+      "symbol": "NSE:TITAN",
+      "changePct": -1.702127659574468,
+      "close": 4620
+    },
+    {
+      "symbol": "NSE:TATASTEEL",
+      "changePct": -1.5976560340538377,
+      "close": 178
+    },
+    {
+      "symbol": "NSE:CONCOR",
+      "changePct": -1.2725225225225174,
+      "close": 438.35
+    },
+    {
+      "symbol": "NSE:NATIONALUM",
+      "changePct": -1.2377850162866486,
+      "close": 303.2
+    },
+    {
+      "symbol": "NSE:NTPC",
+      "changePct": -1.0769230769230769,
+      "close": 321.5
+    },
+    {
+      "symbol": "NSE:HINDUNILVR",
+      "changePct": -1.046186481535041,
+      "close": 2052.5
+    },
+    {
+      "symbol": "NSE:CUMMINSIND",
+      "changePct": -1.0020523964747072,
+      "close": 4100
+    }
+  ],
+  "bouncesSupport": [
+    {
+      "symbol": "NSE:INDUSINDBK",
+      "levelName": "S6 (VAL Capitulation)",
+      "levelVal": 904.8925804315435,
+      "low": 906,
+      "close": 1003,
+      "bounceStrengthPct": 10.706401766004415,
+      "pattern": "Bullish Marubozu (Strong Bullish Momentum) | SSL Sweep Reversal (Low swept 906.0, close 1003.0)"
+    },
+    {
+      "symbol": "NSE:AXISBANK",
+      "levelName": "S4 (VAL Breakdown Trigger)",
+      "levelVal": 1367.71,
+      "low": 1368.8,
+      "close": 1446,
+      "bounceStrengthPct": 5.639976621858566,
+      "pattern": "Neutral Candle"
+    },
+    {
+      "symbol": "NSE:ICICIGI",
+      "levelName": "S3 (VAL Reversion)",
+      "levelVal": 1676.0375,
+      "low": 1677.3,
+      "close": 1736,
+      "bounceStrengthPct": 3.4996720920527067,
+      "pattern": "Neutral Candle"
+    },
+    {
+      "symbol": "NSE:BAJFINANCE",
+      "levelName": "S5 (VAL Extreme)",
+      "levelVal": 1079.38996,
+      "low": 1078.15,
+      "close": 1122,
+      "bounceStrengthPct": 4.06715206603904,
+      "pattern": "SSL Sweep Reversal (Low swept 1085.5, close 1122.0)"
+    },
+    {
+      "symbol": "NSE:BAJFINANCE",
+      "levelName": "S6 (VAL Capitulation)",
+      "levelVal": 1077.2946704131925,
+      "low": 1078.15,
+      "close": 1122,
+      "bounceStrengthPct": 4.06715206603904,
+      "pattern": "SSL Sweep Reversal (Low swept 1085.5, close 1122.0)"
+    },
+    {
+      "symbol": "NSE:COFORGE",
+      "levelName": "S3 (VAL Reversion)",
+      "levelVal": 2029.2025,
+      "low": 2027,
+      "close": 2086.7,
+      "bounceStrengthPct": 2.9452392698569225,
+      "pattern": "Bullish Engulfing (Momentum Shift) | Volume Climax Bearish Rejection (3.7x Vol)"
+    },
+    {
+      "symbol": "NSE:HINDALCO",
+      "levelName": "S4 (VAL Breakdown Trigger)",
+      "levelVal": 893.225,
+      "low": 894,
+      "close": 929.5,
+      "bounceStrengthPct": 3.9709172259507834,
+      "pattern": "Bullish Marubozu (Strong Bullish Momentum)"
+    },
+    {
+      "symbol": "NSE:BPCL",
+      "levelName": "S5 (VAL Extreme)",
+      "levelVal": 303.91824,
+      "low": 303.6,
+      "close": 314.1,
+      "bounceStrengthPct": 3.4584980237154146,
+      "pattern": "Three White Soldiers (Bullish Initiation)"
+    },
+    {
+      "symbol": "NSE:BPCL",
+      "levelName": "S6 (VAL Capitulation)",
+      "levelVal": 303.22564271588664,
+      "low": 303.6,
+      "close": 314.1,
+      "bounceStrengthPct": 3.4584980237154146,
+      "pattern": "Three White Soldiers (Bullish Initiation)"
+    },
+    {
+      "symbol": "NSE:ICICIBANK",
+      "levelName": "S3 (VAL Reversion)",
+      "levelVal": 1602.52,
+      "low": 1600.9,
+      "close": 1640,
+      "bounceStrengthPct": 2.442376163408077,
+      "pattern": "Three White Soldiers (Bullish Initiation)"
+    },
+    {
+      "symbol": "NSE:IOC",
+      "levelName": "Break Down (S4)",
+      "levelVal": 143.95399999999998,
+      "low": 145.44,
+      "close": 150.5,
+      "bounceStrengthPct": 3.4790979097909807,
+      "pattern": "Neutral Candle",
+      "touchTime": "10:17 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:NAUKRI",
+      "levelName": "S3 (VAL Reversion)",
+      "levelVal": 1149.6975,
+      "low": 1149.5,
+      "close": 1177.7,
+      "bounceStrengthPct": 2.4532405393649452,
+      "pattern": "Neutral Candle"
+    },
+    {
+      "symbol": "NSE:POWERGRID",
+      "levelName": "S4 (VAL Breakdown Trigger)",
+      "levelVal": 260.375,
+      "low": 260.15,
+      "close": 269,
+      "bounceStrengthPct": 3.401883528733432,
+      "pattern": "Double Bottom Breakout"
+    },
+    {
+      "symbol": "NSE:NESTLEIND",
+      "levelName": "Support (S2)",
+      "levelVal": 1289.6983333333333,
+      "low": 1295,
+      "close": 1325,
+      "bounceStrengthPct": 2.3166023166023164,
+      "pattern": "Bullish Marubozu (Strong Bullish Momentum) | Cup & Handle Breakout (23% Handle retracement)",
+      "touchTime": "10:17 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:NESTLEIND",
+      "levelName": "Buy Reversal (S3)",
+      "levelVal": 1287.3975,
+      "low": 1295,
+      "close": 1325,
+      "bounceStrengthPct": 2.3166023166023164,
+      "pattern": "Bullish Marubozu (Strong Bullish Momentum) | Cup & Handle Breakout (23% Handle retracement)",
+      "touchTime": "10:17 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:NESTLEIND",
+      "levelName": "Break Down (S4)",
+      "levelVal": 1280.495,
+      "low": 1295,
+      "close": 1325,
+      "bounceStrengthPct": 2.3166023166023164,
+      "pattern": "Bullish Marubozu (Strong Bullish Momentum) | Cup & Handle Breakout (23% Handle retracement)",
+      "touchTime": "10:18 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:NESTLEIND",
+      "levelName": "S3 (VAL Reversion)",
+      "levelVal": 1294.16,
+      "low": 1295,
+      "close": 1325,
+      "bounceStrengthPct": 2.3166023166023164,
+      "pattern": "Bullish Marubozu (Strong Bullish Momentum) | Cup & Handle Breakout (23% Handle retracement)"
+    },
+    {
+      "symbol": "NSE:JINDALSTEL",
+      "levelName": "S6 (VAL Capitulation)",
+      "levelVal": 1082.5930668617946,
+      "low": 1082.2,
+      "close": 1131.9,
+      "bounceStrengthPct": 4.592496765847352,
+      "pattern": "SSL Sweep Reversal (Low swept 1093.3, close 1131.9)"
+    },
+    {
+      "symbol": "NSE:IDFCFIRSTB",
+      "levelName": "S3 (VAL Reversion)",
+      "levelVal": 84.862,
+      "low": 84.86,
+      "close": 87.26,
+      "bounceStrengthPct": 2.828187603111013,
+      "pattern": "Cup & Handle Breakout (25% Handle retracement)"
+    },
+    {
+      "symbol": "NSE:TECHM",
+      "levelName": "Support (S2)",
+      "levelVal": 1757.435,
+      "low": 1706.9,
+      "close": 1746.2,
+      "bounceStrengthPct": 2.3024195910715304,
+      "pattern": "Bullish Engulfing (Momentum Shift)",
+      "touchTime": "10:09 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:TECHM",
+      "levelName": "Buy Reversal (S3)",
+      "levelVal": 1755.1525000000001,
+      "low": 1706.9,
+      "close": 1746.2,
+      "bounceStrengthPct": 2.3024195910715304,
+      "pattern": "Bullish Engulfing (Momentum Shift)",
+      "touchTime": "10:09 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:TECHM",
+      "levelName": "Break Down (S4)",
+      "levelVal": 1748.305,
+      "low": 1706.9,
+      "close": 1746.2,
+      "bounceStrengthPct": 2.3024195910715304,
+      "pattern": "Bullish Engulfing (Momentum Shift)",
+      "touchTime": "10:09 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:SBILIFE",
+      "levelName": "S3 (VAL Reversion)",
+      "levelVal": 1792.8574999999998,
+      "low": 1791.6,
+      "close": 1826.5,
+      "bounceStrengthPct": 1.9479794597008313,
+      "pattern": "Double Bottom Breakout"
+    },
+    {
+      "symbol": "NSE:MGL",
+      "levelName": "S3 (VAL Reversion)",
+      "levelVal": 1095.27,
+      "low": 1094.1,
+      "close": 1115.3,
+      "bounceStrengthPct": 1.937665661274111,
+      "pattern": "Bullish Engulfing (Momentum Shift) | SSL Sweep Reversal (Low swept 1096.0, close 1115.3)"
+    },
+    {
+      "symbol": "NSE:HAL",
+      "levelName": "S3 (VAL Reversion)",
+      "levelVal": 4738,
+      "low": 4742.4,
+      "close": 4809,
+      "bounceStrengthPct": 1.4043522267206554,
+      "pattern": "Double Top Breakdown"
+    },
+    {
+      "symbol": "NSE:TRENT",
+      "levelName": "Support (S2)",
+      "levelVal": 3156.701666666667,
+      "low": 3183.4,
+      "close": 3256.1,
+      "bounceStrengthPct": 2.283721806873149,
+      "pattern": "Three White Soldiers (Bullish Initiation) | Cup & Handle Breakout (31% Handle retracement)",
+      "touchTime": "10:19 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:BHARTIARTL",
+      "levelName": "S4 (VAL Breakdown Trigger)",
+      "levelVal": 2130.6349999999998,
+      "low": 2131,
+      "close": 2161.7,
+      "bounceStrengthPct": 1.4406381980290859,
+      "pattern": "Bullish Engulfing (Momentum Shift) | Morning Star (Bullish Reversal) | SSL Sweep Reversal (Low swept 2135.1, close 2161.7)"
+    },
+    {
+      "symbol": "NSE:LICHSGFIN",
+      "levelName": "S5 (VAL Extreme)",
+      "levelVal": 601.46224,
+      "low": 602.35,
+      "close": 614.9,
+      "bounceStrengthPct": 2.083506267120437,
+      "pattern": "SSL Sweep Reversal (Low swept 607.0, close 614.9) | Double Bottom Breakout | Cup & Handle Breakout (25% Handle retracement)"
+    },
+    {
+      "symbol": "NSE:SBIN",
+      "levelName": "S4 (VAL Breakdown Trigger)",
+      "levelVal": 1145.44,
+      "low": 1144,
+      "close": 1165.1,
+      "bounceStrengthPct": 1.8444055944055866,
+      "pattern": "Neutral Candle"
+    },
+    {
+      "symbol": "NSE:LUPIN",
+      "levelName": "S3 (VAL Reversion)",
+      "levelVal": 1987.1125,
+      "low": 1985.1,
+      "close": 2014,
+      "bounceStrengthPct": 1.4558460530955666,
+      "pattern": "Three White Soldiers (Bullish Initiation)"
+    },
+    {
+      "symbol": "NSE:PFC",
+      "levelName": "S4 (VAL Breakdown Trigger)",
+      "levelVal": 325.63250000000005,
+      "low": 326.1,
+      "close": 332.9,
+      "bounceStrengthPct": 2.085249923336386,
+      "pattern": "Neutral Candle"
+    },
+    {
+      "symbol": "NSE:UPL",
+      "levelName": "Support (S2)",
+      "levelVal": 548.1066666666667,
+      "low": 563.65,
+      "close": 571.95,
+      "bounceStrengthPct": 1.4725450190721312,
+      "pattern": "Three White Soldiers (Bullish Initiation) | BSL Sweep Reversal (High swept 574.8, close 572.0)",
+      "touchTime": "10:19 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:UPL",
+      "levelName": "Buy Reversal (S3)",
+      "levelVal": 546.3100000000001,
+      "low": 563.65,
+      "close": 571.95,
+      "bounceStrengthPct": 1.4725450190721312,
+      "pattern": "Three White Soldiers (Bullish Initiation) | BSL Sweep Reversal (High swept 574.8, close 572.0)",
+      "touchTime": "10:20 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:UPL",
+      "levelName": "S3 (VAL Reversion)",
+      "levelVal": 563.29625,
+      "low": 563.65,
+      "close": 571.95,
+      "bounceStrengthPct": 1.4725450190721312,
+      "pattern": "Three White Soldiers (Bullish Initiation) | BSL Sweep Reversal (High swept 574.8, close 572.0)"
+    },
+    {
+      "symbol": "NSE:BAJAJFINSV",
+      "levelName": "Buy Reversal (S3)",
+      "levelVal": 1861.78,
+      "low": 1857.3,
+      "close": 1892,
+      "bounceStrengthPct": 1.8683034512464354,
+      "pattern": "Bullish Spinning Top (Indecision) | Three White Soldiers (Bullish Initiation)",
+      "touchTime": "10:11 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:BAJAJFINSV",
+      "levelName": "Break Down (S4)",
+      "levelVal": 1852.76,
+      "low": 1857.3,
+      "close": 1892,
+      "bounceStrengthPct": 1.8683034512464354,
+      "pattern": "Bullish Spinning Top (Indecision) | Three White Soldiers (Bullish Initiation)",
+      "touchTime": "10:11 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:ADANIENT",
+      "levelName": "Break Down (S4)",
+      "levelVal": 2691.145,
+      "low": 2673.4,
+      "close": 2709,
+      "bounceStrengthPct": 1.331637615022066,
+      "pattern": "SSL Sweep Reversal (Low swept 2677.0, close 2709.0)",
+      "touchTime": "10:10 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:ADANIENT",
+      "levelName": "Target (S5)",
+      "levelVal": 2659.63528,
+      "low": 2673.4,
+      "close": 2709,
+      "bounceStrengthPct": 1.331637615022066,
+      "pattern": "SSL Sweep Reversal (Low swept 2677.0, close 2709.0)",
+      "touchTime": "10:10 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:ADANIENT",
+      "levelName": "S5 (VAL Extreme)",
+      "levelVal": 2672.6079999999997,
+      "low": 2673.4,
+      "close": 2709,
+      "bounceStrengthPct": 1.331637615022066,
+      "pattern": "SSL Sweep Reversal (Low swept 2677.0, close 2709.0)"
+    },
+    {
+      "symbol": "NSE:JSWSTEEL",
+      "levelName": "Break Down (S4)",
+      "levelVal": 1317.48,
+      "low": 1284.1,
+      "close": 1337,
+      "bounceStrengthPct": 4.11961685227008,
+      "pattern": "Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 1303.0, close 1337.0)",
+      "touchTime": "10:17 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:ADANIPORTS",
+      "levelName": "Support (S2)",
+      "levelVal": 1912.4166666666667,
+      "low": 1902.7,
+      "close": 1917,
+      "bounceStrengthPct": 0.7515635675618834,
+      "pattern": "Bullish Spinning Top (Indecision) | BSL Sweep Reversal (High swept 1918.5, close 1917.0)",
+      "touchTime": "10:10 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:ADANIPORTS",
+      "levelName": "Buy Reversal (S3)",
+      "levelVal": 1910.125,
+      "low": 1902.7,
+      "close": 1917,
+      "bounceStrengthPct": 0.7515635675618834,
+      "pattern": "Bullish Spinning Top (Indecision) | BSL Sweep Reversal (High swept 1918.5, close 1917.0)",
+      "touchTime": "10:11 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:ADANIPORTS",
+      "levelName": "Break Down (S4)",
+      "levelVal": 1903.25,
+      "low": 1902.7,
+      "close": 1917,
+      "bounceStrengthPct": 0.7515635675618834,
+      "pattern": "Bullish Spinning Top (Indecision) | BSL Sweep Reversal (High swept 1918.5, close 1917.0)",
+      "touchTime": "10:11 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:ADANIPORTS",
+      "levelName": "Target (S5)",
+      "levelVal": 1895.22,
+      "low": 1902.7,
+      "close": 1917,
+      "bounceStrengthPct": 0.7515635675618834,
+      "pattern": "Bullish Spinning Top (Indecision) | BSL Sweep Reversal (High swept 1918.5, close 1917.0)",
+      "touchTime": "10:11 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:ADANIPORTS",
+      "levelName": "S4 (VAL Breakdown Trigger)",
+      "levelVal": 1899.995,
+      "low": 1902.7,
+      "close": 1917,
+      "bounceStrengthPct": 0.7515635675618834,
+      "pattern": "Bullish Spinning Top (Indecision) | BSL Sweep Reversal (High swept 1918.5, close 1917.0)"
+    },
+    {
+      "symbol": "NSE:CHOLAFIN",
+      "levelName": "S5 (VAL Extreme)",
+      "levelVal": 1841.63304,
+      "low": 1839.4,
+      "close": 1874.6,
+      "bounceStrengthPct": 1.913667500271818,
+      "pattern": "BSL Sweep Reversal (High swept 1877.1, close 1874.6) | Cup & Handle Breakout (29% Handle retracement)"
+    },
+    {
+      "symbol": "NSE:LT",
+      "levelName": "S5 (VAL Extreme)",
+      "levelVal": 4123.88,
+      "low": 4129.1,
+      "close": 4209.1,
+      "bounceStrengthPct": 1.9374682134121235,
+      "pattern": "Neutral Candle"
+    },
+    {
+      "symbol": "NSE:TATAPOWER",
+      "levelName": "S4 (VAL Breakdown Trigger)",
+      "levelVal": 335.79249999999996,
+      "low": 336.2,
+      "close": 339.7,
+      "bounceStrengthPct": 1.0410469958358122,
+      "pattern": "Bullish Spinning Top (Indecision) | BSL Sweep Reversal (High swept 343.3, close 339.7) | Double Top Breakdown"
+    },
+    {
+      "symbol": "NSE:ZEEL",
+      "levelName": "S3 (VAL Reversion)",
+      "levelVal": 70.9905,
+      "low": 70.9,
+      "close": 71.39,
+      "bounceStrengthPct": 0.6911142454160717,
+      "pattern": "Bullish Spinning Top (Indecision)"
+    },
+    {
+      "symbol": "NSE:MARICO",
+      "levelName": "S4 (VAL Breakdown Trigger)",
+      "levelVal": 911.1274999999999,
+      "low": 911.6,
+      "close": 917,
+      "bounceStrengthPct": 0.592365072400173,
+      "pattern": "Long-Legged Doji (Indecision) | BSL Sweep Reversal (High swept 918.8, close 917.0)"
+    },
+    {
+      "symbol": "NSE:GRASIM",
+      "levelName": "Support (S2)",
+      "levelVal": 3045.596666666667,
+      "low": 3059,
+      "close": 3103.7,
+      "bounceStrengthPct": 1.4612618502778627,
+      "pattern": "Neutral Candle",
+      "touchTime": "10:14 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:GRASIM",
+      "levelName": "Buy Reversal (S3)",
+      "levelVal": 3040.9950000000003,
+      "low": 3059,
+      "close": 3103.7,
+      "bounceStrengthPct": 1.4612618502778627,
+      "pattern": "Neutral Candle",
+      "touchTime": "10:14 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:CIPLA",
+      "levelName": "Support (S2)",
+      "levelVal": 1384.9933333333333,
+      "low": 1401.2,
+      "close": 1415,
+      "bounceStrengthPct": 0.9848701113331397,
+      "pattern": "Bearish Spinning Top (Indecision) | SSL Sweep Reversal (Low swept 1406.7, close 1415.0)",
+      "touchTime": "10:12 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:CIPLA",
+      "levelName": "Buy Reversal (S3)",
+      "levelVal": 1383.49,
+      "low": 1401.2,
+      "close": 1415,
+      "bounceStrengthPct": 0.9848701113331397,
+      "pattern": "Bearish Spinning Top (Indecision) | SSL Sweep Reversal (Low swept 1406.7, close 1415.0)",
+      "touchTime": "10:12 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:CIPLA",
+      "levelName": "S5 (VAL Extreme)",
+      "levelVal": 1400.3790399999998,
+      "low": 1401.2,
+      "close": 1415,
+      "bounceStrengthPct": 0.9848701113331397,
+      "pattern": "Bearish Spinning Top (Indecision) | SSL Sweep Reversal (Low swept 1406.7, close 1415.0)"
+    },
+    {
+      "symbol": "NSE:COALINDIA",
+      "levelName": "S4 (VAL Breakdown Trigger)",
+      "levelVal": 387.705,
+      "low": 387.85,
+      "close": 390,
+      "bounceStrengthPct": 0.5543380172747138,
+      "pattern": "Dark Cloud Cover (Bearish Reversal) | BSL Sweep Reversal (High swept 393.4, close 390.0) | Double Top Breakdown"
+    },
+    {
+      "symbol": "NSE:ONGC",
+      "levelName": "S6 (VAL Capitulation)",
+      "levelVal": 222.10472433886153,
+      "low": 221.95,
+      "close": 223.46,
+      "bounceStrengthPct": 0.6803334084253297,
+      "pattern": "SSL Sweep Reversal (Low swept 223.1, close 223.5) | Double Top Breakdown"
+    },
+    {
+      "symbol": "NSE:PETRONET",
+      "levelName": "S5 (VAL Extreme)",
+      "levelVal": 326.05195999999995,
+      "low": 325.85,
+      "close": 329.15,
+      "bounceStrengthPct": 1.0127359214362297,
+      "pattern": "Standard Doji"
+    },
+    {
+      "symbol": "NSE:BEL",
+      "levelName": "S4 (VAL Breakdown Trigger)",
+      "levelVal": 399.745,
+      "low": 400,
+      "close": 402,
+      "bounceStrengthPct": 0.5,
+      "pattern": "Neutral Candle"
+    },
+    {
+      "symbol": "NSE:OFSS",
+      "levelName": "S3 (VAL Reversion)",
+      "levelVal": 9756.6125,
+      "low": 9757,
+      "close": 9766,
+      "bounceStrengthPct": 0.09224146766424106,
+      "pattern": "Inverted Hammer (Bullish Rejection) | BSL Sweep Reversal (High swept 9898.0, close 9766.0)"
+    },
+    {
+      "symbol": "NSE:HINDUNILVR",
+      "levelName": "Break Down (S4)",
+      "levelVal": 1996.15,
+      "low": 2040.5,
+      "close": 2052.5,
+      "bounceStrengthPct": 0.58809115412889,
+      "pattern": "Bearish Spinning Top (Indecision)",
+      "touchTime": "10:15 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:HINDUNILVR",
+      "levelName": "Target (S5)",
+      "levelVal": 1988.1200000000001,
+      "low": 2040.5,
+      "close": 2052.5,
+      "bounceStrengthPct": 0.58809115412889,
+      "pattern": "Bearish Spinning Top (Indecision)",
+      "touchTime": "10:16 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:HINDUNILVR",
+      "levelName": "Target (S6)",
+      "levelVal": 1984.7699674918729,
+      "low": 2040.5,
+      "close": 2052.5,
+      "bounceStrengthPct": 0.58809115412889,
+      "pattern": "Bearish Spinning Top (Indecision)",
+      "touchTime": "10:16 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:NTPC",
+      "levelName": "Support (S2)",
+      "levelVal": 321.195,
+      "low": 318.8,
+      "close": 321.5,
+      "bounceStrengthPct": 0.8469259723964833,
+      "pattern": "Long-Legged Doji (Indecision)",
+      "touchTime": "10:05 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:NTPC",
+      "levelName": "Buy Reversal (S3)",
+      "levelVal": 320.8925,
+      "low": 318.8,
+      "close": 321.5,
+      "bounceStrengthPct": 0.8469259723964833,
+      "pattern": "Long-Legged Doji (Indecision)",
+      "touchTime": "10:06 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:NTPC",
+      "levelName": "Break Down (S4)",
+      "levelVal": 319.985,
+      "low": 318.8,
+      "close": 321.5,
+      "bounceStrengthPct": 0.8469259723964833,
+      "pattern": "Long-Legged Doji (Indecision)",
+      "touchTime": "10:06 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:NTPC",
+      "levelName": "Target (S5)",
+      "levelVal": 318.92504,
+      "low": 318.8,
+      "close": 321.5,
+      "bounceStrengthPct": 0.8469259723964833,
+      "pattern": "Long-Legged Doji (Indecision)",
+      "touchTime": "10:06 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:NTPC",
+      "levelName": "Target (S6)",
+      "levelVal": 318.4689460476788,
+      "low": 318.8,
+      "close": 321.5,
+      "bounceStrengthPct": 0.8469259723964833,
+      "pattern": "Long-Legged Doji (Indecision)",
+      "touchTime": "10:06 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:NTPC",
+      "levelName": "S5 (VAL Extreme)",
+      "levelVal": 318.33532,
+      "low": 318.8,
+      "close": 321.5,
+      "bounceStrengthPct": 0.8469259723964833,
+      "pattern": "Long-Legged Doji (Indecision)"
+    }
+  ],
+  "rejectionsResistance": [
+    {
+      "symbol": "NSE:CANBK",
+      "levelName": "R5 (VAH Extreme)",
+      "levelVal": 139.871992,
+      "high": 140,
+      "close": 138.92,
+      "rejectStrengthPct": 0.7714285714285803,
+      "pattern": "Neutral Candle"
+    },
+    {
+      "symbol": "NSE:IOC",
+      "levelName": "Sell reversal (R3)",
+      "levelVal": 146.363,
+      "high": 150.5,
+      "close": 150.5,
+      "rejectStrengthPct": 0,
+      "pattern": "Neutral Candle",
+      "touchTime": "10:16 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:IOC",
+      "levelName": "Resistance (R2)",
+      "levelVal": 146.09533333333334,
+      "high": 150.5,
+      "close": 150.5,
+      "rejectStrengthPct": 0,
+      "pattern": "Neutral Candle",
+      "touchTime": "10:17 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:OBEROIRLTY",
+      "levelName": "R6 (VAH Exhaustion)",
+      "levelVal": 1853.6802413273003,
+      "high": 1854,
+      "close": 1843,
+      "rejectStrengthPct": 0.593311758360302,
+      "pattern": "SSL Sweep Reversal (Low swept 1790.1, close 1843.0)"
+    },
+    {
+      "symbol": "NSE:NESTLEIND",
+      "levelName": "Sell reversal (R3)",
+      "levelVal": 1301.2024999999999,
+      "high": 1325,
+      "close": 1325,
+      "rejectStrengthPct": 0,
+      "pattern": "Bullish Marubozu (Strong Bullish Momentum) | Cup & Handle Breakout (23% Handle retracement)",
+      "touchTime": "10:17 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:NESTLEIND",
+      "levelName": "Resistance (R2)",
+      "levelVal": 1298.9016666666666,
+      "high": 1325,
+      "close": 1325,
+      "rejectStrengthPct": 0,
+      "pattern": "Bullish Marubozu (Strong Bullish Momentum) | Cup & Handle Breakout (23% Handle retracement)",
+      "touchTime": "10:17 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:TECHM",
+      "levelName": "Resistance (R2)",
+      "levelVal": 1766.565,
+      "high": 1776.3,
+      "close": 1746.2,
+      "rejectStrengthPct": 1.694533581039234,
+      "pattern": "Bullish Engulfing (Momentum Shift)",
+      "touchTime": "10:09 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:METROPOLIS",
+      "levelName": "R5 (VAH Extreme)",
+      "levelVal": 574.4687200000002,
+      "high": 574.6,
+      "close": 566,
+      "rejectStrengthPct": 1.4966933518969758,
+      "pattern": "Neutral Candle"
+    },
+    {
+      "symbol": "NSE:SBILIFE",
+      "levelName": "R4 (VAH Breakout Trigger)",
+      "levelVal": 1828.085,
+      "high": 1826.8,
+      "close": 1826.5,
+      "rejectStrengthPct": 0.016422158966496306,
+      "pattern": "Double Bottom Breakout"
+    },
+    {
+      "symbol": "NSE:TATACONSUM",
+      "levelName": "R4 (VAH Breakout Trigger)",
+      "levelVal": 1157.75,
+      "high": 1158.8,
+      "close": 1155.9,
+      "rejectStrengthPct": 0.2502588885053386,
+      "pattern": "Three White Soldiers (Bullish Initiation) | Double Bottom Breakout | Cup & Handle Breakout (26% Handle retracement)"
+    },
+    {
+      "symbol": "NSE:TRENT",
+      "levelName": "Breakout (R4)",
+      "levelVal": 3235.0950000000003,
+      "high": 3277.3,
+      "close": 3256.1,
+      "rejectStrengthPct": 0.6468739511183069,
+      "pattern": "Three White Soldiers (Bullish Initiation) | Cup & Handle Breakout (31% Handle retracement)",
+      "touchTime": "10:19 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:TRENT",
+      "levelName": "R5 (VAH Extreme)",
+      "levelVal": 3280.1469600000005,
+      "high": 3277.3,
+      "close": 3256.1,
+      "rejectStrengthPct": 0.6468739511183069,
+      "pattern": "Three White Soldiers (Bullish Initiation) | Cup & Handle Breakout (31% Handle retracement)"
+    },
+    {
+      "symbol": "NSE:WIPRO",
+      "levelName": "R5 (VAH Extreme)",
+      "levelVal": 187.815552,
+      "high": 187.81,
+      "close": 185.7,
+      "rejectStrengthPct": 1.1234758532559574,
+      "pattern": "Neutral Candle"
+    },
+    {
+      "symbol": "NSE:HCLTECH",
+      "levelName": "R5 (VAH Extreme)",
+      "levelVal": 1361.6496000000002,
+      "high": 1363,
+      "close": 1344.4,
+      "rejectStrengthPct": 1.3646368305209031,
+      "pattern": "Bullish Engulfing (Momentum Shift) | Double Top Breakdown"
+    },
+    {
+      "symbol": "NSE:HAVELLS",
+      "levelName": "R3 (VAH Reversion)",
+      "levelVal": 1220.93,
+      "high": 1221.3,
+      "close": 1211,
+      "rejectStrengthPct": 0.8433636289199995,
+      "pattern": "Neutral Candle"
+    },
+    {
+      "symbol": "NSE:BHARTIARTL",
+      "levelName": "R5 (VAH Extreme)",
+      "levelVal": 2165.1701600000006,
+      "high": 2164.8,
+      "close": 2161.7,
+      "rejectStrengthPct": 0.14320029563933684,
+      "pattern": "Bullish Engulfing (Momentum Shift) | Morning Star (Bullish Reversal) | SSL Sweep Reversal (Low swept 2135.1, close 2161.7)"
+    },
+    {
+      "symbol": "NSE:SBIN",
+      "levelName": "R6 (VAH Exhaustion)",
+      "levelVal": 1175.4524101665206,
+      "high": 1174.9,
+      "close": 1165.1,
+      "rejectStrengthPct": 0.8341135415780221,
+      "pattern": "Neutral Candle"
+    },
+    {
+      "symbol": "NSE:UPL",
+      "levelName": "Target (R5)",
+      "levelVal": 568.77552,
+      "high": 576.75,
+      "close": 571.95,
+      "rejectStrengthPct": 0.8322496749024629,
+      "pattern": "Three White Soldiers (Bullish Initiation) | BSL Sweep Reversal (High swept 574.8, close 572.0)",
+      "touchTime": "10:19 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:UPL",
+      "levelName": "Breakout (R4)",
+      "levelVal": 562.48,
+      "high": 576.75,
+      "close": 571.95,
+      "rejectStrengthPct": 0.8322496749024629,
+      "pattern": "Three White Soldiers (Bullish Initiation) | BSL Sweep Reversal (High swept 574.8, close 572.0)",
+      "touchTime": "10:19 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:UPL",
+      "levelName": "R3 (VAH Reversion)",
+      "levelVal": 576.3037499999999,
+      "high": 576.75,
+      "close": 571.95,
+      "rejectStrengthPct": 0.8322496749024629,
+      "pattern": "Three White Soldiers (Bullish Initiation) | BSL Sweep Reversal (High swept 574.8, close 572.0)"
+    },
+    {
+      "symbol": "NSE:BAJAJFINSV",
+      "levelName": "Sell reversal (R3)",
+      "levelVal": 1879.82,
+      "high": 1913.4,
+      "close": 1892,
+      "rejectStrengthPct": 1.118427929340446,
+      "pattern": "Bullish Spinning Top (Indecision) | Three White Soldiers (Bullish Initiation)",
+      "touchTime": "10:11 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:BAJAJFINSV",
+      "levelName": "Resistance (R2)",
+      "levelVal": 1876.8133333333333,
+      "high": 1913.4,
+      "close": 1892,
+      "rejectStrengthPct": 1.118427929340446,
+      "pattern": "Bullish Spinning Top (Indecision) | Three White Soldiers (Bullish Initiation)",
+      "touchTime": "10:11 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:BAJAJFINSV",
+      "levelName": "R5 (VAH Extreme)",
+      "levelVal": 1915.6662400000002,
+      "high": 1913.4,
+      "close": 1892,
+      "rejectStrengthPct": 1.118427929340446,
+      "pattern": "Bullish Spinning Top (Indecision) | Three White Soldiers (Bullish Initiation)"
+    },
+    {
+      "symbol": "NSE:ADANIENT",
+      "levelName": "R4 (VAH Breakout Trigger)",
+      "levelVal": 2722.35,
+      "high": 2726,
+      "close": 2709,
+      "rejectStrengthPct": 0.623624358033749,
+      "pattern": "SSL Sweep Reversal (Low swept 2677.0, close 2709.0)"
+    },
+    {
+      "symbol": "NSE:SRF",
+      "levelName": "R3 (VAH Reversion)",
+      "levelVal": 2535.2125,
+      "high": 2536.8,
+      "close": 2514.8,
+      "rejectStrengthPct": 0.8672343109429201,
+      "pattern": "Long-Legged Doji (Indecision) | BSL Sweep Reversal (High swept 2519.0, close 2514.8)"
+    },
+    {
+      "symbol": "NSE:JSWSTEEL",
+      "levelName": "Resistance (R2)",
+      "levelVal": 1336.84,
+      "high": 1337,
+      "close": 1337,
+      "rejectStrengthPct": 0,
+      "pattern": "Hammer (Bullish Rejection) | SSL Sweep Reversal (Low swept 1303.0, close 1337.0)",
+      "touchTime": "10:17 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:ADANIPORTS",
+      "levelName": "Sell reversal (R3)",
+      "levelVal": 1923.875,
+      "high": 1930.2,
+      "close": 1917,
+      "rejectStrengthPct": 0.6838669567920447,
+      "pattern": "Bullish Spinning Top (Indecision) | BSL Sweep Reversal (High swept 1918.5, close 1917.0)",
+      "touchTime": "10:10 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:ADANIPORTS",
+      "levelName": "Resistance (R2)",
+      "levelVal": 1921.5833333333333,
+      "high": 1930.2,
+      "close": 1917,
+      "rejectStrengthPct": 0.6838669567920447,
+      "pattern": "Bullish Spinning Top (Indecision) | BSL Sweep Reversal (High swept 1918.5, close 1917.0)",
+      "touchTime": "10:10 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:TATACOMM",
+      "levelName": "R3 (VAH Reversion)",
+      "levelVal": 1763.1125,
+      "high": 1763.9,
+      "close": 1751,
+      "rejectStrengthPct": 0.7313339758489762,
+      "pattern": "SSL Sweep Reversal (Low swept 1738.4, close 1751.0)"
+    },
+    {
+      "symbol": "NSE:PAGEIND",
+      "levelName": "R3 (VAH Reversion)",
+      "levelVal": 31242.375,
+      "high": 31280,
+      "close": 31020,
+      "rejectStrengthPct": 0.8312020460358057,
+      "pattern": "Long-Legged Doji (Indecision) | SSL Sweep Reversal (Low swept 30715.0, close 31020.0)"
+    },
+    {
+      "symbol": "NSE:GRASIM",
+      "levelName": "Target (R5)",
+      "levelVal": 3098.534240000001,
+      "high": 3115.4,
+      "close": 3103.7,
+      "rejectStrengthPct": 0.3755537009693867,
+      "pattern": "Neutral Candle",
+      "touchTime": "10:14 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:CIPLA",
+      "levelName": "Breakout (R4)",
+      "levelVal": 1397.02,
+      "high": 1428,
+      "close": 1415,
+      "rejectStrengthPct": 0.9103641456582634,
+      "pattern": "Bearish Spinning Top (Indecision) | SSL Sweep Reversal (Low swept 1406.7, close 1415.0)",
+      "touchTime": "10:12 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:CIPLA",
+      "levelName": "Sell reversal (R3)",
+      "levelVal": 1392.51,
+      "high": 1428,
+      "close": 1415,
+      "rejectStrengthPct": 0.9103641456582634,
+      "pattern": "Bearish Spinning Top (Indecision) | SSL Sweep Reversal (Low swept 1406.7, close 1415.0)",
+      "touchTime": "10:12 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:CIPLA",
+      "levelName": "Resistance (R2)",
+      "levelVal": 1391.0066666666667,
+      "high": 1428,
+      "close": 1415,
+      "rejectStrengthPct": 0.9103641456582634,
+      "pattern": "Bearish Spinning Top (Indecision) | SSL Sweep Reversal (Low swept 1406.7, close 1415.0)",
+      "touchTime": "10:12 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:CIPLA",
+      "levelName": "R4 (VAH Breakout Trigger)",
+      "levelVal": 1429.94,
+      "high": 1428,
+      "close": 1415,
+      "rejectStrengthPct": 0.9103641456582634,
+      "pattern": "Bearish Spinning Top (Indecision) | SSL Sweep Reversal (Low swept 1406.7, close 1415.0)"
+    },
+    {
+      "symbol": "NSE:ONGC",
+      "levelName": "R3 (VAH Reversion)",
+      "levelVal": 225.18,
+      "high": 224.9,
+      "close": 223.46,
+      "rejectStrengthPct": 0.640284570920408,
+      "pattern": "SSL Sweep Reversal (Low swept 223.1, close 223.5) | Double Top Breakdown"
+    },
+    {
+      "symbol": "NSE:SUNPHARMA",
+      "levelName": "R3 (VAH Reversion)",
+      "levelVal": 1911.6325,
+      "high": 1910,
+      "close": 1884.9,
+      "rejectStrengthPct": 1.3141361256544455,
+      "pattern": "Neutral Candle"
+    },
+    {
+      "symbol": "NSE:HINDUNILVR",
+      "levelName": "Breakout (R4)",
+      "levelVal": 2023.65,
+      "high": 2063.4,
+      "close": 2052.5,
+      "rejectStrengthPct": 0.528254337501216,
+      "pattern": "Bearish Spinning Top (Indecision)",
+      "touchTime": "10:15 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:HINDUNILVR",
+      "levelName": "Sell reversal (R3)",
+      "levelVal": 2016.775,
+      "high": 2063.4,
+      "close": 2052.5,
+      "rejectStrengthPct": 0.528254337501216,
+      "pattern": "Bearish Spinning Top (Indecision)",
+      "touchTime": "10:15 am",
+      "optionPremium": null,
+      "isFno": true
+    },
+    {
+      "symbol": "NSE:HINDUNILVR",
+      "levelName": "Resistance (R2)",
+      "levelVal": 2014.4833333333333,
+      "high": 2063.4,
+      "close": 2052.5,
+      "rejectStrengthPct": 0.528254337501216,
+      "pattern": "Bearish Spinning Top (Indecision)",
+      "touchTime": "10:15 am",
+      "optionPremium": null,
+      "isFno": true
+    }
+  ],
+  "breakouts": [
+    {
+      "symbol": "NSE:INDUSINDBK",
+      "r4Val": 933.77,
+      "close": 1003,
+      "excessPct": 7.414031292502439
+    },
+    {
+      "symbol": "NSE:APOLLOHOSP",
+      "r4Val": 8804,
+      "close": 9200,
+      "excessPct": 4.497955474784189
+    },
+    {
+      "symbol": "NSE:AXISBANK",
+      "r4Val": 1393.8899999999999,
+      "close": 1446,
+      "excessPct": 3.7384585584228405
+    },
+    {
+      "symbol": "NSE:PERSISTENT",
+      "r4Val": 5946.275,
+      "close": 6124,
+      "excessPct": 2.9888459581839113
+    },
+    {
+      "symbol": "NSE:ULTRACEMCO",
+      "r4Val": 12699.15,
+      "close": 12939,
+      "excessPct": 1.888709086828649
+    },
+    {
+      "symbol": "NSE:HDFCBANK",
+      "r4Val": 831.5899999999999,
+      "close": 846,
+      "excessPct": 1.7328250700465473
+    },
+    {
+      "symbol": "NSE:ICICIGI",
+      "r4Val": 1711.925,
+      "close": 1736,
+      "excessPct": 1.4063116082772344
+    },
+    {
+      "symbol": "NSE:BAJFINANCE",
+      "r4Val": 1101.3474999999999,
+      "close": 1122,
+      "excessPct": 1.8752028764763298
+    },
+    {
+      "symbol": "NSE:GODREJPROP",
+      "r4Val": 1904.155,
+      "close": 1930.2,
+      "excessPct": 1.3677983147380373
+    },
+    {
+      "symbol": "NSE:MFSL",
+      "r4Val": 1426.28,
+      "close": 1435.1,
+      "excessPct": 0.6183919006085717
+    },
+    {
+      "symbol": "NSE:KOTAKBANK",
+      "r4Val": 509.05,
+      "close": 515.8,
+      "excessPct": 1.3259994106669175
+    },
+    {
+      "symbol": "NSE:PIDILITIND",
+      "r4Val": 1605.1399999999999,
+      "close": 1620,
+      "excessPct": 0.9257759447774107
+    },
+    {
+      "symbol": "NSE:FEDERALBNK",
+      "r4Val": 369.3675,
+      "close": 373.5,
+      "excessPct": 1.1188044427297996
+    },
+    {
+      "symbol": "NSE:COFORGE",
+      "r4Val": 2064.595,
+      "close": 2086.7,
+      "excessPct": 1.070670034558837
+    },
+    {
+      "symbol": "NSE:HINDALCO",
+      "r4Val": 926.775,
+      "close": 929.5,
+      "excessPct": 0.29403037414690975
+    },
+    {
+      "symbol": "NSE:CANBK",
+      "r4Val": 138.4555,
+      "close": 138.92,
+      "excessPct": 0.3354868531766429
+    },
+    {
+      "symbol": "NSE:LTIM",
+      "r4Val": 4138.475,
+      "close": 4166.4,
+      "excessPct": 0.674765463123476
+    },
+    {
+      "symbol": "NSE:INDIGO",
+      "r4Val": 5571.25,
+      "close": 5587.6,
+      "excessPct": 0.29347094458156364
+    },
+    {
+      "symbol": "NSE:HDFCLIFE",
+      "r4Val": 581.6424999999999,
+      "close": 588.65,
+      "excessPct": 1.204777848936426
+    },
+    {
+      "symbol": "NSE:BPCL",
+      "r4Val": 310.74,
+      "close": 314.1,
+      "excessPct": 1.0812898242904079
+    },
+    {
+      "symbol": "NSE:ICICIBANK",
+      "r4Val": 1621.66,
+      "close": 1640,
+      "excessPct": 1.1309399010890024
+    },
+    {
+      "symbol": "NSE:IOC",
+      "r4Val": 149.93400000000003,
+      "close": 150.5,
+      "excessPct": 0.3774994330838729
+    },
+    {
+      "symbol": "NSE:OBEROIRLTY",
+      "r4Val": 1833.76,
+      "close": 1843,
+      "excessPct": 0.5038827327458342
+    },
+    {
+      "symbol": "NSE:NAUKRI",
+      "r4Val": 1173.705,
+      "close": 1177.7,
+      "excessPct": 0.34037513685296716
+    },
+    {
+      "symbol": "NSE:POWERGRID",
+      "r4Val": 268.625,
+      "close": 269,
+      "excessPct": 0.13959981386691486
+    },
+    {
+      "symbol": "NSE:NESTLEIND",
+      "r4Val": 1321.88,
+      "close": 1325,
+      "excessPct": 0.23602747601899496
+    },
+    {
+      "symbol": "NSE:BALKRISIND",
+      "r4Val": 2363.05,
+      "close": 2363.8,
+      "excessPct": 0.031738642855631494
+    },
+    {
+      "symbol": "NSE:JINDALSTEL",
+      "r4Val": 1131.715,
+      "close": 1131.9,
+      "excessPct": 0.016346871783105538
+    },
+    {
+      "symbol": "NSE:TECHM",
+      "r4Val": 1743.5700000000002,
+      "close": 1746.2,
+      "excessPct": 0.15083994333464568
+    },
+    {
+      "symbol": "NSE:HAL",
+      "r4Val": 4804,
+      "close": 4809,
+      "excessPct": 0.10407993338884262
+    },
+    {
+      "symbol": "NSE:NMDC",
+      "r4Val": 68.8105,
+      "close": 68.9,
+      "excessPct": 0.1300673589059824
+    },
+    {
+      "symbol": "NSE:BHARTIARTL",
+      "r4Val": 2157.3650000000002,
+      "close": 2161.7,
+      "excessPct": 0.20093957211689173
+    }
+  ],
+  "breakdowns": [
+    {
+      "symbol": "NSE:TATASTEEL",
+      "s4Val": 178.51399999999998,
+      "close": 178,
+      "excessPct": 0.2879325991238679
+    },
+    {
+      "symbol": "NSE:VEDL",
+      "s4Val": 241.8245,
+      "close": 238.04,
+      "excessPct": 1.5649779075321186
+    },
+    {
+      "symbol": "NSE:MUTHOOTFIN",
+      "s4Val": 2573.23,
+      "close": 2550.5,
+      "excessPct": 0.8833256257699474
+    },
+    {
+      "symbol": "NSE:MCX",
+      "s4Val": 3574.05,
+      "close": 3535,
+      "excessPct": 1.0925980330437508
+    }
+  ],
+  "niftyLevelsHit": [],
+  "bankniftyLevelsHit": [],
+  "detectedPatterns": [
+    {
+      "symbol": "NSE:HDFCBANK",
+      "patterns": [
+        "Cup & Handle Breakout (30% Handle retracement)"
+      ]
+    },
+    {
+      "symbol": "NSE:INFY",
+      "patterns": [
+        "Bullish Engulfing (Momentum Shift)"
+      ]
+    },
+    {
+      "symbol": "NSE:ICICIBANK",
+      "patterns": [
+        "Three White Soldiers (Bullish Initiation)"
+      ]
+    },
+    {
+      "symbol": "NSE:BHARTIARTL",
+      "patterns": [
+        "Bullish Engulfing (Momentum Shift)",
+        "Morning Star (Bullish Reversal)",
+        "SSL Sweep Reversal (Low swept 2135.1, close 2161.7)"
+      ]
+    },
+    {
+      "symbol": "NSE:TATAMOTORS",
+      "patterns": [
+        "Double Top Breakdown"
+      ]
+    },
+    {
+      "symbol": "NSE:BAJFINANCE",
+      "patterns": [
+        "SSL Sweep Reversal (Low swept 1085.5, close 1122.0)"
+      ]
+    },
+    {
+      "symbol": "NSE:KOTAKBANK",
+      "patterns": [
+        "Bullish Marubozu (Strong Bullish Momentum)"
+      ]
+    },
+    {
+      "symbol": "NSE:TITAN",
+      "patterns": [
+        "Hammer (Bullish Rejection)",
+        "SSL Sweep Reversal (Low swept 4542.2, close 4620.0)"
+      ]
+    },
+    {
+      "symbol": "NSE:TATASTEEL",
+      "patterns": [
+        "Hammer (Bullish Rejection)",
+        "SSL Sweep Reversal (Low swept 177.2, close 178.0)"
+      ]
+    },
+    {
+      "symbol": "NSE:COALINDIA",
+      "patterns": [
+        "Dark Cloud Cover (Bearish Reversal)",
+        "BSL Sweep Reversal (High swept 393.4, close 390.0)",
+        "Double Top Breakdown"
+      ]
+    },
+    {
+      "symbol": "NSE:ONGC",
+      "patterns": [
+        "SSL Sweep Reversal (Low swept 223.1, close 223.5)",
+        "Double Top Breakdown"
+      ]
+    },
+    {
+      "symbol": "NSE:HINDALCO",
+      "patterns": [
+        "Bullish Marubozu (Strong Bullish Momentum)"
+      ]
+    },
+    {
+      "symbol": "NSE:POWERGRID",
+      "patterns": [
+        "Double Bottom Breakout"
+      ]
+    },
+    {
+      "symbol": "NSE:NTPC",
+      "patterns": [
+        "Long-Legged Doji (Indecision)"
+      ]
+    },
+    {
+      "symbol": "NSE:ULTRACEMCO",
+      "patterns": [
+        "Bullish Marubozu (Strong Bullish Momentum)"
+      ]
+    },
+    {
+      "symbol": "NSE:HCLTECH",
+      "patterns": [
+        "Bullish Engulfing (Momentum Shift)",
+        "Double Top Breakdown"
+      ]
+    },
+    {
+      "symbol": "NSE:TECHM",
+      "patterns": [
+        "Bullish Engulfing (Momentum Shift)"
+      ]
+    },
+    {
+      "symbol": "NSE:ADANIPORTS",
+      "patterns": [
+        "Bullish Spinning Top (Indecision)",
+        "BSL Sweep Reversal (High swept 1918.5, close 1917.0)"
+      ]
+    },
+    {
+      "symbol": "NSE:BPCL",
+      "patterns": [
+        "Three White Soldiers (Bullish Initiation)"
+      ]
+    },
+    {
+      "symbol": "NSE:ADANIENT",
+      "patterns": [
+        "SSL Sweep Reversal (Low swept 2677.0, close 2709.0)"
+      ]
+    },
+    {
+      "symbol": "NSE:BAJAJFINSV",
+      "patterns": [
+        "Bullish Spinning Top (Indecision)",
+        "Three White Soldiers (Bullish Initiation)"
+      ]
+    },
+    {
+      "symbol": "NSE:CIPLA",
+      "patterns": [
+        "Bearish Spinning Top (Indecision)",
+        "SSL Sweep Reversal (Low swept 1406.7, close 1415.0)"
+      ]
+    },
+    {
+      "symbol": "NSE:HEROMOTOCO",
+      "patterns": [
+        "BSL Sweep Reversal (High swept 5560.5, close 5536.0)",
+        "Double Bottom Breakout"
+      ]
+    },
+    {
+      "symbol": "NSE:JSWSTEEL",
+      "patterns": [
+        "Hammer (Bullish Rejection)",
+        "SSL Sweep Reversal (Low swept 1303.0, close 1337.0)"
+      ]
+    },
+    {
+      "symbol": "NSE:INDUSINDBK",
+      "patterns": [
+        "Bullish Marubozu (Strong Bullish Momentum)",
+        "SSL Sweep Reversal (Low swept 906.0, close 1003.0)"
+      ]
+    },
+    {
+      "symbol": "NSE:HINDUNILVR",
+      "patterns": [
+        "Bearish Spinning Top (Indecision)"
+      ]
+    },
+    {
+      "symbol": "NSE:NESTLEIND",
+      "patterns": [
+        "Bullish Marubozu (Strong Bullish Momentum)",
+        "Cup & Handle Breakout (23% Handle retracement)"
+      ]
+    },
+    {
+      "symbol": "NSE:SHRIRAMFIN",
+      "patterns": [
+        "SSL Sweep Reversal (Low swept 953.0, close 972.0)"
+      ]
+    },
+    {
+      "symbol": "NSE:TRENT",
+      "patterns": [
+        "Three White Soldiers (Bullish Initiation)",
+        "Cup & Handle Breakout (31% Handle retracement)"
+      ]
+    },
+    {
+      "symbol": "NSE:TATACONSUM",
+      "patterns": [
+        "Three White Soldiers (Bullish Initiation)",
+        "Double Bottom Breakout",
+        "Cup & Handle Breakout (26% Handle retracement)"
+      ]
+    },
+    {
+      "symbol": "NSE:UPL",
+      "patterns": [
+        "Three White Soldiers (Bullish Initiation)",
+        "BSL Sweep Reversal (High swept 574.8, close 572.0)"
+      ]
+    },
+    {
+      "symbol": "NSE:VEDL",
+      "patterns": [
+        "Hammer (Bullish Rejection)"
+      ]
+    },
+    {
+      "symbol": "NSE:BALKRISIND",
+      "patterns": [
+        "Bullish Marubozu (Strong Bullish Momentum)"
+      ]
+    },
+    {
+      "symbol": "NSE:AUBANK",
+      "patterns": [
+        "Long-Legged Doji (Indecision)",
+        "SSL Sweep Reversal (Low swept 966.9, close 984.9)",
+        "Cup & Handle Breakout (20% Handle retracement)"
+      ]
+    },
+    {
+      "symbol": "NSE:BANDHANBNK",
+      "patterns": [
+        "BSL Sweep Reversal (High swept 176.5, close 175.1)"
+      ]
+    },
+    {
+      "symbol": "NSE:BSOFT",
+      "patterns": [
+        "Bullish Engulfing (Momentum Shift)",
+        "Double Top Breakdown"
+      ]
+    },
+    {
+      "symbol": "NSE:DABUR",
+      "patterns": [
+        "BSL Sweep Reversal (High swept 394.6, close 393.1)",
+        "Double Bottom Breakout"
+      ]
+    },
+    {
+      "symbol": "NSE:COFORGE",
+      "patterns": [
+        "Bullish Engulfing (Momentum Shift)",
+        "Volume Climax Bearish Rejection (3.7x Vol)"
+      ]
+    },
+    {
+      "symbol": "NSE:CHOLAFIN",
+      "patterns": [
+        "BSL Sweep Reversal (High swept 1877.1, close 1874.6)",
+        "Cup & Handle Breakout (29% Handle retracement)"
+      ]
+    },
+    {
+      "symbol": "NSE:GODREJPROP",
+      "patterns": [
+        "SSL Sweep Reversal (Low swept 1859.9, close 1930.2)"
+      ]
+    },
+    {
+      "symbol": "NSE:FEDERALBNK",
+      "patterns": [
+        "Double Bottom Breakout"
+      ]
+    },
+    {
+      "symbol": "NSE:IDFCFIRSTB",
+      "patterns": [
+        "Cup & Handle Breakout (25% Handle retracement)"
+      ]
+    },
+    {
+      "symbol": "NSE:HAL",
+      "patterns": [
+        "Double Top Breakdown"
+      ]
+    },
+    {
+      "symbol": "NSE:HDFCLIFE",
+      "patterns": [
+        "SSL Sweep Reversal (Low swept 573.0, close 588.6)"
+      ]
+    },
+    {
+      "symbol": "NSE:LICHSGFIN",
+      "patterns": [
+        "SSL Sweep Reversal (Low swept 607.0, close 614.9)",
+        "Double Bottom Breakout",
+        "Cup & Handle Breakout (25% Handle retracement)"
+      ]
+    },
+    {
+      "symbol": "NSE:INDIGO",
+      "patterns": [
+        "Bullish Engulfing (Momentum Shift)",
+        "SSL Sweep Reversal (Low swept 5450.0, close 5587.6)"
+      ]
+    },
+    {
+      "symbol": "NSE:IRCTC",
+      "patterns": [
+        "Hammer (Bullish Rejection)"
+      ]
+    },
+    {
+      "symbol": "NSE:JINDALSTEL",
+      "patterns": [
+        "SSL Sweep Reversal (Low swept 1093.3, close 1131.9)"
+      ]
+    },
+    {
+      "symbol": "NSE:INDUSTOWER",
+      "patterns": [
+        "SSL Sweep Reversal (Low swept 383.3, close 387.0)"
+      ]
+    },
+    {
+      "symbol": "NSE:MARICO",
+      "patterns": [
+        "Long-Legged Doji (Indecision)",
+        "BSL Sweep Reversal (High swept 918.8, close 917.0)"
+      ]
+    },
+    {
+      "symbol": "NSE:MCX",
+      "patterns": [
+        "SSL Sweep Reversal (Low swept 3516.0, close 3535.0)"
+      ]
+    },
+    {
+      "symbol": "NSE:LUPIN",
+      "patterns": [
+        "Three White Soldiers (Bullish Initiation)"
+      ]
+    },
+    {
+      "symbol": "NSE:MANAPPURAM",
+      "patterns": [
+        "SSL Sweep Reversal (Low swept 276.1, close 280.5)"
+      ]
+    },
+    {
+      "symbol": "NSE:MGL",
+      "patterns": [
+        "Bullish Engulfing (Momentum Shift)",
+        "SSL Sweep Reversal (Low swept 1096.0, close 1115.3)"
+      ]
+    },
+    {
+      "symbol": "NSE:MFSL",
+      "patterns": [
+        "Bullish Engulfing (Momentum Shift)",
+        "SSL Sweep Reversal (Low swept 1383.2, close 1435.1)",
+        "Cup & Handle Breakout (29% Handle retracement)"
+      ]
+    },
+    {
+      "symbol": "NSE:MUTHOOTFIN",
+      "patterns": [
+        "Double Bottom Breakout"
+      ]
+    },
+    {
+      "symbol": "NSE:NATIONALUM",
+      "patterns": [
+        "SSL Sweep Reversal (Low swept 297.6, close 303.2)",
+        "Double Top Breakdown"
+      ]
+    },
+    {
+      "symbol": "NSE:OBEROIRLTY",
+      "patterns": [
+        "SSL Sweep Reversal (Low swept 1790.1, close 1843.0)"
+      ]
+    },
+    {
+      "symbol": "NSE:NMDC",
+      "patterns": [
+        "SSL Sweep Reversal (Low swept 67.3, close 68.9)"
+      ]
+    },
+    {
+      "symbol": "NSE:PERSISTENT",
+      "patterns": [
+        "Morning Star (Bullish Reversal)"
+      ]
+    },
+    {
+      "symbol": "NSE:PAGEIND",
+      "patterns": [
+        "Long-Legged Doji (Indecision)",
+        "SSL Sweep Reversal (Low swept 30715.0, close 31020.0)"
+      ]
+    },
+    {
+      "symbol": "NSE:OFSS",
+      "patterns": [
+        "Inverted Hammer (Bullish Rejection)",
+        "BSL Sweep Reversal (High swept 9898.0, close 9766.0)"
+      ]
+    },
+    {
+      "symbol": "NSE:POLYCAB",
+      "patterns": [
+        "BSL Sweep Reversal (High swept 7571.0, close 7570.0)"
+      ]
+    },
+    {
+      "symbol": "NSE:PETRONET",
+      "patterns": [
+        "Standard Doji"
+      ]
+    },
+    {
+      "symbol": "NSE:TATACOMM",
+      "patterns": [
+        "SSL Sweep Reversal (Low swept 1738.4, close 1751.0)"
+      ]
+    },
+    {
+      "symbol": "NSE:SBILIFE",
+      "patterns": [
+        "Double Bottom Breakout"
+      ]
+    },
+    {
+      "symbol": "NSE:TATAPOWER",
+      "patterns": [
+        "Bullish Spinning Top (Indecision)",
+        "BSL Sweep Reversal (High swept 343.3, close 339.7)",
+        "Double Top Breakdown"
+      ]
+    },
+    {
+      "symbol": "NSE:SRF",
+      "patterns": [
+        "Long-Legged Doji (Indecision)",
+        "BSL Sweep Reversal (High swept 2519.0, close 2514.8)"
+      ]
+    },
+    {
+      "symbol": "NSE:VOLTAS",
+      "patterns": [
+        "Shooting Star (Bearish Rejection)",
+        "BSL Sweep Reversal (High swept 1243.7, close 1235.0)"
+      ]
+    },
+    {
+      "symbol": "NSE:ZEEL",
+      "patterns": [
+        "Bullish Spinning Top (Indecision)"
+      ]
+    }
+  ],
+  "optionsPremiums": {}
+}

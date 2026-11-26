@@ -6,7 +6,7 @@ import { calculateMatrixSeriesData, type MatrixSeriesData } from '../utils/matri
 import { AdvIndicatorPanel } from './AdvIndicatorPanel';
 import { RealtimeLevelAlertPopup } from './RealtimeLevelAlertPopup';
 import type { LevelAlert } from './RealtimeLevelAlertPopup';
-import { Bell, RotateCcw, Zap, AlertCircle, Wifi, WifiOff, Plus, Minus, Maximize2, Minimize2, Search, X } from 'lucide-react';
+import { Bell, RotateCcw, Zap, AlertCircle, Wifi, WifiOff, Plus, Minus, Maximize2, Minimize2, Search, X, Loader2 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { isWithinMarketHours } from '../utils/marketHours';
 
@@ -2150,7 +2150,7 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
       </div>
 
       {/* Delayed Data / WebSocket Disconnection Notice */}
-      {connectionError && (
+      {connectionError && (candles.length === 0 || connectionStatus !== 'connected') && (
         <div style={{
           backgroundColor: 'rgba(239, 68, 68, 0.12)',
           borderBottom: '1px solid rgba(239, 68, 68, 0.25)',
@@ -2176,6 +2176,25 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
         height: '100%',
         overflow: 'hidden'
       }}>
+        {(!candles || candles.length === 0) && (
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '10px',
+            zIndex: 15,
+            background: isDark ? 'rgba(15, 23, 42, 0.75)' : 'rgba(255, 255, 255, 0.75)',
+            backdropFilter: 'blur(4px)'
+          }}>
+            <Loader2 className="animate-spin" size={24} color="#38bdf8" />
+            <span style={{ fontSize: '12px', fontWeight: '600', color: isDark ? '#94a3b8' : '#64748b' }}>
+              Streaming live {symbolDisplayName} candle feed...
+            </span>
+          </div>
+        )}
         <div 
           ref={chartContainerRef} 
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} 

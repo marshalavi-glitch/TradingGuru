@@ -97,11 +97,14 @@ export async function scanDojiForSlot(slot = 'first_5min') {
 
     if (!symbols || symbols.length < 5) {
       symbols = ['NSE:RELIANCE', 'NSE:HDFCBANK', 'NSE:ICICIBANK', 'NSE:INFY', 'NSE:TCS', 'NSE:SBIN', 'NSE:TATAMOTORS', 'NSE:AXISBANK', 'NSE:KOTAKBANK', 'NSE:LT', 'NSE:BAJFINANCE'];
+    } else {
+      // Focus on top 20 active leaders during live intraday hours to prevent API congestion
+      symbols = symbols.slice(0, 20);
     }
     
     const matchingStocks = [];
     const matchingStocksNoVol = [];
-    const BATCH_SIZE = 2;
+    const BATCH_SIZE = 1;
 
     const tf = slot === 'daily' ? 'D' : '5';
     const limit = slot === 'daily' ? 100 : 300;
@@ -203,7 +206,7 @@ export async function scanDojiForSlot(slot = 'first_5min') {
       });
 
       await Promise.all(batchPromises);
-      await new Promise(r => setTimeout(r, 450));
+      await new Promise(r => setTimeout(r, 1200));
     }
 
     matchingStocks.sort((a, b) => b.volumeRatio - a.volumeRatio);
@@ -235,10 +238,18 @@ export async function scanDojiForSlot(slot = 'first_5min') {
   }
 }
 
+export function isDojiMarketHours() {
+  const now = new Date();
+  const dayStr = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Kolkata', weekday: 'short' }).format(now);
+  if (dayStr === 'Sun' || dayStr === 'Sat') return false;
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Kolkata', hour: 'numeric', minute: 'numeric', hour12: false }).formatToParts(now);
+  const hour = parseInt(parts.find(p => p.type === 'hour').value, 10);
+  const min = parseInt(parts.find(p => p.type === 'minute').value, 10);
+  const mins = hour * 60 + min;
+  return mins >= (9 * 60 + 15) && mins <= (15 * 60 + 30);
+}
+
 export function startDojiScanner() {
   loadDojiCacheFromDisk();
-
-  setTimeout(() => {
-    scanDojiForSlot('first_5min');
-  }, 60000);
+  // Auto-scan on boot disabled to preserve SmartAPI bandwidth for live charts
 }

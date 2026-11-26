@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { ChartContainer } from './ChartContainer';
-import { tvStreamer, getBackendHttpUrl } from '../utils/tvStreamer';
+import { tvStreamer, getBackendHttpUrl, reportBackendFetchError } from '../utils/tvStreamer';
 import type { Candle } from '../utils/profileCalculator';
 import { calculateMatrixSeriesData, type MatrixSeriesData } from '../utils/matrixCalculator';
 import { filterMarketHoursCandles, isWithinMarketHours } from '../utils/marketHours';
@@ -113,6 +113,7 @@ const ChartSlotPane: React.FC<{
     }
 
     let isSubscribed = true;
+    let retryTimer: any = null;
 
     // Fast 3.5s safety timer: ensures the UI never hangs forever on initial spinner
     const safetyTimer = setTimeout(() => {
@@ -137,6 +138,7 @@ const ChartSlotPane: React.FC<{
             const sanitized = [...filtered].map(c => ({ ...c, time: Number(c.time) })).sort((a, b) => (a.time as number) - (b.time as number));
             setCandles(sanitized);
             setLoading(false);
+            setError(null);
             setConnectionStatus('connected');
             loadedKeyRef.current = currentKey;
           } else {
@@ -158,14 +160,26 @@ const ChartSlotPane: React.FC<{
           })
           .catch(() => {});
       } catch (err: any) {
+        reportBackendFetchError();
         if (isMountedRef.current && isSubscribed) {
           setLoading(false);
-          setError(err?.message || null);
+          setError(err?.message || 'Connecting to live exchange data feed...');
         }
       }
     };
 
     fetchInitialCandles();
+
+    // Auto-retry fetching candles if array is empty
+    retryTimer = setInterval(() => {
+      if (!isMountedRef.current || !isSubscribed) return;
+      setCandles(current => {
+        if (current.length === 0) {
+          fetchInitialCandles();
+        }
+        return current;
+      });
+    }, 2500);
 
     const unsubscribe = tvStreamer.subscribe(
       symbol,
@@ -219,6 +233,7 @@ const ChartSlotPane: React.FC<{
     return () => {
       isSubscribed = false;
       clearTimeout(safetyTimer);
+      if (retryTimer) clearInterval(retryTimer);
       unsubscribe();
     };
   }, [symbol, timeframe]);

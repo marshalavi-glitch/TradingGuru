@@ -283,7 +283,7 @@ export async function scanValueBreakouts(customSymbols) {
   for (let i = 0; i < symbolsToScan.length; i++) {
     const symbol = symbolsToScan[i];
     try {
-      await new Promise(r => setTimeout(r, 360));
+      await new Promise(r => setTimeout(r, 650));
       // Fetch 30m candles to build accurate multi-day TPO profiles
       const candles = await fetchCandles(symbol, '30', 90);
       if (!candles || candles.length < 20) continue;

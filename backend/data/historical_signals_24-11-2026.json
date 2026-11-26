@@ -1,0 +1,27 @@
+[
+  {
+    "id": "NIFTY-LIVE-CE-25350",
+    "date": "23 Nov 2026",
+    "timestamp": "23 Nov 2026, 10:37:24 pm",
+    "lastUpdated": "24 Nov 2026, 01:05:03 am",
+    "lastUpdatedMs": 1795462500631,
+    "symbol": "NIFTY 50",
+    "action": "BUY CE",
+    "strike": "25350 CE",
+    "entryPrice": 159.82,
+    "currentOptionPrice": 159.82,
+    "entryRange": "₹153.4 - ₹163.0",
+    "spotPrice": 25349.65,
+    "spotSL": 25324.65,
+    "optionSL": 147.32,
+    "target1": 207.77,
+    "target2": 271.69,
+    "target1Hit": false,
+    "target2Hit": false,
+    "pnlPct": 0,
+    "confidence": 70,
+    "mathTrigger": "Nifty Skew (+14.2%) with ⚖️ CONSOLIDATION EQUILIBRIUM.",
+    "conceptUsed": "Premium Elasticity + Put-Call Asymmetry",
+    "isUrgent": true
+  }
+]

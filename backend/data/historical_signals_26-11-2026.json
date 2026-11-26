@@ -1,0 +1,27 @@
+[
+  {
+    "id": "NIFTY-LIVE-PE-25750",
+    "date": "26 Nov 2026",
+    "timestamp": "26 Nov 2026, 09:44:56 am",
+    "lastUpdated": "26 Nov 2026, 09:45:00 am",
+    "lastUpdatedMs": 1795666500580,
+    "symbol": "NIFTY 50",
+    "action": "BUY PE",
+    "strike": "25750 PE",
+    "entryPrice": 238.45,
+    "currentOptionPrice": 238.45,
+    "entryRange": "₹228.9 - ₹243.2",
+    "spotPrice": 25759.55,
+    "spotSL": 25784.55,
+    "optionSL": 225.95,
+    "target1": 309.99,
+    "target2": 405.36,
+    "target1Hit": false,
+    "target2Hit": false,
+    "pnlPct": 0,
+    "confidence": 85,
+    "mathTrigger": "Nifty Skew (-3.1%) with ⚡ VOLATILITY RELEASE EXPANSION IMMINENT.",
+    "conceptUsed": "Premium Elasticity + Put-Call Asymmetry",
+    "isUrgent": false
+  }
+]

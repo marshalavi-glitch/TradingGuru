@@ -80,13 +80,15 @@ interface SrBreakoutContainerProps {
   initialSegment?: 'cash' | 'futures' | 'options' | 'all';
 }
 
+let globalSrCache: SrCache | null = null;
+
 export const SrBreakoutContainer: React.FC<SrBreakoutContainerProps> = ({
   onSymbolSelect,
   onSwitchToChart,
   onSwitchToMarketProfile,
   initialSegment = 'cash'
 }) => {
-  const [data, setData] = useState<SrCache>({
+  const [data, setData] = useState<SrCache>(() => globalSrCache || {
     lastScanTime: null,
     isScanning: false,
     results: [],
@@ -100,7 +102,7 @@ export const SrBreakoutContainer: React.FC<SrBreakoutContainerProps> = ({
       coilingCount: 0
     }
   });
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !globalSrCache);
   const [searchQuery, setSearchQuery] = useState('');
   const [segmentFilter, setSegmentFilter] = useState<'all' | 'cash' | 'futures' | 'options'>(initialSegment);
   const [directionFilter, setDirectionFilter] = useState<'all' | 'bullish' | 'bearish' | 'coiling'>('all');
@@ -167,7 +169,6 @@ export const SrBreakoutContainer: React.FC<SrBreakoutContainerProps> = ({
           return {
             ...item,
             close: q.ltp,
-            entryPrice: item.segment === 'options' ? q.ltp : item.entryPrice,
             changePct: q.changePct !== undefined ? q.changePct : item.changePct,
             changePts: q.changePts !== undefined ? q.changePts : item.changePts,
             contractValue: q.contractValue !== undefined ? q.contractValue : item.contractValue,
@@ -222,6 +223,7 @@ export const SrBreakoutContainer: React.FC<SrBreakoutContainerProps> = ({
         const res = await fetch(`${backendUrl}/api/sr-breakouts${scanParam}`);
         if (res.ok) {
           const json = await res.json();
+          globalSrCache = json;
           if (isMounted) {
             setData(json);
             setLoading(false);

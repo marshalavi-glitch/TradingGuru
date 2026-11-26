@@ -61,6 +61,7 @@ export const HomeContainer: React.FC<HomeContainerProps> = ({
     setLeftLoading(true);
     setLeftError(null);
     let isSubscribed = true;
+    let retryTimer: any = null;
 
     // Safety timeout to avoid infinite loader
     const timer = setTimeout(() => {
@@ -81,6 +82,7 @@ export const HomeContainer: React.FC<HomeContainerProps> = ({
             const filtered = filterMarketHoursCandles(data.candles, leftSymbol, leftTimeframe);
             setLeftCandles(filtered);
             setLeftLoading(false);
+            setLeftError(null);
             setLeftConnectionStatus('connected');
           }
           if (data.matrixHistory) {
@@ -101,7 +103,8 @@ export const HomeContainer: React.FC<HomeContainerProps> = ({
           .catch(() => {});
       } catch (err: any) {
         if (isMountedRef.current && isSubscribed) {
-          setLeftError(err.message || 'Failed to fetch NIFTY candles');
+          // If candles are still empty, clear cache to force fresh resolution on next retry
+          setLeftError(err.message || 'Connecting to live exchange data feed...');
           setLeftLoading(false);
         }
       }
@@ -109,12 +112,24 @@ export const HomeContainer: React.FC<HomeContainerProps> = ({
 
     fetchCandles();
 
+    // Periodic auto-retry until candles are loaded
+    retryTimer = setInterval(() => {
+      if (!isMountedRef.current || !isSubscribed) return;
+      setLeftCandles(current => {
+        if (current.length === 0) {
+          fetchCandles();
+        }
+        return current;
+      });
+    }, 2500);
+
     // Subscribe to live stream
     const unsubscribeStream = tvStreamer.subscribe(leftSymbol, leftTimeframe, (payload) => {
       if (!isMountedRef.current || !isSubscribed) return;
       if (payload.candles && payload.candles.length > 0) {
         setLeftCandles(filterMarketHoursCandles(payload.candles, leftSymbol, leftTimeframe));
         setLeftLoading(false);
+        setLeftError(null);
         setLeftConnectionStatus('connected');
       }
       if (payload.matrixHistory) {
@@ -130,6 +145,7 @@ export const HomeContainer: React.FC<HomeContainerProps> = ({
     return () => {
       isSubscribed = false;
       clearTimeout(timer);
+      if (retryTimer) clearInterval(retryTimer);
       unsubscribeStream();
       unsubscribeStatus();
     };

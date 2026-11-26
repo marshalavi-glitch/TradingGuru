@@ -3,6 +3,7 @@ import express from 'express';
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
 import cors from 'cors';
+import { setupAlgoTradeRoutes } from './algo_trade_router.js';
 import { angelOneBridge } from './angelone_bridge.js';
 import { buildExcelWorkbook } from './excel_generator.js';
 import path from 'path';
@@ -110,63 +111,37 @@ let isFetchingMcxQuotes = false;
 
 async function fetchLiveMcxQuotes(force = false) {
   const now = Date.now();
-  if (!force && now - lastMcxFetchTime < 1000 && Object.keys(liveMcxQuotesCache).length > 0) {
+  if (Object.keys(liveMcxQuotesCache).length > 0 && !force) {
     return liveMcxQuotesCache;
   }
   if (isFetchingMcxQuotes) return liveMcxQuotesCache;
 
   isFetchingMcxQuotes = true;
   try {
-    const res = await angelOneBridge.getMarketQuotes({ MCX: MCX_TRACKED_TOKENS }, 'LTP');
-    if (res && res.status && Array.isArray(res.data?.fetched)) {
-      res.data.fetched.forEach(item => {
-        if (item && item.tradingSymbol && typeof item.ltp === 'number') {
-          const ltp = item.ltp;
-          const ts = item.tradingSymbol.toUpperCase();
-          const entry = { ltp, open: item.open, high: item.high, low: item.low, close: item.close, timestamp: now };
-          liveMcxQuotesCache[ts] = entry;
-          liveMcxQuotesCache[`MCX:${ts}`] = entry;
-
-          // Map aliases
-          if (ts.startsWith('CRUDEOIL19NOV26FUT') || ts.startsWith('CRUDEOIL19OCT26FUT')) {
-            liveMcxQuotesCache['MCX:CRUDEOIL'] = entry;
-            liveMcxQuotesCache['CRUDEOIL'] = entry;
-            liveMcxQuotesCache['MCX:CRUDEOIL1!'] = entry;
-            liveMcxQuotesCache['CRUDEOIL1!'] = entry;
-            liveMcxQuotesCache['CRUDEOIL FUT'] = entry;
-          } else if (ts.startsWith('CRUDEOILM19NOV26FUT') || ts.startsWith('CRUDEOILM19OCT26FUT')) {
-            liveMcxQuotesCache['MCX:CRUDEOILM'] = entry;
-            liveMcxQuotesCache['CRUDEOILM'] = entry;
-            liveMcxQuotesCache['MCX:CRUDEOILM1!'] = entry;
-            liveMcxQuotesCache['CRUDEOILM1!'] = entry;
-          } else if (ts.startsWith('NATURALGAS')) {
-            liveMcxQuotesCache['MCX:NATURALGAS'] = entry;
-            liveMcxQuotesCache['NATURALGAS'] = entry;
-            liveMcxQuotesCache['MCX:NATURALGAS1!'] = entry;
-            liveMcxQuotesCache['NATURALGAS1!'] = entry;
-            liveMcxQuotesCache['NATURALGAS FUT'] = entry;
-          } else if (ts.startsWith('GOLD04DEC26FUT') || ts.startsWith('GOLD05OCT26FUT')) {
-            liveMcxQuotesCache['MCX:GOLD'] = entry;
-            liveMcxQuotesCache['GOLD'] = entry;
-            liveMcxQuotesCache['MCX:GOLD1!'] = entry;
-            liveMcxQuotesCache['GOLD1!'] = entry;
-            liveMcxQuotesCache['GOLD FUT'] = entry;
-          } else if (ts.startsWith('SILVER04DEC26FUT')) {
-            liveMcxQuotesCache['MCX:SILVER'] = entry;
-            liveMcxQuotesCache['SILVER'] = entry;
-            liveMcxQuotesCache['MCX:SILVER1!'] = entry;
-            liveMcxQuotesCache['SILVER1!'] = entry;
-            liveMcxQuotesCache['SILVER FUT'] = entry;
-          } else if (ts.startsWith('ZINC')) {
-            liveMcxQuotesCache['MCX:ZINC'] = entry;
-            liveMcxQuotesCache['ZINC'] = entry;
-            liveMcxQuotesCache['MCX:ZINC1!'] = entry;
-            liveMcxQuotesCache['ZINC1!'] = entry;
-            liveMcxQuotesCache['ZINC FUT'] = entry;
-          }
+    if (angelOneBridge.isLoggedIn) {
+      try {
+        const [crudeRes, ngRes] = await Promise.all([
+          angelOneBridge.getLtp('MCX', 'CRUDEOIL', '578249'),
+          angelOneBridge.getLtp('MCX', 'NATURALGAS', '495213')
+        ]);
+        if (crudeRes?.data?.ltp) {
+          const entry = { ltp: Number(crudeRes.data.ltp), close: Number(crudeRes.data.close || crudeRes.data.ltp), timestamp: now };
+          liveMcxQuotesCache['MCX:CRUDEOIL'] = entry;
+          liveMcxQuotesCache['CRUDEOIL'] = entry;
+          liveMcxQuotesCache['MCX:CRUDEOIL1!'] = entry;
+          liveMcxQuotesCache['CRUDEOIL1!'] = entry;
+          liveMcxQuotesCache['CRUDEOIL FUT'] = entry;
         }
-      });
-      lastMcxFetchTime = now;
+        if (ngRes?.data?.ltp) {
+          const entry = { ltp: Number(ngRes.data.ltp), close: Number(ngRes.data.close || ngRes.data.ltp), timestamp: now };
+          liveMcxQuotesCache['MCX:NATURALGAS'] = entry;
+          liveMcxQuotesCache['NATURALGAS'] = entry;
+          liveMcxQuotesCache['MCX:NATURALGAS1!'] = entry;
+          liveMcxQuotesCache['NATURALGAS1!'] = entry;
+          liveMcxQuotesCache['NATURALGAS FUT'] = entry;
+        }
+        lastMcxFetchTime = now;
+      } catch (e) {}
     }
   } catch (err) {
     // Keep cached
@@ -219,7 +194,10 @@ process.on('unhandledRejection', (reason, promise) => {
 const app = express();
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
-app.use(cors({ origin: '*', credentials: true }));
+app.use(cors({
+  origin: (origin, callback) => callback(null, true),
+  credentials: true
+}));
 app.use(compression());
 
 let cachedLiveHistory = null;
@@ -738,6 +716,14 @@ function saveCandlesDiskCache() {
 
 async function fetchFreshCandles(symbol, timeframe, limit, isPriority = true) {
   const cacheKey = `${symbol}_${timeframe}`;
+  const now = Date.now();
+  const cached = fastCandlesCache.get(cacheKey);
+  const tfSec = getTfSeconds(timeframe);
+  const minCacheTtl = Math.max(45000, Math.min(180000, tfSec * 1000 * 0.3));
+  if (cached && Array.isArray(cached.candles) && cached.candles.length >= 20 && (now - cached.lastFetch < minCacheTtl)) {
+    return { candles: cached.candles, source: cached.source || 'Fast In-Memory Cache' };
+  }
+
   if (inFlightCandleFetches.has(cacheKey)) {
     return await inFlightCandleFetches.get(cacheKey);
   }
@@ -1015,43 +1001,50 @@ app.get('/api/candles', async (req, res) => {
     const nowSec = Math.floor(now / 1000);
     const lastCandle = (cached && cached.candles && cached.candles.length > 0) ? cached.candles[cached.candles.length - 1] : null;
     const isMarketOpen = isNSEMarketHours() || isMcxMarketHours();
-    // If market is active and the last cached candle is more than 2 candle periods behind current time, it is critically stale!
+    // If market is active and the last cached candle is more than 2 candle periods behind current time, it is stale
     const isCandleStale = Boolean(isMarketOpen && lastCandle && (nowSec - lastCandle.time > tfSec * 2));
+    const hasCachedCandles = Boolean(cached && Array.isArray(cached.candles) && cached.candles.length > 0);
 
-    if (!cached || !cached.candles || cached.candles.length === 0 || isUnderfilled || isCandleStale || force) {
+    // Initial cache fill or forced fetch: blocking
+    if (!hasCachedCandles || force) {
       const fetched = await fetchFreshCandles(symbol, timeframe, limit, true);
-      cached = {
-        candles: fetched.candles || [],
-        source: fetched.source,
-        lastFetch: now,
-        isFetching: false
-      };
-      if (cached.candles.length > 0) {
+      if (fetched.candles && fetched.candles.length > 0) {
+        cached = {
+          candles: fetched.candles,
+          source: fetched.source,
+          lastFetch: now,
+          isFetching: false
+        };
         fastCandlesCache.set(cacheKey, cached);
         saveCandlesDiskCache();
       }
-    } else if (now - cached.lastFetch > revalidateInterval && !cached.isFetching) {
-      // Stale-While-Revalidate: Background refresh without blocking HTTP response
-      cached.isFetching = true;
-      fetchFreshCandles(symbol, timeframe, limit).then(fresh => {
-        if (fresh.candles && fresh.candles.length > 0) {
-          fastCandlesCache.set(cacheKey, {
-            candles: fresh.candles,
-            source: fresh.source,
-            lastFetch: Date.now(),
-            isFetching: false
-          });
-          saveCandlesDiskCache();
-        } else {
+    } else if ((isCandleStale || isUnderfilled || (now - cached.lastFetch > revalidateInterval)) && !cached.isFetching) {
+      // Stale-While-Revalidate: Serve cached immediately (0ms delay) while refreshing in the background
+      // Debounce background fetches to at most once per 20s
+      if (!cached.lastFetch || (now - cached.lastFetch > 20000)) {
+        cached.isFetching = true;
+        fetchFreshCandles(symbol, timeframe, limit, false).then(fresh => {
+          if (fresh.candles && fresh.candles.length > 0) {
+            fastCandlesCache.set(cacheKey, {
+              candles: fresh.candles,
+              source: fresh.source,
+              lastFetch: Date.now(),
+              isFetching: false
+            });
+            saveCandlesDiskCache();
+          } else {
+            cached.isFetching = false;
+            cached.lastFetch = Date.now();
+          }
+        }).catch(() => {
           cached.isFetching = false;
-        }
-      }).catch(() => {
-        cached.isFetching = false;
-      });
+          cached.lastFetch = Date.now();
+        });
+      }
     }
 
-    let candles = cached.candles ? cached.candles.map(c => ({ ...c })) : [];
-    let source = cached.source || 'Angel One SmartAPI';
+    let candles = (cached && Array.isArray(cached.candles)) ? cached.candles.map(c => ({ ...c })) : [];
+    let source = cached?.source || 'Angel One SmartAPI';
 
     // Strict Market Hours Filter (before live stitch)
     candles = filterCandlesByMarketHours(candles, symbol, timeframe);
@@ -1127,49 +1120,71 @@ async function updateMarketIndicesInternal() {
   isUpdatingIndices = true;
 
   try {
-    let niftyLtp = liveMarketIndicesCache?.nifty || 23361.0;
-    let niftyClose = liveMarketIndicesCache?.items?.[0]?.close || 23329.0;
-    let bankNiftyLtp = liveMarketIndicesCache?.banknifty || 56384.0;
-    let bankNiftyClose = liveMarketIndicesCache?.items?.[2]?.close || 56215.55;
-    let finniftyLtp = liveMarketIndicesCache?.finnifty || 24671.65;
-    let finniftyClose = liveMarketIndicesCache?.finniftyClose || 25094.85;
-    let midcpniftyLtp = liveMarketIndicesCache?.midcpnifty || 13776.35;
-    let midcpniftyClose = liveMarketIndicesCache?.midcpniftyClose || 14027.7;
-    let sensexLtp = liveMarketIndicesCache?.sensex || 74644.0;
-    let sensexClose = liveMarketIndicesCache?.items?.[4]?.close || 74529.08;
+    let niftyLtp = liveMarketIndicesCache?.nifty || 25230.0;
+    let niftyClose = liveMarketIndicesCache?.items?.[0]?.close || 25387.4;
+    let bankNiftyLtp = liveMarketIndicesCache?.banknifty || 62060.0;
+    let bankNiftyClose = liveMarketIndicesCache?.items?.[2]?.close || 62273.25;
+    let finniftyLtp = liveMarketIndicesCache?.finnifty || 28042.5;
+    let finniftyClose = liveMarketIndicesCache?.finniftyClose || 28195.0;
+    let midcpniftyLtp = liveMarketIndicesCache?.midcpnifty || 14124.3;
+    let midcpniftyClose = liveMarketIndicesCache?.midcpniftyClose || 14277.45;
+    let sensexLtp = liveMarketIndicesCache?.sensex || 82063.7;
+    let sensexClose = liveMarketIndicesCache?.items?.[4]?.close || 82532.2;
     let source = 'Angel One SmartAPI';
 
     if (angelOneBridge.isLoggedIn) {
       try {
-        const batchRes = await angelOneBridge.getMarketQuotes({
-          NSE: ['99926000', '99926009', '99926037', '99926074'],
-          BSE: ['99919000']
-        }, 'OHLC');
+        const [nRes, bRes, fRes, mRes, sRes] = await Promise.all([
+          angelOneBridge.getLtp('NSE', 'Nifty 50', '99926000'),
+          angelOneBridge.getLtp('NSE', 'Nifty Bank', '99926009'),
+          angelOneBridge.getLtp('NSE', 'FINNIFTY', '99926037'),
+          angelOneBridge.getLtp('NSE', 'MIDCPNIFTY', '99926074'),
+          angelOneBridge.getLtp('BSE', 'SENSEX', '99919000')
+        ]);
 
-        if (batchRes?.data?.fetched && Array.isArray(batchRes.data.fetched)) {
-          for (const item of batchRes.data.fetched) {
-            const ltpVal = Number(item.ltp);
-            const closeVal = Number(item.close);
-            if (item.symbolToken === '99926000' && ltpVal > 0) {
-              niftyLtp = ltpVal;
-              if (closeVal > 0) niftyClose = closeVal;
-            } else if (item.symbolToken === '99926009' && ltpVal > 0) {
-              bankNiftyLtp = ltpVal;
-              if (closeVal > 0) bankNiftyClose = closeVal;
-            } else if (item.symbolToken === '99919000' && ltpVal > 0) {
-              sensexLtp = ltpVal;
-              if (closeVal > 0) sensexClose = closeVal;
-            } else if (item.symbolToken === '99926037' && ltpVal > 0) {
-              finniftyLtp = ltpVal;
-              if (closeVal > 0) finniftyClose = closeVal;
-            } else if (item.symbolToken === '99926074' && ltpVal > 0) {
-              midcpniftyLtp = ltpVal;
-              if (closeVal > 0) midcpniftyClose = closeVal;
+        if (nRes?.data?.ltp) {
+          niftyLtp = Number(nRes.data.ltp);
+          if (nRes.data.close) niftyClose = Number(nRes.data.close);
+        }
+        if (bRes?.data?.ltp) {
+          bankNiftyLtp = Number(bRes.data.ltp);
+          if (bRes.data.close) bankNiftyClose = Number(bRes.data.close);
+        }
+        if (fRes?.data?.ltp) {
+          finniftyLtp = Number(fRes.data.ltp);
+          if (fRes.data.close) finniftyClose = Number(fRes.data.close);
+        }
+        if (mRes?.data?.ltp) {
+          midcpniftyLtp = Number(mRes.data.ltp);
+          if (mRes.data.close) midcpniftyClose = Number(mRes.data.close);
+        }
+        if (sRes?.data?.ltp) {
+          sensexLtp = Number(sRes.data.ltp);
+          if (sRes.data.close) sensexClose = Number(sRes.data.close);
+        }
+
+        if (isMcxMarketHours()) {
+          try {
+            const [crudeRes, ngRes] = await Promise.all([
+              angelOneBridge.getLtp('MCX', 'CRUDEOIL', '578249'),
+              angelOneBridge.getLtp('MCX', 'NATURALGAS', '495213')
+            ]);
+            if (crudeRes?.data?.ltp) {
+              const entry = { ltp: Number(crudeRes.data.ltp), close: Number(crudeRes.data.close || crudeRes.data.ltp), timestamp: Date.now() };
+              liveMcxQuotesCache['MCX:CRUDEOIL'] = entry;
+              liveMcxQuotesCache['CRUDEOIL'] = entry;
+              liveMcxQuotesCache['MCX:CRUDEOIL1!'] = entry;
+              liveMcxQuotesCache['CRUDEOIL1!'] = entry;
             }
-          }
+            if (ngRes?.data?.ltp) {
+              const entry = { ltp: Number(ngRes.data.ltp), close: Number(ngRes.data.close || ngRes.data.ltp), timestamp: Date.now() };
+              liveMcxQuotesCache['MCX:NATURALGAS'] = entry;
+              liveMcxQuotesCache['NATURALGAS'] = entry;
+            }
+          } catch (e) {}
         }
       } catch (e) {
-        console.warn('[fetchLiveMarketIndices] Batch quote error:', e.message);
+        console.warn('[fetchLiveMarketIndices] LTP fetch error:', e.message);
       }
     }
 
@@ -1320,6 +1335,13 @@ async function updateMarketIndicesInternal() {
 
     liveMarketIndicesCache = result;
     liveMarketIndicesCacheTime = Date.now();
+    // Ultra-fast push: broadcast updated indices immediately to all connected clients
+    try {
+      broadcastToAllClients({
+        type: 'market_indices',
+        ...result
+      });
+    } catch (e) {}
     return result;
   } finally {
     isUpdatingIndices = false;
@@ -1337,12 +1359,12 @@ export async function fetchLiveMarketIndices(force = false) {
   return await updateMarketIndicesInternal();
 }
 
-// Background ticker loop: refresh live market indices continuously every 3000ms
+// Ultra-fast ticker loop: refresh live market indices continuously every 2500ms during market hours
 setInterval(() => {
-  if (angelOneBridge.isLoggedIn) {
+  if (angelOneBridge.isLoggedIn && (isNSEMarketHours() || isMcxMarketHours())) {
     updateMarketIndicesInternal().catch(() => {});
   }
-}, 3000);
+}, 2500);
 
 // Global live quote cache for all symbols (Futures, Stocks, Commodities, Indices)
 const liveGeneralQuotesCache = {};
@@ -1414,9 +1436,7 @@ export async function getRealtimeLtp(symbol, fallbackPrice = null) {
   // 6. General Quotes Cache (active dynamic quotes)
   const cached = liveGeneralQuotesCache[clean] || liveGeneralQuotesCache[noPrefix] || liveGeneralQuotesCache[`NSE:${noPrefix}`];
   if (cached && typeof cached.ltp === 'number' && cached.ltp > 0) {
-    if (Date.now() - cached.timestamp < 1500) {
-      return cached.ltp;
-    }
+    return cached.ltp;
   }
 
   // 7. Dynamic Resolution via Angel One SmartAPI (stocks, futures, commodities)
@@ -1426,10 +1446,9 @@ export async function getRealtimeLtp(symbol, fallbackPrice = null) {
       try {
         const resolved = await angelOneBridge.resolveSymbolToken(clean);
         if (resolved && resolved.symboltoken) {
-          const qRes = await angelOneBridge.getMarketQuotes({ [resolved.exchange]: [resolved.symboltoken] }, 'LTP');
-          const fetchedItem = qRes?.data?.fetched?.[0];
-          if (fetchedItem && typeof fetchedItem.ltp === 'number' && fetchedItem.ltp > 0) {
-            const entry = { ltp: fetchedItem.ltp, timestamp: Date.now() };
+          const qRes = await angelOneBridge.getLtp(resolved.exchange, resolved.tradingsymbol || clean, resolved.symboltoken);
+          if (qRes?.data && typeof qRes.data.ltp === 'number' && qRes.data.ltp > 0) {
+            const entry = { ltp: qRes.data.ltp, timestamp: Date.now() };
             liveGeneralQuotesCache[clean] = entry;
             liveGeneralQuotesCache[noPrefix] = entry;
             liveGeneralQuotesCache[`${resolved.exchange}:${noPrefix}`] = entry;
@@ -1444,10 +1463,6 @@ export async function getRealtimeLtp(symbol, fallbackPrice = null) {
         isResolvingDynamicQuote[clean] = false;
       }
     })();
-  }
-
-  if (cached && typeof cached.ltp === 'number' && cached.ltp > 0) {
-    return cached.ltp;
   }
 
   // 8. Reliable fallback to candle close or previous known price
@@ -2514,9 +2529,10 @@ wss.on('error', (err) => {
   console.error('[Node Backend] WebSocket Server error:', err);
 });
 
-startScanner();
-startDojiScanner();
-// startVolumeScanner(); // Disabled: Volume tab removed to save Angel One SmartAPI quota
+// Background automated scanners paused on boot to dedicate 100% SmartAPI bandwidth to live chart & ticker streaming
+// startScanner();
+// startDojiScanner();
+// startVolumeScanner();
 
 // Initialize real-time @NiftyNivesh Telegram trade ideas listener
 startTelegramTradeIdeasEngine((msg) => {
@@ -2814,15 +2830,15 @@ wss.on('connection', (ws, req) => {
           currentCandles = angelOneBridge.candleCache[cacheKey].candles.map(c => ({ ...c }));
         }
 
-        // Fetch anchor levels and initial candle snapshot if needed
+        // Fetch anchor levels and initial candle snapshot if needed (with in-flight de-duplication across all clients)
         try {
-          const [lvlRes, angelRes] = await Promise.all([
+          const [lvlRes, freshData] = await Promise.all([
             fetchAnchorLevels(symbol, timeframe).catch(() => null),
-            currentCandles.length === 0 ? angelOneBridge.getNormalizedCandles({ symbol, timeframe, limit: 150 }).catch(() => null) : null
+            currentCandles.length === 0 ? fetchFreshCandles(symbol, timeframe, 150) : null
           ]);
           if (lvlRes) levels = lvlRes;
-          if (angelRes && angelRes.status && Array.isArray(angelRes.candles) && currentCandles.length === 0) {
-            currentCandles = angelRes.candles;
+          if (freshData && Array.isArray(freshData.candles) && currentCandles.length === 0) {
+            currentCandles = freshData.candles;
           }
         } catch (e) {}
 
@@ -4881,8 +4897,8 @@ app.get('/api/doji-signals', (req, res) => {
   const slot = req.query.slot || 'first_5min';
   const force = req.query.scan === 'true';
 
-  if (force || !dojiCache.slotData[slot]) {
-    // Run scan asynchronously in background so GET response is instant (<5ms)
+  if (force) {
+    // Run scan asynchronously in background when explicitly requested
     scanDojiForSlot(slot).catch(err => console.warn('[Doji Scan Async Error]', err.message));
   }
 
@@ -4924,11 +4940,12 @@ app.get('/api/nr7-breakouts', (req, res) => {
 });
 
 // Background periodic NR7 scan runner (runs every 15 minutes during market hours)
-setInterval(() => {
-  if (isNSEMarketHours() && !nr7Cache.isScanning) {
-    scanNr7Breakouts();
-  }
-}, 900000);
+// Disabled on boot to preserve 100% SmartAPI bandwidth for live charts and zero-delay ticks
+// setInterval(() => {
+//   if (isNSEMarketHours() && !nr7Cache.isScanning) {
+//     scanNr7Breakouts();
+//   }
+// }, 900000);
 
 // Endpoint to retrieve SR Breakouts (NR7 Setup Rules & Market Profile VAL, VAH, POC)
 app.get('/api/sr-breakouts', (req, res) => {
@@ -4936,7 +4953,7 @@ app.get('/api/sr-breakouts', (req, res) => {
     console.log('[SR Breakout Endpoint] Manual scan trigger requested for Cash & Futures...');
     scanSrBreakouts();
   }
-  if (!liveSrBreakoutsUpdating) {
+  if (req.query.sync === 'true' && !liveSrBreakoutsUpdating) {
     syncRealLiveQuotesForSrBreakouts().catch(() => {});
   }
   res.json(srBreakoutCache);
@@ -4944,7 +4961,7 @@ app.get('/api/sr-breakouts', (req, res) => {
 
 // Fast live quotes endpoint for real-time market updates
 app.get('/api/sr-breakouts/live-quotes', (req, res) => {
-  if (!liveSrBreakoutsUpdating) {
+  if (req.query.sync === 'true' && !liveSrBreakoutsUpdating) {
     syncRealLiveQuotesForSrBreakouts().catch(() => {});
   }
   const quotes = getSrBreakoutsLiveQuotes();
@@ -5003,11 +5020,12 @@ app.get('/api/sr-breakouts/backtest-download-csv', (req, res) => {
 });
 
 // Background periodic SR scan runner (runs every 15 minutes during market hours)
-setInterval(() => {
-  if (isNSEMarketHours() && !srBreakoutCache.isScanning) {
-    scanSrBreakouts();
-  }
-}, 900000);
+// Disabled on boot to preserve 100% SmartAPI bandwidth for live charts and zero-delay ticks
+// setInterval(() => {
+//   if (isNSEMarketHours() && !srBreakoutCache.isScanning) {
+//     scanSrBreakouts();
+//   }
+// }, 900000);
 
 // Endpoint to retrieve all 5000+ Indian stock presets dynamically
 app.get('/api/symbols/presets', (req, res) => {
@@ -5057,8 +5075,6 @@ app.get('/api/mp-3day-patterns', async (req, res) => {
     const force = req.query.scan === 'true';
     if (force && !mp3DayCache.isScanning) {
       console.log('[MP 3-Day Endpoint] Manual scan trigger requested...');
-      scanMp3DayPatterns();
-    } else if (mp3DayCache.results.length === 0 && !mp3DayCache.isScanning) {
       scanMp3DayPatterns();
     }
     res.json({
@@ -5171,18 +5187,18 @@ app.get('/api/mp-3day-patterns/backtest-data-100d', (req, res) => {
 });
 
 // Periodic background scanner for 3-Day MP Compression (runs every 10 minutes during market hours)
+// Periodic MP 3-Day pattern refresh (runs every 60 minutes during market hours to preserve API quota)
 setInterval(() => {
   if (isNSEMarketHours() && !mp3DayCache.isScanning) {
     scanMp3DayPatterns();
   }
-}, 600000);
+}, 60 * 60 * 1000);
 
 // Kick off initial MP 3-Day scan only if empty cache AND market is open
+// Initial MP 3-Day setups loaded from disk cache on boot; manual scan available via endpoint
 setTimeout(() => {
-  if (!mp3DayCache.isScanning && mp3DayCache.results.length === 0 && isNSEMarketHours()) {
-    scanMp3DayPatterns();
-  }
-}, 8000);
+  loadMp3DayCacheFromDisk();
+}, 2000);
 
 
 // ==============================================================================
@@ -5248,302 +5264,10 @@ app.get('/api/orderflow-report/export-excel', requireAdminRole, async (req, res)
 });
 
 
-// GET /api/algo-trade/trades - Return unified algo trades list
-app.get('/api/algo-trade/trades', (req, res) => {
-  try {
-    const historyFile = path.join(__dirname, 'data/algo_trades_history.json');
-    let trades = [];
-    if (fs.existsSync(historyFile)) {
-      try {
-        trades = JSON.parse(fs.readFileSync(historyFile, 'utf8')) || [];
-      } catch (e) {
-        trades = [];
-      }
-    }
-    res.json({ success: true, trades, count: trades.length });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-// GET /api/algo-trade/history - Retrieve all persistent algo trades & positions from server disk
-app.get('/api/algo-trade/history', (req, res) => {
-  try {
-    const historyFile = path.join(__dirname, 'data/algo_trades_history.json');
-    let history = [];
-    if (fs.existsSync(historyFile)) {
-      try {
-        const raw = fs.readFileSync(historyFile, 'utf8');
-        history = JSON.parse(raw);
-        if (!Array.isArray(history)) history = [];
-      } catch (e) {
-        history = [];
-      }
-    }
-    const positionsFile = path.join(__dirname, 'data/algo_positions.json');
-    let positions = [];
-    if (fs.existsSync(positionsFile)) {
-      try {
-        const raw = fs.readFileSync(positionsFile, 'utf8');
-        positions = JSON.parse(raw);
-        if (!Array.isArray(positions)) positions = [];
-      } catch (e) {
-        positions = [];
-      }
-    }
-    res.json({ success: true, history, positions });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-// POST /api/algo-trade/sync - Synchronize algo trades from frontend to server disk
-app.post('/api/algo-trade/sync', (req, res) => {
-  try {
-    const { history = [], positions = [], overwrite = false } = req.body || {};
-    const historyFile = path.join(__dirname, 'data/algo_trades_history.json');
-    let mergedHistory = [];
-    if (overwrite) {
-      mergedHistory = Array.isArray(history) ? history : [];
-    } else {
-      let existingHistory = [];
-      if (fs.existsSync(historyFile)) {
-        try {
-          existingHistory = JSON.parse(fs.readFileSync(historyFile, 'utf8')) || [];
-        } catch (e) {}
-      }
-      const map = new Map();
-      existingHistory.forEach(item => { if (item && item.id) map.set(item.id, item); });
-      history.forEach(item => { if (item && item.id) map.set(item.id, item); });
-      mergedHistory = Array.from(map.values());
-    }
-    fs.writeFileSync(historyFile, JSON.stringify(mergedHistory, null, 2), 'utf8');
-
-    const positionsFile = path.join(__dirname, 'data/algo_positions.json');
-    fs.writeFileSync(positionsFile, JSON.stringify(positions, null, 2), 'utf8');
-
-    res.json({ success: true, count: mergedHistory.length });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-// POST /api/algo-trade/clear & /api/algo-trade/trades/clear - Clear all persistent algo trades & positions
-const handleClearAlgoTrades = (req, res) => {
-  try {
-    const historyFile = path.join(__dirname, 'data/algo_trades_history.json');
-    const positionsFile = path.join(__dirname, 'data/algo_positions.json');
-    fs.writeFileSync(historyFile, JSON.stringify([], null, 2), 'utf8');
-    fs.writeFileSync(positionsFile, JSON.stringify([], null, 2), 'utf8');
-    res.json({ success: true, count: 0, message: 'All algo trades and positions cleared' });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-};
-app.post('/api/algo-trade/clear', handleClearAlgoTrades);
-app.post('/api/algo-trade/trades/clear', handleClearAlgoTrades);
-
-// POST /api/algo-trade/export-excel - Download multi-sheet Excel report (.xlsx) for Algo Trades
-app.post('/api/algo-trade/export-excel', (req, res) => {
-  try {
-    const { positions = [], history = [], metrics = {}, logs = [] } = req.body || {};
-
-    const formatIst = (ts, fallbackStr) => {
-      if (ts && !isNaN(Number(ts))) {
-        return new Date(Number(ts)).toLocaleString('en-IN', {
-          timeZone: 'Asia/Kolkata',
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-          hour12: false
-        });
-      }
-      return fallbackStr || '-';
-    };
-
-    const formatDateOnly = (ts, fallbackDate) => {
-      if (fallbackDate) return fallbackDate;
-      if (ts && !isNaN(Number(ts))) {
-        return new Date(Number(ts)).toLocaleDateString('en-IN', {
-          timeZone: 'Asia/Kolkata',
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric'
-        });
-      }
-      return new Date().toLocaleDateString('en-IN', {
-        timeZone: 'Asia/Kolkata',
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric'
-      });
-    };
-
-    const generatedAt = formatIst(Date.now());
-
-    // Sheet 1: Summary
-    const totalClosed = history.length;
-    const winners = history.filter(h => (Number(h.realizedPnl) || 0) > 0).length;
-    const losers = history.filter(h => (Number(h.realizedPnl) || 0) < 0).length;
-    const winRate = totalClosed > 0 ? ((winners / totalClosed) * 100).toFixed(2) + '%' : '0.00%';
-    const totalRealized = history.reduce((acc, h) => acc + (Number(h.realizedPnl) || 0), 0);
-    const totalUnrealized = positions.reduce((acc, p) => acc + (Number(p.unrealizedPnl) || 0), 0);
-
-    const summaryRows = [
-      ['TradingGuru Algo Trade Portfolio Report', ''],
-      ['Generated On (IST)', generatedAt],
-      ['', ''],
-      ['Metric', 'Value'],
-      ['Initial Capital (INR)', Number(metrics.totalCapital || 1000000)],
-      ['Available Margin (INR)', Number(metrics.availableMargin || 0)],
-      ['Used Margin (INR)', Number(metrics.usedMargin || 0)],
-      ['Realized P&L (INR)', Math.round(totalRealized * 100) / 100],
-      ['Unrealized P&L (INR)', Math.round(totalUnrealized * 100) / 100],
-      ['Total Net Day P&L (INR)', Math.round((totalRealized + totalUnrealized) * 100) / 100],
-      ['Total Open Positions', positions.length],
-      ['Total Closed Trades', totalClosed],
-      ['Winning Trades', winners],
-      ['Losing Trades', losers],
-      ['Win Rate', winRate]
-    ];
-
-    // Sheet 2: Closed Trades History
-    const historyRows = [
-      [
-        'S.No',
-        'Symbol',
-        'Side',
-        'Setup Strategy',
-        'Qty',
-        'Allocated Capital (INR)',
-        'Entry Date',
-        'Entry Time (IST)',
-        'Entry Price (INR)',
-        'Exit Date',
-        'Exit Time (IST)',
-        'Exit Price (INR)',
-        'Exit Reason',
-        'Stop Loss (INR)',
-        'Target 1 (INR)',
-        'Target 2 (INR)',
-        'Realized P&L (INR)',
-        'Return (%)'
-      ]
-    ];
-
-    history.forEach((item, idx) => {
-      const cap = Number(item.allocatedCapital) || (Number(item.entryPrice) * Number(item.quantity)) || 1;
-      const pnl = Number(item.realizedPnl) || 0;
-      const roiPct = ((pnl / cap) * 100).toFixed(2) + '%';
-      historyRows.push([
-        idx + 1,
-        item.displayName || item.symbol || '-',
-        item.side || '-',
-        item.setupType || '-',
-        Number(item.quantity) || 0,
-        Math.round(cap * 100) / 100,
-        formatDateOnly(item.entryTimestamp, item.entryDate),
-        item.entryTime || formatIst(item.entryTimestamp),
-        Number(item.entryPrice) || 0,
-        formatDateOnly(item.exitTimestamp || item.entryTimestamp, item.exitDate),
-        item.exitTime || formatIst(item.exitTimestamp),
-        Number(item.exitPrice) || 0,
-        item.exitReason || '-',
-        Number(item.stopLoss) || 0,
-        Number(item.target1) || 0,
-        Number(item.target2) || 0,
-        Math.round(pnl * 100) / 100,
-        roiPct
-      ]);
-    });
-
-    if (history.length > 0) {
-      historyRows.push([
-        '', 'TOTAL', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-        Math.round(totalRealized * 100) / 100,
-        ''
-      ]);
-    }
-
-    // Sheet 3: Open Positions
-    const openRows = [
-      [
-        'S.No',
-        'Symbol',
-        'Side',
-        'Setup Strategy',
-        'Qty',
-        'Allocated Capital (INR)',
-        'Entry Date',
-        'Entry Time (IST)',
-        'Entry Price (INR)',
-        'Current LTP (INR)',
-        'Stop Loss (INR)',
-        'Target 1 (INR)',
-        'Target 2 (INR)',
-        'Trailing/BE',
-        'Unrealized P&L (INR)',
-        'P&L (%)'
-      ]
-    ];
-
-    positions.forEach((pos, idx) => {
-      openRows.push([
-        idx + 1,
-        pos.displayName || pos.symbol || '-',
-        pos.side || '-',
-        pos.setupType || '-',
-        Number(pos.quantity) || 0,
-        Number(pos.allocatedCapital) || 0,
-        formatDateOnly(pos.entryTimestamp, pos.entryDate),
-        pos.entryTime || formatIst(pos.entryTimestamp),
-        Number(pos.entryPrice) || 0,
-        Number(pos.currentPrice) || 0,
-        Number(pos.stopLoss) || 0,
-        Number(pos.target1) || 0,
-        Number(pos.target2) || 0,
-        pos.isBreakeven ? 'Breakeven' : (pos.isTrailingActive ? 'Trailing' : 'Initial'),
-        Number(pos.unrealizedPnl) || 0,
-        (Number(pos.unrealizedPnlPct) || 0).toFixed(2) + '%'
-      ]);
-    });
-
-    // Sheet 4: Execution Logs
-    const logRows = [
-      ['S.No', 'Date', 'Time (IST)', 'Type', 'Symbol', 'Message']
-    ];
-    logs.forEach((l, idx) => {
-      logRows.push([
-        idx + 1,
-        l.date || formatDateOnly(Date.now()),
-        l.time || '-',
-        l.type || '-',
-        l.symbol || '-',
-        l.message || '-'
-      ]);
-    });
-
-    const sheets = [
-      { name: 'Summary', rows: summaryRows, colWidths: [30, 28] },
-      { name: 'Closed Trades', rows: historyRows, colWidths: [8, 16, 8, 28, 10, 18, 15, 22, 14, 15, 22, 14, 24, 14, 14, 14, 16, 12] },
-      { name: 'Open Positions', rows: openRows, colWidths: [8, 16, 8, 28, 10, 18, 15, 22, 14, 14, 14, 14, 14, 14, 16, 12] },
-      { name: 'Audit Logs', rows: logRows, colWidths: [8, 15, 16, 10, 16, 65] }
-    ];
-
-    const buffer = buildExcelWorkbook(sheets);
-    const dateStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
-    const filename = `AlgoTrade_Report_${dateStr}.xlsx`;
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.send(buffer);
-  } catch (err) {
-    console.error('[AlgoTrade Export] Error:', err);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
+// ============================================================================
+// MARSHALL AUTONOMOUS STRATEGY EXECUTION ENGINE (ALGO TRADING)
+// ============================================================================
+setupAlgoTradeRoutes(app, fetchFreshCandles, getRealtimeLtp, scannerCache, wss);
 
 // GET /api/orderflow-report/export-csv - Download complete CSV report (.csv)
 app.get('/api/orderflow-report/export-csv', requireAdminRole, (req, res) => {
@@ -5830,7 +5554,7 @@ export async function syncRealLiveQuotesForManualTrades() {
     }
 
     if (Object.keys(cleanTokens).length > 0) {
-      const quoteRes = await angelOneBridge.getMarketQuotes(cleanTokens);
+      const quoteRes = await angelOneBridge.getMarketQuotes(cleanTokens, 'LTP', false);
       if (quoteRes?.data?.fetched && Array.isArray(quoteRes.data.fetched)) {
         const fetchedMap = {};
         quoteRes.data.fetched.forEach(f => {
@@ -5933,69 +5657,16 @@ function getAngelOptionTokens() {
 }
 
 export async function syncRealLiveQuotesForSrBreakouts() {
-  if (liveSrBreakoutsUpdating || !angelOneBridge.isLoggedIn) return;
+  if (liveSrBreakoutsUpdating) return;
   if (!srBreakoutCache || !Array.isArray(srBreakoutCache.results) || srBreakoutCache.results.length === 0) return;
   liveSrBreakoutsUpdating = true;
 
   try {
-    const optionTokensMap = getAngelOptionTokens();
-    const allNfoTokens = [];
-    const nseTokens = ['99926000', '99926009', '99926074'];
-    const bseTokens = ['99919000'];
-
-    // Collect all option tokens from token map
-    for (const item of srBreakoutCache.results) {
-      if (item.segment === 'options') {
-        const tokenMeta = optionTokensMap[item.symbol];
-        if (tokenMeta && tokenMeta.symboltoken) {
-          if (!allNfoTokens.includes(tokenMeta.symboltoken)) {
-            allNfoTokens.push(tokenMeta.symboltoken);
-          }
-        }
-      }
-    }
-
-    // Split NFO tokens into chunks of 45 (Angel One batch limit is 50)
-    const nfoChunks = [];
-    const chunkSize = 45;
-    for (let i = 0; i < allNfoTokens.length; i += chunkSize) {
-      nfoChunks.push(allNfoTokens.slice(i, i + chunkSize));
-    }
-    if (nfoChunks.length === 0) nfoChunks.push([]);
-
-    const fetchedQuotes = [];
-    for (let i = 0; i < nfoChunks.length; i++) {
-      const chunk = nfoChunks[i];
-      const batchPayload = {};
-      if (chunk.length > 0) batchPayload.NFO = chunk;
-      if (i === 0) {
-        batchPayload.NSE = nseTokens;
-        batchPayload.BSE = bseTokens;
-      }
-      try {
-        const res = await angelOneBridge.getMarketQuotes(batchPayload);
-        if (res?.data?.fetched && Array.isArray(res.data.fetched)) {
-          fetchedQuotes.push(...res.data.fetched);
-        }
-      } catch (err) {
-        // silent recovery
-      }
-    }
-
-    // Build quote map
-    const quoteMap = {};
-    for (const q of fetchedQuotes) {
-      const ltpVal = Number(q.ltp);
-      if (ltpVal > 0) {
-        quoteMap[q.symbolToken] = q;
-        quoteMap[`${q.exchange}:${q.symbolToken}`] = q;
-      }
-    }
-
     // Spot indices
-    const spotNifty = Number(quoteMap['99926000']?.ltp || liveMarketIndicesCache?.nifty || 23414.3);
-    const spotBank = Number(quoteMap['99926009']?.ltp || liveMarketIndicesCache?.banknifty || 56470.65);
-    const spotMidcap = Number(quoteMap['99926074']?.ltp || 14504.25);
+    const spotNifty = Number(liveMarketIndicesCache?.nifty || 25230.0);
+    const spotBank = Number(liveMarketIndicesCache?.banknifty || 62060.0);
+    const spotMidcap = Number(liveMarketIndicesCache?.midcpnifty || 14124.3);
+    const quoteMap = {};
 
     let hasUpdates = false;
 
@@ -6102,26 +5773,20 @@ function getSrBreakoutsLiveQuotes() {
   return quotes;
 }
 
-// Background sync from Angel One every 8000ms for manual trades (active market hours only)
+// Background sync from Angel One every 12000ms for manual trades (active market hours only)
 setInterval(() => {
   if (isNSEMarketHours() || isMcxMarketHours()) {
     syncRealLiveQuotesForManualTrades();
   }
-}, 8000);
-
-// Background sync from Angel One every 12000ms for SR Breakouts live options & stocks (NSE market hours only)
-setInterval(() => {
-  if (isNSEMarketHours()) {
-    syncRealLiveQuotesForSrBreakouts();
-  }
 }, 12000);
 
-// Background sync from Angel One every 8000ms for MCX Commodities (MCX market hours only)
-setInterval(() => {
-  if (isMcxMarketHours()) {
-    fetchLiveMcxQuotes().catch(() => {});
-  }
-}, 8000);
+// Background sync for SR Breakouts live options & stocks disabled to ensure 0-delay chart & ticker feeds
+// SR Breakout quotes are served instantly from memory cache with on-demand sync
+// setInterval(() => {
+//   if (isNSEMarketHours()) {
+//     syncRealLiveQuotesForSrBreakouts();
+//   }
+// }, 20000);
 
 // Background broadcaster: every 1000ms, broadcast live quotes to all WebSocket clients (from memory cache)
 setInterval(() => {
@@ -6259,5 +5924,5 @@ const PORT = process.env.PORT || 7860;
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Backend WebSocket server listening on port ${PORT}`);
   startPostMarketScheduler();
-  prewarmTopStockCandles();
+  // prewarmTopStockCandles(); // Disabled on boot to preserve SmartAPI quota for 0-delay chart updates
 });

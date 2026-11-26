@@ -418,7 +418,7 @@ export async function scanMp3DayPatterns(customSymbols) {
     const symbol = symbolsToScan[i];
     try {
       // Pace requests to respect Angel One SmartAPI 3 req/sec limit smoothly
-      await new Promise(resolve => setTimeout(resolve, 360));
+      await new Promise(resolve => setTimeout(resolve, 800));
 
       // 150 30-min candles cover 11-12 trading sessions
       const candles = await fetchCandles(symbol, '30', 150);

@@ -130,7 +130,7 @@ export async function scanWeekly200EMASymbols(symbolsList) {
     });
 
     await Promise.all(batchPromises);
-    await new Promise(r => setTimeout(r, 100));
+    await new Promise(r => setTimeout(r, 750));
   }
 
   results.sort((a, b) => b.priorityScore - a.priorityScore);
