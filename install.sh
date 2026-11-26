@@ -62,6 +62,11 @@ npm run build
 # 6. Configure Nginx Web Server & WebSocket Proxy
 echo "🌐 [6/7] Configuring Nginx Web Server & Real-time WebSockets..."
 
+# Stop Coolify / Docker containers if pre-installed (frees up port 80 & 443)
+docker stop $(docker ps -q) 2>/dev/null || true
+systemctl stop docker 2>/dev/null || true
+systemctl disable docker 2>/dev/null || true
+
 # Stop and disable Apache if pre-installed on VPS (frees up port 80)
 systemctl stop apache2 2>/dev/null || true
 systemctl disable apache2 2>/dev/null || true
