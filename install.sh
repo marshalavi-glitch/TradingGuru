@@ -16,7 +16,7 @@ echo "⏰ [1/7] Setting Server Timezone to Indian Standard Time (IST)..."
 export DEBIAN_FRONTEND=noninteractive
 timedatectl set-timezone Asia/Kolkata || true
 apt-get update -y
-apt-get install -y curl git ufw nginx build-essential
+apt-get install -y curl git ufw nginx build-essential psmisc lsof
 
 # 2. Install Node.js 20 LTS & PM2
 echo "📦 [2/7] Installing Node.js 20 LTS and PM2..."
@@ -73,15 +73,17 @@ EOF
 # 6. Configure Nginx Web Server & WebSocket Proxy
 echo "🌐 [6/7] Configuring Nginx Web Server & Real-time WebSockets..."
 
-# Stop Coolify / Docker containers if pre-installed (frees up port 80 & 443)
-docker stop $(docker ps -q) 2>/dev/null || true
-systemctl stop docker 2>/dev/null || true
-systemctl disable docker 2>/dev/null || true
-
-# Stop and disable Apache if pre-installed on VPS (frees up port 80)
-systemctl stop apache2 2>/dev/null || true
-systemctl disable apache2 2>/dev/null || true
+# Stop Coolify / Docker containers & proxy if pre-installed (frees up port 80 & 443)
+echo "🛑 Reclaiming Port 80 & 443 from any conflicting services (Coolify, Docker, Traefik, Apache)..."
+docker stop $(docker ps -aq) 2>/dev/null || true
+docker kill $(docker ps -q) 2>/dev/null || true
+systemctl stop coolify coolify-proxy docker containerd apache2 2>/dev/null || true
+systemctl disable coolify coolify-proxy docker containerd apache2 2>/dev/null || true
+killall -9 traefik 2>/dev/null || true
+killall -9 apache2 2>/dev/null || true
 fuser -k 80/tcp 2>/dev/null || true
+fuser -k 443/tcp 2>/dev/null || true
+sleep 1
 
 cat << 'EOF' > /etc/nginx/sites-available/tradingguru
 server {

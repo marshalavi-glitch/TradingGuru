@@ -105,15 +105,15 @@ export const ANGEL_SYMBOL_MAP = {
   'DIXON': { exchange: 'NSE', symboltoken: '21690', tradingsymbol: 'DIXON-EQ' },
 
   // Indian Commodities (MCX) - Active & Next 3 Months Futures
-  // Crude Oil Active Near-Month (November 2026)
-  'MCX:CRUDEOIL': { exchange: 'MCX', symboltoken: '573422', tradingsymbol: 'CRUDEOIL19NOV26FUT' },
-  'CRUDEOIL': { exchange: 'MCX', symboltoken: '573422', tradingsymbol: 'CRUDEOIL19NOV26FUT' },
-  'MCX:CRUDEOIL1!': { exchange: 'MCX', symboltoken: '573422', tradingsymbol: 'CRUDEOIL19NOV26FUT' },
-  'MCX:CRUDEOIL!': { exchange: 'MCX', symboltoken: '573422', tradingsymbol: 'CRUDEOIL19NOV26FUT' },
-  'CRUDEOIL FUT': { exchange: 'MCX', symboltoken: '573422', tradingsymbol: 'CRUDEOIL19NOV26FUT' },
-  'CRUDE OIL FUT': { exchange: 'MCX', symboltoken: '573422', tradingsymbol: 'CRUDEOIL19NOV26FUT' },
-  'CRUDEOIL1!': { exchange: 'MCX', symboltoken: '573422', tradingsymbol: 'CRUDEOIL19NOV26FUT' },
-  'CRUDEOIL!': { exchange: 'MCX', symboltoken: '573422', tradingsymbol: 'CRUDEOIL19NOV26FUT' },
+  // Crude Oil Active Near-Month (December 2026)
+  'MCX:CRUDEOIL': { exchange: 'MCX', symboltoken: '576264', tradingsymbol: 'CRUDEOIL18DEC26FUT' },
+  'CRUDEOIL': { exchange: 'MCX', symboltoken: '576264', tradingsymbol: 'CRUDEOIL18DEC26FUT' },
+  'MCX:CRUDEOIL1!': { exchange: 'MCX', symboltoken: '576264', tradingsymbol: 'CRUDEOIL18DEC26FUT' },
+  'MCX:CRUDEOIL!': { exchange: 'MCX', symboltoken: '576264', tradingsymbol: 'CRUDEOIL18DEC26FUT' },
+  'CRUDEOIL FUT': { exchange: 'MCX', symboltoken: '576264', tradingsymbol: 'CRUDEOIL18DEC26FUT' },
+  'CRUDE OIL FUT': { exchange: 'MCX', symboltoken: '576264', tradingsymbol: 'CRUDEOIL18DEC26FUT' },
+  'CRUDEOIL1!': { exchange: 'MCX', symboltoken: '576264', tradingsymbol: 'CRUDEOIL18DEC26FUT' },
+  'CRUDEOIL!': { exchange: 'MCX', symboltoken: '576264', tradingsymbol: 'CRUDEOIL18DEC26FUT' },
 
   // Crude Oil Next 3 Months Contracts
   'MCX:CRUDEOIL19NOV26FUT': { exchange: 'MCX', symboltoken: '573422', tradingsymbol: 'CRUDEOIL19NOV26FUT' },
@@ -124,23 +124,23 @@ export const ANGEL_SYMBOL_MAP = {
   'CRUDEOIL19JAN27FUT': { exchange: 'MCX', symboltoken: '580377', tradingsymbol: 'CRUDEOIL19JAN27FUT' },
 
   // Crude Oil Mini (MCX)
-  'MCX:CRUDEOILM': { exchange: 'MCX', symboltoken: '573423', tradingsymbol: 'CRUDEOILM19NOV26FUT' },
-  'CRUDEOILM': { exchange: 'MCX', symboltoken: '573423', tradingsymbol: 'CRUDEOILM19NOV26FUT' },
-  'MCX:CRUDEOILM1!': { exchange: 'MCX', symboltoken: '573423', tradingsymbol: 'CRUDEOILM19NOV26FUT' },
-  'MCX:CRUDEOILM!': { exchange: 'MCX', symboltoken: '573423', tradingsymbol: 'CRUDEOILM19NOV26FUT' },
+  'MCX:CRUDEOILM': { exchange: 'MCX', symboltoken: '576265', tradingsymbol: 'CRUDEOILM18DEC26FUT' },
+  'CRUDEOILM': { exchange: 'MCX', symboltoken: '576265', tradingsymbol: 'CRUDEOILM18DEC26FUT' },
+  'MCX:CRUDEOILM1!': { exchange: 'MCX', symboltoken: '576265', tradingsymbol: 'CRUDEOILM18DEC26FUT' },
+  'MCX:CRUDEOILM!': { exchange: 'MCX', symboltoken: '576265', tradingsymbol: 'CRUDEOILM18DEC26FUT' },
   'MCX:CRUDEOILM19NOV26FUT': { exchange: 'MCX', symboltoken: '573423', tradingsymbol: 'CRUDEOILM19NOV26FUT' },
   'CRUDEOILM19NOV26FUT': { exchange: 'MCX', symboltoken: '573423', tradingsymbol: 'CRUDEOILM19NOV26FUT' },
   'MCX:CRUDEOILM18DEC26FUT': { exchange: 'MCX', symboltoken: '576265', tradingsymbol: 'CRUDEOILM18DEC26FUT' },
   'CRUDEOILM18DEC26FUT': { exchange: 'MCX', symboltoken: '576265', tradingsymbol: 'CRUDEOILM18DEC26FUT' },
 
   // Natural Gas Active & Next 3 Months Futures
-  'MCX:NATURALGAS': { exchange: 'MCX', symboltoken: '574319', tradingsymbol: 'NATURALGAS24NOV26FUT' },
-  'NATURALGAS': { exchange: 'MCX', symboltoken: '574319', tradingsymbol: 'NATURALGAS24NOV26FUT' },
-  'MCX:NATURALGAS1!': { exchange: 'MCX', symboltoken: '574319', tradingsymbol: 'NATURALGAS24NOV26FUT' },
-  'MCX:NATURALGAS!': { exchange: 'MCX', symboltoken: '574319', tradingsymbol: 'NATURALGAS24NOV26FUT' },
-  'NATURALGAS FUT': { exchange: 'MCX', symboltoken: '574319', tradingsymbol: 'NATURALGAS24NOV26FUT' },
-  'NATURALGAS1!': { exchange: 'MCX', symboltoken: '574319', tradingsymbol: 'NATURALGAS24NOV26FUT' },
-  'NATURALGAS!': { exchange: 'MCX', symboltoken: '574319', tradingsymbol: 'NATURALGAS24NOV26FUT' },
+  'MCX:NATURALGAS': { exchange: 'MCX', symboltoken: '578249', tradingsymbol: 'NATURALGAS28DEC26FUT' },
+  'NATURALGAS': { exchange: 'MCX', symboltoken: '578249', tradingsymbol: 'NATURALGAS28DEC26FUT' },
+  'MCX:NATURALGAS1!': { exchange: 'MCX', symboltoken: '578249', tradingsymbol: 'NATURALGAS28DEC26FUT' },
+  'MCX:NATURALGAS!': { exchange: 'MCX', symboltoken: '578249', tradingsymbol: 'NATURALGAS28DEC26FUT' },
+  'NATURALGAS FUT': { exchange: 'MCX', symboltoken: '578249', tradingsymbol: 'NATURALGAS28DEC26FUT' },
+  'NATURALGAS1!': { exchange: 'MCX', symboltoken: '578249', tradingsymbol: 'NATURALGAS28DEC26FUT' },
+  'NATURALGAS!': { exchange: 'MCX', symboltoken: '578249', tradingsymbol: 'NATURALGAS28DEC26FUT' },
 
   'MCX:NATURALGAS24NOV26FUT': { exchange: 'MCX', symboltoken: '574319', tradingsymbol: 'NATURALGAS24NOV26FUT' },
   'NATURALGAS24NOV26FUT': { exchange: 'MCX', symboltoken: '574319', tradingsymbol: 'NATURALGAS24NOV26FUT' },

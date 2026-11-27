@@ -122,8 +122,8 @@ async function fetchLiveMcxQuotes(force = false) {
     if (angelOneBridge.isLoggedIn) {
       try {
         const [crudeRes, ngRes] = await Promise.all([
-          angelOneBridge.getLtp('MCX', 'CRUDEOIL', '578249'),
-          angelOneBridge.getLtp('MCX', 'NATURALGAS', '495213')
+          angelOneBridge.getLtp('MCX', 'CRUDEOIL18DEC26FUT', '576264'),
+          angelOneBridge.getLtp('MCX', 'NATURALGAS28DEC26FUT', '578249')
         ]);
         if (crudeRes?.data?.ltp) {
           const entry = { ltp: Number(crudeRes.data.ltp), close: Number(crudeRes.data.close || crudeRes.data.ltp), timestamp: now };
@@ -1167,8 +1167,8 @@ async function updateMarketIndicesInternal() {
         if (isMcxMarketHours()) {
           try {
             const [crudeRes, ngRes] = await Promise.all([
-              angelOneBridge.getLtp('MCX', 'CRUDEOIL', '578249'),
-              angelOneBridge.getLtp('MCX', 'NATURALGAS', '495213')
+              angelOneBridge.getLtp('MCX', 'CRUDEOIL18DEC26FUT', '576264'),
+              angelOneBridge.getLtp('MCX', 'NATURALGAS28DEC26FUT', '578249')
             ]);
             if (crudeRes?.data?.ltp) {
               const entry = { ltp: Number(crudeRes.data.ltp), close: Number(crudeRes.data.close || crudeRes.data.ltp), timestamp: Date.now() };

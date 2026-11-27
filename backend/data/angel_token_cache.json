@@ -2131,18 +2131,18 @@
   },
   "CRUDEOIL": {
     "exchange": "MCX",
-    "symboltoken": "569900",
-    "tradingsymbol": "CRUDEOIL19OCT26FUT"
+    "symboltoken": "576264",
+    "tradingsymbol": "CRUDEOIL18DEC26FUT"
   },
   "MCX:CRUDEOIL": {
     "exchange": "MCX",
-    "symboltoken": "569900",
-    "tradingsymbol": "CRUDEOIL19OCT26FUT"
+    "symboltoken": "576264",
+    "tradingsymbol": "CRUDEOIL18DEC26FUT"
   },
   "MCX:CRUDEOIL1!": {
     "exchange": "MCX",
-    "symboltoken": "569900",
-    "tradingsymbol": "CRUDEOIL19OCT26FUT"
+    "symboltoken": "576264",
+    "tradingsymbol": "CRUDEOIL18DEC26FUT"
   },
   "GOLD05OCT26FUT": {
     "exchange": "MCX",
@@ -115178,5 +115178,125 @@
     "exchange": "NFO",
     "symboltoken": "59948",
     "tradingsymbol": "BANKNIFTY29DEC2663600PE"
+  },
+  "NIFTY01DEC2625950PE": {
+    "exchange": "NFO",
+    "symboltoken": "47894",
+    "tradingsymbol": "NIFTY01DEC2625950PE"
+  },
+  "NFO:NIFTY01DEC2625950PE": {
+    "exchange": "NFO",
+    "symboltoken": "47894",
+    "tradingsymbol": "NIFTY01DEC2625950PE"
+  },
+  "BANKNIFTY29DEC2663900CE": {
+    "exchange": "NFO",
+    "symboltoken": "59953",
+    "tradingsymbol": "BANKNIFTY29DEC2663900CE"
+  },
+  "NFO:BANKNIFTY29DEC2663900CE": {
+    "exchange": "NFO",
+    "symboltoken": "59953",
+    "tradingsymbol": "BANKNIFTY29DEC2663900CE"
+  },
+  "BANKNIFTY29DEC2663900PE": {
+    "exchange": "NFO",
+    "symboltoken": "59954",
+    "tradingsymbol": "BANKNIFTY29DEC2663900PE"
+  },
+  "NFO:BANKNIFTY29DEC2663900PE": {
+    "exchange": "NFO",
+    "symboltoken": "59954",
+    "tradingsymbol": "BANKNIFTY29DEC2663900PE"
+  },
+  "NIFTY01DEC2625950CE": {
+    "exchange": "NFO",
+    "symboltoken": "47893",
+    "tradingsymbol": "NIFTY01DEC2625950CE"
+  },
+  "NFO:NIFTY01DEC2625950CE": {
+    "exchange": "NFO",
+    "symboltoken": "47893",
+    "tradingsymbol": "NIFTY01DEC2625950CE"
+  },
+  "NIFTY01DEC2625600CE": {
+    "exchange": "NFO",
+    "symboltoken": "47814",
+    "tradingsymbol": "NIFTY01DEC2625600CE"
+  },
+  "NFO:NIFTY01DEC2625600CE": {
+    "exchange": "NFO",
+    "symboltoken": "47814",
+    "tradingsymbol": "NIFTY01DEC2625600CE"
+  },
+  "BANKNIFTY29DEC2663000PE": {
+    "exchange": "NFO",
+    "symboltoken": "53247",
+    "tradingsymbol": "BANKNIFTY29DEC2663000PE"
+  },
+  "NFO:BANKNIFTY29DEC2663000PE": {
+    "exchange": "NFO",
+    "symboltoken": "53247",
+    "tradingsymbol": "BANKNIFTY29DEC2663000PE"
+  },
+  "NIFTY01DEC2625600PE": {
+    "exchange": "NFO",
+    "symboltoken": "47820",
+    "tradingsymbol": "NIFTY01DEC2625600PE"
+  },
+  "NFO:NIFTY01DEC2625600PE": {
+    "exchange": "NFO",
+    "symboltoken": "47820",
+    "tradingsymbol": "NIFTY01DEC2625600PE"
+  },
+  "BANKNIFTY29DEC2663000CE": {
+    "exchange": "NFO",
+    "symboltoken": "53246",
+    "tradingsymbol": "BANKNIFTY29DEC2663000CE"
+  },
+  "NFO:BANKNIFTY29DEC2663000CE": {
+    "exchange": "NFO",
+    "symboltoken": "53246",
+    "tradingsymbol": "BANKNIFTY29DEC2663000CE"
+  },
+  "CRUDEOIL1!": {
+    "exchange": "MCX",
+    "symboltoken": "576264",
+    "tradingsymbol": "CRUDEOIL18DEC26FUT"
+  },
+  "CRUDE OIL FUT": {
+    "exchange": "MCX",
+    "symboltoken": "576264",
+    "tradingsymbol": "CRUDEOIL18DEC26FUT"
+  },
+  "CRUDEOIL FUT": {
+    "exchange": "MCX",
+    "symboltoken": "576264",
+    "tradingsymbol": "CRUDEOIL18DEC26FUT"
+  },
+  "MCX:NATURALGAS1!": {
+    "exchange": "MCX",
+    "symboltoken": "578249",
+    "tradingsymbol": "NATURALGAS28DEC26FUT"
+  },
+  "NATURALGAS1!": {
+    "exchange": "MCX",
+    "symboltoken": "578249",
+    "tradingsymbol": "NATURALGAS28DEC26FUT"
+  },
+  "NATURALGAS": {
+    "exchange": "MCX",
+    "symboltoken": "578249",
+    "tradingsymbol": "NATURALGAS28DEC26FUT"
+  },
+  "MCX:NATURALGAS": {
+    "exchange": "MCX",
+    "symboltoken": "578249",
+    "tradingsymbol": "NATURALGAS28DEC26FUT"
+  },
+  "NATURALGAS FUT": {
+    "exchange": "MCX",
+    "symboltoken": "578249",
+    "tradingsymbol": "NATURALGAS28DEC26FUT"
   }
 }
